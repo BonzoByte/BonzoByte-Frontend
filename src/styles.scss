@@ -1,0 +1,1200 @@
+﻿/* ================================================================================================
+   Global styles (src/styles.scss)
+   - Base layout: fixed header + fixed datebar + fixed footer
+   - Shared UI patterns: table theme, stars, blur, loading overlay, inputs, link-like triggers
+   - Page-scoped table column sizing: .matches-page, .players-page
+   - IMPORTANT: we DO NOT define .bb-backdrop globally (avoid modal collisions)
+================================================================================================ */
+
+/* ----------------------------
+   Root + base typography
+---------------------------- */
+
+:root {
+    --header-h: 56px;
+    --datebar-h: 40px;
+    --footer-h: 36px;
+
+    --top: calc(var(--header-h) + var(--datebar-h));
+
+    --sep: rgba(0, 0, 0, 0.12);
+    --sep-strong: rgba(0, 0, 0, 0.18);
+
+    --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans",
+        "Liberation Sans", sans-serif;
+    --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "DejaVu Sans Mono",
+        monospace;
+
+    --font-size-base: 13px;
+    --line-height-base: 1.1;
+}
+
+html,
+body {
+    height: 100%;
+    margin: 0;
+    font-family: var(--font-sans);
+    font-size: var(--font-size-base);
+    line-height: var(--line-height-base);
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Shared page background (Matches / Players / Tournaments) */
+.matches-content {
+    background: url("/assets/backgrounds/dark-marble.png") top left / auto repeat;
+}
+
+/* One vertical scroll, with padding for fixed header/datebar/footer */
+body {
+    padding-top: var(--top);
+    padding-bottom: var(--footer-h);
+    overflow-y: auto;
+    min-height: calc(100vh - var(--header-h) - var(--footer-h));
+    color: #eee;
+
+    background:
+        radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.04), transparent 40%),
+        radial-gradient(circle at 80% 70%, rgba(255, 255, 255, 0.03), transparent 45%),
+        radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.02), transparent 60%),
+        linear-gradient(135deg, #0b0b0b, #111, #0e0e0e);
+}
+
+app-root,
+app-layout,
+app-header,
+app-footer,
+main {
+    display: block;
+}
+
+/* ----------------------------
+     Fixed header/footer layout
+  ---------------------------- */
+
+.custom-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    min-height: var(--header-h);
+    background: #fff;
+    z-index: 1000;
+    box-shadow: 0 1px 0 var(--sep-strong);
+}
+
+.custom-footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    min-height: var(--footer-h);
+    background: #fff;
+    z-index: 1000;
+    border-top: 1px solid var(--sep-strong);
+}
+
+/* ----------------------------
+     Shared page skeleton (Matches / Players / Tournaments)
+  ---------------------------- */
+
+.matches-page-wrapper {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.matches-page,
+.players-page {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.matches-content {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+}
+
+.table-wrapper {
+    flex: 1 1 auto;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 12px 16px;
+}
+
+/* ----------------------------
+     Sticky date bar (layout + theme)
+  ---------------------------- */
+
+.date-nav-sticky {
+    position: fixed;
+    top: var(--header-h);
+    left: 0;
+    right: 0;
+    height: var(--datebar-h);
+    z-index: 999;
+
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 12px;
+    padding: 6px 10px;
+    box-sizing: border-box;
+
+    background: rgba(10, 10, 10, 0.72);
+    backdrop-filter: blur(6px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.10);
+    color: #fff;
+}
+
+.pagination-center-wrapper {
+    justify-self: center;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+}
+
+.date-right {
+    justify-self: end;
+}
+
+.badge-on {
+    font-size: 10px;
+    line-height: 1;
+    vertical-align: middle;
+}
+
+/* icons inside date bar */
+.date-nav-sticky .icon,
+.date-nav-sticky .arrow-icon {
+    width: 1em;
+    height: 1em;
+    vertical-align: middle;
+    display: inline-block;
+    filter: brightness(0) invert(1);
+    opacity: 0.9;
+}
+
+.date-nav-sticky .icon-filter {
+    width: 0.9em;
+    height: 0.9em;
+}
+
+.date-nav-sticky .link-button {
+    background: none;
+    border: 0;
+    padding: 0;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: #fff;
+}
+
+/* ----------------------------
+     Shared date/page input
+  ---------------------------- */
+
+.custom-date-input.date-dmy {
+    text-align: center;
+    font-family: var(--font-sans);
+    font-size: var(--font-size-base);
+    line-height: var(--line-height-base);
+
+    width: 118px;
+    padding: 4px 10px;
+    border-radius: 10px;
+
+    border: 1px solid var(--sep-strong);
+    background: #222;
+    color: #fff;
+
+    font-variant-numeric: tabular-nums lining-nums;
+    font-feature-settings: "tnum" 1, "lnum" 1;
+
+    &:disabled {
+        opacity: 0.65;
+        cursor: not-allowed;
+    }
+}
+
+/* ----------------------------
+     Shared "link-like" triggers
+  ---------------------------- */
+
+.clickable-text,
+.details-link {
+    cursor: pointer;
+    text-decoration: none;
+    text-underline-offset: 2px;
+
+    &:hover {
+        text-decoration: underline;
+        opacity: 0.9;
+    }
+
+    &:focus {
+        text-decoration: underline;
+        outline: none;
+    }
+}
+
+/* ----------------------------
+     Numeric alignment helpers (odds/probability)
+  ---------------------------- */
+
+.odds-combined-cell,
+.percentage-cell {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums lining-nums;
+    font-feature-settings: "tnum" 1, "lnum" 1;
+    letter-spacing: 0;
+    white-space: nowrap;
+}
+
+.dual {
+    display: inline-flex;
+    align-items: baseline;
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums lining-nums;
+    font-feature-settings: "tnum" 1, "lnum" 1;
+}
+
+.dual-odds {
+    --w: 5ch;
+}
+
+/* 99.99 */
+.dual-prob {
+    --w: 6ch;
+}
+
+/* 100.00 */
+
+.dual .l {
+    width: var(--w);
+    text-align: right;
+}
+
+.dual .mid {
+    width: 2ch;
+    text-align: center;
+    opacity: 0.85;
+}
+
+.dual .r {
+    width: var(--w);
+    text-align: left;
+}
+
+.ghost {
+    visibility: hidden;
+}
+
+/* ----------------------------
+     Strength stars widget (shared)
+  ---------------------------- */
+
+.strength-cell .stars {
+    display: inline-flex;
+    gap: 2px;
+    line-height: 1;
+}
+
+.strength-cell .star {
+    position: relative;
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    font-size: 14px;
+}
+
+.strength-cell .star::before {
+    content: "☆";
+    position: absolute;
+    inset: 0;
+    color: #444;
+}
+
+.strength-cell .star.full::before {
+    content: "★";
+    background: linear-gradient(180deg, #fff3b0 0%, #ffd700 40%, #f5c400 60%, #b8860b 100%);
+    background-clip: text;
+    /* standard */
+    -webkit-background-clip: text;
+    /* webkit */
+    color: transparent;
+    /* standard alternative */
+    -webkit-text-fill-color: transparent;
+
+    text-shadow: 0 0 4px rgba(255, 215, 0, 0.35), 0 0 8px rgba(255, 215, 0, 0.15);
+}
+
+.strength-cell .star.half::after {
+    content: "★";
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 50%;
+    overflow: hidden;
+
+    background: linear-gradient(180deg, #fff3b0 0%, #ffd700 40%, #f5c400 60%, #b8860b 100%);
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+
+    text-shadow: 0 0 4px rgba(255, 215, 0, 0.3);
+}
+
+.strength-cell:hover .star.full::before,
+.strength-cell:hover .star.half::after {
+    text-shadow: 0 0 6px rgba(255, 215, 0, 0.6), 0 0 12px rgba(255, 215, 0, 0.3);
+}
+
+.round-cell {
+    text-align: center;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+/* ----------------------------
+     Tennis match table theme (shared)
+  ---------------------------- */
+
+.match-table {
+    width: auto;
+    max-width: 100%;
+    border-collapse: collapse;
+    color: #c0c0c0;
+    background: rgba(0, 0, 0, 0.25);
+}
+
+.match-table th,
+.match-table td {
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    padding: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.match-table thead th {
+    position: sticky;
+    top: var(--top);
+    z-index: 5;
+
+    background: #444;
+    color: #fff;
+    font-weight: 600;
+    border-bottom: 2px solid #333;
+
+    font-variant-numeric: tabular-nums lining-nums;
+    font-feature-settings: "tnum" 1, "lnum" 1;
+}
+
+.match-table thead th:hover {
+    background: #111;
+}
+
+.match-table tbody tr:nth-child(odd) {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.match-table tbody tr:nth-child(even) {
+    background: rgba(255, 255, 255, 0.015);
+}
+
+.match-table tbody tr:hover {
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.match-table td .fi {
+    vertical-align: middle;
+}
+
+/* ----------------------------
+     Page blur while loading (shared)
+  ---------------------------- */
+
+.matches-content.is-blurred {
+    filter: blur(2px);
+    opacity: 0.92;
+    pointer-events: none;
+    user-select: none;
+}
+
+.matches-content.is-blurred::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.08);
+    pointer-events: none;
+    z-index: 9997;
+}
+
+/* ----------------------------
+     Global loading overlay (shared utility)
+  ---------------------------- */
+
+.bb-loading-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9998;
+    display: grid;
+    place-items: center;
+
+    background: transparent !important;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.12s ease, visibility 0.12s ease;
+
+    &.is-active {
+        opacity: 1;
+        visibility: visible;
+        pointer-events: all;
+    }
+}
+
+.bb-loading-card {
+    background: rgba(20, 20, 20, 0.88);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 18px;
+    padding: 18px 20px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(6px);
+}
+
+.bb-spinner {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+
+    border: 3px solid rgba(255, 255, 255, 0.25);
+    border-top-color: rgba(255, 255, 255, 0.85);
+
+    animation: bb-spin 0.9s linear infinite;
+}
+
+@keyframes bb-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+/* ===== BonzoByte Modal System (Global) ===== */
+.bb-backdrop {
+    position: fixed;
+    inset: 0;
+    /* top/right/bottom/left = 0 */
+    z-index: 10000;
+    /* iznad headera, thead sticky, svega */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: rgba(0, 0, 0, 0.65);
+    backdrop-filter: blur(2px);
+
+    /* ako ti ikad nešto “probija” */
+    pointer-events: auto;
+}
+
+.bb-modal {
+    position: relative;
+    width: min(520px, calc(100vw - 24px));
+    max-height: min(80vh, 720px);
+    overflow: auto;
+    background: rgba(15, 15, 15, 0.92);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 14px;
+    box-shadow: 0 18px 60px rgba(0, 0, 0, 0.55);
+    padding: 18px 18px 16px;
+    z-index: 10001;
+    color: #eaeaea;
+}
+
+.bb-modal .close-button {
+    position: absolute;
+    top: 10px;
+    right: 12px;
+    width: 34px;
+    height: 34px;
+    border: 0;
+    border-radius: 10px;
+    background: transparent;
+    color: #fff;
+    font-size: 26px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.bb-modal h4 {
+    margin: 6px 0 12px;
+}
+
+.bb-modal .form-row {
+    margin: 10px 0;
+    display: grid;
+    gap: 6px;
+}
+
+.bb-modal label {
+    font-size: 13px;
+    opacity: 0.9;
+}
+
+.bb-modal input {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    background: rgba(0, 0, 0, 0.35);
+    color: #fff;
+    outline: none;
+}
+
+.bb-modal input.invalid {
+    border-color: rgba(255, 90, 90, 0.7);
+}
+
+.bb-modal button[type="submit"] {
+    margin-top: 0;
+}
+
+.password-wrapper {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 8px;
+    align-items: center;
+}
+
+.toggle-password {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    background: rgba(255, 255, 255, 0.08);
+    color: #fff;
+    cursor: pointer;
+}
+
+/* ----------------------------
+     Optional helpers
+  ---------------------------- */
+
+.text-center {
+    text-align: center;
+}
+
+.sep {
+    opacity: 0.4;
+}
+
+.custom-header .brand-title .main-title {
+    font-size: 1.4rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+/* Avoid scroll if you use body class toggles */
+body.bb-nosrcroll,
+body.bb-noscroll,
+body.modal-open {
+    overflow: hidden;
+}
+
+.pl-cell {
+    font-variant-numeric: tabular-nums;
+}
+
+.pl-positive {
+    color: #56d364;
+}
+
+// zeleno
+.pl-negative {
+    color: #ff6b6b;
+}
+
+// crveno
+.pl-zero {
+    color: #c9c9c9;
+}
+
+.pl-empty {
+    color: #9aa4af;
+}
+
+/* Details */
+
+/* ================================================================================================
+     (Optional) Topbar right tools (if you decide to standardize templates)
+     - Use: topbar-right-tools / topbar-search / link-button topbar-clear
+     - If you are NOT using these classes yet, you can delete this whole block.
+  ================================================================================================ */
+
+.topbar-right-tools {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    flex-wrap: nowrap;
+}
+
+.topbar-search {
+    width: 200px !important;
+    padding: 6px 12px;
+    border-radius: 999px;
+
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    color: #fff;
+
+    &::placeholder {
+        color: rgba(255, 255, 255, 0.55);
+    }
+}
+
+.link-button.topbar-clear {
+    padding: 6px 12px;
+    border-radius: 999px;
+
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    background: rgba(0, 0, 0, 0.25);
+    color: #fff;
+
+    &:hover:not(:disabled) {
+        background: rgba(255, 255, 255, 0.06);
+    }
+
+    &:disabled {
+        opacity: 0.55;
+    }
+}
+
+.bb-alert {
+    width: 100%;
+    box-sizing: border-box;
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin: 10px 0 14px;
+    font-size: 14px;
+    line-height: 1.3;
+}
+
+.bb-alert--error {
+    background: rgba(120, 20, 20, 0.45);
+    border: 1px solid rgba(255, 80, 80, 0.55);
+    color: #fff;
+}
+
+/* Ensure Angular Material overlays (snackbar/dialog/etc.) appear above custom modals */
+.cdk-overlay-container,
+.cdk-global-overlay-wrapper {
+    z-index: 99999 !important;
+}
+
+/* OAuth block */
+.oauth-block {
+    margin-top: 14px;
+}
+
+.oauth-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 8px;
+    flex-wrap: wrap;
+}
+
+.oauth-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    background: rgba(255, 255, 255, 0.08);
+    color: #fff;
+    cursor: pointer;
+}
+
+.oauth-btn:hover {
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.oauth-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.oauth-ico {
+    width: 22px;
+    height: 22px;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    background: rgba(255, 255, 255, 0.14);
+}
+
+.register-suggest {
+    margin-top: 10px;
+}
+
+.bb-secondary-action {
+    margin-top: 6px;
+    font-size: 14px;
+    padding: 4px 10px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.bb-secondary-action:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.secondary-text {
+    display: block;
+    font-size: 13px;
+    opacity: 0.8;
+    margin-bottom: 2px;
+}
+
+.bb-link {
+    background: transparent;
+    border: 0;
+    padding: 6px 10px;
+    color: rgba(255, 255, 255, 0.92);
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    font-size: 14px;
+}
+
+.bb-link:hover {
+    color: #fff;
+}
+
+.bb-link:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+}
+
+/* success banner */
+.bb-alert--success {
+    background: rgba(20, 120, 40, 0.35);
+    border: 1px solid rgba(80, 255, 120, 0.45);
+    color: #fff;
+}
+
+/* -------------------------
+   User modal – avatar block
+-------------------------- */
+
+.bb-avatar-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    margin-top: 6px;
+}
+
+.bb-avatar {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.bb-avatar-actions {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+/* Filter modal width (samo za ovaj modal) */
+.bb-filter-modal {
+    max-width: 720px;
+    width: min(720px, calc(100vw - 32px));
+    overflow-x: hidden;
+}
+
+/* Sections */
+.bb-section {
+    margin-top: 10px;
+}
+
+.bb-section-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 10px;
+}
+
+.bb-section-title {
+    font-weight: 600;
+}
+
+.bb-section-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.bb-hr {
+    height: 1px;
+    opacity: 0.15;
+    background: #fff;
+    margin: 14px 0;
+}
+
+/* Segmented (radio group) */
+.bb-segmented {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.bb-seg {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    cursor: pointer;
+    user-select: none;
+}
+
+.bb-seg input {
+    accent-color: #fff;
+}
+
+/* Two-column grid for custom dates */
+.bb-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 10px;
+}
+
+@media (max-width: 560px) {
+    .bb-grid-2 {
+        grid-template-columns: 1fr;
+    }
+}
+
+.bb-field label {
+    display: block;
+    margin-bottom: 6px;
+}
+
+/* Chips */
+.bb-chip-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+}
+
+@media (max-width: 560px) {
+    .bb-chip-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.bb-chip-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.bb-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    cursor: pointer;
+    user-select: none;
+}
+
+.bb-btn {
+    appearance: none;
+    -webkit-appearance: none;
+    border: 0;
+    outline: 0;
+    box-sizing: border-box;
+
+    height: 40px;
+    /* manje nego 44 */
+    min-width: 120px;
+    /* manje nego 140 */
+    padding: 0 16px;
+    /* manje paddinga */
+    border-radius: 12px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    color: #fff;
+
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.bb-btn:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.14);
+}
+
+/* ključ: disabled NE “ubija” tekst */
+.bb-btn:disabled {
+    opacity: 1;
+    /* makni globalno blijeđenje */
+    cursor: not-allowed;
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 255, 255, 0.10);
+    color: rgba(255, 255, 255, 0.45);
+}
+
+.bb-actions {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 14px;
+    margin-top: 14px;
+}
+
+/* Contact modal textarea – force dark theme */
+.bb-modal textarea {
+    width: 100%;
+    box-sizing: border-box;
+
+    background: rgba(0, 0, 0, 0.35) !important;
+    color: #fff !important;
+
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 12px;
+
+    padding: 10px 12px;
+    outline: none;
+
+    resize: vertical;
+}
+
+.bb-modal textarea::placeholder {
+    color: rgba(255, 255, 255, 0.55);
+}
+
+.bb-modal textarea:focus {
+    border-color: rgba(255, 255, 255, 0.25);
+}
+
+.bb-modal textarea.invalid {
+    border-color: rgba(255, 90, 90, 0.65);
+}
+
+/* About modal content */
+.bb-about {
+    margin-top: 6px;
+}
+
+.bb-about p {
+    margin: 0 0 10px;
+    line-height: 1.35;
+    opacity: 0.92;
+}
+
+.bb-about-lead {
+    font-weight: 600;
+    opacity: 0.98;
+}
+
+.bb-about-note {
+    opacity: 0.75;
+    font-size: 0.95em;
+}
+
+.bb-filter-modal .bb-chip {
+    padding: 6px 10px;
+    border-radius: 999px; // malo modernije "pill"
+}
+
+.bb-filter-modal .bb-chip input {
+    margin: 0;
+}
+
+/* ========== Value (edge) section: match Odds pills ========== */
+
+.radio-row {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.radio-pill {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 8px 14px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    background: rgba(0, 0, 0, 0.25);
+
+    cursor: pointer;
+    user-select: none;
+
+    line-height: 1;
+    min-width: 110px;
+    /* da All / Value only budu simetrični */
+    text-align: center;
+}
+
+/* sakrij default radio */
+.radio-pill input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* label text */
+.radio-pill span {
+    font-size: 13px;
+    opacity: 0.95;
+}
+
+/* selected look */
+.radio-pill:has(input[type="radio"]:checked) {
+    border-color: rgba(255, 255, 255, 0.55);
+    background: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.15) inset;
+}
+
+/* hover */
+.radio-pill:hover {
+    border-color: rgba(255, 255, 255, 0.45);
+}
+
+/* hint text like others */
+.filter-hint {
+    margin-top: 8px;
+    font-size: 12px;
+    opacity: 0.75;
+    line-height: 1.25;
+}
+
+.bb-ts-snapshot {
+    margin: 10px 0 12px;
+}
+
+.bb-ts-snapshot-title {
+    font-size: 12px;
+    opacity: 0.75;
+    margin: 0 0 6px;
+}
+
+/* ODDS header alignment fix */
+.bb-odds-table thead th {
+    vertical-align: right;
+}
+
+.bb-odds-table thead .bb-odds-head-group {
+    text-align: right;
+}
+
+.bb-odds-table thead tr:nth-child(2) th:first-child,
+.bb-odds-table thead tr:nth-child(2) th:last-child {
+    padding: 0;
+}
+
+.bb-odds-table th.bb-odds-num,
+.bb-odds-table thead th.bb-odds-num {
+    text-align: right;
+}
+
+.bb-odds-num {
+    text-align: right !important;
+}
+
+.bb-odds-table th.bb-th-num,
+.bb-odds-table th.bb-odds-num {
+    text-align: right;
+}
+
+.bb-odds-table th.bb-th-left {
+    text-align: left;
+}
+
+.bb-odds-table td.bb-odds-num {
+    text-align: right;
+}
+
+.bb-odds-history-cell {
+    padding: 10px 12px;
+}
+
+.bb-odds-history-title {
+    margin: 6px 0 8px 0;
+}
+
+.bb-odds-history-table {
+    margin-top: 6px;
+}
+
+.bb-odds-table th.bb-th-num,
+.bb-odds-table th.bb-odds-num {
+  text-align: right;
+}
+
+.bb-odds-table th.bb-th-left {
+  text-align: right;
+}
+
+.bb-odds-table td.bb-odds-num {
+  text-align: right;
+}
+
+.bb-odds-history-cell {
+  padding: 10px 12px;
+}
+
+.bb-odds-history-title {
+  margin: 6px 0 8px 0;
+}
+
+.bb-odds-history-table {
+  margin-top: 6px;
+}

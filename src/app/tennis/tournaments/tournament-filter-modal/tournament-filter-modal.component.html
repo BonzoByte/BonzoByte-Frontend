@@ -1,0 +1,76 @@
+<div class="modal-backdrop" appAccessibleClick (accessibleClick)="close()">
+    <div class="modal-content" appTrapFocus [onEscape]="close" (click)="$event.stopPropagation()">
+      <button class="close-button" appAccessibleClick (accessibleClick)="close()">×</button>
+      <h5 class="text-center">Filter Tournaments</h5>
+      <br />
+      <div class="modal-body">
+        <!-- DATE FILTER GROUP -->
+        <div class="text-start">
+          <p class="form-label fw-bold mb-1">Filter by Date:</p>
+  
+          <div class="form-check filter-radio-row" *ngFor="let option of dateOptions">
+            <label class="form-check-label d-flex align-items-center" [for]="'option-' + option.value">
+              <input class="form-check-input me-2" type="radio" [value]="option.value" name="dateFilter"
+                [(ngModel)]="selectedDateOption" (change)="onDateOptionChange()"
+                (click)="onForceOptionChange(option.value)" id="option-{{ option.value }}" />
+              {{ option.label }}
+            </label>
+          </div>
+          <!-- Custom date range input -->
+          <div *ngIf="selectedDateOption === 'custom'" class="mt-2 ms-3">
+            <label for="fromDate" class="form-label">From:</label>
+            <input id="fromDate" type="date" class="form-control" [(ngModel)]="customFromDate" />
+  
+            <label for="toDate" class="form-label mt-2">To:</label>
+            <input id="toDate" type="date" class="form-control" [(ngModel)]="customToDate" />
+          </div>
+        </div>
+        <!-- Divider -->
+        <hr />
+        <div class="text-start mt-3">
+          <label for="surfaceFilter" class="form-label fw-bold mb-1">Filter by Surface:</label>
+          <div class="text-start mt-3">
+            <div class="form-check d-flex align-items-center gap-2 ms-3" *ngFor="let s of surfaces">
+              <input class="form-check-input" type="checkbox" [id]="'surface-' + s._id"
+                [checked]="selectedSurfaceIds.includes(s._id)" (change)="toggleSurface(s._id)" />
+              <label class="form-check-label mb-0" [for]="'surface-' + s._id">
+                {{ s.surface }}
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Divider -->
+      <hr />
+      <div class="text-start mt-3">
+        <label for="tournamentTypeFilter" class="form-label fw-bold mb-1">Filter by Tournament Type:</label>
+        <div class="text-start mt-3">
+          <div class="form-check d-flex align-items-center gap-2 ms-3" *ngFor="let t of tournamentTypes">
+            <input class="form-check-input" type="checkbox" [id]="'tournamentType-' + t._id"
+              [checked]="selectedTournamentTypeIds.includes(t._id)" (change)="toggleTournamentType(t._id)" />
+            <label class="form-check-label mb-0" [for]="'tournamentType-' + t._id">
+              {{ t.type }}
+            </label>
+          </div>
+        </div>
+      </div>
+      <!-- Divider -->
+      <hr />
+      <div class="text-start mt-3">
+        <label for="tournamentLevelFilter" class="form-label fw-bold mb-1">Filter by Tournament Level:</label>
+        <div class="text-start mt-3">
+          <div class="form-check d-flex align-items-center gap-2 ms-3" *ngFor="let t of tournamentLevels">
+            <input class="form-check-input" type="checkbox" [id]="'tournamentLevel-' + t._id"
+              [checked]="selectedTournamentLevelIds.includes(t._id)" (change)="toggleTournamentLevel(t._id)" />
+            <label class="form-check-label mb-0" [for]="'tournamentLevel-' + t._id">
+              {{ t.level }}
+            </label>
+          </div>
+        </div>
+      </div>
+      <div class="text-center mt-3 d-flex justify-content-center gap-4">
+        <button class="link-button" (click)="apply()">Apply</button>
+        <button class="link-button" (click)="reset()">Reset</button>
+      </div>
+    </div>
+  </div>

@@ -1,0 +1,167 @@
+<!-- eslint-disable @angular-eslint/template/eqeqeq -->
+<div class="matches-page-wrapper players-page main-scroll">
+  <div class="players-page">
+
+    <!-- Top sticky bar (same layout as matches) -->
+    <div class="date-nav-sticky">
+      <div class="date-left">
+        <!-- optional: clear/search indicator -->
+      </div>
+
+      <div class="pagination-center-wrapper">
+        <!-- <button (click)="jump(-5)" class="link-button" [disabled]="currentPage <= 1 || loading">-5</button> -->
+        <button (click)="previousPage()" class="link-button" [disabled]="currentPage <= 1 || loading">
+          <img src="assets/icons/left.svg" alt="Previous" class="arrow-icon" />
+        </button>
+
+        <input #pageInput type="text" class="custom-date-input date-dmy" inputmode="numeric" autocomplete="off"
+          [value]="currentPage" (input)="onPageInputChange($event)" [disabled]="loading" />
+
+        <span style="padding:0 8px; opacity:.85;">/ {{ totalPages }}</span>
+
+        <button (click)="nextPage()" class="link-button" [disabled]="currentPage >= totalPages || loading">
+          <img src="assets/icons/right.svg" alt="Next" class="arrow-icon" />
+        </button>
+        <!-- <button (click)="jump(+5)" class="link-button" [disabled]="currentPage >= totalPages || loading">+5</button> -->
+      </div>
+
+      <div class="date-right">
+        <div class="topbar-right-tools">
+          <input type="text" class="custom-date-input date-dmy topbar-search" placeholder="Search player…"
+            [(ngModel)]="searchTerm" (input)="onSearchInput()" [disabled]="loading" />
+
+          <button (click)="clearSearch()" class="link-button topbar-clear" [disabled]="loading || !searchTerm">
+            Clear
+          </button>
+
+          <button (click)="openFilterModal()" class="link-button" [disabled]="loading">
+            <img src="assets/icons/filter.svg" alt="Filter" class="icon icon-filter" />
+            Filter <span *ngIf="isFiltered" class="badge-on">●</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONTENT (blur like matches) -->
+    <div class="matches-content" [class.is-blurred]="loading">
+
+      <div class="table-wrapper">
+
+        <!-- empty state -->
+        <div *ngIf="!loading && players.length === 0" class="text-center mt-3 p-3 rounded border"
+          style="background-color:#333;color:#999;padding-top:10px;">
+          No players found.
+        </div>
+
+        <table class="match-table" *ngIf="players.length > 0">
+          <thead>
+            <tr>
+              <th class="col-player col-center" (click)="toggleSort('playerName')">
+                Player
+                <span *ngIf="sortField === 'playerName'">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
+              </th>
+
+              <th class="col-birth col-center" (click)="toggleSort('playerBirthDate')">
+                Birth
+                <span *ngIf="sortField === 'playerBirthDate'">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
+              </th>
+
+              <th class="col-center" (click)="toggleSort('averageTSMean')">
+                Avg TS
+                <span *ngIf="sortField === 'averageTSMean'">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
+              </th>
+
+              <th class="col-center" (click)="toggleSort('peakTsMean')">
+                Peak TS
+                <span *ngIf="sortField === 'peakTsMean'">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
+              </th>
+
+              <th class="col-center" (click)="toggleSort('currentTsMean')">
+                Latest TS
+                <span *ngIf="sortField === 'currentTsMean'">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
+              </th>
+
+              <th class="col-center" (click)="toggleSort('numberOfMatches')">
+                Matches
+                <span *ngIf="sortField === 'numberOfMatches'">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
+              </th>
+
+              <th class="col-center" (click)="toggleSort('winPercentage')">
+                Win %
+                <span *ngIf="sortField === 'winPercentage'">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
+              </th>
+
+              <th class="col-center" (click)="toggleSort('dateOfLastMatch')">
+                Last Match
+                <span *ngIf="sortField === 'dateOfLastMatch'">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
+              </th>
+
+              <th class="col-center">Details</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr *ngFor="let p of players">
+              <td class="col-player col-center">
+                <span class="fi fi-{{ flagCode(p.countryISO2).toLowerCase() }}"
+                  [title]="p.countryFull || 'World'"></span>
+
+                <span class="clickable-text" (click)="openPlayerModal(p.playerTPId)" style="margin-left:6px;">
+                  {{ formatPlayerLabel(p.playerName, p.countryISO3) }}
+                </span>
+              </td>
+
+              <td class="col-birth col-center">{{ formatDateMaybe(p.playerBirthDate) }}</td>
+              <td class="col-ts col-center strength-cell"
+                [title]="p.averageTSMean != null ? ('Avg TS: ' + formatNum(p.averageTSMean, 2)) : ''">
+                <span class="stars" *ngIf="p.averageTSMean != null">
+                  <span *ngFor="let s of stars" class="star"
+                    [ngClass]="starClass(s, getTSStars(p.averageTSMean))"></span>
+                </span>
+              </td>
+
+              <td class="col-m col-center strength-cell"
+                [title]="p.peakTsMean != null ? ('Peak TS: ' + formatNum(p.peakTsMean, 2)) : ''">
+                <span class="stars" *ngIf="p.peakTsMean != null">
+                  <span *ngFor="let s of stars" class="star" [ngClass]="starClass(s, getTSStars(p.peakTsMean))"></span>
+                </span>
+              </td>
+
+              <td class="col-win col-center strength-cell"
+                [title]="p.currentTsMean != null ? ('Latest TS: ' + formatNum(p.currentTsMean, 2)) : ''">
+                <span class="stars" *ngIf="p.currentTsMean != null">
+                  <span *ngFor="let s of stars" class="star"
+                    [ngClass]="starClass(s, getTSStars(p.currentTsMean))"></span>
+                </span>
+              </td>
+              <td class="col-last col-center">{{ p.numberOfMatches ?? '' }}</td>
+              <td class="col-center">{{ formatWinPct(p.winPercentage) }}</td>
+              <td class="col-last col-center">{{ formatDateMaybe(p.dateOfLastMatch) }}</td>
+
+              <td class="col-det col-center">
+                <small class="details-link" (click)="openPlayerModal(p.playerTPId)">Details</small>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- modals -->
+      <app-player-filter-modal *ngIf="showFilterModal" (closed)="closeFilterModal()"
+        (filterApplied)="isFiltered = true; closeFilterModal()" (resetFilter)="isFiltered = false; closeFilterModal()">
+      </app-player-filter-modal>
+
+      <app-player-modal *ngIf="selectedPlayer" [playerTPId]="selectedPlayer" (closed)="closePlayerModal()">
+      </app-player-modal>
+
+    </div>
+
+    <!-- loading overlay (same as matches) -->
+    <div class="bb-loading-overlay" [class.is-active]="loading" aria-live="polite">
+      <div class="bb-loading-card" role="status" aria-label="Loading">
+        <div class="bb-spinner"></div>
+        <div class="bb-loading-text">Loading…</div>
+      </div>
+    </div>
+  </div>
+</div>

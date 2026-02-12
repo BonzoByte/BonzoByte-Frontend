@@ -1,0 +1,96 @@
+<div class="bb-backdrop" appAccessibleClick (accessibleClick)="close()">
+    <div class="bb-modal" appTrapFocus [onEscape]="close" (click)="$event.stopPropagation()" role="dialog"
+        aria-modal="true" aria-labelledby="login-title">
+        <button class="close-button" type="button" appAccessibleClick (accessibleClick)="close()" aria-label="Close">
+            ×
+        </button>
+
+        <form [formGroup]="loginForm" (ngSubmit)="onLogin()">
+            <h4 id="login-title" class="text-center">Login</h4>
+
+            <!-- ERROR banner (kao u Register modalu) -->
+            <div class="bb-alert bb-alert--error" *ngIf="serverErrorMessage">
+                {{ serverErrorMessage }}
+            </div>
+
+            <!-- IDENTIFIER -->
+            <div class="form-row">
+                <label for="identifier">Email or Username:</label>
+                <input id="identifier" formControlName="identifier" placeholder="Username or Email"
+                    [class.invalid]="identifier?.invalid && (identifier?.touched || submitted)"
+                    autocomplete="username" />
+                <p class="error" *ngIf="identifier?.hasError('required') && (identifier?.touched || submitted)">
+                    Obavezno
+                </p>
+            </div>
+
+            <!-- PASSWORD -->
+            <div class="form-row">
+                <label for="password">Password:</label>
+                <div class="password-wrapper">
+                    <input [type]="showPassword ? 'text' : 'password'" id="password" formControlName="password"
+                        placeholder="Password" class="password-input"
+                        [class.invalid]="password?.invalid && (password?.touched || submitted)"
+                        autocomplete="current-password" />
+                    <button type="button" class="toggle-password" appAccessibleClick
+                        (accessibleClick)="togglePassword()" aria-label="Toggle password visibility">
+                        <i class="bi" [ngClass]="showPassword ? 'bi-eye-slash' : 'bi-eye'"></i>
+                    </button>
+                </div>
+                <p class="error" *ngIf="password?.hasError('required') && (password?.touched || submitted)">
+                    Obavezno
+                </p>
+            </div>
+
+            <!-- SUBMIT -->
+            <div class="text-center">
+                <button type="submit" [disabled]="loginForm.invalid || submitting">
+                    {{ submitting ? 'Prijava…' : 'Prijavi se' }}
+                </button>
+            </div>
+
+            <!-- OAUTH -->
+            <div class="oauth-block">
+                <div class="muted text-center">or continue with</div>
+
+                <div class="oauth-buttons">
+                    <button type="button" class="oauth-btn" (click)="loginWithGoogle()" [disabled]="submitting">
+                        <span class="oauth-ico">G</span>
+                        <span>Google</span>
+                    </button>
+
+                    <button type="button" class="oauth-btn" (click)="loginWithFacebook()" [disabled]="submitting">
+                        <span class="oauth-ico">f</span>
+                        <span>Facebook</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Actions shown on wrong credentials -->
+            <div class="text-center bb-actions" *ngIf="loginFailed">
+                <button type="button" class="bb-link" appAccessibleClick (accessibleClick)="openForgotPasswordModal()"
+                    [disabled]="isSendingReset">
+                    {{ isSendingReset ? 'Šaljem reset link…' : 'Zaboravili ste lozinku?' }}
+                </button>
+            </div>
+
+            <!-- Resend verification -->
+            <div class="text-center bb-actions" *ngIf="showResend">
+                <button type="button" class="bb-link" appAccessibleClick (accessibleClick)="resendVerification()">
+                    Ponovno pošalji verifikacijski link
+                </button>
+            </div>
+
+            <!-- Register suggestion -->
+            <div class="text-center bb-actions" *ngIf="showRegisterSuggestion">
+                <span class="muted">Nemate račun?</span>
+                <button type="button" class="bb-link" appAccessibleClick (accessibleClick)="switchToRegister()">
+                    Register
+                </button>
+            </div>
+
+            <!-- RESET PASSWORD (ako koristiš inline modal) -->
+            <app-reset-password *ngIf="showResetPasswordModal" (close)="onCloseResetModal()"></app-reset-password>
+        </form>
+    </div>
+</div>

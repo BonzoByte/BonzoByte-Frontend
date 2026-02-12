@@ -1,0 +1,28 @@
+<app-header (userModalOpened)="onOpenUserModal()"></app-header>
+
+<app-user-modal *ngIf="showUserModal"
+                (closed)="showUserModal = false"
+                (updated)="onUserUpdated($event)">
+</app-user-modal>
+
+<ng-template #aboutUsModal let-modal>
+  <div class="modal-header justify-content-center">
+    <h5 class="modal-title text-center w-100">About Us</h5>
+  </div>
+  <div class="modal-body">
+    <p>
+      BonzoByte je hobi-projekt stvoren iz ljubavi prema tenisu, tehnologiji i – da, psima 🐶.
+      Ovdje ćemo graditi, učiti i zabavljati se. Hvala što ste tu!
+    </p>
+    <hr>
+    <p class="fst-italic text-muted text-end" style="font-size: 0.9rem; z-index: 1200!important;">
+      “Neque porro quisquam est qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit…”
+    </p>
+  </div>
+</ng-template>
+
+<main class="main-content">
+  <router-outlet></router-outlet>
+</main>
+
+<app-footer class="app-footer"></app-footer>

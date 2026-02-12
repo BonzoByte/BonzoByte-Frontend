@@ -1,0 +1,27 @@
+<div class="modal-backdrop" appAccessibleClick (accessibleClick)="close()">
+    <div class="modal-content" appTrapFocus [onEscape]="close" (click)="$event.stopPropagation()">
+      <button class="close-button" appAccessibleClick (accessibleClick)="close()">×</button>
+      <h5 class="text-center">Filter Players</h5>
+      <br />
+  
+      <div class="modal-body">
+        <div class="text-start mt-3">
+          <label for="tournamentTypeFilter" class="form-label fw-bold mb-1">Filter by Tournament Type:</label>
+          <div class="text-start mt-3">
+            <div class="form-check d-flex align-items-center gap-2 ms-3" *ngFor="let t of tournamentTypes">
+              <input class="form-check-input" type="checkbox" [id]="'tournamentType-' + t._id"
+                [checked]="selectedTournamentTypeIds.includes(t._id)" (change)="toggleTournamentType(t._id)" />
+              <label class="form-check-label mb-0" [for]="'tournamentType-' + t._id">
+                {{ t.type }}
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+  
+      <div class="text-center mt-3 d-flex justify-content-center gap-4">
+        <button class="link-button" (click)="apply()">Apply</button>
+        <button class="link-button" (click)="reset()">Reset</button>
+      </div>
+    </div>
+  </div>

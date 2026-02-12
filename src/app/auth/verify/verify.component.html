@@ -1,0 +1,10 @@
+<ng-template #verifyModal let-modal>
+    <div class="modal-header justify-content-center">
+      <h5 class="modal-title text-center w-100">Verifikacija</h5>
+    </div>
+    <div class="modal-body text-center">
+      <p>{{ modalMessage }}</p>
+      <button class="btn btn-primary mt-3" appAccessibleClick (accessibleClick)="goHome()">Povratak na početnu</button>
+    </div>
+  </ng-template>
+ 

@@ -1,0 +1,84 @@
+<div class="bb-backdrop" appAccessibleClick (accessibleClick)="close()">
+    <div class="bb-modal" appTrapFocus [onEscape]="close" (click)="$event.stopPropagation()" role="dialog"
+        aria-modal="true" aria-labelledby="register-title">
+
+        <button class="close-button" type="button" appAccessibleClick (accessibleClick)="close()"
+            aria-label="Close">×</button>
+
+        <form [formGroup]="registerForm" (ngSubmit)="submit()">
+            <h4 id="register-title" class="text-center">Register</h4>
+
+            <!-- ✅ INLINE MESSAGES -->
+            <div *ngIf="errorMessage" id="register-error" class="bb-alert bb-alert-error" tabindex="-1" role="alert">
+                {{ errorMessage }}
+            </div>
+
+            <div *ngIf="successMessage" class="bb-alert bb-alert-success" role="status">
+                {{ successMessage }}
+            </div>
+
+            <div class="form-row">
+                <label for="email">Email</label>
+                <input id="email" type="email" formControlName="email"
+                    [class.invalid]="email?.invalid && (email?.touched || submitting)" placeholder="Email" />
+                <p class="error" *ngIf="email?.hasError('required') && (email?.touched || submitting)">Obavezno</p>
+                <p class="error" *ngIf="email?.hasError('email') && (email?.touched || submitting)">Neispravan email</p>
+            </div>
+
+            <div class="form-row">
+                <label for="nickname">Nickname (optional)</label>
+                <input id="nickname" type="text" formControlName="nickname"
+                    [class.invalid]="nickname?.invalid && (nickname?.touched || submitting)" placeholder="Nickname" />
+                <p class="error" *ngIf="nickname?.invalid && (nickname?.touched || submitting)">
+                    Nickname mora imati 3–30 znakova
+                </p>
+            </div>
+
+            <div class="form-row">
+                <label for="password">Password</label>
+                <div class="password-wrapper">
+                    <input id="password" class="password-input" [type]="showPassword ? 'text' : 'password'"
+                        formControlName="password"
+                        [class.invalid]="password?.invalid && (password?.touched || submitting)"
+                        placeholder="Password" />
+                    <button type="button" class="toggle-password" appAccessibleClick
+                        (accessibleClick)="togglePasswordVisibility()" aria-label="Toggle password visibility">
+                        👁
+                    </button>
+                </div>
+                <p class="error" *ngIf="password?.hasError('required') && (password?.touched || submitting)">Obavezno
+                </p>
+                <p class="error" *ngIf="password?.hasError('minlength') && (password?.touched || submitting)">Min 8
+                    znakova</p>
+            </div>
+
+            <div class="form-row">
+                <label for="confirmPassword">Confirm password</label>
+                <div class="password-wrapper">
+                    <input id="confirmPassword" class="password-input"
+                        [type]="showConfirmPassword ? 'text' : 'password'" formControlName="confirmPassword"
+                        [class.invalid]="(confirmPassword?.invalid || registerForm.errors?.['passwordsMismatch']) && (confirmPassword?.touched || submitting)"
+                        placeholder="Confirm password" />
+                    <button type="button" class="toggle-password" appAccessibleClick
+                        (accessibleClick)="toggleConfirmPasswordVisibility()"
+                        aria-label="Toggle confirm password visibility">
+                        👁
+                    </button>
+                </div>
+                <p class="error"
+                    *ngIf="confirmPassword?.hasError('required') && (confirmPassword?.touched || submitting)">Obavezno
+                </p>
+                <p class="error"
+                    *ngIf="registerForm.errors?.['passwordsMismatch'] && (confirmPassword?.touched || submitting)">
+                    Lozinke se ne podudaraju
+                </p>
+            </div>
+
+            <div class="text-center">
+                <button type="submit" [disabled]="registerForm.invalid || submitting">
+                    {{ submitting ? 'Registering…' : 'Register' }}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

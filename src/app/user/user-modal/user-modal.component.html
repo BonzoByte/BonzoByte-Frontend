@@ -1,0 +1,68 @@
+<!-- eslint-disable @angular-eslint/template/label-has-associated-control -->
+<div class="bb-backdrop" appAccessibleClick (accessibleClick)="close()" aria-hidden="true">
+    <div class="bb-modal" role="dialog" aria-modal="true" aria-labelledby="user-modal-title" appTrapFocus
+        [onEscape]="close" (click)="$event.stopPropagation()">
+        <button class="close-button" type="button" appAccessibleClick (accessibleClick)="close()" aria-label="Close">
+            ×
+        </button>
+
+        <h4 id="user-modal-title" class="text-center">User data</h4>
+
+        <!-- banners (kao register/login) -->
+        <div class="bb-alert bb-alert--success" *ngIf="successMessage">{{ successMessage }}</div>
+        <div class="bb-alert bb-alert--error" *ngIf="errorMessage">{{ errorMessage }}</div>
+
+        <form [formGroup]="userForm" (ngSubmit)="onSubmit()" autocomplete="off">
+            <div class="form-row">
+                <label for="email">Email</label>
+                <input id="email" type="email" formControlName="email" readonly autocomplete="email" />
+            </div>
+
+            <div class="form-row">
+                <label for="nickname">Username (nickname)</label>
+                <input id="nickname" formControlName="nickname" autocomplete="username"
+                    [class.invalid]="(nickname?.invalid && (nickname?.touched || submitted)) || !!nickname?.errors?.['nicknameTaken']" />
+                <p class="error" *ngIf="nickname?.errors?.['nicknameTaken']">
+                    That username is already taken
+                </p>
+                <p class="error" *ngIf="nickname?.errors?.['minlength'] && (nickname?.touched || submitted)">
+                    Minimum 3 characters
+                </p>
+                <p class="error" *ngIf="nickname?.errors?.['maxlength'] && (nickname?.touched || submitted)">
+                    Maximum 20 characters
+                </p>
+            </div>
+
+            <div class="form-row">
+                <label>Avatar</label>
+
+                <div class="bb-avatar-block">
+                    <img [src]="previewUrl || currentUser.avatarUrl || 'assets/images/defaultUser.png'"
+                        alt="Avatar preview" class="bb-avatar" (error)="onAvatarError($event)" />
+
+                    <div class="bb-avatar-actions">
+                        <button type="button" class="oauth-btn" appAccessibleClick
+                            (accessibleClick)="fileInput.click()">
+                            Change avatar
+                        </button>
+
+                        <input type="file" #fileInput hidden (change)="onFileSelected($event)"
+                            accept="image/jpeg,image/png,image/webp" aria-label="Select avatar image" />
+
+                        <button *ngIf="isLocalAccount" type="button" class="oauth-btn" appAccessibleClick
+                            (accessibleClick)="changePassword()" [disabled]="isSendingReset">
+                            {{ isSendingReset ? 'Sending…' : 'Change password' }}
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center">
+                <button type="submit"
+                    [disabled]="userForm.invalid || userForm.pristine || userForm.pending || isSaving">
+                    {{ isSaving ? 'Saving…' : 'Save' }}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

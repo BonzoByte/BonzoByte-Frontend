@@ -1,0 +1,195 @@
+<div class="matches-page-wrapper matches-page main-scroll">
+    <div class="matches-page">
+
+        <!-- Top sticky bar -->
+        <div class="date-nav-sticky">
+            <div class="date-left"></div>
+
+            <div class="pagination-center-wrapper">
+                <button (click)="previousDay()" class="link-button" [disabled]="isPrevDisabled || loading">
+                    <img src="assets/icons/left.svg" alt="Previous" class="arrow-icon" />
+                </button>
+
+                <input #dateInput type="text" class="custom-date-input date-dmy" inputmode="numeric" autocomplete="off"
+                    placeholder="DD.MM.YYYY" [(ngModel)]="currentDateDMY" (input)="onDateDMYInput($event)"
+                    (blur)="commitDateInputDMY()" (keydown.enter)="commitDateInputDMY()"
+                    [disabled]="loading || !minDate || !maxDate" />
+
+                <button (click)="nextDay()" class="link-button" [disabled]="isNextDisabled || loading">
+                    <img src="assets/icons/right.svg" alt="Next" class="arrow-icon" />
+                </button>
+            </div>
+
+            <div class="date-right">
+                <input type="text" class="custom-date-input date-dmy topbar-search"
+                    placeholder="Search player or tournament…" [(ngModel)]="searchTerm" (input)="onSearchInput()"
+                    [disabled]="loading" />
+
+                <button (click)="clearSearch()" class="link-button topbar-clear" [disabled]="loading || !searchTerm">
+                    Clear
+                </button>
+
+                <button (click)="openFilterModal()" class="link-button" [disabled]="loading">
+                    <img src="assets/icons/filter.svg" alt="Filter" class="icon icon-filter" />
+                    Filter <span *ngIf="isFiltered" class="badge-on">●</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- CONTENT (this is what gets blurred) -->
+        <div class="matches-content" [class.is-blurred]="loading">
+
+            <div class="table-wrapper">
+                <!-- No matches (unfiltered) -->
+                <div *ngIf="!loading && matches.length === 0 && !isFiltered" class="text-center mt-3 p-3 rounded border"
+                    style="background-color:transparent;padding-top:10px;">
+                    No matches for this day.
+                </div>
+
+                <!-- No matches (filtered) -->
+                <div *ngIf="!loading && filteredMatches.length === 0 && isFiltered"
+                    class="text-center mt-3 p-3 rounded border" style="background-color:transparent;">
+                    No matches found for the selected filters.<br />
+                    Please adjust your filter options or clear the filters to continue browsing.
+                </div>
+
+                <table class="match-table" *ngIf="filteredMatches.length > 0">
+                    <colgroup>
+                        <col class="c-date" />
+                        <col class="c-type" />
+                        <col class="c-tournament" />
+                        <col class="c-strength" />
+                        <col class="c-round" />
+                        <col class="c-surface" />
+                        <col class="c-p1" />
+                        <col class="c-p2" />
+                        <col class="c-result" />
+                        <col class="c-result-details" />
+                        <col class="c-odds" />
+                        <col class="c-prob" />
+                        <col class="c-pl" />
+                        <col class="c-details" />
+                    </colgroup>
+                    <thead>
+                        <tr>
+                            <th class="col-center" (click)="toggleSort('date')">
+                                Date
+                                <span *ngIf="sortField === 'date'">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
+                            </th>
+                            <th class="col-center">Type</th>
+                            <th class="col-center" (click)="toggleSort('tournament')">
+                                Tournament
+                                <span *ngIf="sortField === 'tournament'">{{ sortDirection === 'asc' ? '↑' : '↓'}}</span>
+                            </th>
+                            <th class="col-center" (click)="toggleSort('strength')">
+                                Tour strength
+                                <span *ngIf="sortField === 'strength'">{{ sortDirection === 'desc' ? '↑' : '↓'}}</span>
+                            </th>
+                            <th class="col-center">Round</th>
+                            <th class="col-center">Surface</th>
+                            <th class="col-center">Player 1</th>
+                            <th class="col-center">Player 2</th>
+                            <th class="col-center">Result</th>
+                            <th class="col-center">Result Details</th>
+                            <th class="col-center">Odds</th>
+                            <th class="col-center">Probability</th>
+                            <th class="col-center">P/L</th>
+                            <th class="col-center">Details</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        <!-- OSTAVI SVOJ POSTOJEĆI *ngFor sadržaj -->
+                        <tr *ngFor="let match of filteredMatches">
+                            <td>{{ getLocalizedDateMaybeTime(match.dateTime) }}</td>
+                            <td>{{ match.tournamentTypeName }}</td>
+
+                            <td class="col-center">
+                                <span class="fi fi-{{ flagCode(match.tournamentEventCountryISO2).toLowerCase() }}"
+                                    [title]="match.tournamentEventCountryFull || 'World'"></span>
+                                <span class="clickable-text" (click)="openTournamentModal(match.tournamentEventTPId)">
+                                    {{ cleanTournamentNameFront(decodeHtmlEntities(match.tournamentEventName || '')) }}
+                                </span>
+                            </td>
+
+                            <td class="col-center strength-cell"
+                                [title]="'TS: ' + (match.tournamentStrengthMeanTS ?? '-')">
+                                <span class="stars">
+                                    <span *ngFor="let s of stars" class="star"
+                                        [ngClass]="starClass(s, getStrengthStars(match))"></span>
+                                </span>
+                            </td>
+
+                            <td class="col-center round-cell" [title]="match.roundName || ''">
+                                {{ formatRoundShort(match.roundName) }}
+                            </td>
+
+                            <td>{{ match.surface }}</td>
+
+                            <td class="col-center">
+                                <span class="fi fi-{{ flagCode(match.player1CountryISO2).toLowerCase() }}"
+                                    [title]="match.player1CountryFull"></span>
+                                <span class="clickable-text" (click)="openPlayerModal(match.player1TPId)">
+                                    {{ formatPlayerLabel(
+                                    decodeHtmlEntities(match.player1Label || match.player1Name || ''),
+                                    match.player1CountryISO3,
+                                    match.player1Seed,
+                                    match.player1Rank
+                                    ) }}
+                                </span>
+                            </td>
+
+                            <td class="col-center">
+                                <span class="fi fi-{{ flagCode(match.player2CountryISO2).toLowerCase() }}"
+                                    [title]="match.player2CountryFull"></span>
+                                <span class="clickable-text" (click)="openPlayerModal(match.player2TPId)">
+                                    {{ formatPlayerLabel(
+                                    decodeHtmlEntities(match.player2Label || match.player2Name || ''),
+                                    match.player2CountryISO3,
+                                    match.player2Seed,
+                                    match.player2Rank
+                                    ) }}
+                                </span>
+                            </td>
+
+                            <td class="col-center">{{ getDisplayResult(match) }}</td>
+                            <td class="col-center">{{ formatResultDetails(match.resultDetails) }}</td>
+
+                            <td class="col-center odds-combined-cell" [innerHTML]="formatOddsHTML(match.oddsText)"></td>
+                            <td class="col-center odds-combined-cell percentage-cell"
+                                [innerHTML]="formatProbHTML(match.probabilityText)"></td>
+                            <td class="col-center pl-cell" [ngClass]="getPLClass(match)" [title]="getPLTooltip(match)">
+                                {{ formatPL(match) }}
+                            </td>
+
+                            <td class="col-center">
+                                <small class="details-link" (click)="openDetails(match)">Details</small>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Modals (keep as you had) -->
+            <app-match-filter-modal *ngIf="showFilterModal" [activeDateFilter]="activeDateFilter"
+                [activeFromDate]="activeFromDate" [activeToDate]="activeToDate" (closed)="closeFilterModal()"
+                [minDate]="minDate" [maxDate]="maxDate" [activeSurfaceIds]="activeSurfaceIds"
+                [activeTournamentTypeIds]="activeTournamentTypeIds" [activeStrengthStars]="activeStrengthStars"
+                [activeTournamentLevelIds]="activeTournamentLevelIds" [activeStatus]="activeStatus"
+                [activeOdds]="activeOdds" [activeValueFilter]="valueFilter" (filterApplied)="onFilterApplied($event)"
+                (resetFilter)="onFilterReset()"></app-match-filter-modal>
+
+            <app-match-details-modal *ngIf="isDetailsOpen && selectedMatchTPId" [isOpen]="isDetailsOpen"
+                [matchTPId]="selectedMatchTPId" [genderHint]="selectedMatch?.tournamentTypeName === 'WTA' ? 'W' : 'M'"
+                [isOpen]="isDetailsOpen" [match]="selectedMatch!" (closed)="onDetailsClosed()">
+            </app-match-details-modal>
+        </div>
+
+        <div class="bb-loading-overlay" [class.is-active]="loading" aria-live="polite">
+            <div class="bb-loading-card" role="status" aria-label="Loading">
+                <div class="bb-spinner"></div>
+                <div class="bb-loading-text">Loading…</div>
+            </div>
+        </div>
+    </div>
+</div>

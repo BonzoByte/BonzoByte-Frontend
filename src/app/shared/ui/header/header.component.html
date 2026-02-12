@@ -1,0 +1,31 @@
+﻿<nav id="main-header" class="custom-header app-header">
+    <div>
+        <div class="navbar-nav">
+            <a routerLink="/matches">Matches</a>
+            <a routerLink="/players">Players</a>
+            <a routerLink="/tournaments">Tournaments</a>
+        </div>
+        <div class="brand-title">
+            <div class="main-title">Bonzo Byte</div>
+        </div>
+        <div class="navbar-nav">
+            <ng-container *ngIf="!isLoggedIn; else loggedIn">
+                <button (click)="openLoginModal()">{{ 'login' | translate }}</button>
+                <button (click)="openRegisterModal()">{{ 'register' | translate }}</button>
+            </ng-container>
+
+            <ng-template #loggedIn>
+                <div class="user-block" style="display:flex;align-items:center;gap:8px;">
+                    <span>Welcome {{ userDisplayName }}</span>
+                    <img [src]="user?.avatarUrl || 'assets/images/defaultUser.png'"
+                         alt="Avatar"
+                         (click)="openUserModal()"
+                         style="width:32px;height:32px;border-radius:50%;cursor:pointer;" />
+                    <button (click)="logout()">{{ 'logout' | translate }}</button>
+                </div>
+            </ng-template>
+        </div>
+    </div>
+</nav>
+<app-register *ngIf="showRegisterModal" (closed)="closeRegisterModal()"></app-register>
+<app-login *ngIf="showLoginModal" (closed)="closeLoginModal()"></app-login>

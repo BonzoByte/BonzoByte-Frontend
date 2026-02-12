@@ -1,0 +1,239 @@
+<!-- eslint-disable @angular-eslint/template/eqeqeq -->
+<div class="matches-page-wrapper main-scroll">
+  <div class="matches-page">
+
+    <!-- Top sticky bar -->
+    <div class="date-nav-sticky">
+      <div class="date-left">
+        <!-- optional: indicator -->
+      </div>
+
+      <div class="pagination-center-wrapper">
+        <button (click)="previousPage()" class="link-button" [disabled]="currentPage <= 1 || loading">
+          <img src="assets/icons/left.svg" alt="Previous" class="arrow-icon" />
+        </button>
+
+        <input #pageInput type="text" class="custom-date-input date-dmy" inputmode="numeric" autocomplete="off"
+          [value]="currentPage" (input)="onPageInputChange($event)" [disabled]="loading" />
+
+        <span style="padding:0 8px; opacity:.85;">/ {{ totalPages }}</span>
+
+        <button (click)="nextPage()" class="link-button" [disabled]="currentPage >= totalPages || loading">
+          <img src="assets/icons/right.svg" alt="Next" class="arrow-icon" />
+        </button>
+      </div>
+
+      <div class="date-right">
+        <div class="topbar-right-tools">
+          <input type="text" class="custom-date-input date-dmy topbar-search" placeholder="Search tournament…"
+            [(ngModel)]="searchTerm" (input)="onSearchInput()" [disabled]="loading" />
+
+          <button (click)="clearSearch()" class="link-button topbar-clear" [disabled]="loading || !searchTerm">
+            Clear
+          </button>
+
+          <button (click)="openFilterModal()" class="link-button" [disabled]="loading">
+            <img src="assets/icons/filter.svg" alt="Filter" class="icon icon-filter" />
+            Filter <span *ngIf="isFiltered" class="badge-on">●</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONTENT -->
+    <div class="matches-content" [class.is-blurred]="loading">
+      <div class="table-wrapper">
+
+        <!-- empty state -->
+        <div *ngIf="!loading && tournaments.length === 0" class="text-center mt-3 p-3 rounded border"
+          style="background-color:#333;color:#999;padding-top:10px;">
+          No tournaments found.
+        </div>
+
+        <table class="match-table" *ngIf="tournaments.length > 0">
+          <thead>
+            <tr>
+              <th class="col-center" (click)="toggleSort('tournamentEventName')">
+                Tournament
+                <span *ngIf="sortField === 'tournamentEventName'">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
+              </th>
+
+              <th class="col-center" (click)="toggleSort('tournamentEventDate')">
+                Start
+                <span *ngIf="sortField === 'tournamentEventDate'">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
+              </th>
+
+              <th class="col-center">
+                Continent
+              </th>
+
+              <th class="col-center" (click)="toggleSort('tournamentLevelName')">
+                Level
+                <span *ngIf="sortField === 'tournamentLevelName'">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
+              </th>
+
+              <th class="col-center" (click)="toggleSort('tournamentTypeName')">
+                Type
+                <span *ngIf="sortField === 'tournamentTypeName'">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
+              </th>
+
+              <th class="col-center" (click)="toggleSort('surfaceName')">
+                Surface
+                <span *ngIf="sortField === 'surfaceName'">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
+              </th>
+
+              <th class="col-center" (click)="toggleSort('prize')">
+                Prize
+                <span *ngIf="sortField === 'prize'">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
+              </th>
+
+              <th class="col-center" (click)="toggleSort('strengthMeanTS')">
+                TS Mean
+                <span *ngIf="sortField === 'strengthMeanTS'">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
+              </th>
+
+              <th class="col-center" (click)="toggleSort('strengthPlayers')">
+                TS Players
+                <span *ngIf="sortField === 'strengthPlayers'">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
+              </th>
+
+              <th class="col-center" (click)="toggleSort('numberOfMatches')">
+                Matches
+                <span *ngIf="sortField === 'numberOfMatches'">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
+              </th>
+
+              <th class="col-center" (click)="toggleSort('dateOfLastMatch')">
+                Last Match
+                <span *ngIf="sortField === 'dateOfLastMatch'">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
+              </th>
+
+              <th class="col-center" (click)="toggleSort('averageMatchStrength')">
+                Avg Strength
+                <span *ngIf="sortField === 'averageMatchStrength'">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
+              </th>
+
+              <th class="col-center" (click)="toggleSort('peakMatchStrength')">
+                Peak Strength
+                <span *ngIf="sortField === 'peakMatchStrength'">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
+              </th>
+
+              <th class="col-center">Details</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr *ngFor="let t of tournaments">
+              <!-- Tournament (with country flag) -->
+              <td class="col-center" style="text-align:left;">
+                <span class="fi fi-{{ flagCode(t.countryISO2).toLowerCase() }}"
+                  [title]="t.countryFull || 'World'"></span>
+
+                <span class="clickable-text" (click)="openTournamentModal(t.tournamentEventTPId)"
+                  style="margin-left:6px;">
+                  {{ formatTournamentLabel(t.tournamentEventName, t.countryISO3) }}
+                </span>
+              </td>
+
+              <!-- Start date -->
+              <td class="col-center">{{ formatDateMaybe(t.tournamentEventDate) }}</td>
+
+              <!-- Continent -->
+              <td class="col-center" [title]="t.continentName || ''">
+                {{ t.continentName ?? '' }}
+              </td>
+
+              <!-- Level -->
+              <td class="col-center" [title]="t.tournamentLevelName || ''">
+                {{ t.tournamentLevelName ?? '' }}
+              </td>
+
+              <!-- Type -->
+              <td class="col-center" [title]="t.tournamentTypeName || ''">
+                {{ t.tournamentTypeName ?? '' }}
+              </td>
+
+              <!-- Surface -->
+              <td class="col-center" [title]="t.surfaceName || ''">
+                {{ t.surfaceName ?? '' }}
+              </td>
+
+              <!-- Prize -->
+              <td class="col-center" [title]="t.prize != null ? ('Prize: ' + formatNum(t.prize, 0)) : ''">
+                {{ t.prize != null ? formatNum(t.prize, 0) : '' }}
+              </td>
+
+              <!-- StrengthMeanTS stars -->
+              <td class="col-center strength-cell"
+                [title]="t.strengthMeanTS != null ? ('Avg Strength: ' + formatNum(t.strengthMeanTS, 2)) : ''">
+                <span class="stars" *ngIf="t.strengthMeanTS != null">
+                  <span *ngFor="let s of stars" class="star"
+                    [ngClass]="starClass(s, getStrengthStars(t.strengthMeanTS))"></span>
+                </span>
+              </td>
+
+              <!-- StrengthPlayers numeric -->
+              <td class="col-center"
+                [title]="t.strengthPlayers != null ? ('StrengthPlayers: ' + formatNum(t.strengthPlayers, 0)) : ''">
+                {{ t.strengthPlayers != null ? formatNum(t.strengthPlayers, 0) : '' }}
+              </td>
+
+              <!-- NumberOfMatches -->
+              <td class="col-center">{{ t.numberOfMatches ?? '' }}</td>
+
+              <!-- DateOfLastMatch -->
+              <td class="col-center">{{ formatDateMaybe(t.dateOfLastMatch) }}</td>
+
+              <!-- Avg match strength -> stars -->
+              <td class="col-center strength-cell"
+                [title]="t.averageMatchStrength != null ? ('Avg Strength: ' + formatNum(t.averageMatchStrength, 2)) : ''">
+                <span class="stars" *ngIf="t.averageMatchStrength != null">
+                  <span *ngFor="let s of stars" class="star"
+                    [ngClass]="starClass(s, getStrengthStars(t.averageMatchStrength))"></span>
+                </span>
+              </td>
+
+              <!-- Peak match strength -> stars -->
+              <td class="col-center strength-cell"
+                [title]="t.peakMatchStrength != null ? ('Peak Strength: ' + formatNum(t.peakMatchStrength, 2)) : ''">
+                <span class="stars" *ngIf="t.peakMatchStrength != null">
+                  <span *ngFor="let s of stars" class="star"
+                    [ngClass]="starClass(s, getStrengthStars(t.peakMatchStrength))"></span>
+                </span>
+              </td>
+
+              <!-- Details -->
+              <td class="col-center">
+                <small class="details-link" (click)="openTournamentModal(t.tournamentEventTPId)">Details</small>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- modals (optional / later) -->
+      <!--
+      <app-tournament-filter-modal
+        *ngIf="showFilterModal"
+        (closed)="closeFilterModal()"
+        (filterApplied)="isFiltered = true; closeFilterModal()"
+        (resetFilter)="isFiltered = false; closeFilterModal()">
+      </app-tournament-filter-modal>
+
+      <app-tournament-modal
+        *ngIf="selectedTournament"
+        [tournamentEventTPId]="selectedTournament"
+        (closed)="closeTournamentModal()">
+      </app-tournament-modal>
+      -->
+
+    </div>
+
+    <!-- loading overlay -->
+    <div class="bb-loading-overlay" [class.is-active]="loading" aria-live="polite">
+      <div class="bb-loading-card" role="status" aria-label="Loading">
+        <div class="bb-spinner"></div>
+        <div class="bb-loading-text">Loading…</div>
+      </div>
+    </div>
+  </div>
+</div>
