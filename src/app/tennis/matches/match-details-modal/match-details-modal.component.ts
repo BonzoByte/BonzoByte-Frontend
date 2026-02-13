@@ -694,6 +694,8 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
                 this.raw = details;
                 this._details = details;
 
+                this.genderHint = this.tourTypeLabel(details) === 'WTA' ? 'W' : 'M';
+
                 this.vm = this.buildVm(details);
 
                 this.loading = false;
@@ -882,6 +884,12 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
     // =================================================================================================
     // AVATARS
     // =================================================================================================
+
+    playerAvatarUrlById(tpId?: number): string {
+        if (!tpId) return this.staticArchives.getDefaultPlayerPhotoUrl(this.genderHint);
+        // šaljemo gender hint kao query param da backend zna koji default vratiti kad nema slike
+        return this.staticArchives.getPlayerPhotoUrl(tpId, this.genderHint);
+      }
 
     onAvatarError(ev: Event): void {
         const img = ev.target as HTMLImageElement;

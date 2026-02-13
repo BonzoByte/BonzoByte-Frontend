@@ -39,10 +39,8 @@
 
             <div class="bb-player-body">
                 <!-- Avatar (generic placeholder served from archives) -->
-                <div class="bb-avatar">
-                    <img [src]="staticArchives.getPlayerPhotoUrl(v.p1.playerTPId, genderHint)"
-                        (error)="onAvatarError($event)" alt="Player avatar" loading="lazy" />
-                </div>
+                <img [src]="playerAvatarUrlById(v.p1.playerTPId)" (error)="onAvatarError($event)" alt="Player avatar"
+                    loading="lazy" />
 
                 <!-- Player bio details -->
                 <div class="bb-kv">
@@ -89,8 +87,8 @@
             <div class="bb-player-body">
                 <div class="bb-avatar">
                     <div class="bb-avatar">
-                        <img [src]="staticArchives.getPlayerPhotoUrl(v.p2.playerTPId, genderHint)"
-                            (error)="onAvatarError($event)" alt="Player avatar" loading="lazy" />
+                        <img [src]="playerAvatarUrlById(v.p1.playerTPId)" (error)="onAvatarError($event)"
+                            alt="Player avatar" loading="lazy" />
                     </div>
                 </div>
 

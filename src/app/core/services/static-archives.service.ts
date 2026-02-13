@@ -308,7 +308,6 @@ export class StaticArchivesService {
     return JSON.parse(this.utf8.decode(dec)) as T;
   }
 
-
   private mapLiteRowToMatch(r: any): Match {
     const isFinished =
       r?.l03 === true || r?.l03 === 1 || r?.l03 === '1' || r?.l03 === 'true';
@@ -337,7 +336,7 @@ export class StaticArchivesService {
       tournamentStrengthMeanTS: this.asNum(r?.l11) as any,
       roundName: (r?.l12 ?? '').toString(),
 
-      tournamentEventTPId: this.asNum(r?.l32) as any, // ✅ novo
+      tournamentEventTPId: this.asNum(r?.l32) as any,
 
       dateTime: r?.l02 ?? null,
 
@@ -497,7 +496,8 @@ export class StaticArchivesService {
   }
 
   getPlayerPhotoUrl(playerTPId: number, gender?: 'M' | 'W'): string {
-    return `${this.apiBase}/players/photo/${playerTPId}?g=${gender}`;
+    const g = gender ? `?g=${gender}` : '';
+    return `${this.apiBase}/players/photo/${playerTPId}${g}`;
   }
 
   getDefaultPlayerPhotoUrl(gender: 'M' | 'W'): string {
