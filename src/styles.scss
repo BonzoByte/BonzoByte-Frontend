@@ -80,7 +80,7 @@ main {
     right: 0;
     min-height: var(--header-h);
     background: #fff;
-    z-index: 10000;
+    z-index: 12000;
     box-shadow: 0 1px 0 var(--sep-strong);
 }
 
@@ -91,7 +91,7 @@ main {
     right: 0;
     min-height: var(--footer-h);
     background: #fff;
-    z-index: 10000;
+    z-index: 12000;
     border-top: 1px solid var(--sep-strong);
 }
 
