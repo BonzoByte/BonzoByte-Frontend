@@ -52,6 +52,8 @@ export class StaticArchivesService {
   private detailsStaticBase = `${this.staticBase}/matches`;
   private tsStaticBase = `${this.staticBase}/players/ts`;
 
+  private readonly PHOTO_BASE = `${environment.apiBase}/players/photo`;
+
   private readonly dailyIndex$: Observable<DailyArchiveIndex>;
   private readonly discoveredMaxDate$: Observable<string>;
   private readonly dailyManifest$: Observable<DailyManifest>;
