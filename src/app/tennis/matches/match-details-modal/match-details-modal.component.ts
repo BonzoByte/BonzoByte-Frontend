@@ -595,7 +595,7 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
     // Constructor / lifecycle
     // -----------------------------------------------------------------------------------------------
 
-    constructor(private staticArchives: StaticArchivesService, private cdr: ChangeDetectorRef) { }
+    constructor(private staticArchives: StaticArchivesService, private cdr: ChangeDetectorRef, private archives: StaticArchivesService) { }
 
     ngOnInit(): void {
         console.log('[MODAL] ngOnInit', { isOpen: this.isOpen, matchTPId: this.match?.matchTPId });
@@ -885,49 +885,33 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
     // AVATARS
     // =================================================================================================
 
-    private readonly PHOTO_BASE = 'http://localhost:5000/static/players/photo';
-
-    private avatarTryIndex = new Map<number, number>();
     private avatarUrl = new Map<number, string>();
-
-    private avatarCandidates(tpId: number): string[] {
-        const base = `${this.PHOTO_BASE}/${tpId}`;
-        return [
-            `${base}.jpg`,
-            `${base}.jpeg`,
-            `${base}.png`,
-            `${base}.webp`,
-            `${base}.svg`,
-            this.playerAvatarFallbackUrl(),
-        ];
-    }
+    private avatarFailed = new Set<number>();
 
     playerAvatarFallbackUrl(): string {
-        return `${this.PHOTO_BASE}/${this.genderHint === 'W' ? 'photoW.svg' : 'photoM.svg'}`;
+        // koristi service helper (apiBase je /api/archives)
+        return this.archives.getDefaultPlayerPhotoUrl(this.genderHint === 'W' ? 'W' : 'M');
     }
 
-    // ✅ PURE getter: bez set(), bez reset(), samo čita mapu
     playerAvatarUrlById(tpId?: number): string {
         if (!tpId) return this.playerAvatarFallbackUrl();
-        return this.avatarUrl.get(tpId) ?? this.avatarCandidates(tpId)[0];
+
+        // ako je puklo, odmah fallback (da ne spamamo backend)
+        if (this.avatarFailed.has(tpId)) return this.playerAvatarFallbackUrl();
+
+        return this.avatarUrl.get(tpId) ?? this.archives.getPlayerPhotoUrl(tpId);
     }
 
-    // Pozovi ovo kad se modal otvara / kad se promijeni match
     private initAvatar(tpId?: number): void {
         if (!tpId) return;
-        this.avatarTryIndex.set(tpId, 0);
-        this.avatarUrl.set(tpId, this.avatarCandidates(tpId)[0]);
+        this.avatarFailed.delete(tpId);
+        this.avatarUrl.set(tpId, this.archives.getPlayerPhotoUrl(tpId));
     }
 
     onAvatarError(tpId?: number): void {
         if (!tpId) return;
-
-        const candidates = this.avatarCandidates(tpId);
-        const cur = this.avatarTryIndex.get(tpId) ?? 0;
-        const next = Math.min(cur + 1, candidates.length - 1);
-
-        this.avatarTryIndex.set(tpId, next);
-        this.avatarUrl.set(tpId, candidates[next]); // ✅ Angular će update-at src bez ručnog img.src
+        this.avatarFailed.add(tpId);
+        this.avatarUrl.set(tpId, this.playerAvatarFallbackUrl());
     }
 
     // =================================================================================================

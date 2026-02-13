@@ -52,10 +52,6 @@ export class StaticArchivesService {
   private detailsStaticBase = `${this.staticBase}/matches`;
   private tsStaticBase = `${this.staticBase}/players/ts`;
 
-  private get dailyBase(): string {
-    return this.dailyStaticBase;
-  }
-
   private readonly dailyIndex$: Observable<DailyArchiveIndex>;
   private readonly discoveredMaxDate$: Observable<string>;
   private readonly dailyManifest$: Observable<DailyManifest>;
@@ -501,7 +497,7 @@ export class StaticArchivesService {
   getPlayerPhotoUrl(playerTPId: number): string {
     return `${environment.apiUrl}/api/archives/players/photo/${playerTPId}`;
   }
-  
+
   getDefaultPlayerPhotoUrl(gender: 'M' | 'W'): string {
     return `${environment.apiBase}/players/photo/photo${gender}.jpg`;
   }
