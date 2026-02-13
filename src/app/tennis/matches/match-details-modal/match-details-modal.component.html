@@ -87,8 +87,12 @@
             <div class="bb-player-body">
                 <div class="bb-avatar">
                     <div class="bb-avatar">
-                        <img [src]="playerAvatarUrlById(v.p1.playerTPId)" (error)="onAvatarError($event)"
-                            alt="Player avatar" loading="lazy" />
+                        <img
+                        [src]="playerAvatarUrlById(v.p2.playerTPId)"
+                        (error)="onAvatarError($event)"
+                        alt="Player avatar"
+                        loading="lazy"
+                      />                      
                     </div>
                 </div>
 
@@ -557,12 +561,12 @@
                                     <!-- Match date label -->
                                     <g *ngIf="cm.matchX !== null">
                                         <text [attr.x]="cm.matchX" [attr.y]="chartPad - 8" text-anchor="middle"
-                                            font-size="10" fill="rgba(255,255,255,0.75)">
+                                            font-size="12" fill="rgba(255,255,255,0.75)">
                                             Match date
                                         </text>
 
                                         <text [attr.x]="cm.matchX" [attr.y]="chartPad - 20" text-anchor="middle"
-                                            font-size="12" fill="rgba(255,255,255,0.55)">
+                                            font-size="14" fill="rgba(255,255,255,0.55)">
                                             {{ raw?.['m003'] | date:'dd.MM.yyyy' }}
                                         </text>
                                     </g>
@@ -676,12 +680,12 @@
                                     <!-- Match date label -->
                                     <g *ngIf="cm.matchX !== null">
                                         <text [attr.x]="cm.matchX" [attr.y]="chartPad - 8" text-anchor="middle"
-                                            font-size="10" fill="rgba(255,255,255,0.75)">
+                                            font-size="12" fill="rgba(255,255,255,0.75)">
                                             Match date
                                         </text>
 
                                         <text [attr.x]="cm.matchX" [attr.y]="chartPad - 20" text-anchor="middle"
-                                            font-size="12" fill="rgba(255,255,255,0.55)">
+                                            font-size="14" fill="rgba(255,255,255,0.55)">
                                             {{ raw?.['m003'] | date:'dd.MM.yyyy' }}
                                         </text>
                                     </g>
