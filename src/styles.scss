@@ -80,7 +80,7 @@ main {
     right: 0;
     min-height: var(--header-h);
     background: #fff;
-    z-index: 1000;
+    z-index: 10000;
     box-shadow: 0 1px 0 var(--sep-strong);
 }
 
@@ -91,7 +91,7 @@ main {
     right: 0;
     min-height: var(--footer-h);
     background: #fff;
-    z-index: 1000;
+    z-index: 10000;
     border-top: 1px solid var(--sep-strong);
 }
 
@@ -505,14 +505,14 @@ main {
     position: fixed;
     inset: 0;
     /* top/right/bottom/left = 0 */
-    z-index: 10000;
+    z-index: 9000;
     /* iznad headera, thead sticky, svega */
     display: flex;
     align-items: center;
     justify-content: center;
 
     background: rgba(0, 0, 0, 0.65);
-    backdrop-filter: blur(2px);
+    backdrop-filter: blur(1px);
 
     /* ako ti ikad nešto “probija” */
     pointer-events: auto;
@@ -614,6 +614,7 @@ main {
     font-weight: 700;
     letter-spacing: 0.08em;
     text-transform: uppercase;
+    z-index: 10000;
 }
 
 /* Avoid scroll if you use body class toggles */
