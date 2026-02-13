@@ -1546,9 +1546,11 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
         if (cached) return of(cached);
 
         return this.staticArchives.getTsHistory(playerId).pipe(
-            map((a: any) => {
-                this.tsHistCache.set(playerId, a);
-                return a;
+            map((resp: any) => {
+                // ✅ backend returns { ok, playerTPId, data }
+                const data = resp?.data ?? resp; // tolerate old shapes
+                this.tsHistCache.set(playerId, data);
+                return data;
             })
         );
     }
@@ -1587,6 +1589,9 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
                     // Always compute ALL series because we use it as master timeline for surface-specific modes.
                     const p1All = this.selectTsSeries(a1, this.RatingMode, 'ALL');
                     const p2All = this.selectTsSeries(a2, this.RatingMode, 'ALL');
+
+                    console.log('[TS] p1All sample', p1All.slice(0, 3));
+                    console.log('[TS] p2All sample', p2All.slice(0, 3));
 
                     const p1Surf = this.selectTsSeries(a1, this.RatingMode, this.SurfaceScope);
                     const p2Surf = this.selectTsSeries(a2, this.RatingMode, this.SurfaceScope);
