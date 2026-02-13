@@ -894,12 +894,8 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
     }
 
     playerAvatarUrlById(tpId?: number): string {
-        if (!tpId) return this.playerAvatarFallbackUrl();
-
-        // ako je puklo, odmah fallback (da ne spamamo backend)
-        if (this.avatarFailed.has(tpId)) return this.playerAvatarFallbackUrl();
-
-        return this.avatarUrl.get(tpId) ?? this.archives.getPlayerPhotoUrl(tpId);
+        if (!tpId) return this.archives.getDefaultPlayerPhotoUrl(this.genderHint === 'W' ? 'W' : 'M');
+        return this.archives.getPlayerPhotoUrl(tpId);
     }
 
     private initAvatar(tpId?: number): void {
@@ -909,9 +905,9 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
     }
 
     onAvatarError(tpId?: number): void {
+        // kad faila player slika, prebaci na default
         if (!tpId) return;
-        this.avatarFailed.add(tpId);
-        this.avatarUrl.set(tpId, this.playerAvatarFallbackUrl());
+        this.avatarUrl.set(tpId, this.archives.getDefaultPlayerPhotoUrl(this.genderHint === 'W' ? 'W' : 'M'));
     }
 
     // =================================================================================================

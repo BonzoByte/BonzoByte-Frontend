@@ -497,10 +497,10 @@ export class StaticArchivesService {
   }
 
   getPlayerPhotoUrl(playerTPId: number): string {
-    return `${this.apiBase}/players/photo/${playerTPId}`;
+    return `${environment.apiBase}/players/photo/${playerTPId}`;
   }
-
+  
   getDefaultPlayerPhotoUrl(gender: 'M' | 'W'): string {
     return `${environment.apiBase}/players/photo/photo${gender}.jpg`;
-  }
+  }  
 }
