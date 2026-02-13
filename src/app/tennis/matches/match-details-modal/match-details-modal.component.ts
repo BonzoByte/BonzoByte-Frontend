@@ -441,7 +441,7 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
 
     @Input() isOpen = false;
     @Input() matchTPId!: number;
-    @Input() genderHint: 'M' | 'W' | null = null;
+    @Input() genderHint!: 'M' | 'W';
     @Input() match!: Match;
     @Output() closed = new EventEmitter<void>();
 
@@ -595,7 +595,7 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
     // Constructor / lifecycle
     // -----------------------------------------------------------------------------------------------
 
-    constructor(private staticArchives: StaticArchivesService, private cdr: ChangeDetectorRef) { }
+    constructor(public staticArchives: StaticArchivesService, private cdr: ChangeDetectorRef) { }
 
     ngOnInit(): void {
         console.log('[MODAL] ngOnInit', { isOpen: this.isOpen, matchTPId: this.match?.matchTPId });
@@ -604,8 +604,6 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
     ngOnChanges(): void {
         if (this.isOpen && this.match?.matchTPId) {
             this.load();
-            this.initAvatar(this.match.player1TPId);
-            this.initAvatar(this.match.player2TPId);
         }
     }
 
@@ -885,30 +883,11 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
     // AVATARS
     // =================================================================================================
 
-    private avatarUrl = new Map<number, string>();
-    private avatarFailed = new Set<number>();
-
-    playerAvatarFallbackUrl(): string {
-        // koristi service helper (apiBase je /api/archives)
-        return this.staticArchives.getDefaultPlayerPhotoUrl(this.genderHint === 'W' ? 'W' : 'M');
-    }
-
-    playerAvatarUrlById(tpId?: number): string {
-        if (!tpId) return this.staticArchives.getDefaultPlayerPhotoUrl(this.genderHint === 'W' ? 'W' : 'M');
-        return this.staticArchives.getPlayerPhotoUrl(tpId);
-    }
-
-    private initAvatar(tpId?: number): void {
-        if (!tpId) return;
-        this.avatarFailed.delete(tpId);
-        this.avatarUrl.set(tpId, this.staticArchives.getPlayerPhotoUrl(tpId));
-    }
-
-    onAvatarError(tpId?: number): void {
-        // kad faila player slika, prebaci na default
-        if (!tpId) return;
-        this.avatarUrl.set(tpId, this.staticArchives.getDefaultPlayerPhotoUrl(this.genderHint === 'W' ? 'W' : 'M'));
-    }
+    onAvatarError(ev: Event): void {
+        const img = ev.target as HTMLImageElement;
+        img.src = this.staticArchives.getDefaultPlayerPhotoUrl(this.genderHint === 'W' ? 'W' : 'M');
+      }
+      
 
     // =================================================================================================
     // PERFORMANCE TAB (W/L metrics)

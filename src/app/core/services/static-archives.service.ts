@@ -496,11 +496,11 @@ export class StaticArchivesService {
       .pipe(map(buf => this.decodeBrotliJson<any>(buf)));
   }
 
-  getPlayerPhotoUrl(playerTPId: number): string {
-    return `${environment.apiBase}/players/photo/${playerTPId}`;
+  getPlayerPhotoUrl(playerTPId: number, gender?: 'M' | 'W'): string {
+    return `${this.apiBase}/players/photo/${playerTPId}?g=${gender}`;
   }
-  
+
   getDefaultPlayerPhotoUrl(gender: 'M' | 'W'): string {
-    return `${environment.apiBase}/players/photo/photo${gender}.jpg`;
-  }  
+    return `${this.apiBase}/players/photo/photo${gender}.jpg`;
+  }
 }
