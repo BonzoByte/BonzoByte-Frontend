@@ -554,6 +554,19 @@
                                         [attr.y1]="chartPad" [attr.y2]="chartHeight-chartPad"
                                         stroke="rgba(255,255,255,0.22)" stroke-dasharray="4 4"></line>
 
+                                    <!-- Match date label -->
+                                    <g *ngIf="cm.matchX !== null">
+                                        <text [attr.x]="cm.matchX" [attr.y]="chartPad - 8" text-anchor="middle"
+                                            font-size="11" fill="rgba(255,255,255,0.75)">
+                                            Match date
+                                        </text>
+
+                                        <text [attr.x]="cm.matchX" [attr.y]="chartPad - 20" text-anchor="middle"
+                                            font-size="10" fill="rgba(255,255,255,0.55)">
+                                            {{ raw?.['m003'] | date:'dd.MM.yyyy' }}
+                                        </text>
+                                    </g>
+
                                     <!-- Series lines -->
                                     <path [attr.d]="cm.p1Path" fill="none" stroke="#ff4d4d" stroke-width="2.2"
                                         opacity="0.95"></path>
