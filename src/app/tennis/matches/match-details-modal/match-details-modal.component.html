@@ -487,8 +487,8 @@
                 </section>
 
                 <!-- ========================================================================================
-             TS BREAKDOWN TAB (MU chart)
-        ========================================================================================= -->
+                TS BREAKDOWN TAB (MU chart)
+                ========================================================================================= -->
                 <section *ngIf="activeTab==='tsBreakdown'" class="bb-panel">
                     <ng-container *ngTemplateOutlet="playersHeader; context: { v: v }"></ng-container>
                     <ng-container *ngTemplateOutlet="tsControls"></ng-container>
@@ -593,8 +593,8 @@
                 </section>
 
                 <!-- ========================================================================================
-             WP BREAKDOWN TAB (WP step chart)
-        ========================================================================================= -->
+                WP BREAKDOWN TAB (WP step chart)
+                ========================================================================================= -->
                 <section *ngIf="activeTab==='wpBreakdown'" class="bb-panel">
                     <ng-container *ngTemplateOutlet="playersHeader; context: { v: v }"></ng-container>
                     <ng-container *ngTemplateOutlet="tsControls"></ng-container>
@@ -1095,14 +1095,14 @@
                         <table class="bb-odds-table">
                             <thead>
                                 <tr>
-                                  <th>Bookie</th>
-                                  <th class="bb-odds-num">Odds (L)</th>
-                                  <th class="bb-odds-num">Odds (R)</th>
-                                  <th class="bb-odds-num">Impl (L)</th>
-                                  <th class="bb-odds-num">Impl (R)</th>
-                                  <th class="bb-odds-num">Margin</th>
+                                    <th>Bookie</th>
+                                    <th class="bb-odds-num">Odds (L)</th>
+                                    <th class="bb-odds-num">Odds (R)</th>
+                                    <th class="bb-odds-num">Impl (L)</th>
+                                    <th class="bb-odds-num">Impl (R)</th>
+                                    <th class="bb-odds-num">Margin</th>
                                 </tr>
-                              </thead>                              
+                            </thead>
 
                             <tbody>
                                 <ng-container *ngFor="let r of latestOddsByBookie">
@@ -1124,14 +1124,14 @@
                                                 <table class="bb-odds-table bb-odds-history-table">
                                                     <thead>
                                                         <tr>
-                                                          <th>Bookie</th>
-                                                          <th class="bb-odds-num">Odds (L)</th>
-                                                          <th class="bb-odds-num">Odds (R)</th>
-                                                          <th class="bb-odds-num">Impl (L)</th>
-                                                          <th class="bb-odds-num">Impl (R)</th>
-                                                          <th class="bb-odds-num">Margin</th>
+                                                            <th>Bookie</th>
+                                                            <th class="bb-odds-num">Odds (L)</th>
+                                                            <th class="bb-odds-num">Odds (R)</th>
+                                                            <th class="bb-odds-num">Impl (L)</th>
+                                                            <th class="bb-odds-num">Impl (R)</th>
+                                                            <th class="bb-odds-num">Margin</th>
                                                         </tr>
-                                                      </thead>                                                      
+                                                    </thead>
                                                     <tbody>
                                                         <tr *ngFor="let h of bookieHistory(r.o01)">
                                                             <td class="bb-th-left">
