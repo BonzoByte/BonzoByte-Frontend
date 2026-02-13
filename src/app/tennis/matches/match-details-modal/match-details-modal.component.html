@@ -554,17 +554,17 @@
 
                                     <!-- Match date line -->
                                     <line *ngIf="cm.matchX !== null" [attr.x1]="cm.matchX" [attr.x2]="cm.matchX"
-                                        [attr.y1]="chartPad" [attr.y2]="chartHeight-chartPad"
+                                        [attr.y1]="chartPad" [attr.y2]="20 + chartHeight-chartPad"
                                         stroke="rgba(255,255,255,0.22)" stroke-dasharray="4 4"></line>
 
                                     <!-- Match date label -->
                                     <g *ngIf="cm.matchX !== null">
-                                        <text [attr.x]="cm.matchX" [attr.y]="chartPad - 12" text-anchor="middle"
+                                        <text [attr.x]="cm.matchX" [attr.y]="20 + chartPad - 12" text-anchor="middle"
                                             font-size="10" fill="rgba(255,255,255,0.75)">
                                             Match date
                                         </text>
 
-                                        <text [attr.x]="cm.matchX" [attr.y]="chartPad - 24" text-anchor="middle"
+                                        <text [attr.x]="cm.matchX" [attr.y]="20 + chartPad - 24" text-anchor="middle"
                                             font-size="12" fill="rgba(255,255,255,0.55)">
                                             {{ raw?.['m003'] | date:'dd.MM.yyyy' }}
                                         </text>
@@ -673,17 +673,17 @@
 
                                     <!-- Match date line -->
                                     <line *ngIf="cm.matchX !== null" [attr.x1]="cm.matchX" [attr.x2]="cm.matchX"
-                                        [attr.y1]="chartPad" [attr.y2]="chartHeight-chartPad"
+                                        [attr.y1]="chartPad" [attr.y2]="20 + chartHeight-chartPad"
                                         stroke="rgba(255,255,255,0.22)" stroke-dasharray="4 4"></line>
 
                                     <!-- Match date label -->
                                     <g *ngIf="cm.matchX !== null">
-                                        <text [attr.x]="cm.matchX" [attr.y]="chartPad - 8" text-anchor="middle"
+                                        <text [attr.x]="cm.matchX" [attr.y]="20 + chartPad - 8" text-anchor="middle"
                                             font-size="10" fill="rgba(255,255,255,0.75)">
                                             Match date
                                         </text>
 
-                                        <text [attr.x]="cm.matchX" [attr.y]="chartPad - 20" text-anchor="middle"
+                                        <text [attr.x]="cm.matchX" [attr.y]="20 + chartPad - 20" text-anchor="middle"
                                             font-size="12" fill="rgba(255,255,255,0.55)">
                                             {{ raw?.['m003'] | date:'dd.MM.yyyy' }}
                                         </text>
