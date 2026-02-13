@@ -563,11 +563,6 @@
                                             font-size="10" fill="rgba(255,255,255,0.75)">
                                             Match date
                                         </text>
-
-                                        <text [attr.x]="cm.matchX" [attr.y]="20 + chartPad - 24" text-anchor="middle"
-                                            font-size="12" fill="rgba(255,255,255,0.55)">
-                                            {{ raw?.['m003'] | date:'dd.MM.yyyy' }}
-                                        </text>
                                     </g>
 
                                     <!-- Series lines -->
@@ -681,11 +676,6 @@
                                         <text [attr.x]="cm.matchX" [attr.y]="20 + chartPad - 8" text-anchor="middle"
                                             font-size="10" fill="rgba(255,255,255,0.75)">
                                             Match date
-                                        </text>
-
-                                        <text [attr.x]="cm.matchX" [attr.y]="20 + chartPad - 20" text-anchor="middle"
-                                            font-size="12" fill="rgba(255,255,255,0.55)">
-                                            {{ raw?.['m003'] | date:'dd.MM.yyyy' }}
                                         </text>
                                     </g>
 
