@@ -1,9 +1,10 @@
 export const environment = {
     production: true,
-
-    apiUrl: 'https://bonzobyte-gnif.onrender.com/api',
-
+  
+    apiUrl: 'https://bonzobyte-backend.onrender.com/api',
+  
     archivesMode: 'api',
-    apiBase: 'https://bonzobyte-gnif.onrender.com/api/archives',
-    dailyStaticBase: ''
-};
+    apiBase: 'https://bonzobyte-backend.onrender.com/api/archives',
+    dailyStaticBase: '',
+  };
+  
