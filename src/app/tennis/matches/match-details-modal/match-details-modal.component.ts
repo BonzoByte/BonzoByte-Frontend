@@ -595,7 +595,7 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
     // Constructor / lifecycle
     // -----------------------------------------------------------------------------------------------
 
-    constructor(private staticArchives: StaticArchivesService, private cdr: ChangeDetectorRef, private archives: StaticArchivesService) { }
+    constructor(private staticArchives: StaticArchivesService, private cdr: ChangeDetectorRef) { }
 
     ngOnInit(): void {
         console.log('[MODAL] ngOnInit', { isOpen: this.isOpen, matchTPId: this.match?.matchTPId });
@@ -890,24 +890,24 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
 
     playerAvatarFallbackUrl(): string {
         // koristi service helper (apiBase je /api/archives)
-        return this.archives.getDefaultPlayerPhotoUrl(this.genderHint === 'W' ? 'W' : 'M');
+        return this.staticArchives.getDefaultPlayerPhotoUrl(this.genderHint === 'W' ? 'W' : 'M');
     }
 
     playerAvatarUrlById(tpId?: number): string {
-        if (!tpId) return this.archives.getDefaultPlayerPhotoUrl(this.genderHint === 'W' ? 'W' : 'M');
-        return this.archives.getPlayerPhotoUrl(tpId);
+        if (!tpId) return this.staticArchives.getDefaultPlayerPhotoUrl(this.genderHint === 'W' ? 'W' : 'M');
+        return this.staticArchives.getPlayerPhotoUrl(tpId);
     }
 
     private initAvatar(tpId?: number): void {
         if (!tpId) return;
         this.avatarFailed.delete(tpId);
-        this.avatarUrl.set(tpId, this.archives.getPlayerPhotoUrl(tpId));
+        this.avatarUrl.set(tpId, this.staticArchives.getPlayerPhotoUrl(tpId));
     }
 
     onAvatarError(tpId?: number): void {
         // kad faila player slika, prebaci na default
         if (!tpId) return;
-        this.avatarUrl.set(tpId, this.archives.getDefaultPlayerPhotoUrl(this.genderHint === 'W' ? 'W' : 'M'));
+        this.avatarUrl.set(tpId, this.staticArchives.getDefaultPlayerPhotoUrl(this.genderHint === 'W' ? 'W' : 'M'));
     }
 
     // =================================================================================================
@@ -1541,16 +1541,35 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
         return [...byDay.values()].sort((a, b) => Date.parse(a.d) - Date.parse(b.d));
     }
 
+    private unwrapTsResponse(resp: any): any {
+        // backend: { ok, playerTPId, data: { p, s } }
+        if (resp && typeof resp === 'object') {
+            if (resp.data && resp.data.s) return resp.data;
+            if (resp.s) return resp; // already unwrapped
+        }
+        return null;
+    }
+
     private getTsHistoryCached$(playerId: number): Observable<any> {
         const cached = this.tsHistCache.get(playerId);
         if (cached) return of(cached);
 
         return this.staticArchives.getTsHistory(playerId).pipe(
             map((resp: any) => {
-                // ✅ backend returns { ok, playerTPId, data }
-                const data = resp?.data ?? resp; // tolerate old shapes
+                const data = this.unwrapTsResponse(resp);
+
+                // 🔥 debug (privremeno, ali sad nam je zlato)
+                console.log('[TS] getTsHistoryCached$ resp keys', Object.keys(resp ?? {}));
+                console.log('[TS] getTsHistoryCached$ unwrapped has s?', !!data?.s);
+
+                if (!data?.s) return null;
+
                 this.tsHistCache.set(playerId, data);
                 return data;
+            }),
+            catchError((err) => {
+                console.error('[TS] getTsHistoryCached$ failed', playerId, err);
+                return of(null);
             })
         );
     }
