@@ -442,24 +442,6 @@ main {
      Global loading overlay (shared utility)
   ---------------------------- */
 
-.bb-backdrop {
-    position: fixed;
-    inset: 0;
-    z-index: 1000;
-    background: rgba(10, 12, 16, 0.55);
-    backdrop-filter: blur(8px);
-}
-
-.bb-shell {
-    position: fixed;
-    inset: 0;
-    z-index: 1001;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 18px;
-}
-
 .bb-loading-overlay {
     position: fixed;
     inset: 0;
@@ -1195,25 +1177,25 @@ body.modal-open {
 
 .bb-odds-table th.bb-th-num,
 .bb-odds-table th.bb-odds-num {
-    text-align: right;
+  text-align: right;
 }
 
 .bb-odds-table th.bb-th-left {
-    text-align: right;
+  text-align: right;
 }
 
 .bb-odds-table td.bb-odds-num {
-    text-align: right;
+  text-align: right;
 }
 
 .bb-odds-history-cell {
-    padding: 10px 12px;
+  padding: 10px 12px;
 }
 
 .bb-odds-history-title {
-    margin: 6px 0 8px 0;
+  margin: 6px 0 8px 0;
 }
 
 .bb-odds-history-table {
-    margin-top: 6px;
+  margin-top: 6px;
 }
