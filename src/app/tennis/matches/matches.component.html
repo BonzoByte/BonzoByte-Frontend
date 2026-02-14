@@ -163,7 +163,15 @@
                             </td>
 
                             <td class="col-center">
-                                <small class="details-link" (click)="openDetails(match)">Details</small>
+                                <small class="details-link" [class.locked]="isDetailsLocked(match)"
+                                    (click)="openDetails(match)"
+                                    [title]="isDetailsLocked(match) ? 'Locked' : 'Open details'">
+
+                                    <ng-container *ngIf="isDetailsLocked(match); else detailsText">
+                                        🔒
+                                    </ng-container>
+                                    <ng-template #detailsText>Details</ng-template>
+                                </small>
                             </td>
                         </tr>
                     </tbody>

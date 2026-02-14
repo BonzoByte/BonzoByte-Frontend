@@ -396,9 +396,28 @@
         <div class="bb-body">
             <div class="bb-loading" *ngIf="loading">Loading…</div>
 
-            <!-- Error state -->
-            <div class="bb-error" *ngIf="!loading && error">
-                <div class="bb-error-title">Could not load match details</div>
+            <!-- LOCKED state -->
+            <div class="bb-locked" *ngIf="!loading && isLocked && locked">
+                <div class="bb-locked-title">🔒 Match details are locked</div>
+
+                <div class="bb-locked-msg">
+                    Unlocks at: <b>{{ lockedUntilText() }}</b>
+                    <span *ngIf="locked.lockHours"> ({{ locked.lockHours }}h before start)</span>
+                </div>
+
+                <div class="bb-locked-actions">
+                    <button class="bb-btn" (click)="openPricing()">Unlock details</button>
+                    <button class="bb-btn bb-btn-ghost" (click)="openLogin()">Login</button>
+                </div>
+
+                <div class="bb-locked-hint">
+                    New users get a 7-day trial. Extend trial by inviting a new user.
+                </div>
+            </div>
+
+            <!-- Generic error state (only once) -->
+            <div class="bb-error" *ngIf="!loading && !isLocked && error">
+                <div class="bb-error-title">Error</div>
                 <div class="bb-error-msg">{{ error }}</div>
                 <button class="bb-btn" (click)="load()">Retry</button>
             </div>

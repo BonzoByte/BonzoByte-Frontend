@@ -1177,25 +1177,34 @@ body.modal-open {
 
 .bb-odds-table th.bb-th-num,
 .bb-odds-table th.bb-odds-num {
-  text-align: right;
+    text-align: right;
 }
 
 .bb-odds-table th.bb-th-left {
-  text-align: right;
+    text-align: right;
 }
 
 .bb-odds-table td.bb-odds-num {
-  text-align: right;
+    text-align: right;
 }
 
 .bb-odds-history-cell {
-  padding: 10px 12px;
+    padding: 10px 12px;
 }
 
 .bb-odds-history-title {
-  margin: 6px 0 8px 0;
+    margin: 6px 0 8px 0;
 }
 
 .bb-odds-history-table {
-  margin-top: 6px;
+    margin-top: 6px;
+}
+
+.details-link.locked {
+    opacity: 0.85;
+    cursor: pointer;
+}
+
+.details-link.locked:hover {
+    opacity: 1;
 }

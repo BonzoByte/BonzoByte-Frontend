@@ -86,6 +86,14 @@ type ChartTooltip = {
 
 type MatchDetailsRaw = Record<string, any>;
 
+type DetailsLockedError = {
+    code: 'DETAILS_LOCKED';
+    unlocksAt: string;
+    expectedStartUtc: string;
+    lockHours: number;
+    message?: string;
+};
+
 // =================================================================================================
 // PURE HELPERS (safe reads + minified key generators)
 // -------------------------------------------------------------------------------------------------
@@ -482,6 +490,9 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
     activeOddsSeries = 0;
     showSuspiciousOnly = false;
 
+    isLocked = false;
+    locked: DetailsLockedError | null = null;
+
     // -----------------------------------------------------------------------------------------------
     // UI option lists (label is for UI, value is for logic)
     // -----------------------------------------------------------------------------------------------
@@ -617,6 +628,13 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
 
     close(): void {
         this.isOpen = false;
+        this.loading = false;
+        this.error = null;
+        this.isLocked = false;
+        this.locked = null;
+        this.raw = null;
+        this.vm = null;
+        this._details = null;
         this.closed.emit();
         this.detailsSub?.unsubscribe();
         this.detailsSub = undefined;
@@ -665,6 +683,7 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
 
         const match = this.match;
         const matchTPId = match?.matchTPId;
+        this.isLocked = false;
 
         if (!match || !matchTPId) {
             this.loading = false;
@@ -704,12 +723,26 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
             error: (err) => {
                 this.loading = false;
 
-                if (err?.code === 'DETAILS_LOCKED') {
-                    const unlockLocal = new Date(err.unlocksAt).toLocaleString();
-                    this.error = `Details locked until ${unlockLocal}`;
+                const lockedPayload =
+                    (err?.code === 'DETAILS_LOCKED' ? err : null) ||
+                    (err?.error?.code === 'DETAILS_LOCKED' ? err.error : null);
+
+                if (lockedPayload) {
+                    this.isLocked = true;
+                    this.locked = lockedPayload as DetailsLockedError;
+
+                    // Nemoj koristiti "error" string ovdje — to je generički error state
+                    this.error = null;
+                    this.raw = null;
+                    this.vm = null;
+                    this._details = null;
+
                     this.cdr.markForCheck();
                     return;
                 }
+
+                this.isLocked = false;
+                this.locked = null;
 
                 this.error = 'Could not load match details.';
                 this.cdr.markForCheck();
@@ -780,6 +813,24 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
     plRight(vm: Vm): string {
         if (typeof vm.pl !== 'number' || !isFinite(vm.pl)) return '';
         return vm.pl < 0 ? vm.pl.toFixed(2) : '';
+    }
+
+    lockedUntilText(): string {
+        const iso = this.locked?.unlocksAt;
+        if (!iso) return '';
+        try {
+            return new Date(iso).toLocaleString();
+        } catch { return iso; }
+    }
+
+    openPricing(): void {
+        // kasnije: otvori pricing modal ili route /pricing
+        alert('Pricing/Unlock flow coming next 🙂');
+    }
+
+    openLogin(): void {
+        // kasnije: otvori login modal
+        alert('Login flow coming next 🙂');
     }
 
     // =================================================================================================
@@ -889,13 +940,13 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
         if (!tpId) return this.staticArchives.getDefaultPlayerPhotoUrl(this.genderHint);
         // šaljemo gender hint kao query param da backend zna koji default vratiti kad nema slike
         return this.staticArchives.getPlayerPhotoUrl(tpId, this.genderHint);
-      }
+    }
 
     onAvatarError(ev: Event): void {
         const img = ev.target as HTMLImageElement;
         img.src = this.staticArchives.getDefaultPlayerPhotoUrl(this.genderHint === 'W' ? 'W' : 'M');
-      }
-      
+    }
+
 
     // =================================================================================================
     // PERFORMANCE TAB (W/L metrics)

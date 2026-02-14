@@ -1764,4 +1764,26 @@ export class MatchesComponent implements OnInit, OnDestroy {
     private hasValueBet(match: Match): boolean {
         return this.getBetSide(match).side != null;
     }
+
+    isDetailsLocked(m: Match): boolean {
+        if (!m) return true;
+
+        // finished -> unlocked
+        const finVal: any = (m as any)?.isFinished ?? (m as any)?.l03;
+        const finished = finVal === true || finVal === 1 || finVal === '1' || finVal === 'true';
+        if (finished) return false;
+
+        // privileged -> unlocked
+        const u = this.auth.getUser();
+        const ent: any = (u as any)?.entitlements;
+        const privileged = !!(u?.isAdmin || ent?.isPremium || ent?.hasTrial);
+        if (privileged) return false;
+
+        // free/guest -> lock window
+        const dt = m.dateTime ? new Date(m.dateTime as any) : null;
+        if (!dt || isNaN(dt.getTime())) return false; // fail-open
+
+        const unlockMs = dt.getTime() - 2 * 60 * 60 * 1000;
+        return Date.now() < unlockMs;
+    }
 }
