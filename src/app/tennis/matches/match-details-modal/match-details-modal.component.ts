@@ -576,6 +576,7 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
         return d?.p2?.p01 ?? d?.p2?.name ?? 'P2';
     }
 
+    private authSub?: Subscription;
 
     // -----------------------------------------------------------------------------------------------
     // TS history state (cached + merged for charts)
@@ -611,8 +612,14 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
     constructor(public staticArchives: StaticArchivesService, private auth: AuthService, private cdr: ChangeDetectorRef) { }
 
     ngOnInit(): void {
-        console.log('[MODAL] ngOnInit', { isOpen: this.isOpen, matchTPId: this.match?.matchTPId });
-    }
+        this.authSub = this.auth.user$.subscribe(() => {
+          // ako smo locked i modal je otvoren -> retry
+          if (this.isOpen && this.match?.matchTPId && this.isLocked) {
+            console.log('[LOCKED] auth changed -> retry load');
+            this.load();
+          }
+        });
+      }
 
     ngOnChanges(): void {
         if (this.isOpen && this.match?.matchTPId) {
@@ -622,7 +629,8 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
 
     ngOnDestroy(): void {
         this.detailsSub?.unsubscribe();
-    }
+        this.authSub?.unsubscribe();
+      }
 
     // =================================================================================================
     // PUBLIC UI ACTIONS
@@ -725,25 +733,29 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
             error: (err) => {
                 this.loading = false;
 
-                const payload = err; // kod tebe već dolazi payload (jer service throwa err.error)
-                console.log('[DETAILS ERROR PAYLOAD]', { err, payload });
+                // StaticArchivesService već prosljeđuje err.error kao "err" često,
+                // ali nek bude robustno:
+                const payload = (err && typeof err === 'object' && 'error' in err) ? (err as any).error : err;
 
-                // reset
-                this.isLocked = false;
-                this.locked = null;
-                this.error = null;
+                console.log('[DETAILS ERROR PAYLOAD]', { err, payload });
 
                 if (payload?.code === 'DETAILS_LOCKED') {
                     this.isLocked = true;
                     this.locked = payload as DetailsLockedError;
 
-                    // nemoj koristiti error UI; koristimo locked UI
+                    const unlockLocal = payload.unlocksAt ? new Date(payload.unlocksAt).toLocaleString() : '';
+                    this.error = unlockLocal ? `Details locked until ${unlockLocal}` : `Details are locked.`;
+
                     this.cdr.markForCheck();
                     return;
                 }
 
+                // fallback
+                this.isLocked = false;
+                this.locked = null;
                 this.error = 'Could not load match details.';
                 this.cdr.markForCheck();
+                console.error(err);
             }
         });
     }
@@ -2795,18 +2807,32 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
 
     openLogin(): void {
         console.log('[LOCKED CTA] openLogin clicked');
-        this.close(); // bitno: zatvori details modal
         window.dispatchEvent(new CustomEvent('openLogin'));
     }
 
     openRegister(): void {
         console.log('[LOCKED CTA] openRegister clicked');
-        this.close();
-        window.dispatchEvent(new CustomEvent('switchToRegister'));
+        // tvoj header već sluša switchToRegister ili openLogin
+        // najčišće: direktno otvori register
+        window.dispatchEvent(new CustomEvent('openRegister'));
     }
 
     openUpgrade(): void {
-        this.close();
+        console.log('[LOCKED CTA] openBilling clicked');
         window.dispatchEvent(new CustomEvent('openBilling'));
-      }      
+    }
+
+    get user() {
+        return this.auth.getUser(); // <-- ovo je funkcija kod tebe
+    }
+
+    get ent() {
+        return this.auth.getUser()?.entitlements ?? null;
+    }
+    get hasTrial(): boolean {
+        return !!this.ent?.hasTrial;
+    }
+    get isPremium(): boolean {
+        return !!this.ent?.isPremium;
+    }
 }

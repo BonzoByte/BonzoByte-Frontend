@@ -397,21 +397,28 @@
             <div class="bb-loading" *ngIf="loading">Loading…</div>
 
             <!-- LOCKED state -->
-            <div class="bb-locked" *ngIf="!loading && isLocked && locked as l">
-                <div class="bb-error-title">🔒 Match details are locked</div>
-                <div class="bb-error-msg">
-                    {{ l.message }} <br />
-                    Unlocks at: {{ l.unlocksAt | date:'dd.MM.yyyy HH:mm' }}
-                </div>
+            <div class="bb-error" *ngIf="!loading && error">
+                <div class="bb-error-title">Could not load match details</div>
+                <div class="bb-error-msg">{{ error }}</div>
 
-                <div class="bb-actions">
+                <div class="bb-actions" *ngIf="isLocked; else genericErr">
                     <button class="bb-btn" (click)="close()">Close</button>
 
                     <button class="bb-btn" *ngIf="!isLoggedIn" (click)="openLogin()">Login</button>
                     <button class="bb-btn" *ngIf="!isLoggedIn" (click)="openRegister()">Start free trial</button>
 
-                    <button class="bb-btn" *ngIf="isLoggedIn" (click)="openUpgrade()">See plans</button>
+                    <button class="bb-btn" *ngIf="isLoggedIn && !hasTrial && !isPremium" (click)="openUpgrade()">
+                        Unlock details
+                    </button>
+
+                    <button class="bb-btn" *ngIf="isLoggedIn && (hasTrial || isPremium)" (click)="load()">
+                        Retry (should unlock)
+                    </button>
                 </div>
+
+                <ng-template #genericErr>
+                    <button class="bb-btn" (click)="load()">Retry</button>
+                </ng-template>
             </div>
 
             <!-- Error state (samo za prave greške) -->
