@@ -13,6 +13,7 @@ import { StaticArchivesService } from '../../core/services/static-archives.servi
 import { AuthService } from 'src/app/core/services/auth.service';
 import { Subject, Subscription, Observable, of } from 'rxjs';
 import { catchError, debounceTime, distinctUntilChanged, map, takeUntil } from 'rxjs/operators';
+import { TimeScale } from 'chart.js';
 
 interface BootstrapDatesResult {
     dates: string[];
@@ -93,22 +94,45 @@ export class MatchesComponent implements OnInit, OnDestroy {
     private authSub?: Subscription;
 
     onDetailsRequestLogin(): void {
-        console.log('[PARENT] onDetailsRequestLogin');
-        // koristi global header logiku
+        console.log('[PARENT] requestLogin');
+        this.closeDetailsModal();
+        this.openLoginModal();
+    }
+
+
+    onDetailsRequestRegister(): void {
+        console.log('[PARENT] requestRegister');
+        this.closeDetailsModal();
+        this.openRegisterModal();
+    }
+
+    onDetailsRequestUpgrade(): void {
+        console.log('[PARENT] requestUpgrade');
+        this.closeDetailsModal();
+        this.openBillingModal();
+    }
+
+    openLoginModal(): void {
+        // Header sluša "openLogin"
         window.dispatchEvent(new CustomEvent('openLogin'));
-      }
-      
-      onDetailsRequestRegister(): void {
-        console.log('[PARENT] onDetailsRequestRegister');
-        // direktno otvori register (napravi event kao i za login)
-        window.dispatchEvent(new CustomEvent('openRegister'));
-      }
-      
-      onDetailsRequestUpgrade(): void {
-        console.log('[PARENT] onDetailsRequestUpgrade');
-        // placeholder za billing modal / pricing
-        //this.openBillingModal();
-      }
+    }
+
+    openRegisterModal(): void {
+        // Header NE sluša "openRegister", ali sluša switchToRegister handler
+        // Najjednostavnije: re-use postojeći event koji već imaš:
+        window.dispatchEvent(new CustomEvent('switchToRegister'));
+    }
+
+    openBillingModal(): void {
+        console.log('[BILLING] openBillingModal (TODO modal)');
+        // kasnije: window.dispatchEvent(new CustomEvent('openBilling'));
+    }
+
+    private closeDetailsModal(): void {
+        this.isDetailsOpen = false;
+        this.selectedMatchTPId = null;
+        this.selectedMatch = null;
+    }
 
     @ViewChild('dateInput') dateInputRef!: ElementRef<HTMLInputElement>
     @HostListener('document:click', ['$event'])
