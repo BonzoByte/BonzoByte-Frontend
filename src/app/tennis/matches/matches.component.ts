@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { CommonModule } from '@angular/common';
 import { Component, ElementRef, HostListener, Input, OnDestroy, OnInit, ViewChild, ViewEncapsulation } from '@angular/core';
@@ -10,8 +11,14 @@ import { MatchFilterModalComponent } from "./match-filter-modal/match-filter-mod
 import { MatchDetailsModalComponent } from "../matches/match-details-modal/match-details-modal.component";
 import { StaticArchivesService } from '../../core/services/static-archives.service';
 import { AuthService } from 'src/app/core/services/auth.service';
-import { Subject } from 'rxjs';
-import { catchError, debounceTime, distinctUntilChanged, map, take } from 'rxjs/operators';
+import { Subject, Subscription, Observable, of } from 'rxjs';
+import { catchError, debounceTime, distinctUntilChanged, map, takeUntil } from 'rxjs/operators';
+
+interface BootstrapDatesResult {
+    dates: string[];
+    min: Date;
+    max: Date;
+}
 
 @Component({
     selector: 'app-matches',
@@ -83,8 +90,25 @@ export class MatchesComponent implements OnInit, OnDestroy {
         requestAnimationFrame(() => requestAnimationFrame(() => this.scrollToTop()));
     }
 
-    private pendingDetailsMatchTPId: number | null = null;
-    private authSub?: any;
+    private authSub?: Subscription;
+
+    onDetailsRequestLogin(): void {
+        console.log('[PARENT] onDetailsRequestLogin');
+        // koristi global header logiku
+        window.dispatchEvent(new CustomEvent('openLogin'));
+      }
+      
+      onDetailsRequestRegister(): void {
+        console.log('[PARENT] onDetailsRequestRegister');
+        // direktno otvori register (napravi event kao i za login)
+        window.dispatchEvent(new CustomEvent('openRegister'));
+      }
+      
+      onDetailsRequestUpgrade(): void {
+        console.log('[PARENT] onDetailsRequestUpgrade');
+        // placeholder za billing modal / pricing
+        //this.openBillingModal();
+      }
 
     @ViewChild('dateInput') dateInputRef!: ElementRef<HTMLInputElement>
     @HostListener('document:click', ['$event'])
@@ -192,63 +216,29 @@ export class MatchesComponent implements OnInit, OnDestroy {
         return Number.isFinite(n) ? n : null;
     }
 
-    /**
- * Pokuša dohvatiti dostupne datume iz arhiva, a ako faila, fallback na daily index.
- * Vraća normaliziran objekt: {dates, min, max}
- */
-    private loadDatesAndBootstrap() {
-        return this.staticArchives.getAvailableDates().pipe(
-            map((dates: string[]) => {
-                if (!Array.isArray(dates) || dates.length === 0) {
-                    throw new Error('available-dates returned empty list');
-                }
-
-                return {
-                    dates,
-                    min: new Date(dates[0]),
-                    max: new Date(dates[dates.length - 1]),
-                };
-            }),
-            catchError((err) => {
-                console.warn('⚠️ Failed to load available-dates, falling back to daily index.json', err);
-
-                return this.staticArchives.getDailyIndex().pipe(
-                    map((idx: any) => {
-                        const minIso = idx?.minDate;
-                        const maxIso = idx?.maxDate ?? this.toIsoToday();
-
-                        if (!minIso) throw new Error('daily index missing minDate');
-
-                        const dates: string[] = []; // fallback nema listu dana — ostavi prazno
-                        return {
-                            dates,
-                            min: new Date(minIso),
-                            max: new Date(maxIso),
-                        };
-                    })
-                );
-            })
-        );
-    }
+    private readonly destroy$ = new Subject<void>();
 
     ngOnInit(): void {
         console.log('ngOnInit start');
+
         document.addEventListener('keydown', this.escHandler);
 
         // ✅ Search debounce pipeline
         this.search$
-            .pipe(debounceTime(200), distinctUntilChanged())
+            .pipe(
+                debounceTime(200),
+                distinctUntilChanged(),
+                takeUntil(this.destroy$)
+            )
             .subscribe(() => this.applyActiveFiltersToCurrentDay());
 
         this.loading = true;
 
         this.loadDatesAndBootstrap()
-            .pipe(take(1))
+            .pipe(takeUntil(this.destroy$))
             .subscribe({
                 next: ({ dates, min, max }) => {
-                    // dates su "YYYY-MM-DD" ASC
                     this.availableDates = dates;
-
                     this.minDate = min;
                     this.maxDate = max;
 
@@ -263,11 +253,13 @@ export class MatchesComponent implements OnInit, OnDestroy {
                         max: dates[dates.length - 1],
                     });
 
+                    // loadMatchesForDate sam upravlja loading state-om
                     this.loadMatchesForDate(this.currentDate);
                 },
                 error: (err) => {
                     console.error('❌ Failed to bootstrap dates:', err);
                     this.loading = false;
+                    document.body.classList.remove('bb-noscroll');
                 }
             });
     }
@@ -276,6 +268,52 @@ export class MatchesComponent implements OnInit, OnDestroy {
         document.removeEventListener('keydown', this.escHandler);
         this.search$.complete();
         this.authSub?.unsubscribe?.();
+        this.destroy$.next();
+        this.destroy$.complete();
+    }
+
+    // ===========================================================================================
+    // Bootstrap dates: primary = available-dates; fallback = daily index.json
+    // ===========================================================================================
+    private loadDatesAndBootstrap(): Observable<BootstrapDatesResult> {
+        return this.staticArchives.getAvailableDates().pipe(
+            map((dates: string[]) => {
+                if (!Array.isArray(dates) || dates.length === 0) {
+                    throw new Error('available-dates returned empty list');
+                }
+
+                const min = new Date(dates[0]);
+                const max = new Date(dates[dates.length - 1]);
+
+                if (isNaN(min.getTime()) || isNaN(max.getTime())) {
+                    throw new Error('available-dates returned invalid date strings');
+                }
+
+                return { dates, min, max };
+            }),
+            catchError((err) => {
+                console.warn('⚠️ Failed to load available-dates, falling back to daily index.json', err);
+
+                return this.staticArchives.getDailyIndex().pipe(
+                    map((idx: any) => {
+                        const minIso = idx?.minDate;
+                        const maxIso = idx?.maxDate ?? this.toIsoToday();
+
+                        const min = new Date(minIso);
+                        const max = new Date(maxIso);
+
+                        if (isNaN(min.getTime()) || isNaN(max.getTime())) {
+                            throw new Error('daily index.json returned invalid min/max date');
+                        }
+
+                        // minimalna lista da UI ne pukne
+                        const dates = [minIso, maxIso].filter(Boolean);
+
+                        return { dates, min, max };
+                    })
+                );
+            })
+        );
     }
 
     formatDate(date: Date): string {
@@ -1799,36 +1837,5 @@ export class MatchesComponent implements OnInit, OnDestroy {
 
         const unlockMs = dt.getTime() - 2 * 60 * 60 * 1000;
         return Date.now() < unlockMs;
-    }
-
-    onDetailsRequestLogin(): void {
-        console.log('[PARENT] details requested login');
-        this.pendingDetailsMatchTPId = this.selectedMatchTPId ?? null;
-
-        // zatvori details
-        this.onDetailsClosed();
-
-        // koristi postojeći header global hook
-        window.dispatchEvent(new CustomEvent('openLogin'));
-    }
-
-    onDetailsRequestRegister(): void {
-        console.log('[PARENT] details requested register');
-        this.pendingDetailsMatchTPId = this.selectedMatchTPId ?? null;
-
-        this.onDetailsClosed();
-
-        // ako nemaš global event za register, dodaj ga (vidi dolje)
-        window.dispatchEvent(new CustomEvent('openRegister'));
-    }
-
-    onDetailsRequestUpgrade(): void {
-        console.log('[PARENT] details requested upgrade');
-        this.pendingDetailsMatchTPId = this.selectedMatchTPId ?? null;
-
-        this.onDetailsClosed();
-
-        // za sad: otvori billing modal ili redirect
-        //this.openBillingModal();
     }
 }
