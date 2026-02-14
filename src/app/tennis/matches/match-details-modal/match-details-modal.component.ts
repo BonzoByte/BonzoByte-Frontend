@@ -87,10 +87,11 @@ type ChartTooltip = {
 type MatchDetailsRaw = Record<string, any>;
 
 type DetailsLockedError = {
+    status: 'error';
     code: 'DETAILS_LOCKED';
-    unlocksAt: string;
-    expectedStartUtc: string;
     lockHours: number;
+    expectedStartUtc: string;
+    unlocksAt: string;
     message?: string;
 };
 
@@ -724,38 +725,25 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
             error: (err) => {
                 this.loading = false;
 
-                const payload = this.unwrapHttpError(err);
+                const payload = err; // kod tebe već dolazi payload (jer service throwa err.error)
                 console.log('[DETAILS ERROR PAYLOAD]', { err, payload });
 
                 // reset
                 this.isLocked = false;
                 this.locked = null;
-                this.lockedPayload = null;
+                this.error = null;
 
                 if (payload?.code === 'DETAILS_LOCKED') {
                     this.isLocked = true;
-
-                    // tip-safe: spremi baš kao DetailsLockedError
                     this.locked = payload as DetailsLockedError;
-                    this.lockedPayload = payload;
 
-                    const unlockLocal = payload.unlocksAt
-                        ? new Date(payload.unlocksAt).toLocaleString()
-                        : '';
-
-                    this.error = unlockLocal
-                        ? `Details are locked until ${unlockLocal}.`
-                        : `Details are locked.`;
-
+                    // nemoj koristiti error UI; koristimo locked UI
                     this.cdr.markForCheck();
                     return;
                 }
 
-                const msg = payload?.message || payload?.error?.message || null;
-                this.error = msg ? String(msg) : 'Could not load match details.';
-
+                this.error = 'Could not load match details.';
                 this.cdr.markForCheck();
-                console.error('[DETAILS ERROR]', err);
             }
         });
     }

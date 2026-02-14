@@ -163,18 +163,14 @@
                             </td>
 
                             <td class="col-center">
-                                <small class="details-link" [class.locked]="isDetailsLocked(match)"
-                                    (click)="openDetails(match)"
-                                    [title]="isDetailsLocked(match) ? 'Locked' : 'Open details'">
+                                <ng-container *ngIf="match.isFinished; else lockedTpl">
+                                    <small class="details-link" (click)="openDetails(match)">Details</small>
+                                </ng-container>
 
-                                    <ng-container *ngIf="isDetailsLocked(match); else detailsText">
-                                        <div class="bb-locked-title">
-                                            <span>🔒</span>
-                                            <span>Match details are locked</span>
-                                        </div>
-                                    </ng-container>
-                                    <ng-template #detailsText>Details</ng-template>
-                                </small>
+                                <ng-template #lockedTpl>
+                                    <span class="lock-icon" (click)="openDetails(match)"
+                                        title="Details are locked">🔒</span>
+                                </ng-template>
                             </td>
                         </tr>
                     </tbody>
