@@ -76,6 +76,8 @@ export class MatchesComponent implements OnInit, OnDestroy {
     searchTerm = '';
     private search$ = new Subject<string>();
 
+    private pendingAfterDetailsClose: 'login' | 'register' | 'upgrade' | null = null;
+
     @Input() minDate!: Date;
     @Input() maxDate!: Date;
     availableDates: string[] = [];
@@ -95,21 +97,20 @@ export class MatchesComponent implements OnInit, OnDestroy {
 
     onDetailsRequestLogin(): void {
         console.log('[PARENT] requestLogin');
+        this.pendingAfterDetailsClose = 'login';
         this.closeDetailsModal();
-        this.openLoginModal();
     }
-
 
     onDetailsRequestRegister(): void {
         console.log('[PARENT] requestRegister');
+        this.pendingAfterDetailsClose = 'register';
         this.closeDetailsModal();
-        this.openRegisterModal();
     }
 
     onDetailsRequestUpgrade(): void {
         console.log('[PARENT] requestUpgrade');
+        this.pendingAfterDetailsClose = 'upgrade';
         this.closeDetailsModal();
-        this.openBillingModal();
     }
 
     openLoginModal(): void {
@@ -132,7 +133,7 @@ export class MatchesComponent implements OnInit, OnDestroy {
         this.isDetailsOpen = false;
         this.selectedMatchTPId = null;
         this.selectedMatch = null;
-    }
+      }      
 
     @ViewChild('dateInput') dateInputRef!: ElementRef<HTMLInputElement>
     @HostListener('document:click', ['$event'])
@@ -1644,11 +1645,29 @@ export class MatchesComponent implements OnInit, OnDestroy {
         this.isDetailsOpen = true;
     }
 
-    onDetailsClosed() {
+    onDetailsClosed(): void {
+        // safety: zatvori i očisti još jednom
         this.isDetailsOpen = false;
-        this.selectedMatch = null;
         this.selectedMatchTPId = null;
-    }
+        this.selectedMatch = null;
+      
+        const action = this.pendingAfterDetailsClose;
+        this.pendingAfterDetailsClose = null;
+      
+        if (!action) return;
+      
+        // otvori TEK kad je details zatvoren i maknut iz DOM-a
+        queueMicrotask(() => {
+          if (action === 'login') {
+            window.dispatchEvent(new CustomEvent('openLogin'));
+          } else if (action === 'register') {
+            window.dispatchEvent(new CustomEvent('switchToRegister'));
+          } else if (action === 'upgrade') {
+            console.log('[BILLING] openBillingModal (TODO)');
+            // kasnije: window.dispatchEvent(new CustomEvent('openBilling'));
+          }
+        });
+      }      
 
     // Bet simulation PL
     private parseDualNumbers(text?: string | null): [number | null, number | null] {
