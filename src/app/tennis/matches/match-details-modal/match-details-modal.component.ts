@@ -613,13 +613,13 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
 
     ngOnInit(): void {
         this.authSub = this.auth.user$.subscribe(() => {
-          // ako smo locked i modal je otvoren -> retry
-          if (this.isOpen && this.match?.matchTPId && this.isLocked) {
-            console.log('[LOCKED] auth changed -> retry load');
-            this.load();
-          }
+            // ako smo locked i modal je otvoren -> retry
+            if (this.isOpen && this.match?.matchTPId && this.isLocked) {
+                console.log('[LOCKED] auth changed -> retry load');
+                this.load();
+            }
         });
-      }
+    }
 
     ngOnChanges(): void {
         if (this.isOpen && this.match?.matchTPId) {
@@ -630,7 +630,7 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
     ngOnDestroy(): void {
         this.detailsSub?.unsubscribe();
         this.authSub?.unsubscribe();
-      }
+    }
 
     // =================================================================================================
     // PUBLIC UI ACTIONS
@@ -2801,10 +2801,6 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
         return this.getCurrentUser()?.entitlements ?? null;
     }
 
-    get isLoggedIn(): boolean {
-        return !!localStorage.getItem('token');
-    }
-
     openLogin(): void {
         console.log('[LOCKED CTA] openLogin clicked');
         window.dispatchEvent(new CustomEvent('openLogin'));
@@ -2823,15 +2819,21 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
     }
 
     get user() {
-        return this.auth.getUser(); // <-- ovo je funkcija kod tebe
+        return this.auth.getUser();
+    }
+
+    get isLoggedIn(): boolean {
+        return this.auth.isLoggedIn();
     }
 
     get ent() {
-        return this.auth.getUser()?.entitlements ?? null;
+        return this.auth.getEntitlements();
     }
+
     get hasTrial(): boolean {
         return !!this.ent?.hasTrial;
     }
+
     get isPremium(): boolean {
         return !!this.ent?.isPremium;
     }

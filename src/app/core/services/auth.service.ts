@@ -107,6 +107,14 @@ export class AuthService {
     setUser(u: User | null) { this._user$.next(u); }
     getUser(): User | null { return this._user$.value; }
 
+    isLoggedIn(): boolean {
+        return this._auth$.value === true && !!localStorage.getItem('token');
+    }
+
+    getEntitlements() {
+        return this._user$.value?.entitlements ?? null;
+    }
+
     loginWithGoogle(): void { window.location.href = `${environment.apiUrl}/auth/google`; }
     loginWithFacebook(): void { window.location.href = `${environment.apiUrl}/auth/facebook`; }
 
