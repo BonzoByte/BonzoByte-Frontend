@@ -96,7 +96,7 @@ export class MatchesComponent implements OnInit, OnDestroy {
         }
     }
     constructor(private staticArchives: StaticArchivesService,
-        private auth: AuthService,
+        public auth: AuthService,
         private translate: TranslateService,
         private appComponent: AppComponent) { }
 
