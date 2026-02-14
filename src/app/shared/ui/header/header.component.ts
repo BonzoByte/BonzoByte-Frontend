@@ -9,6 +9,7 @@ import { LoginComponent } from '../../../auth/login/login.component';
 import { RegisterComponent } from '../../../auth/register/register.component';
 import { User } from '../../../core/models/user.model';
 import { AuthService } from '../../../core/services/auth.service';
+import { BillingModalComponent } from '../../../billing/billing-modal/billing-modal.component';
 
 @Component({
     selector: 'app-header',
@@ -22,7 +23,8 @@ import { AuthService } from '../../../core/services/auth.service';
         RouterModule,
         RouterLink,
         NgbModalModule,
-        TranslateModule
+        TranslateModule,
+        BillingModalComponent
     ],
 })
 export class HeaderComponent implements OnInit, OnDestroy {

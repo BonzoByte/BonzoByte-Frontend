@@ -1261,3 +1261,94 @@ body.modal-open {
     opacity: 0.7;
     line-height: 1.4;
 }
+
+.bb-subtitle {
+    margin-top: 6px;
+    opacity: .85;
+    font-size: 13px;
+}
+
+.bb-plan-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 12px;
+}
+
+.bb-plan {
+    width: 100%;
+    text-align: left;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 10px;
+    padding: 12px;
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    cursor: pointer;
+}
+
+.bb-plan.active {
+    border-color: rgba(255, 255, 255, 0.35);
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.bb-plan-title {
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.bb-plan-meta {
+    margin-top: 4px;
+    font-size: 12px;
+    opacity: .85;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.bb-muted {
+    opacity: .85;
+}
+
+.bb-dot {
+    opacity: .6;
+}
+
+.bb-badge {
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    opacity: .9;
+}
+
+.bb-plan-price {
+    display: flex;
+    align-items: center;
+}
+
+.bb-eur {
+    font-weight: 700;
+    font-size: 16px;
+}
+
+.bb-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 14px;
+}
+
+.bb-btn-primary {
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    background: rgba(255, 255, 255, 0.10);
+}
+
+.bb-footnote {
+    margin-top: 10px;
+    font-size: 12px;
+    opacity: .7;
+}

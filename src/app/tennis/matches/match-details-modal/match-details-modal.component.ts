@@ -2806,8 +2806,7 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
     }
 
     openUpgrade(): void {
-        console.log('[LOCKED CTA] openUpgrade clicked');
         this.close();
         window.dispatchEvent(new CustomEvent('openBilling'));
-    }
+      }      
 }
