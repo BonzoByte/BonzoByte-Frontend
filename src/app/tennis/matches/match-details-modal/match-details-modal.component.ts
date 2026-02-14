@@ -492,6 +492,7 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
 
     isLocked = false;
     locked: DetailsLockedError | null = null;
+    lockedPayload: any | null = null;
 
     // -----------------------------------------------------------------------------------------------
     // UI option lists (label is for UI, value is for logic)
@@ -723,30 +724,38 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
             error: (err) => {
                 this.loading = false;
 
-                const lockedPayload =
-                    (err?.code === 'DETAILS_LOCKED' ? err : null) ||
-                    (err?.error?.code === 'DETAILS_LOCKED' ? err.error : null);
+                const payload = this.unwrapHttpError(err);
+                console.log('[DETAILS ERROR PAYLOAD]', { err, payload });
 
-                if (lockedPayload) {
+                // reset
+                this.isLocked = false;
+                this.locked = null;
+                this.lockedPayload = null;
+
+                if (payload?.code === 'DETAILS_LOCKED') {
                     this.isLocked = true;
-                    this.locked = lockedPayload as DetailsLockedError;
 
-                    // Nemoj koristiti "error" string ovdje — to je generički error state
-                    this.error = null;
-                    this.raw = null;
-                    this.vm = null;
-                    this._details = null;
+                    // tip-safe: spremi baš kao DetailsLockedError
+                    this.locked = payload as DetailsLockedError;
+                    this.lockedPayload = payload;
+
+                    const unlockLocal = payload.unlocksAt
+                        ? new Date(payload.unlocksAt).toLocaleString()
+                        : '';
+
+                    this.error = unlockLocal
+                        ? `Details are locked until ${unlockLocal}.`
+                        : `Details are locked.`;
 
                     this.cdr.markForCheck();
                     return;
                 }
 
-                this.isLocked = false;
-                this.locked = null;
+                const msg = payload?.message || payload?.error?.message || null;
+                this.error = msg ? String(msg) : 'Could not load match details.';
 
-                this.error = 'Could not load match details.';
                 this.cdr.markForCheck();
-                console.error(err);
+                console.error('[DETAILS ERROR]', err);
             }
         });
     }
@@ -831,6 +840,22 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
     openLogin(): void {
         // kasnije: otvori login modal
         alert('Login flow coming next 🙂');
+    }
+
+    private unwrapHttpError(err: any): any {
+        if (!err) return null;
+
+        // Ako interceptor već baca payload, to je već "pravo"
+        if (typeof err === 'object' && err.code) return err;
+
+        // Angular HttpErrorResponse shape: err.error je server payload
+        const maybeError = (err && typeof err === 'object' && 'error' in err) ? (err as any).error : null;
+        if (maybeError) return maybeError;
+
+        // nekad dođe string
+        if (typeof err === 'string') return { message: err };
+
+        return err;
     }
 
     // =================================================================================================

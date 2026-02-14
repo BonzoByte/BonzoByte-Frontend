@@ -417,7 +417,7 @@
 
             <!-- Generic error state (only once) -->
             <div class="bb-error" *ngIf="!loading && !isLocked && error">
-                <div class="bb-error-title">Error</div>
+                <div class="bb-error-title">{{ locked ? 'Details locked' : 'Could not load match details' }}</div>
                 <div class="bb-error-msg">{{ error }}</div>
                 <button class="bb-btn" (click)="load()">Retry</button>
             </div>

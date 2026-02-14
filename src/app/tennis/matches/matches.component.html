@@ -192,7 +192,7 @@
 
             <app-match-details-modal *ngIf="isDetailsOpen && selectedMatchTPId" [isOpen]="isDetailsOpen"
                 [matchTPId]="selectedMatchTPId" [genderHint]="selectedMatch?.tournamentTypeName === 'WTA' ? 'W' : 'M'"
-                [isOpen]="isDetailsOpen" [match]="selectedMatch!" (closed)="onDetailsClosed()">
+                [match]="selectedMatch!" (closed)="onDetailsClosed()">
             </app-match-details-modal>
         </div>
 

@@ -46,6 +46,7 @@ export interface DetailsLockedError {
 export class StaticArchivesService {
   private mode = environment.archivesMode;
   private apiBase = environment.apiBase;
+  private apiUrl = environment.apiUrl;
   private staticBase = environment.dailyStaticBase;
 
   private dailyStaticBase = `${this.staticBase}/daily`;
@@ -250,7 +251,13 @@ export class StaticArchivesService {
     }
 
     // unlocked -> allowed
-    return this.getDetails(match.matchTPId);
+    return this.http.get<any>(`${this.apiUrl}/archives/match-details/${match.matchTPId}`).pipe(
+      catchError((err: any) => {
+        // ako backend vrati JSON error body, proslijedi baš taj body dalje
+        if (err?.error) return throwError(() => err.error);
+        return throwError(() => err);
+      })
+    );
   }
 
   private calcUnlocksAtIso(match: Match, lockHours: number): string | null {
