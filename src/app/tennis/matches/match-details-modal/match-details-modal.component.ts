@@ -2798,16 +2798,20 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
 
     openLogin(): void {
         console.log('[LOCKED CTA] openLogin clicked');
-        this.requestLogin.emit();
+        this.close();
+        window.dispatchEvent(new CustomEvent('openLogin'));
     }
 
     openRegister(): void {
         console.log('[LOCKED CTA] openRegister clicked');
-        this.requestRegister.emit();
+        this.close();
+        window.dispatchEvent(new CustomEvent('switchToRegister'));
     }
 
     openUpgrade(): void {
         console.log('[LOCKED CTA] openUpgrade clicked');
-        this.requestUpgrade.emit();
+        this.close();
+        // za sad može billing modal kasnije
+        window.dispatchEvent(new CustomEvent('openBilling'));
     }
 }

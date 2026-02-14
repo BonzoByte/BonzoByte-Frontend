@@ -47,6 +47,11 @@ export class HeaderComponent implements OnInit, OnDestroy {
         this.showLoginModal = true;
     };
 
+    private openRegisterFromGlobal = () => {
+        this.showLoginModal = false;
+        this.showRegisterModal = true;
+    };
+
     constructor(
         private authService: AuthService,
         private router: Router
@@ -72,12 +77,14 @@ export class HeaderComponent implements OnInit, OnDestroy {
             this.userDisplayName = user?.nickname || user?.name || 'User';
         });
 
+        window.addEventListener('openRegister', this.openRegisterFromGlobal);
         window.addEventListener('switchToRegister', this.switchToRegisterHandler);
         window.addEventListener('openLogin', this.openLoginFromGlobal);
     }
 
     ngOnDestroy(): void {
         if (this.authSub) this.authSub.unsubscribe();
+        window.removeEventListener('openRegister', this.openRegisterFromGlobal);
         window.removeEventListener('switchToRegister', this.switchToRegisterHandler);
         window.removeEventListener('openLogin', this.openLoginFromGlobal);
     }
