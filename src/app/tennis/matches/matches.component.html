@@ -168,7 +168,10 @@
                                     [title]="isDetailsLocked(match) ? 'Locked' : 'Open details'">
 
                                     <ng-container *ngIf="isDetailsLocked(match); else detailsText">
-                                        🔒
+                                        <div class="bb-locked-title">
+                                            <span>🔒</span>
+                                            <span>Match details are locked</span>
+                                        </div>
                                     </ng-container>
                                     <ng-template #detailsText>Details</ng-template>
                                 </small>
