@@ -1218,6 +1218,12 @@ body.modal-open {
     text-align: center;
 }
 
+.bb-error {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;          // ✅ razmak između blokova
+  }
+
 .bb-locked .bb-error-title {
     margin-bottom: 4px;
 }
@@ -1245,7 +1251,8 @@ body.modal-open {
 }
 
 .bb-error-msg {
-    line-height: 1.4;
+    line-height: 1.35;  // ✅ da tekst ne bude zgnječen
+    white-space: normal;
 }
 
 .bb-locked-actions {
@@ -1337,10 +1344,10 @@ body.modal-open {
 
 .bb-actions {
     display: flex;
-    justify-content: flex-end;
     gap: 10px;
-    margin-top: 14px;
-}
+    justify-content: center;
+    margin-top: 8px;
+  }
 
 .bb-btn-primary {
     border: 1px solid rgba(255, 255, 255, 0.35);

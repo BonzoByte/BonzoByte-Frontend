@@ -2802,11 +2802,13 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
     }
 
     openLogin(): void {
+        this.close();
         console.log('[LOCKED CTA] openLogin clicked');
         window.dispatchEvent(new CustomEvent('openLogin'));
     }
 
     openRegister(): void {
+        this.close();
         console.log('[LOCKED CTA] openRegister clicked');
         // tvoj header već sluša switchToRegister ili openLogin
         // najčišće: direktno otvori register
@@ -2814,6 +2816,7 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
     }
 
     openUpgrade(): void {
+        this.close();
         console.log('[LOCKED CTA] openBilling clicked');
         window.dispatchEvent(new CustomEvent('openBilling'));
     }
