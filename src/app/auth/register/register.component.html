@@ -75,7 +75,7 @@
             </div>
 
             <div class="text-center">
-                <button type="submit" [disabled]="registerForm.invalid || submitting">
+                <button type="submit" class="oauth-btn" [disabled]="registerForm.invalid || submitting">
                     {{ submitting ? 'Registering…' : 'Register' }}
                 </button>
             </div>

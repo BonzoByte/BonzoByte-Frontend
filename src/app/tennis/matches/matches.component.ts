@@ -11,7 +11,7 @@ import { MatchDetailsModalComponent } from "../matches/match-details-modal/match
 import { StaticArchivesService } from '../../core/services/static-archives.service';
 import { AuthService } from 'src/app/core/services/auth.service';
 import { Subject } from 'rxjs';
-import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { catchError, debounceTime, distinctUntilChanged, map, take } from 'rxjs/operators';
 
 @Component({
     selector: 'app-matches',
@@ -82,6 +82,9 @@ export class MatchesComponent implements OnInit, OnDestroy {
         // 2x raf = praktično “nakon što Angular nacrta DOM”
         requestAnimationFrame(() => requestAnimationFrame(() => this.scrollToTop()));
     }
+
+    private pendingDetailsMatchTPId: number | null = null;
+    private authSub?: any;
 
     @ViewChild('dateInput') dateInputRef!: ElementRef<HTMLInputElement>
     @HostListener('document:click', ['$event'])
@@ -189,80 +192,90 @@ export class MatchesComponent implements OnInit, OnDestroy {
         return Number.isFinite(n) ? n : null;
     }
 
+    /**
+ * Pokuša dohvatiti dostupne datume iz arhiva, a ako faila, fallback na daily index.
+ * Vraća normaliziran objekt: {dates, min, max}
+ */
+    private loadDatesAndBootstrap() {
+        return this.staticArchives.getAvailableDates().pipe(
+            map((dates: string[]) => {
+                if (!Array.isArray(dates) || dates.length === 0) {
+                    throw new Error('available-dates returned empty list');
+                }
+
+                return {
+                    dates,
+                    min: new Date(dates[0]),
+                    max: new Date(dates[dates.length - 1]),
+                };
+            }),
+            catchError((err) => {
+                console.warn('⚠️ Failed to load available-dates, falling back to daily index.json', err);
+
+                return this.staticArchives.getDailyIndex().pipe(
+                    map((idx: any) => {
+                        const minIso = idx?.minDate;
+                        const maxIso = idx?.maxDate ?? this.toIsoToday();
+
+                        if (!minIso) throw new Error('daily index missing minDate');
+
+                        const dates: string[] = []; // fallback nema listu dana — ostavi prazno
+                        return {
+                            dates,
+                            min: new Date(minIso),
+                            max: new Date(maxIso),
+                        };
+                    })
+                );
+            })
+        );
+    }
+
     ngOnInit(): void {
         console.log('ngOnInit start');
         document.addEventListener('keydown', this.escHandler);
 
-        // ✅ Search debounce pipeline (mora biti postavljeno odmah)
+        // ✅ Search debounce pipeline
         this.search$
-            .pipe(
-                debounceTime(200),
-                distinctUntilChanged()
-            )
-            .subscribe(() => {
-                this.applyActiveFiltersToCurrentDay();
-            });
+            .pipe(debounceTime(200), distinctUntilChanged())
+            .subscribe(() => this.applyActiveFiltersToCurrentDay());
 
         this.loading = true;
 
-        // ✅ Primarni izvor istine: realni dostupni dani
-        this.staticArchives.getAvailableDates().subscribe({
-            next: (dates) => {
-                if (!Array.isArray(dates) || dates.length === 0) {
-                    console.error('❌ available-dates returned empty list.');
+        this.loadDatesAndBootstrap()
+            .pipe(take(1))
+            .subscribe({
+                next: ({ dates, min, max }) => {
+                    // dates su "YYYY-MM-DD" ASC
+                    this.availableDates = dates;
+
+                    this.minDate = min;
+                    this.maxDate = max;
+
+                    // startaj na zadnjem dostupnom danu
+                    this.currentDate = new Date(this.maxDate);
+                    this.currentDateString = this.ymdLocal(this.currentDate);
+                    this.syncDateStringsFromCurrentDate();
+
+                    console.log('✅ availableDates loaded:', {
+                        count: this.availableDates.length,
+                        min: dates[0],
+                        max: dates[dates.length - 1],
+                    });
+
+                    this.loadMatchesForDate(this.currentDate);
+                },
+                error: (err) => {
+                    console.error('❌ Failed to bootstrap dates:', err);
                     this.loading = false;
-                    return;
                 }
-
-                // dates su "YYYY-MM-DD" ASC
-                this.availableDates = dates;
-
-                // postavi min/max iz stvarnih arhiva
-                this.minDate = new Date(dates[0]);
-                this.maxDate = new Date(dates[dates.length - 1]);
-
-                // startaj na zadnjem dostupnom danu
-                this.currentDate = new Date(this.maxDate);
-                this.currentDateString = this.ymdLocal(this.currentDate);
-                this.syncDateStringsFromCurrentDate();
-
-                console.log('✅ availableDates loaded:', {
-                    count: this.availableDates.length,
-                    min: dates[0],
-                    max: dates[dates.length - 1],
-                });
-
-                this.loadMatchesForDate(this.currentDate);
-            },
-            error: (err) => {
-                console.warn('⚠️ Failed to load available-dates, falling back to daily index.json', err);
-
-                // 🔁 Fallback: tvoj stari flow (index.json)
-                this.staticArchives.getDailyIndex().subscribe({
-                    next: (idx) => {
-                        this.minDate = new Date(idx.minDate);
-
-                        const maxIso = idx.maxDate ?? this.toIsoToday();
-                        this.maxDate = new Date(maxIso);
-
-                        this.currentDate = new Date(this.maxDate);
-                        this.currentDateString = this.ymdLocal(this.currentDate);
-                        this.syncDateStringsFromCurrentDate();
-
-                        this.loadMatchesForDate(this.currentDate);
-                    },
-                    error: (err2) => {
-                        console.error('❌ Failed to load daily index.json (fallback also failed):', err2);
-                        this.loading = false;
-                    }
-                });
-            }
-        });
+            });
     }
 
     ngOnDestroy(): void {
         document.removeEventListener('keydown', this.escHandler);
         this.search$.complete();
+        this.authSub?.unsubscribe?.();
     }
 
     formatDate(date: Date): string {
@@ -1786,5 +1799,36 @@ export class MatchesComponent implements OnInit, OnDestroy {
 
         const unlockMs = dt.getTime() - 2 * 60 * 60 * 1000;
         return Date.now() < unlockMs;
+    }
+
+    onDetailsRequestLogin(): void {
+        console.log('[PARENT] details requested login');
+        this.pendingDetailsMatchTPId = this.selectedMatchTPId ?? null;
+
+        // zatvori details
+        this.onDetailsClosed();
+
+        // koristi postojeći header global hook
+        window.dispatchEvent(new CustomEvent('openLogin'));
+    }
+
+    onDetailsRequestRegister(): void {
+        console.log('[PARENT] details requested register');
+        this.pendingDetailsMatchTPId = this.selectedMatchTPId ?? null;
+
+        this.onDetailsClosed();
+
+        // ako nemaš global event za register, dodaj ga (vidi dolje)
+        window.dispatchEvent(new CustomEvent('openRegister'));
+    }
+
+    onDetailsRequestUpgrade(): void {
+        console.log('[PARENT] details requested upgrade');
+        this.pendingDetailsMatchTPId = this.selectedMatchTPId ?? null;
+
+        this.onDetailsClosed();
+
+        // za sad: otvori billing modal ili redirect
+        //this.openBillingModal();
     }
 }

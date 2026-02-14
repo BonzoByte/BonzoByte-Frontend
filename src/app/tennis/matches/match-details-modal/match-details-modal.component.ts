@@ -454,6 +454,9 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
     @Input() genderHint!: 'M' | 'W';
     @Input() match!: Match;
     @Output() closed = new EventEmitter<void>();
+    @Output() requestLogin = new EventEmitter<void>();
+    @Output() requestRegister = new EventEmitter<void>();
+    @Output() requestUpgrade = new EventEmitter<void>();
 
     /**
      * Tooltip element reference(s).
@@ -2801,25 +2804,9 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
         return this.getCurrentUser()?.entitlements ?? null;
     }
 
-    openLogin(): void {
-        this.close();
-        console.log('[LOCKED CTA] openLogin clicked');
-        window.dispatchEvent(new CustomEvent('openLogin'));
-    }
-
-    openRegister(): void {
-        this.close();
-        console.log('[LOCKED CTA] openRegister clicked');
-        // tvoj header već sluša switchToRegister ili openLogin
-        // najčišće: direktno otvori register
-        window.dispatchEvent(new CustomEvent('openRegister'));
-    }
-
-    openUpgrade(): void {
-        this.close();
-        console.log('[LOCKED CTA] openBilling clicked');
-        window.dispatchEvent(new CustomEvent('openBilling'));
-    }
+    openLogin(): void { this.requestLogin.emit(); }
+    openRegister(): void { this.requestRegister.emit(); }
+    openUpgrade(): void { this.requestUpgrade.emit(); }
 
     get user() {
         return this.auth.getUser();

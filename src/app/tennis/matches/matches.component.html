@@ -188,9 +188,9 @@
 
             <app-match-details-modal *ngIf="isDetailsOpen && selectedMatchTPId" [isOpen]="isDetailsOpen"
                 [matchTPId]="selectedMatchTPId" [genderHint]="selectedMatch?.tournamentTypeName === 'WTA' ? 'W' : 'M'"
-                [match]="selectedMatch!" (closed)="onDetailsClosed()">
-            </app-match-details-modal>
-
+                [match]="selectedMatch!" (closed)="onDetailsClosed()" (requestLogin)="onDetailsRequestLogin()"
+                (requestRegister)="onDetailsRequestRegister()"
+                (requestUpgrade)="onDetailsRequestUpgrade()"></app-match-details-modal>
         </div>
 
         <div class="bb-loading-overlay" [class.is-active]="loading" aria-live="polite">
