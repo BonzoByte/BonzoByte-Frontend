@@ -1784,6 +1784,7 @@ export class MatchesComponent implements OnInit, OnDestroy {
         if (!dt || isNaN(dt.getTime())) return false; // fail-open
 
         const unlockMs = dt.getTime() - 2 * 60 * 60 * 1000;
-        return Date.now() < unlockMs;
+        //return Date.now() < unlockMs;
+        return !finished; // TEMP dok koristimo forcedNow na backendu
     }
 }
