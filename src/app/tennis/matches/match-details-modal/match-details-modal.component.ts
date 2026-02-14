@@ -2782,21 +2782,32 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
     private getCurrentUser(): any | null {
         // AuthService ti očito ima funkciju koja vraća usera
         try {
-          const fn: any = (this.auth as any)?.getUser;
-          if (typeof fn === 'function') return fn.call(this.auth);
+            const fn: any = (this.auth as any)?.getUser;
+            if (typeof fn === 'function') return fn.call(this.auth);
         } catch { /* empty */ }
         return null;
-      }
-      
-      get entitlements(): any | null {
+    }
+
+    get entitlements(): any | null {
         return this.getCurrentUser()?.entitlements ?? null;
-      }
-      
-      get isLoggedIn(): boolean {
+    }
+
+    get isLoggedIn(): boolean {
         return !!localStorage.getItem('token');
-      }
-      
-      openLogin(): void { this.requestLogin.emit(); }
-      openRegister(): void { this.requestRegister.emit(); }
-      openUpgrade(): void { this.requestUpgrade.emit(); }
+    }
+
+    openLogin(): void {
+        console.log('[LOCKED CTA] openLogin clicked');
+        this.requestLogin.emit();
+    }
+
+    openRegister(): void {
+        console.log('[LOCKED CTA] openRegister clicked');
+        this.requestRegister.emit();
+    }
+
+    openUpgrade(): void {
+        console.log('[LOCKED CTA] openUpgrade clicked');
+        this.requestUpgrade.emit();
+    }
 }

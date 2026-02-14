@@ -754,12 +754,15 @@ export class MatchesComponent implements OnInit, OnDestroy {
     }
 
     openLoginModal(): void {
-        // prilagodi nazive ako su drugačiji u AppComponent
+        console.log('[PARENT] openLoginModal');
         (this.appComponent as any)?.openLogin?.();
+        (this.appComponent as any)?.showLoginModal?.();
     }
 
     openRegisterModal(): void {
+        console.log('[PARENT] openRegisterModal');
         (this.appComponent as any)?.openRegister?.();
+        (this.appComponent as any)?.showRegisterModal?.();
     }
 
     openBillingModal(): void {
