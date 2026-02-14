@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { CommonModule } from '@angular/common';
-import { Component, ElementRef, EventEmitter, HostListener, Input, OnDestroy, OnInit, Output, ViewChild, ViewEncapsulation } from '@angular/core';
+import { Component, ElementRef, HostListener, Input, OnDestroy, OnInit, ViewChild, ViewEncapsulation } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { NgbDatepickerModule, NgbDateStruct } from '@ng-bootstrap/ng-bootstrap';
 import { TranslateService } from '@ngx-translate/core';
@@ -29,9 +29,6 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 })
 
 export class MatchesComponent implements OnInit, OnDestroy {
-    @Output() requestLogin = new EventEmitter<void>();
-    @Output() requestRegister = new EventEmitter<void>();
-    @Output() requestUpgrade = new EventEmitter<void>();
     Math = Math;
     matches: Match[] = [];
     filteredMatches: Match[] = [];

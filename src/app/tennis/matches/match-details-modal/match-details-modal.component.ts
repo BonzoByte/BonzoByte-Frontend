@@ -2796,7 +2796,7 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
         return !!localStorage.getItem('token');
       }
       
-    openLogin() { this.requestLogin.emit(); }
-    openRegister() { this.requestRegister.emit(); }
-    openUpgrade() { this.requestUpgrade.emit(); }
+      openLogin(): void { this.requestLogin.emit(); }
+      openRegister(): void { this.requestRegister.emit(); }
+      openUpgrade(): void { this.requestUpgrade.emit(); }
 }
