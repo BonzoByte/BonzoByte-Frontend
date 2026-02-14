@@ -1211,9 +1211,22 @@ body.modal-open {
 
 /* LOCKED state spacing + readability */
 .bb-locked {
-    padding: 18px 6px 10px 6px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px; // razmak između blokova
     text-align: center;
 }
+
+.bb-locked .bb-error-title {
+    margin-bottom: 4px;
+}
+
+.bb-locked .bb-error-msg {
+    line-height: 1.4;
+}
+
+// ovo rješava “zgusnuto”  
 
 .bb-locked-title {
     font-size: 16px;
@@ -1229,6 +1242,10 @@ body.modal-open {
     /* manje nagurano po visini */
     margin-bottom: 18px;
     /* više prostora prije gumba */
+}
+
+.bb-error-msg {
+    line-height: 1.4;
 }
 
 .bb-locked-actions {

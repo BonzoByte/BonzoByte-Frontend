@@ -21,6 +21,7 @@ import { map, switchMap, catchError } from 'rxjs/operators';
 import { Match } from 'src/app/core/models/tennis.model';
 import { ChangeDetectorRef } from '@angular/core';
 import { Subscription } from 'rxjs';
+import { AuthService } from '@app/core/services/auth.service';
 
 // =================================================================================================
 // TYPES (UI tabs, selectors, DTO-ish rows)
@@ -453,7 +454,9 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
     @Input() genderHint!: 'M' | 'W';
     @Input() match!: Match;
     @Output() closed = new EventEmitter<void>();
-
+    @Output() requestLogin = new EventEmitter<void>();
+    @Output() requestRegister = new EventEmitter<void>();
+    @Output() requestUpgrade = new EventEmitter<void>();
 
     /**
      * Tooltip element reference(s).
@@ -608,7 +611,7 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
     // Constructor / lifecycle
     // -----------------------------------------------------------------------------------------------
 
-    constructor(public staticArchives: StaticArchivesService, private cdr: ChangeDetectorRef) { }
+    constructor(public staticArchives: StaticArchivesService, private auth: AuthService, private cdr: ChangeDetectorRef) { }
 
     ngOnInit(): void {
         console.log('[MODAL] ngOnInit', { isOpen: this.isOpen, matchTPId: this.match?.matchTPId });
@@ -823,11 +826,6 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
     openPricing(): void {
         // kasnije: otvori pricing modal ili route /pricing
         alert('Pricing/Unlock flow coming next 🙂');
-    }
-
-    openLogin(): void {
-        // kasnije: otvori login modal
-        alert('Login flow coming next 🙂');
     }
 
     private unwrapHttpError(err: any): any {
@@ -2780,4 +2778,25 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
             .slice()
             .sort((a: OddsRow, b: OddsRow) => (b.o04 ?? 0) - (a.o04 ?? 0));
     }
+
+    private getCurrentUser(): any | null {
+        // AuthService ti očito ima funkciju koja vraća usera
+        try {
+          const fn: any = (this.auth as any)?.getUser;
+          if (typeof fn === 'function') return fn.call(this.auth);
+        } catch { /* empty */ }
+        return null;
+      }
+      
+      get entitlements(): any | null {
+        return this.getCurrentUser()?.entitlements ?? null;
+      }
+      
+      get isLoggedIn(): boolean {
+        return !!localStorage.getItem('token');
+      }
+      
+    openLogin() { this.requestLogin.emit(); }
+    openRegister() { this.requestRegister.emit(); }
+    openUpgrade() { this.requestUpgrade.emit(); }
 }

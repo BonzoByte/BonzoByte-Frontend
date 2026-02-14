@@ -406,9 +406,19 @@
 
                 <div class="bb-actions">
                     <button class="bb-btn" (click)="close()">Close</button>
-                    <!-- kasnije: Login / Upgrade -->
-                    <!-- npr. <button class="bb-btn" (click)="openLogin()">Login</button> -->
-                </div>
+                  
+                    <button class="bb-btn" *ngIf="!isLoggedIn" (click)="openLogin()">
+                      Login
+                    </button>
+                  
+                    <button class="bb-btn" *ngIf="isLoggedIn" (click)="openUpgrade()">
+                      Unlock details
+                    </button>
+                  
+                    <button class="bb-btn" *ngIf="!isLoggedIn" (click)="openRegister()">
+                      Start free trial
+                    </button>
+                  </div>                  
             </div>
 
             <!-- Error state (samo za prave greške) -->
