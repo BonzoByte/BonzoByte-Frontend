@@ -22,7 +22,7 @@
   /* ispod header + datebar */
   bottom: var(--footer-h);
   /* iznad footera */
-  z-index: 11000;
+  z-index: 11001;
   /* ispod header/footer (12000), ali iznad page */
   background: rgba(10, 12, 16, 0.55);
   backdrop-filter: blur(8px);
@@ -49,7 +49,7 @@
 
 .bb-card {
   width: min(782px, 96vw);
-  max-height: 92vh;
+  max-height: 88vh;
   overflow: hidden;
   border-radius: 16px;
 
