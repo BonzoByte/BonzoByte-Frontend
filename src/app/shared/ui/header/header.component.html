@@ -17,10 +17,8 @@
             <ng-template #loggedIn>
                 <div class="user-block" style="display:flex;align-items:center;gap:8px;">
                     <span>Welcome {{ userDisplayName }}</span>
-                    <img [src]="user?.avatarUrl || 'assets/images/defaultUser.png'"
-                         alt="Avatar"
-                         (click)="openUserModal()"
-                         style="width:32px;height:32px;border-radius:50%;cursor:pointer;" />
+                    <img [src]="user?.avatarUrl || 'assets/images/defaultUser.png'" alt="Avatar"
+                        (click)="openUserModal()" style="width:32px;height:32px;border-radius:50%;cursor:pointer;" />
                     <button (click)="logout()">{{ 'logout' | translate }}</button>
                 </div>
             </ng-template>

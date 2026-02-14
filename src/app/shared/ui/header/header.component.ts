@@ -33,6 +33,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
     authSub!: Subscription;
     showRegisterModal = false;
     showLoginModal = false;
+    showBillingModal = false;
     user: User | null = null;
     userNickname = '';
     userDisplayName = '';
@@ -50,6 +51,13 @@ export class HeaderComponent implements OnInit, OnDestroy {
     private openRegisterFromGlobal = () => {
         this.showLoginModal = false;
         this.showRegisterModal = true;
+    };
+
+    private openBillingFromGlobal = () => {
+        this.showLoginModal = false;
+        this.showRegisterModal = false;
+        this.showBillingModal = true;
+        document.body.classList.add('modal-open');
     };
 
     constructor(
@@ -80,6 +88,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
         window.addEventListener('openRegister', this.openRegisterFromGlobal);
         window.addEventListener('switchToRegister', this.switchToRegisterHandler);
         window.addEventListener('openLogin', this.openLoginFromGlobal);
+        window.addEventListener('openBilling', this.openBillingFromGlobal);
     }
 
     ngOnDestroy(): void {
@@ -87,6 +96,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
         window.removeEventListener('openRegister', this.openRegisterFromGlobal);
         window.removeEventListener('switchToRegister', this.switchToRegisterHandler);
         window.removeEventListener('openLogin', this.openLoginFromGlobal);
+        window.removeEventListener('openBilling', this.openBillingFromGlobal);
     }
 
     openLoginModal(): void {
@@ -104,9 +114,21 @@ export class HeaderComponent implements OnInit, OnDestroy {
         this.showRegisterModal = true;
         document.body.classList.add('modal-open');
     }
+
     closeRegisterModal(): void {
         this.showRegisterModal = false;
         if (!this.showLoginModal) document.body.classList.remove('modal-open');
+    }
+
+    openBillingModal(): void {
+        this.openBillingFromGlobal();
+    }
+
+    closeBillingModal(): void {
+        this.showBillingModal = false;
+        if (!this.showLoginModal && !this.showRegisterModal) {
+            document.body.classList.remove('modal-open');
+        }
     }
 
     logout(): void { this.authService.logout(); }

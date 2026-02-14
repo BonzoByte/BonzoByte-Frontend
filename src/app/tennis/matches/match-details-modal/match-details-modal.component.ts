@@ -454,9 +454,6 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
     @Input() genderHint!: 'M' | 'W';
     @Input() match!: Match;
     @Output() closed = new EventEmitter<void>();
-    @Output() requestLogin = new EventEmitter<void>();
-    @Output() requestRegister = new EventEmitter<void>();
-    @Output() requestUpgrade = new EventEmitter<void>();
 
     /**
      * Tooltip element reference(s).
@@ -2798,7 +2795,7 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
 
     openLogin(): void {
         console.log('[LOCKED CTA] openLogin clicked');
-        this.close();
+        this.close(); // bitno: zatvori details modal
         window.dispatchEvent(new CustomEvent('openLogin'));
     }
 
@@ -2811,7 +2808,6 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
     openUpgrade(): void {
         console.log('[LOCKED CTA] openUpgrade clicked');
         this.close();
-        // za sad može billing modal kasnije
         window.dispatchEvent(new CustomEvent('openBilling'));
     }
 }
