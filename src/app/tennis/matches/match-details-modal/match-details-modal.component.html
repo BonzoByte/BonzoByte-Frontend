@@ -307,8 +307,9 @@
 ================================================================================================== -->
 
 <!-- Shell blocks click propagation so backdrop click closes, but inside click doesn't -->
-<div class="bb-shell" *ngIf="isOpen" (click)="$event.stopPropagation()">
-    <div class="bb-card">
+
+<div class="bb-shell" *ngIf="isOpen">
+    <div class="bb-card" (click)="$event.stopPropagation()">
 
         <!-- ============================================================================================
          HEADER (title + tournament meta line)
