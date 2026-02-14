@@ -44,7 +44,7 @@
 
             <!-- SUBMIT -->
             <div class="text-center">
-                <button type="submit" [disabled]="loginForm.invalid || submitting">
+                <button type="submit" [disabled]="loginForm.invalid || submitting" class="bb-link">
                     {{ submitting ? 'Prijava…' : 'Prijavi se' }}
                 </button>
             </div>
@@ -82,7 +82,7 @@
             </div>
 
             <!-- Register suggestion -->
-            <div class="text-center bb-actions" *ngIf="showRegisterSuggestion">
+            <div class="text-center bb-actions" *ngIf="showRegisterSuggestion" class="bb-link">
                 <span class="muted">Nemate račun?</span>
                 <button type="button" class="bb-link" appAccessibleClick (accessibleClick)="switchToRegister()">
                     Register
