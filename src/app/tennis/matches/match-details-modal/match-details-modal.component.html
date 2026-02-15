@@ -405,7 +405,7 @@
                     <button class="bb-btn" (click)="close()">Close</button>
 
                     <button class="bb-btn" *ngIf="!isLoggedIn" (click)="openLogin()">Login</button>
-                    <button class="bb-btn" *ngIf="!isLoggedIn" (click)="openRegister()">Start free trial</button>
+                    <button class="bb-btn" *ngIf="!isLoggedIn" (click)="openLogin()">Start free trial</button>
 
                     <button class="bb-btn" *ngIf="isLoggedIn && !hasTrial && !isPremium" (click)="openUpgrade()">
                         Unlock details
