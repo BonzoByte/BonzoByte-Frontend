@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Output } from '@angular/core';
 import {
@@ -128,13 +129,16 @@ export class RegisterComponent {
         })
       )
       .subscribe({
-        next: () => {
-          this.successMessage = 'Registration successful. Please check your email to verify your account.';
+        next: (res: any) => {
+          // ✅ auto-login (backend vraća token + user)
+          if (res?.token && res?.user) {
+            localStorage.setItem('token', res.token);
+            this.authService.setAuthState(true);
+            this.authService.setUser(res.user);
+          }
 
-          this.authService.emitAuthChanged();
-
-          this.snackBar.open(this.successMessage, 'OK', {
-            duration: 6000,
+          this.snackBar.open('Registration successful. Logged in.', 'OK', {
+            duration: 4000,
             horizontalPosition: 'right',
             verticalPosition: 'bottom'
           });
@@ -142,9 +146,11 @@ export class RegisterComponent {
           this.registerForm.reset();
           this.registered.emit(normalizedEmail);
 
-          // ✅ preporuka: NE zatvaraj modal automatski
-          // jer korisnik želi vidjeti poruku / kliknuti resend
-          // this.close();
+          // ✅ zatvori modal
+          this.close();
+
+          // ✅ opcionalno: refresh grid (ako ti treba odmah)
+          window.dispatchEvent(new CustomEvent('authChanged'));
         },
         error: (err) => {
           // timeout “handled”
