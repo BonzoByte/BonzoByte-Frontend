@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, of } from 'rxjs';
+import { BehaviorSubject, Observable, of, Subject } from 'rxjs';
 import { tap, catchError, map } from 'rxjs/operators';
 import { Router } from '@angular/router';
 import { environment } from '@env/environment';
@@ -41,7 +41,13 @@ export class AuthService {
 
     user$ = this._user$.asObservable();
     authStatus$ = this._auth$.asObservable();
+    private _authChanged = new Subject<void>();
+    private authChangedSubject = new Subject<void>();
+    authChanged$ = this.authChangedSubject.asObservable();
 
+    emitAuthChanged(): void {
+        this.authChangedSubject.next();
+    }
     constructor(private http: HttpClient, private router: Router) { console.log('API URL:', environment.apiUrl); }
 
     initAuth(force = false): void {
@@ -76,7 +82,22 @@ export class AuthService {
         localStorage.removeItem('token');
         this.setUser(null);
         this.setAuthState(false);
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        this.emitAuthChanged();
         if (!silent) this.router.navigateByUrl('/');
+    }
+
+    // nakon uspješnog login-a
+    handleLoginSuccess(token: string, user: any) {
+        localStorage.setItem('token', token);
+        localStorage.setItem('user', JSON.stringify(user));
+        this.emitAuthChanged();
+    }
+
+    // nakon uspješnog register-a (ako ti register NE logira usera, svejedno emit)
+    handleRegisterSuccess() {
+        this.emitAuthChanged();
     }
 
     resendVerificationEmail(email: string): Observable<any> {
@@ -127,5 +148,13 @@ export class AuthService {
             `${environment.apiUrl}/auth/register`,
             payload
         );
+    }
+
+    applyLogin(token: string, user: any): void {
+        localStorage.setItem('token', token);
+        this.setAuthState(true);
+        this.setUser(user);
+
+        this.emitAuthChanged();
     }
 }

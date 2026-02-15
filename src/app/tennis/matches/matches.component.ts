@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { CommonModule } from '@angular/common';
 import { Component, ElementRef, HostListener, Input, OnDestroy, OnInit, ViewChild, ViewEncapsulation } from '@angular/core';
@@ -11,9 +10,8 @@ import { MatchFilterModalComponent } from "./match-filter-modal/match-filter-mod
 import { MatchDetailsModalComponent } from "../matches/match-details-modal/match-details-modal.component";
 import { StaticArchivesService } from '../../core/services/static-archives.service';
 import { AuthService } from 'src/app/core/services/auth.service';
-import { Subject, Subscription, Observable, of } from 'rxjs';
-import { catchError, debounceTime, distinctUntilChanged, map, takeUntil } from 'rxjs/operators';
-import { TimeScale } from 'chart.js';
+import { Subject, Subscription, Observable, takeUntil } from 'rxjs';
+import { catchError, debounceTime, distinctUntilChanged, map } from 'rxjs/operators';
 
 interface BootstrapDatesResult {
     dates: string[];
@@ -94,6 +92,8 @@ export class MatchesComponent implements OnInit, OnDestroy {
     }
 
     private authSub?: Subscription;
+
+    private destroy$ = new Subject<void>();
 
     onDetailsRequestLogin(): void {
         console.log('[PARENT] requestLogin');
@@ -249,8 +249,6 @@ export class MatchesComponent implements OnInit, OnDestroy {
         return Number.isFinite(n) ? n : null;
     }
 
-    private readonly destroy$ = new Subject<void>();
-
     ngOnInit(): void {
         console.log('ngOnInit start');
 
@@ -294,6 +292,15 @@ export class MatchesComponent implements OnInit, OnDestroy {
                     this.loading = false;
                     document.body.classList.remove('bb-noscroll');
                 }
+            });
+
+        this.auth.authChanged$
+            .pipe(takeUntil(this.destroy$))
+            .subscribe(() => {
+                // refresh grid i lock state
+                this.loadMatchesForDate(this.currentDate);
+                // ako imaš i available-dates / entitlements, refresh i to:
+                // this.loadAvailableDates();
             });
     }
 

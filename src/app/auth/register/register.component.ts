@@ -13,7 +13,8 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { AuthService } from '../../core/services/auth.service';
 import { AccessibleClickDirective } from '../../shared/directives/accessible-click.directive';
 import { TrapFocusDirective } from '../../shared/directives/trap-focus.directive';
-import { finalize } from 'rxjs/operators';
+import { finalize, timeout, catchError } from 'rxjs/operators';
+import { throwError } from 'rxjs';
 
 @Component({
   selector: 'app-register',
@@ -66,7 +67,6 @@ export class RegisterComponent {
   }
 
   submit(): void {
-    // reset poruka prije novog submit-a
     this.errorMessage = '';
     this.successMessage = '';
 
@@ -81,18 +81,58 @@ export class RegisterComponent {
     const normalizedEmail = String(email || '').trim().toLowerCase();
     const normalizedNickname = String(nickname || '').trim();
 
-    this.authService.register({
-      email: normalizedEmail,
-      password,
-      nickname: normalizedNickname ? normalizedNickname : undefined
-    })
-      .pipe(finalize(() => (this.submitting = false)))
+    this.authService
+      .register({
+        email: normalizedEmail,
+        password,
+        nickname: normalizedNickname ? normalizedNickname : undefined
+      })
+      .pipe(
+        // ✅ UX safety: ne čekamo beskonačno (SMTP na backendu može visiti)
+        timeout(15000),
+
+        catchError((err) => {
+          // Ako timeoutamo, vrlo je moguće da je user kreiran,
+          // ali backend čeka mail timeout.
+          if (err?.name === 'TimeoutError') {
+            const msg =
+              'Registration was submitted, but the server is taking too long (email service). ' +
+              'Please check your email in a minute. If nothing arrives, use "Resend verification".';
+
+            // tretiramo kao “soft success” za UX
+            this.successMessage = msg;
+
+            this.snackBar.open(msg, 'OK', {
+              duration: 8000,
+              horizontalPosition: 'right',
+              verticalPosition: 'bottom'
+            });
+
+            // možemo emitati email da parent odmah ponudi “Resend”
+            this.registered.emit(normalizedEmail);
+
+            // reset UI state
+            this.submitting = false;
+
+            // ✅ ne bacamo dalje error jer smo ga “handled”
+            return throwError(() => ({ handled: true }));
+          }
+
+          return throwError(() => err);
+        }),
+
+        finalize(() => {
+          // ako smo već ručno setali submitting=false u timeout grani,
+          // ovaj finalize će to samo ponovno postaviti na false (OK)
+          this.submitting = false;
+        })
+      )
       .subscribe({
         next: () => {
-          this.successMessage =
-            'Registration successful. Please check your email to verify your account.';
+          this.successMessage = 'Registration successful. Please check your email to verify your account.';
 
-          // ✅ success snackbar OK (ne smeta ako se zatvara modal)
+          this.authService.emitAuthChanged();
+
           this.snackBar.open(this.successMessage, 'OK', {
             duration: 6000,
             horizontalPosition: 'right',
@@ -102,13 +142,16 @@ export class RegisterComponent {
           this.registerForm.reset();
           this.registered.emit(normalizedEmail);
 
-          // ako želiš da ostane otvoren da user pročita poruku, zakomentiraj close()
-          this.close();
+          // ✅ preporuka: NE zatvaraj modal automatski
+          // jer korisnik želi vidjeti poruku / kliknuti resend
+          // this.close();
         },
         error: (err) => {
+          // timeout “handled”
+          if (err?.handled) return;
+
           const code = err?.error?.code;
 
-          // fallback ako backend vrati samo message/string
           const backendMsg =
             typeof err?.error === 'string'
               ? err.error
@@ -131,14 +174,7 @@ export class RegisterComponent {
               break;
           }
 
-          // ✅ inline poruka u modalu (glavni cilj)
           this.errorMessage = message;
-
-          // ✅ opcionalno: fokus na error box (ako želiš)
-          // setTimeout(() => document.getElementById('register-error')?.focus(), 0);
-
-          // ❌ ne pokazujemo snackbar za error (jer je “neprimjetan”)
-          // this.snackBar.open(message, 'OK', { ... });
         }
       });
   }

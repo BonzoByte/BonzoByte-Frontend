@@ -64,10 +64,7 @@ export class LoginComponent implements OnInit {
         this.authService.login(this.loginForm.value).subscribe({
             next: (res) => {
                 // ✅ uspjeh
-                localStorage.setItem('token', res.token);
-                this.authService.setAuthState(true);
-                this.authService.setUser(res.user);
-
+                this.authService.applyLogin(res.token, res.user);
                 this.snackBar.open('Successful login', '', {
                     duration: 2500,
                     horizontalPosition: 'right',

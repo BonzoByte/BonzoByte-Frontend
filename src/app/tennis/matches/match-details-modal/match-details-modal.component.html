@@ -404,16 +404,20 @@
                 <div class="bb-actions" *ngIf="isLocked; else genericErr">
                     <button class="bb-btn" (click)="close()">Close</button>
 
-                    <button class="bb-btn" *ngIf="!isLoggedIn" (click)="openLogin()">Login</button>
-                    <button class="bb-btn" *ngIf="!isLoggedIn" (click)="openLogin()">Start free trial</button>
+                    <ng-container *ngIf="!isLoggedIn; else loggedInLocked">
+                        <button class="bb-btn" (click)="openLogin()">Existing user · Login</button>
+                        <button class="bb-btn" (click)="openRegister()">New user · Register</button>
+                    </ng-container>
 
-                    <button class="bb-btn" *ngIf="isLoggedIn && !hasTrial && !isPremium" (click)="openUpgrade()">
-                        Unlock details
-                    </button>
+                    <ng-template #loggedInLocked>
+                        <button class="bb-btn" *ngIf="!hasTrial && !isPremium" (click)="openUpgrade()">
+                            Unlock details
+                        </button>
 
-                    <button class="bb-btn" *ngIf="isLoggedIn && (hasTrial || isPremium)" (click)="load()">
-                        Retry (should unlock)
-                    </button>
+                        <button class="bb-btn" *ngIf="hasTrial || isPremium" (click)="load()">
+                            Retry (should unlock)
+                        </button>
+                    </ng-template>
                 </div>
 
                 <ng-template #genericErr>
