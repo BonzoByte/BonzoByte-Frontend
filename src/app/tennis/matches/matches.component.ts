@@ -97,20 +97,20 @@ export class MatchesComponent implements OnInit, OnDestroy {
 
     onDetailsRequestLogin(): void {
         console.log('[PARENT] requestLogin');
-        this.pendingAfterDetailsClose = 'login';
         this.closeDetailsModal();
+        queueMicrotask(() => this.openLoginModal());
     }
 
     onDetailsRequestRegister(): void {
         console.log('[PARENT] requestRegister');
-        this.pendingAfterDetailsClose = 'register';
         this.closeDetailsModal();
+        queueMicrotask(() => this.openRegisterModal());
     }
 
     onDetailsRequestUpgrade(): void {
         console.log('[PARENT] requestUpgrade');
-        this.pendingAfterDetailsClose = 'upgrade';
         this.closeDetailsModal();
+        queueMicrotask(() => this.openBillingModal());
     }
 
     openLoginModal(): void {
@@ -130,12 +130,20 @@ export class MatchesComponent implements OnInit, OnDestroy {
     }
 
     private closeDetailsModal(): void {
+        // Ako je modal živ, zatvori ga “pravilno” da emit-a closed
+        if (this.detailsModal) {
+            this.detailsModal.close();
+            return;
+        }
+
+        // fallback (ako iz nekog razloga ref nije spreman)
         this.isDetailsOpen = false;
         this.selectedMatchTPId = null;
         this.selectedMatch = null;
-      }      
+    }
 
     @ViewChild('dateInput') dateInputRef!: ElementRef<HTMLInputElement>
+    @ViewChild('detailsModal') detailsModal?: MatchDetailsModalComponent;
     @HostListener('document:click', ['$event'])
 
     onClickOutside(event: MouseEvent): void {
@@ -1650,24 +1658,24 @@ export class MatchesComponent implements OnInit, OnDestroy {
         this.isDetailsOpen = false;
         this.selectedMatchTPId = null;
         this.selectedMatch = null;
-      
+
         const action = this.pendingAfterDetailsClose;
         this.pendingAfterDetailsClose = null;
-      
+
         if (!action) return;
-      
+
         // otvori TEK kad je details zatvoren i maknut iz DOM-a
         queueMicrotask(() => {
-          if (action === 'login') {
-            window.dispatchEvent(new CustomEvent('openLogin'));
-          } else if (action === 'register') {
-            window.dispatchEvent(new CustomEvent('switchToRegister'));
-          } else if (action === 'upgrade') {
-            console.log('[BILLING] openBillingModal (TODO)');
-            // kasnije: window.dispatchEvent(new CustomEvent('openBilling'));
-          }
+            if (action === 'login') {
+                window.dispatchEvent(new CustomEvent('openLogin'));
+            } else if (action === 'register') {
+                window.dispatchEvent(new CustomEvent('switchToRegister'));
+            } else if (action === 'upgrade') {
+                console.log('[BILLING] openBillingModal (TODO)');
+                // kasnije: window.dispatchEvent(new CustomEvent('openBilling'));
+            }
         });
-      }      
+    }
 
     // Bet simulation PL
     private parseDualNumbers(text?: string | null): [number | null, number | null] {
