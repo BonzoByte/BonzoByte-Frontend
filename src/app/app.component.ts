@@ -108,8 +108,4 @@ export class AppComponent implements OnInit, OnDestroy {
     openRegister() { this.showRegister = true; }
     openLogin() { this.showLogin = true; }
 
-    onRegistered(email: string) {
-        // ovdje kasnije dodamo info modal ili snackbar
-        this.showRegister = false;
-    }
 }

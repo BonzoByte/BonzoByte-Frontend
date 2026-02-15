@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Output } from '@angular/core';
+import { Router, RouterModule } from '@angular/router';
 import {
   AbstractControl,
   FormBuilder,
@@ -24,6 +25,7 @@ import { throwError } from 'rxjs';
     CommonModule,
     ReactiveFormsModule,
     MatSnackBarModule,
+    RouterModule,
     TrapFocusDirective,
     AccessibleClickDirective
   ],
@@ -46,6 +48,7 @@ export class RegisterComponent {
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
+    private router: Router,
     private snackBar: MatSnackBar
   ) {
     this.registerForm = this.fb.group(
@@ -151,6 +154,7 @@ export class RegisterComponent {
 
           // ✅ opcionalno: refresh grid (ako ti treba odmah)
           window.dispatchEvent(new CustomEvent('authChanged'));
+          this.router.navigate(['/']);
         },
         error: (err) => {
           // timeout “handled”
