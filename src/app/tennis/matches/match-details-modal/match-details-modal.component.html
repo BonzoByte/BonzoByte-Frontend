@@ -414,9 +414,16 @@
                             Unlock details
                         </button>
 
-                        <button class="bb-btn" *ngIf="hasTrial || isPremium" (click)="load()">
+                        <!-- Logged in, NOT premium/trial -> open billing -->
+                        <button class="bb-btn" *ngIf="isLoggedIn && !hasTrial && !isPremium" (click)="openUpgrade()">
+                            Unlock details
+                        </button>
+
+                        <!-- Logged in, premium/trial -> retry should work -->
+                        <button class="bb-btn" *ngIf="isLoggedIn && (hasTrial || isPremium)" (click)="load()">
                             Retry (should unlock)
                         </button>
+
                     </ng-template>
                 </div>
 

@@ -109,8 +109,8 @@ export class MatchesComponent implements OnInit, OnDestroy {
 
     onDetailsRequestUpgrade(): void {
         console.log('[PARENT] requestUpgrade');
+        this.pendingAfterDetailsClose = 'upgrade';
         this.closeDetailsModal();
-        queueMicrotask(() => this.openBillingModal());
     }
 
     openLoginModal(): void {
@@ -125,8 +125,8 @@ export class MatchesComponent implements OnInit, OnDestroy {
     }
 
     openBillingModal(): void {
-        console.log('[BILLING] openBillingModal (TODO modal)');
-        // kasnije: window.dispatchEvent(new CustomEvent('openBilling'));
+        console.log('[BILLING] openBillingModal');
+        window.dispatchEvent(new CustomEvent('openBilling'));
     }
 
     private closeDetailsModal(): void {
@@ -1678,8 +1678,7 @@ export class MatchesComponent implements OnInit, OnDestroy {
             } else if (action === 'register') {
                 window.dispatchEvent(new CustomEvent('switchToRegister'));
             } else if (action === 'upgrade') {
-                console.log('[BILLING] openBillingModal (TODO)');
-                // kasnije: window.dispatchEvent(new CustomEvent('openBilling'));
+                this.openBillingModal();
             }
         });
     }
