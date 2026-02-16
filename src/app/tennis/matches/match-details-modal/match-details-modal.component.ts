@@ -654,6 +654,15 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
         this.detailsSub = undefined;
     }
 
+    dbg(tag: string) {
+        console.log('[DETAILS]', tag, {
+            isLocked: this.isLocked,
+            isLoggedIn: this.isLoggedIn,
+            hasTrial: this.hasTrial,
+            isPremium: this.isPremium
+        });
+    }
+
     onTabClick(tab: Tab): void {
         console.log('[UI] tab click', tab);
         this.setTab(tab);

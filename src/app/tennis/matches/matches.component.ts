@@ -115,18 +115,7 @@ export class MatchesComponent implements OnInit, OnDestroy {
 
     onDetailsRequestUpgrade(): void {
         console.log('[PARENT] requestUpgrade');
-
-        // pokušaj zatvoriti details
-        this.pendingAfterDetailsClose = 'upgrade';
-        this.closeDetailsModal();
-
-        // fallback: ako se iz nekog razloga ne zatvori u 1 ticku, svejedno otvori billing
-        setTimeout(() => {
-            if (this.pendingAfterDetailsClose === 'upgrade') {
-                this.pendingAfterDetailsClose = null;
-                this.openBillingModal();
-            }
-        }, 0);
+        this.openBillingModal(); // direktno, bez closeDetailsModal
     }
 
     openLoginModal(): void {

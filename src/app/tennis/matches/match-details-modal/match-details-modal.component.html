@@ -402,20 +402,22 @@
                 <div class="bb-error-msg">{{ error }}</div>
 
                 <div class="bb-actions" *ngIf="isLocked; else genericErr">
-                    <button class="bb-btn" (click)="close()">Close</button>
+                    <button type="button" class="bb-btn" (click)="close()">Close</button>
 
                     <!-- logged-out: login/register -->
-                    <button class="bb-btn" *ngIf="!isLoggedIn" (click)="openLogin()">Login</button>
-                    <button class="bb-btn" *ngIf="!isLoggedIn" (click)="openRegister()">Register</button>
-                    
+                    <button type="button" class="bb-btn" *ngIf="!isLoggedIn" (click)="openLogin()">Login</button>
+                    <button type="button" class="bb-btn" *ngIf="!isLoggedIn" (click)="openRegister()">Register</button>
+
                     <!-- logged-in but locked: open billing -->
-                    <button class="bb-btn" *ngIf="isLoggedIn && !hasTrial && !isPremium" (click)="openUpgrade()">
-                      Unlock details
+                    <button type="button" class="bb-btn" *ngIf="isLoggedIn && !hasTrial && !isPremium"
+                        (click)="dbg('UPGRADE_CLICK'); openUpgrade()">
+                        Unlock details
                     </button>
-                    
+
                     <!-- logged-in and SHOULD unlock: retry load -->
-                    <button class="bb-btn" *ngIf="isLoggedIn && (hasTrial || isPremium)" (click)="load()">
-                      Unlock details
+                    <button type="button" class="bb-btn" *ngIf="isLoggedIn && (hasTrial || isPremium)"
+                        (click)="dbg('RETRY_CLICK'); load()">
+                        Unlock details
                     </button>
                 </div>
 
