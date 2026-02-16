@@ -2,19 +2,17 @@
     <div class="bb-modal bb-filter-modal" role="dialog" aria-modal="true" aria-labelledby="filter-title" appTrapFocus
         [onEscape]="close" (click)="$event.stopPropagation()">
         <button class="close-button" type="button" appAccessibleClick (accessibleClick)="close()" aria-label="Close">
-            &times;
+            ×
         </button>
 
         <h4 id="filter-title" class="text-center">Filter Matches</h4>
 
-        <!-- ERROR BANNER -->
+        <!-- ERROR banner (isto kao Login) -->
         <div class="bb-alert bb-alert--error" *ngIf="errorMessage">
             {{ errorMessage }}
         </div>
 
-        <!-- DATE (disabled for now) -->
-        <div class="bb-section" *ngIf="false"></div>
-
+        <!-- ODDS -->
         <div class="bb-section">
             <div class="bb-section-head">
                 <span class="bb-section-title">Odds availability</span>
@@ -38,25 +36,27 @@
             </div>
         </div>
 
-        <hr />
+        <div class="bb-hr"></div>
 
-        <div class="filter-group">
-            <div class="filter-title">Value (edge)</div>
+        <!-- VALUE (edge) -->
+        <div class="bb-section">
+            <div class="bb-section-head">
+                <span class="bb-section-title">Value (edge)</span>
+            </div>
 
-            <div class="radio-row value-row">
-                <label class="radio-pill">
-                  <input type="radio" name="valueFilter" [(ngModel)]="selectedValueFilter" value="all" />
-                  <span>All</span>
+            <div class="bb-chip-row">
+                <label class="bb-chip">
+                    <input type="radio" name="valueFilter" [(ngModel)]="selectedValueFilter" value="all" />
+                    <span>All</span>
                 </label>
-              
-                <label class="radio-pill">
-                  <input type="radio" name="valueFilter" [(ngModel)]="selectedValueFilter" value="valueOnly" />
-                  <span>Value only</span>
-                </label>
-              </div>
-              <p class="filter-hint">Shows only matches …</p>              
 
-            <div class="filter-hint">
+                <label class="bb-chip">
+                    <input type="radio" name="valueFilter" [(ngModel)]="selectedValueFilter" value="valueOnly" />
+                    <span>Value only</span>
+                </label>
+            </div>
+
+            <div class="bb-hint">
                 Shows only matches where at least one player has positive edge (≥ MIN_EDGE).
             </div>
         </div>
@@ -112,14 +112,11 @@
                 </label>
             </div>
 
-            <div class="bb-hint" style="opacity: .75; margin-top: 8px;">
+            <div class="bb-hint">
                 Based on average TrueSkill of players in the draw.
             </div>
         </div>
 
-        <div class="bb-hr"></div>
-
-        <!-- ACTIONS -->
         <div class="bb-actions">
             <button type="button" (click)="reset()" class="oauth-btn">Reset</button>
             <button type="button" (click)="apply()" class="oauth-btn oauth-btn-primary">Apply</button>

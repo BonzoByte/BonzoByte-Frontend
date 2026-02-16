@@ -1,61 +1,55 @@
 <div class="bb-backdrop" (click)="close()">
     <div class="bb-modal bb-modal--billing" (click)="$event.stopPropagation()">
-  
-      <div class="bb-header">
-        <div class="bb-header-top">
-          <div class="bb-title">Unlock details</div>
-          <button class="bb-close" (click)="close()" aria-label="Close">✕</button>
-        </div>
-  
-        <div class="bb-subtitle">
-          Choose a plan to unlock match details earlier (trial/premium bypass the lock).
-        </div>
-      </div>
-  
-      <div class="bb-body">
-        <div class="bb-plan-list">
-          <button
-            class="bb-plan"
-            *ngFor="let p of plans"
-            [class.active]="p.key === selectedKey"
-            (click)="pick(p.key)"
-            type="button"
-          >
-            <div class="bb-plan-left">
-              <div class="bb-plan-title">
-                {{ p.title }}
-                <span class="bb-badge" *ngIf="p.badge">{{ p.badge }}</span>
-              </div>
-  
-              <div class="bb-plan-meta">
-                <span class="bb-muted">{{ formatDuration(p) }}</span>
-                <span class="bb-dot">•</span>
-  
-                <span *ngIf="perDay(p) as pd" class="bb-muted">
-                  ~{{ pd | number:'1.2-2' }} €/day
-                </span>
-  
-                <span *ngIf="p.limit" class="bb-muted">
-                  <span class="bb-dot">•</span> Limited: {{ p.limit }}
-                </span>
-              </div>
+
+        <div class="bb-header">
+            <div class="bb-header-top">
+                <h4 id="billing-title" class="text-center">Unlock details</h4>
+                <button class="close-button" (click)="close()" aria-label="Close">✕</button>
             </div>
-  
-            <div class="bb-plan-price">
-              <div class="bb-eur">€{{ p.priceEur | number:'1.0-2' }}</div>
+
+            <div class="bb-subtitle bb-hint">
+                Choose a plan to unlock match details earlier (trial/premium bypass the lock).
             </div>
-          </button>
         </div>
-  
-        <div class="bb-actions">
-          <button class="bb-btn" (click)="close()" type="button">Close</button>
-          <button class="bb-btn bb-btn-primary" (click)="continue()" type="button">Continue</button>
+
+        <div class="bb-body">
+            <div class="bb-plan-list">
+                <button class="bb-plan" *ngFor="let p of plans" [class.active]="p.key === selectedKey"
+                    (click)="pick(p.key)" type="button">
+                    <div class="bb-plan-left">
+                        <div class="bb-plan-title">
+                            {{ p.title }}
+                            <span class="bb-badge" *ngIf="p.badge">{{ p.badge }}</span>
+                        </div>
+
+                        <div class="bb-plan-meta">
+                            <span class="bb-muted">{{ formatDuration(p) }}</span>
+                            <span class="bb-dot">•</span>
+
+                            <span *ngIf="perDay(p) as pd" class="bb-muted">
+                                ~{{ pd | number:'1.2-2' }} €/day
+                            </span>
+
+                            <span *ngIf="p.limit" class="bb-muted">
+                                <span class="bb-dot">•</span> Limited: {{ p.limit }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="bb-plan-price">
+                        <div class="bb-eur">€{{ p.priceEur | number:'1.0-2' }}</div>
+                    </div>
+                </button>
+            </div>
+
+            <div class="bb-actions">
+                <button class="oauth" (click)="close()" type="button">Close</button>
+                <button class="oauth-btn oauth-btn-primary" (click)="continue()" type="button">Continue</button>
+            </div>
+
+            <div class="bb-footnote bb-hint">
+                Payments hookup comes next — for now this is the UI + flow skeleton.
+            </div>
         </div>
-  
-        <div class="bb-footnote">
-          Payments hookup comes next — for now this is the UI + flow skeleton.
-        </div>
-      </div>
-  
     </div>
-  </div>  
+</div>

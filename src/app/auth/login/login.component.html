@@ -6,7 +6,7 @@
         </button>
 
         <form [formGroup]="loginForm" (ngSubmit)="onLogin()">
-            <h4 id="login-title" class="text-center">Login</h4>
+            <h4 id="modal-title" class="text-center">Login</h4>
 
             <!-- ERROR banner (kao u Register modalu) -->
             <div class="bb-alert bb-alert--error" *ngIf="serverErrorMessage">
@@ -37,7 +37,8 @@
                         <i class="bi" [ngClass]="showPassword ? 'bi-eye-slash' : 'bi-eye'"></i>
                     </button>
                 </div>
-                <p class="error" *ngIf="password?.hasError('required') && (password?.touched || submitted)">
+                <p class="bb-alert bb-alert--error"
+                    *ngIf="password?.hasError('required') && (password?.touched || submitted)">
                     Obavezno
                 </p>
             </div>
@@ -45,7 +46,7 @@
             <!-- SUBMIT -->
             <div class="text-center">
                 <button type="submit" [disabled]="loginForm.invalid || submitting" class="oauth-btn">
-                    {{ submitting ? 'Prijava…' : 'Login' }}
+                    {{ submitting ? 'Loging…' : 'Login' }}
                 </button>
             </div>
 

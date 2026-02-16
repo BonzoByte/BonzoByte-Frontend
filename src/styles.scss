@@ -1113,14 +1113,6 @@ body.modal-open {
     border-color: rgba(255, 255, 255, 0.45);
 }
 
-/* hint text like others */
-.filter-hint {
-    margin-top: 8px;
-    font-size: 12px;
-    opacity: 0.75;
-    line-height: 1.25;
-}
-
 .bb-ts-snapshot {
     margin: 10px 0 12px;
 }
@@ -1439,4 +1431,21 @@ body.modal-open {
     width: 34px;
     height: 34px;
     cursor: pointer;
+}
+
+/*******************************************************************
+/                      Univerzalne klase                           /
+/*******************************************************************
+
+/* Universal hint text (used in modals, filters, etc.) */
+.bb-hint {
+    margin-top: 8px;
+    font-size: 12px;
+    opacity: 0.75;
+    line-height: 1.25;
+}
+
+.oauth-btn-primary {
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    background: rgba(255, 255, 255, 0.10);
 }
