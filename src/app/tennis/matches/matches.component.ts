@@ -849,7 +849,6 @@ export class MatchesComponent implements OnInit, OnDestroy {
         this.selectedPlayer = player;
     }
 
-
     closePlayerModal() {
         this.selectedPlayer = null;
     }
@@ -1886,8 +1885,11 @@ export class MatchesComponent implements OnInit, OnDestroy {
         return this.getBetSide(match).side != null;
     }
 
+    private readonly DEV_FORCE_LOCK_UI = true; // samo dok testiramo billing
+
     isDetailsLocked(m: Match): boolean {
         if (!m) return true;
+        if (this.DEV_FORCE_LOCK_UI) return true;
 
         // finished -> unlocked
         const finVal: any = (m as any)?.isFinished ?? (m as any)?.l03;

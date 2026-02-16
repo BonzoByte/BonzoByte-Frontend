@@ -700,19 +700,26 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
     // LOAD DETAILS + BUILD VM
     // =================================================================================================
 
+    private readonly DEV_FORCE_LOCK_DETAILS = true;
+
     load(): void {
-        // guard: modal mora biti otvoren i match mora postojati
         if (!this.isOpen) return;
 
-        const match = this.match;
-        const matchTPId = match?.matchTPId;
         this.isLocked = false;
 
-        if (!match || !matchTPId) {
+        if (this.DEV_FORCE_LOCK_DETAILS) {
             this.loading = false;
-            this.error = 'Missing match context.';
-            this.raw = null;
-            this.vm = null;
+            this.isLocked = true;
+            this.error = 'Details locked (DEV FORCE)';
+            this.locked = {
+                code: 'DETAILS_LOCKED',
+                status: 'error',
+                message: 'DEV FORCE LOCK',
+                expectedStartUtc: new Date().toISOString(),
+                lockHours: 2,
+                unlocksAt: new Date(Date.now() + 60 * 60 * 1000).toISOString(), // +1h
+            } as any;
+
             this.cdr.markForCheck();
             return;
         }
@@ -729,7 +736,7 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
         this.cdr.markForCheck();
 
         // fetch
-        this.detailsSub = this.staticArchives.getDetailsGuarded(match, 2).subscribe({
+        this.detailsSub = this.staticArchives.getDetailsGuarded(this.match, 2).subscribe({
             next: (details) => {
                 console.log('[DETAILS] loaded', details);
 
@@ -2816,8 +2823,8 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
 
     openLogin(): void { this.requestLogin.emit(); }
     openRegister(): void { this.requestRegister.emit(); }
-    openUpgrade(): void { 
-    
+    openUpgrade(): void {
+        console.log('[DETAILS] emit requestUpgrade');
         this.closed.emit();
         window.dispatchEvent(new CustomEvent('openBilling'));
     }
@@ -2840,5 +2847,16 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
 
     get isPremium(): boolean {
         return !!this.ent?.isPremium;
+    }
+
+    testClick(): void {
+        console.log('[DETAILS] upgrade clicked');
+        this.openUpgrade();
+    }
+
+    private readonly DEV_FORCE_SHOW_BILLING_BTN = true;
+    get showBillingBtn(): boolean {
+        if (this.DEV_FORCE_SHOW_BILLING_BTN) return this.isLoggedIn;
+        return this.isLoggedIn && !this.hasTrial && !this.isPremium;
     }
 }

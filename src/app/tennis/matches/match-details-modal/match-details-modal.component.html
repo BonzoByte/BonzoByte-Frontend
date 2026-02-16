@@ -414,7 +414,12 @@
                         <button class="bb-btn" (click)="openUpgrade()">Unlock details</button>
                     </ng-template>
                 </div>
-
+                <button class="bb-btn" *ngIf="isLoggedIn && !hasTrial && !isPremium" (click)="testClick()">
+                    Unlock details
+                </button>
+                <button class="bb-btn" *ngIf="showBillingBtn" (click)="openUpgrade()">
+                    Unlock details
+                </button>
                 <ng-template #genericErr>
                     <button class="bb-btn" (click)="load()">Retry</button>
                 </ng-template>
