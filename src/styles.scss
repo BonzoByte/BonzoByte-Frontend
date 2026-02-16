@@ -949,57 +949,6 @@ body.modal-open {
     user-select: none;
 }
 
-.bb-btn {
-    appearance: none;
-    -webkit-appearance: none;
-    border: 0;
-    outline: 0;
-    box-sizing: border-box;
-
-    height: 40px;
-    /* manje nego 44 */
-    min-width: 120px;
-    /* manje nego 140 */
-    padding: 0 16px;
-    /* manje paddinga */
-    border-radius: 12px;
-
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    color: #fff;
-
-    font-size: 14px;
-    font-weight: 500;
-    line-height: 1;
-    cursor: pointer;
-}
-
-.bb-btn:hover:not(:disabled) {
-    background: rgba(255, 255, 255, 0.14);
-}
-
-/* ključ: disabled NE “ubija” tekst */
-.bb-btn:disabled {
-    opacity: 1;
-    /* makni globalno blijeđenje */
-    cursor: not-allowed;
-    background: rgba(255, 255, 255, 0.03);
-    border-color: rgba(255, 255, 255, 0.10);
-    color: rgba(255, 255, 255, 0.45);
-}
-
-.bb-actions {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 14px;
-    margin-top: 14px;
-}
-
 /* Contact modal textarea – force dark theme */
 .bb-modal textarea {
     width: 100%;
@@ -1271,31 +1220,6 @@ body.modal-open {
     font-size: 13px;
 }
 
-.bb-plan-list {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    margin-top: 12px;
-}
-
-.bb-plan {
-    width: 100%;
-    text-align: left;
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    background: rgba(255, 255, 255, 0.03);
-    border-radius: 10px;
-    padding: 12px;
-    display: flex;
-    justify-content: space-between;
-    gap: 12px;
-    cursor: pointer;
-}
-
-.bb-plan.active {
-    border-color: rgba(255, 255, 255, 0.35);
-    background: rgba(255, 255, 255, 0.06);
-}
-
 .bb-plan-title {
     font-weight: 600;
     display: flex;
@@ -1312,22 +1236,6 @@ body.modal-open {
     gap: 6px;
 }
 
-.bb-muted {
-    opacity: .85;
-}
-
-.bb-dot {
-    opacity: .6;
-}
-
-.bb-badge {
-    font-size: 11px;
-    padding: 2px 8px;
-    border-radius: 999px;
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    opacity: .9;
-}
-
 .bb-plan-price {
     display: flex;
     align-items: center;
@@ -1336,18 +1244,6 @@ body.modal-open {
 .bb-eur {
     font-weight: 700;
     font-size: 16px;
-}
-
-.bb-actions {
-    display: flex;
-    gap: 10px;
-    justify-content: center;
-    margin-top: 8px;
-}
-
-.bb-btn-primary {
-    border: 1px solid rgba(255, 255, 255, 0.35);
-    background: rgba(255, 255, 255, 0.10);
 }
 
 .bb-footnote {
@@ -1371,52 +1267,8 @@ body.modal-open {
     margin-top: 6px;
 }
 
-.bb-plan-list {
-    display: grid;
-    gap: 10px;
-    margin-top: 12px;
-}
-
-.bb-plan {
-    width: 100%;
-    display: flex;
-    justify-content: space-between;
-    gap: 12px;
-    padding: 12px 14px;
-    border-radius: 12px;
-    border: 1px solid rgba(255, 255, 255, .12);
-    background: rgba(20, 20, 20, .75);
-    color: #eaeaea;
-    cursor: pointer;
-    text-align: left;
-}
-
-.bb-plan.active {
-    border-color: rgba(255, 255, 255, .35);
-    background: rgba(30, 30, 30, .9);
-}
-
 .bb-plan-title {
     font-weight: 650;
-}
-
-.bb-badge {
-    margin-left: 8px;
-    padding: 2px 8px;
-    border-radius: 999px;
-    font-size: 12px;
-    background: rgba(255, 255, 255, .10);
-    border: 1px solid rgba(255, 255, 255, .12);
-}
-
-.bb-muted {
-    color: rgba(255, 255, 255, .65);
-    font-size: 13px;
-}
-
-.bb-dot {
-    margin: 0 6px;
-    color: rgba(255, 255, 255, .35);
 }
 
 .bb-eur {
@@ -1448,4 +1300,56 @@ body.modal-open {
 .oauth-btn-primary {
     border: 1px solid rgba(255, 255, 255, 0.35);
     background: rgba(255, 255, 255, 0.10);
+}
+
+.bb-actions {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 14px;
+    margin-top: 14px;
+}
+
+.bb-plan-list {
+    display: grid;
+    gap: 10px;
+    margin-top: 12px;
+}
+
+.bb-plan {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, .12);
+    background: rgba(20, 20, 20, .75);
+    color: #eaeaea;
+    cursor: pointer;
+    text-align: left;
+}
+
+.bb-plan.active {
+    border-color: rgba(255, 255, 255, .35);
+    background: rgba(30, 30, 30, .9);
+}
+
+.bb-badge {
+    margin-left: 8px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 12px;
+    background: rgba(255, 255, 255, .10);
+    border: 1px solid rgba(255, 255, 255, .12);
+}
+
+.bb-muted {
+    color: rgba(255, 255, 255, .65);
+    font-size: 13px;
+}
+
+.bb-dot {
+    margin: 0 6px;
+    color: rgba(255, 255, 255, .35);
 }
