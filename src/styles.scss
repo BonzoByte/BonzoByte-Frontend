@@ -1364,27 +1364,79 @@ body.modal-open {
     opacity: .7;
 }
 
-.bb-backdrop--billing {
-    position: fixed;
-    inset: 0;
-    z-index: var(--z-modal-backdrop);
-    background: rgba(0, 0, 0, 0.65);
-    backdrop-filter: blur(1px);
+.bb-modal--billing {
+    width: min(820px, calc(100vw - 24px));
+    max-height: min(82vh, 780px);
 }
 
-.bb-shell--billing {
-    position: fixed;
-    inset: 0;
-    z-index: var(--z-modal-shell);
+.bb-header .bb-title {
+    color: #eaeaea;
+    font-weight: 700;
+}
+
+.bb-subtitle {
+    color: rgba(255, 255, 255, .75);
+    margin-top: 6px;
+}
+
+.bb-plan-list {
+    display: grid;
+    gap: 10px;
+    margin-top: 12px;
+}
+
+.bb-plan {
+    width: 100%;
     display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 24px;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, .12);
+    background: rgba(20, 20, 20, .75);
+    color: #eaeaea;
+    cursor: pointer;
+    text-align: left;
 }
 
-.bb-shell--billing .bb-card {
-    z-index: var(--z-modal-card);
-    width: min(920px, 96vw);
-    max-height: min(80vh, 900px);
-    overflow: auto;
+.bb-plan.active {
+    border-color: rgba(255, 255, 255, .35);
+    background: rgba(30, 30, 30, .9);
+}
+
+.bb-plan-title {
+    font-weight: 650;
+}
+
+.bb-badge {
+    margin-left: 8px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 12px;
+    background: rgba(255, 255, 255, .10);
+    border: 1px solid rgba(255, 255, 255, .12);
+}
+
+.bb-muted {
+    color: rgba(255, 255, 255, .65);
+    font-size: 13px;
+}
+
+.bb-dot {
+    margin: 0 6px;
+    color: rgba(255, 255, 255, .35);
+}
+
+.bb-eur {
+    font-weight: 700;
+}
+
+.bb-close {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, .12);
+    color: #eaeaea;
+    border-radius: 10px;
+    width: 34px;
+    height: 34px;
+    cursor: pointer;
 }
