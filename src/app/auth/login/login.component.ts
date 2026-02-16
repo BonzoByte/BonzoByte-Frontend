@@ -5,15 +5,15 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { AccessibleClickDirective } from '../../shared/directives/accessible-click.directive';
-import { TrapFocusDirective } from '../../shared/directives/trap-focus.directive';
 import { ResetPasswordComponent } from '../reset-password/reset-password.component';
 import { environment } from '@env/environment';
 import { finalize } from 'rxjs';
+import { BbModalShellComponent } from "@app/shared/ui/bb-modal-shell.component/bb-modal-shell.component";
 
 @Component({
     selector: 'app-login',
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule, MatSnackBarModule, RouterModule, ResetPasswordComponent, TrapFocusDirective, AccessibleClickDirective],
+    imports: [CommonModule, ReactiveFormsModule, MatSnackBarModule, RouterModule, ResetPasswordComponent, BbModalShellComponent, AccessibleClickDirective],
     templateUrl: './login.component.html',
     encapsulation: ViewEncapsulation.None
 })

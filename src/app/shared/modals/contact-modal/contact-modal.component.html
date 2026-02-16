@@ -1,45 +1,36 @@
-<div class="bb-backdrop" aria-hidden="true">
-    <div class="bb-modal bb-contact-modal" role="dialog" aria-modal="true" aria-labelledby="contact-title" appTrapFocus
-        [onEscape]="close" (click)="$event.stopPropagation()">
-        <button class="close-button" type="button" appAccessibleClick (accessibleClick)="close()" aria-label="Close">
-            &times;
-        </button>
+<app-bb-modal-shell title="Contact Us" modalClass="bb-contact-modal" (closed)="close()">
+    <form [formGroup]="form" (ngSubmit)="submit()" autocomplete="off" novalidate>
+        <div class="form-row">
+            <label for="c-name">Name</label>
+            <input id="c-name" type="text" formControlName="name" placeholder="Your name"
+                [class.invalid]="name?.invalid && (name?.touched || submitted)" />
+            <p class="error" *ngIf="name?.hasError('required') && (name?.touched || submitted)">Required</p>
+        </div>
 
-        <h4 id="contact-title" class="text-center">Contact Us</h4>
+        <div class="form-row">
+            <label for="c-email">Email</label>
+            <input id="c-email" type="email" formControlName="email" placeholder="your@email.com"
+                [class.invalid]="email?.invalid && (email?.touched || submitted)" />
+            <p class="error" *ngIf="email?.hasError('required') && (email?.touched || submitted)">Required</p>
+            <p class="error" *ngIf="email?.hasError('email') && (email?.touched || submitted)">Invalid email</p>
+        </div>
 
-        <form [formGroup]="form" (ngSubmit)="submit()" autocomplete="off" novalidate>
-            <div class="form-row">
-                <label for="c-name">Name</label>
-                <input id="c-name" type="text" formControlName="name" placeholder="Your name"
-                    [class.invalid]="name?.invalid && (name?.touched || submitted)" />
-                <p class="error" *ngIf="name?.hasError('required') && (name?.touched || submitted)">Required</p>
-            </div>
+        <div class="form-row">
+            <label for="c-msg">Message</label>
+            <textarea id="c-msg" rows="5" formControlName="message" placeholder="How can we help?"
+                [class.invalid]="message?.invalid && (message?.touched || submitted)"></textarea>
+            <p class="error" *ngIf="message?.hasError('required') && (message?.touched || submitted)">Required</p>
+            <p class="error" *ngIf="message?.hasError('minlength') && (message?.touched || submitted)">
+                Minimum 10 characters
+            </p>
+        </div>
 
-            <div class="form-row">
-                <label for="c-email">Email</label>
-                <input id="c-email" type="email" formControlName="email" placeholder="your@email.com"
-                    [class.invalid]="email?.invalid && (email?.touched || submitted)" />
-                <p class="error" *ngIf="email?.hasError('required') && (email?.touched || submitted)">Required</p>
-                <p class="error" *ngIf="email?.hasError('email') && (email?.touched || submitted)">Invalid email</p>
-            </div>
+        <div bbActions class="bb-actions">
+            <button type="button" class="oauth-btn" (click)="close()">Cancel</button>
 
-            <div class="form-row">
-                <label for="c-msg">Message</label>
-                <textarea id="c-msg" rows="5" formControlName="message" placeholder="How can we help?"
-                    [class.invalid]="message?.invalid && (message?.touched || submitted)"></textarea>
-                <p class="error" *ngIf="message?.hasError('required') && (message?.touched || submitted)">Required</p>
-                <p class="error" *ngIf="message?.hasError('minlength') && (message?.touched || submitted)">
-                    Minimum 10 characters
-                </p>
-            </div>
-
-            <div class="bb-actions">
-                <button type="button" class="bb-btn" (click)="close()">Cancel</button>
-
-                <button type="submit" class="bb-btn bb-btn-primary" [disabled]="form.invalid || submitting">
-                    {{ submitting ? 'Sending…' : 'Send' }}
-                </button>
-            </div>
-        </form>
-    </div>
-</div>
+            <button type="submit" class="oauth-btn oauth-btn-primary" [disabled]="form.invalid || submitting">
+                {{ submitting ? 'Sending…' : 'Send' }}
+            </button>
+        </div>
+    </form>
+</app-bb-modal-shell>

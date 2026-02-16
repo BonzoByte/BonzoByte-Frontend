@@ -1,125 +1,117 @@
-<div class="bb-backdrop" appAccessibleClick (accessibleClick)="close()">
-    <div class="bb-modal bb-filter-modal" role="dialog" aria-modal="true" aria-labelledby="filter-title" appTrapFocus
-        [onEscape]="close" (click)="$event.stopPropagation()">
-        <button class="close-button" type="button" appAccessibleClick (accessibleClick)="close()" aria-label="Close">
-            ×
-        </button>
+<app-bb-modal-shell title="Filter Matches" modalClass="bb-filter-modal" (closed)="close()">
+    <!-- ERROR banner -->
+    <div class="bb-alert bb-alert--error" *ngIf="errorMessage">
+        {{ errorMessage }}
+    </div>
 
-        <h4 id="filter-title" class="text-center">Filter Matches</h4>
-
-        <!-- ERROR banner (isto kao Login) -->
-        <div class="bb-alert bb-alert--error" *ngIf="errorMessage">
-            {{ errorMessage }}
+    <!-- ODDS -->
+    <div class="bb-section">
+        <div class="bb-section-head">
+            <span class="bb-section-title">Odds availability</span>
         </div>
 
-        <!-- ODDS -->
-        <div class="bb-section">
-            <div class="bb-section-head">
-                <span class="bb-section-title">Odds availability</span>
-            </div>
+        <div class="bb-chip-row">
+            <label class="bb-chip">
+                <input type="radio" name="odds" value="all" [(ngModel)]="selectedOdds" />
+                <span>All</span>
+            </label>
 
-            <div class="bb-chip-row">
-                <label class="bb-chip">
-                    <input type="radio" name="odds" value="all" [(ngModel)]="selectedOdds" />
-                    <span>All</span>
-                </label>
+            <label class="bb-chip">
+                <input type="radio" name="odds" value="with" [(ngModel)]="selectedOdds" />
+                <span>With odds</span>
+            </label>
 
-                <label class="bb-chip">
-                    <input type="radio" name="odds" value="with" [(ngModel)]="selectedOdds" />
-                    <span>With odds</span>
-                </label>
-
-                <label class="bb-chip">
-                    <input type="radio" name="odds" value="without" [(ngModel)]="selectedOdds" />
-                    <span>Without odds</span>
-                </label>
-            </div>
-        </div>
-
-        <div class="bb-hr"></div>
-
-        <!-- VALUE (edge) -->
-        <div class="bb-section">
-            <div class="bb-section-head">
-                <span class="bb-section-title">Value (edge)</span>
-            </div>
-
-            <div class="bb-chip-row">
-                <label class="bb-chip">
-                    <input type="radio" name="valueFilter" [(ngModel)]="selectedValueFilter" value="all" />
-                    <span>All</span>
-                </label>
-
-                <label class="bb-chip">
-                    <input type="radio" name="valueFilter" [(ngModel)]="selectedValueFilter" value="valueOnly" />
-                    <span>Value only</span>
-                </label>
-            </div>
-
-            <div class="bb-hint">
-                Shows only matches where at least one player has positive edge (≥ MIN_EDGE).
-            </div>
-        </div>
-
-        <div class="bb-hr"></div>
-
-        <!-- SURFACE -->
-        <div class="bb-section">
-            <div class="bb-section-head">
-                <span class="bb-section-title">Surface</span>
-            </div>
-
-            <div class="bb-chip-row">
-                <label class="bb-chip" *ngFor="let s of surfaces">
-                    <input type="checkbox" [checked]="selectedSurfaceIds.includes(s._id)"
-                        (change)="toggleSurface(s._id)" [disabled]="isLastSelected(selectedSurfaceIds, s._id)" />
-                    <span>{{ s.surface }}</span>
-                </label>
-            </div>
-        </div>
-
-        <div class="bb-hr"></div>
-
-        <!-- TOURNAMENT TYPE -->
-        <div class="bb-section">
-            <div class="bb-section-head">
-                <span class="bb-section-title">Tournament Type</span>
-            </div>
-
-            <div class="bb-chip-row">
-                <label class="bb-chip" *ngFor="let t of tournamentTypes">
-                    <input type="checkbox" [checked]="selectedTournamentTypeIds.includes(t._id)"
-                        (change)="toggleTournamentType(t._id)"
-                        [disabled]="isLastSelected(selectedTournamentTypeIds, t._id)" />
-                    <span>{{ t.type }}</span>
-                </label>
-            </div>
-        </div>
-
-        <div class="bb-hr"></div>
-
-        <!-- TOURNAMENT STRENGTH -->
-        <div class="bb-section">
-            <div class="bb-section-head">
-                <span class="bb-section-title">Tournament Strength</span>
-            </div>
-
-            <div class="bb-chip-row">
-                <label class="bb-chip" *ngFor="let s of strengthOptions">
-                    <input type="checkbox" [checked]="selectedStrengthStars.includes(s)"
-                        (change)="toggleStrengthStar(s)" [disabled]="isLastSelected(selectedStrengthStars, s)" />
-                    <span>{{ s }}★</span>
-                </label>
-            </div>
-
-            <div class="bb-hint">
-                Based on average TrueSkill of players in the draw.
-            </div>
-        </div>
-
-        <div class="bb-actions">
-            <button type="button" (click)="reset()" class="oauth-btn">Reset</button>
-            <button type="button" (click)="apply()" class="oauth-btn oauth-btn-primary">Apply</button>
+            <label class="bb-chip">
+                <input type="radio" name="odds" value="without" [(ngModel)]="selectedOdds" />
+                <span>Without odds</span>
+            </label>
         </div>
     </div>
-</div>
+
+    <div class="bb-hr"></div>
+
+    <!-- VALUE (edge) -->
+    <div class="bb-section">
+        <div class="bb-section-head">
+            <span class="bb-section-title">Value (edge)</span>
+        </div>
+
+        <div class="bb-chip-row">
+            <label class="bb-chip">
+                <input type="radio" name="valueFilter" [(ngModel)]="selectedValueFilter" value="all" />
+                <span>All</span>
+            </label>
+
+            <label class="bb-chip">
+                <input type="radio" name="valueFilter" [(ngModel)]="selectedValueFilter" value="valueOnly" />
+                <span>Value only</span>
+            </label>
+        </div>
+
+        <div class="bb-hint">
+            Shows only matches where at least one player has positive edge (≥ MIN_EDGE).
+        </div>
+    </div>
+
+    <div class="bb-hr"></div>
+
+    <!-- SURFACE -->
+    <div class="bb-section">
+        <div class="bb-section-head">
+            <span class="bb-section-title">Surface</span>
+        </div>
+
+        <div class="bb-chip-row">
+            <label class="bb-chip" *ngFor="let s of surfaces">
+                <input type="checkbox" [checked]="selectedSurfaceIds.includes(s._id)" (change)="toggleSurface(s._id)"
+                    [disabled]="isLastSelected(selectedSurfaceIds, s._id)" />
+                <span>{{ s.surface }}</span>
+            </label>
+        </div>
+    </div>
+
+    <div class="bb-hr"></div>
+
+    <!-- TOURNAMENT TYPE -->
+    <div class="bb-section">
+        <div class="bb-section-head">
+            <span class="bb-section-title">Tournament Type</span>
+        </div>
+
+        <div class="bb-chip-row">
+            <label class="bb-chip" *ngFor="let t of tournamentTypes">
+                <input type="checkbox" [checked]="selectedTournamentTypeIds.includes(t._id)"
+                    (change)="toggleTournamentType(t._id)"
+                    [disabled]="isLastSelected(selectedTournamentTypeIds, t._id)" />
+                <span>{{ t.type }}</span>
+            </label>
+        </div>
+    </div>
+
+    <div class="bb-hr"></div>
+
+    <!-- TOURNAMENT STRENGTH -->
+    <div class="bb-section">
+        <div class="bb-section-head">
+            <span class="bb-section-title">Tournament Strength</span>
+        </div>
+
+        <div class="bb-chip-row">
+            <label class="bb-chip" *ngFor="let s of strengthOptions">
+                <input type="checkbox" [checked]="selectedStrengthStars.includes(s)" (change)="toggleStrengthStar(s)"
+                    [disabled]="isLastSelected(selectedStrengthStars, s)" />
+                <span>{{ s }}★</span>
+            </label>
+        </div>
+
+        <div class="bb-hint">
+            Based on average TrueSkill of players in the draw.
+        </div>
+    </div>
+
+    <!-- ACTIONS -->
+    <div bbActions class="bb-actions">
+        <button type="button" (click)="reset()" class="oauth-btn">Reset</button>
+        <button type="button" (click)="apply()" class="oauth-btn oauth-btn-primary">Apply</button>
+    </div>
+</app-bb-modal-shell>

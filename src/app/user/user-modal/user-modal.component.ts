@@ -8,7 +8,7 @@ import { catchError, debounceTime, finalize, map, switchMap, take, filter } from
 import { User } from '../../core/models/user.model';
 import { AuthService } from '../../core/services/auth.service';
 import { AccessibleClickDirective } from '../../shared/directives/accessible-click.directive';
-import { TrapFocusDirective } from '../../shared/directives/trap-focus.directive';
+import { BbModalShellComponent } from "@app/shared/ui/bb-modal-shell.component/bb-modal-shell.component";
 
 /** Async validator za nickname zauzetost */
 function usernameAvailableValidator(auth: AuthService): AsyncValidatorFn {
@@ -31,7 +31,7 @@ function usernameAvailableValidator(auth: AuthService): AsyncValidatorFn {
 @Component({
     selector: 'app-user-modal',
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule, MatSnackBarModule, TrapFocusDirective, AccessibleClickDirective],
+    imports: [CommonModule, ReactiveFormsModule, MatSnackBarModule, BbModalShellComponent, AccessibleClickDirective],
     templateUrl: './user-modal.component.html',
     encapsulation: ViewEncapsulation.None
 })

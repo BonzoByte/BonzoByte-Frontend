@@ -3,7 +3,6 @@
    - Base layout: fixed header + fixed datebar + fixed footer
    - Shared UI patterns: table theme, stars, blur, loading overlay, inputs, link-like triggers
    - Page-scoped table column sizing: .matches-page, .players-page
-   - IMPORTANT: we DO NOT define .bb-backdrop globally (avoid modal collisions)
 ================================================================================================ */
 
 /* ----------------------------
@@ -16,6 +15,20 @@
     --z-modal-shell: 20001;
     --z-modal-card: 20002;
 
+    --bb-footer-bg: #111;
+    --bb-footer-text: #fff;
+    --bb-footer-link: #fff;
+    --bb-footer-border: rgba(255, 255, 255, 0.08);
+
+    --bb-header-bg: #111;
+    --bb-header-text: #fff;
+    --bb-header-border: rgba(255, 255, 255, 0.08);
+    --bb-header-btn-border: rgba(255, 255, 255, 0.30);
+    --bb-header-btn-hover: rgba(255, 255, 255, 0.10);
+    --bb-header-avatar-border: rgba(255, 255, 255, 0.40);
+
+    --bb-brand-font: 'Orbitron', system-ui, sans-serif;
+
     --header-h: 56px;
     --datebar-h: 40px;
     --footer-h: 36px;
@@ -25,10 +38,8 @@
     --sep: rgba(0, 0, 0, 0.12);
     --sep-strong: rgba(0, 0, 0, 0.18);
 
-    --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans",
-        "Liberation Sans", sans-serif;
-    --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "DejaVu Sans Mono",
-        monospace;
+    --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif;
+    --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "DejaVu Sans Mono", monospace;
 
     --font-size-base: 13px;
     --line-height-base: 1.1;
@@ -622,7 +633,6 @@ main {
 }
 
 /* Avoid scroll if you use body class toggles */
-body.bb-nosrcroll,
 body.bb-noscroll,
 body.modal-open {
     overflow: hidden;
@@ -1159,14 +1169,14 @@ body.modal-open {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 10px; // razmak između blokova
+    gap: 10px;
     text-align: center;
 }
 
 .bb-error {
     display: flex;
     flex-direction: column;
-    gap: 10px; // ✅ razmak između blokova
+    gap: 10px;
 }
 
 .bb-locked .bb-error-title {
@@ -1177,26 +1187,21 @@ body.modal-open {
     line-height: 1.4;
 }
 
-// ovo rješava “zgusnuto”  
-
 .bb-locked-title {
     font-size: 16px;
     font-weight: 600;
     margin-bottom: 10px;
-    /* više zraka ispod naslova */
 }
 
 .bb-locked-msg {
     font-size: 14px;
     opacity: 0.9;
     line-height: 1.5;
-    /* manje nagurano po visini */
     margin-bottom: 18px;
-    /* više prostora prije gumba */
 }
 
 .bb-error-msg {
-    line-height: 1.35; // ✅ da tekst ne bude zgnječen
+    line-height: 1.35;
     white-space: normal;
 }
 
@@ -1205,7 +1210,6 @@ body.modal-open {
     justify-content: center;
     gap: 12px;
     margin-bottom: 18px;
-    /* odmakni hint od gumbi */
 }
 
 .bb-locked-hint {
@@ -1214,80 +1218,15 @@ body.modal-open {
     line-height: 1.4;
 }
 
-.bb-subtitle {
-    margin-top: 6px;
-    opacity: .85;
-    font-size: 13px;
-}
-
-.bb-plan-title {
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.bb-plan-meta {
-    margin-top: 4px;
-    font-size: 12px;
-    opacity: .85;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-
-.bb-plan-price {
-    display: flex;
-    align-items: center;
-}
-
-.bb-eur {
-    font-weight: 700;
-    font-size: 16px;
-}
-
-.bb-footnote {
-    margin-top: 10px;
-    font-size: 12px;
-    opacity: .7;
-}
-
+/* Billing size modifier */
 .bb-modal--billing {
     width: min(820px, calc(100vw - 24px));
     max-height: min(82vh, 780px);
 }
 
-.bb-header .bb-title {
-    color: #eaeaea;
-    font-weight: 700;
-}
-
-.bb-subtitle {
-    color: rgba(255, 255, 255, .75);
-    margin-top: 6px;
-}
-
-.bb-plan-title {
-    font-weight: 650;
-}
-
-.bb-eur {
-    font-weight: 700;
-}
-
-.bb-close {
-    background: transparent;
-    border: 1px solid rgba(255, 255, 255, .12);
-    color: #eaeaea;
-    border-radius: 10px;
-    width: 34px;
-    height: 34px;
-    cursor: pointer;
-}
-
 /*******************************************************************
-/                      Univerzalne klase                           /
-/*******************************************************************
+  /                      Univerzalne klase                           /
+  /*******************************************************************/
 
 /* Universal hint text (used in modals, filters, etc.) */
 .bb-hint {
@@ -1297,6 +1236,16 @@ body.modal-open {
     line-height: 1.25;
 }
 
+/* Universal subtitle (used in modals) */
+.bb-subtitle {
+    margin-top: 6px;
+    font-size: 13px;
+    opacity: 0.85;
+    color: rgba(255, 255, 255, 0.75);
+    line-height: 1.3;
+}
+
+/* Primary button modifier for oauth-btn */
 .oauth-btn-primary {
     border: 1px solid rgba(255, 255, 255, 0.35);
     background: rgba(255, 255, 255, 0.10);
@@ -1310,6 +1259,7 @@ body.modal-open {
     margin-top: 14px;
 }
 
+/* Plan picker (billing) */
 .bb-plan-list {
     display: grid;
     gap: 10px;
@@ -1323,16 +1273,37 @@ body.modal-open {
     gap: 12px;
     padding: 12px 14px;
     border-radius: 12px;
-    border: 1px solid rgba(255, 255, 255, .12);
-    background: rgba(20, 20, 20, .75);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(20, 20, 20, 0.75);
     color: #eaeaea;
     cursor: pointer;
     text-align: left;
 }
 
 .bb-plan.active {
-    border-color: rgba(255, 255, 255, .35);
-    background: rgba(30, 30, 30, .9);
+    border-color: rgba(255, 255, 255, 0.35);
+    background: rgba(30, 30, 30, 0.9);
+}
+
+.bb-plan-title {
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.bb-plan-meta {
+    margin-top: 4px;
+    font-size: 12px;
+    opacity: 0.85;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.bb-plan-price {
+    display: flex;
+    align-items: center;
 }
 
 .bb-badge {
@@ -1340,16 +1311,238 @@ body.modal-open {
     padding: 2px 8px;
     border-radius: 999px;
     font-size: 12px;
-    background: rgba(255, 255, 255, .10);
-    border: 1px solid rgba(255, 255, 255, .12);
+    background: rgba(255, 255, 255, 0.10);
+    border: 1px solid rgba(255, 255, 255, 0.12);
 }
 
 .bb-muted {
-    color: rgba(255, 255, 255, .65);
+    color: rgba(255, 255, 255, 0.65);
     font-size: 13px;
 }
 
 .bb-dot {
     margin: 0 6px;
-    color: rgba(255, 255, 255, .35);
+    color: rgba(255, 255, 255, 0.35);
+}
+
+.bb-eur {
+    font-weight: 700;
+}
+
+.bb-footnote {
+    margin-top: 10px;
+    font-size: 12px;
+    opacity: 0.7;
+}
+
+.bb-modal--details {
+    width: min(820px, calc(100vw - 24px));
+    max-height: min(86vh, 820px);
+}
+
+.bb-tabs {
+    display: flex;
+    gap: 8px;
+    padding: 10px 0 12px;
+    overflow-x: auto;
+    border-bottom: 1px solid var(--bb-md-border);
+    margin-bottom: 12px;
+}
+
+.bb-tabs {
+    border-bottom: 1px solid var(--bb-md-border, rgba(255, 255, 255, 0.10));
+}
+
+.bb-tab {
+    white-space: nowrap;
+    font-size: 12px;
+    padding: 8px 12px;
+    border-radius: 999px;
+    cursor: pointer;
+
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.06);
+    color: rgba(255, 255, 255, 0.78);
+
+    &.active {
+        background: rgba(255, 255, 255, 0.14);
+        color: rgba(255, 255, 255, 0.92);
+    }
+}
+
+.bb-pill {
+    padding: 3px 8px;
+    border-radius: 999px;
+    font-size: 12px;
+    cursor: default;
+
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    color: rgba(255, 255, 255, 0.82);
+
+    &.active {
+        background: rgba(255, 255, 255, 0.14);
+        border-color: rgba(255, 255, 255, 0.18);
+        color: rgba(255, 255, 255, 0.92);
+        box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.06) inset;
+    }
+}
+
+.bb-panel {
+    padding: 12px;
+    border-radius: 12px;
+
+    background: var(--bb-md-surface);
+    border: 1px solid var(--bb-md-border);
+}
+
+.bb-panel {
+    background: var(--bb-md-surface, rgba(0, 0, 0, 0.18));
+    border: 1px solid var(--bb-md-border, rgba(255, 255, 255, 0.10));
+}
+
+.bb-players-2col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    align-items: start;
+}
+
+.bb-player {
+    border: 1px solid var(--bb-md-border);
+    border-radius: 12px;
+    padding: 8px;
+}
+
+.bb-player {
+    border: 1px solid var(--bb-md-border, rgba(255, 255, 255, 0.10));
+}
+
+.bb-player-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+    height: 30.78px;
+}
+
+.bb-player-body {
+    display: grid;
+    grid-template-columns: 92px 1fr;
+    gap: 12px;
+    align-items: start;
+}
+
+.bb-avatar {
+    width: 96px;
+    height: 96px;
+    border-radius: 20px;
+    overflow: hidden;
+
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.05);
+
+    img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
+}
+
+.bb-kv {
+    display: grid;
+    gap: 6px;
+}
+
+.bb-kv-row {
+    display: grid;
+    grid-template-columns: 62px 1fr;
+    gap: 8px;
+    align-items: baseline;
+}
+
+.bb-compare {
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px solid var(--bb-md-border);
+    display: grid;
+    gap: 6px;
+}
+
+.bb-comp-row {
+    display: grid;
+    grid-template-columns: 1fr 120px 1fr;
+    gap: 8px;
+    align-items: center;
+
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.90);
+}
+
+.bb-comp-mid {
+    text-align: center;
+    opacity: 0.75;
+    font-size: 12px;
+}
+
+.bb-comp-left {
+    text-align: right;
+    padding-right: 6px;
+}
+
+.bb-comp-right {
+    text-align: left;
+    padding-left: 6px;
+}
+
+.bb-placeholder {
+    min-height: 220px;
+    display: grid;
+    place-items: center;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.75);
+}
+
+/* --------------------------------
+     Tags (Form tab)
+  --------------------------------- */
+
+.bb-tag {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 44px;
+    padding: 2px 8px;
+    border-radius: 999px;
+
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.3px;
+    border: 1px solid transparent;
+
+    &.bb-tag-win {
+        color: #3fd18b;
+        background: rgba(63, 209, 139, 0.14);
+        border-color: rgba(63, 209, 139, 0.45);
+        box-shadow: 0 0 6px rgba(63, 209, 139, 0.25);
+    }
+
+    &.bb-tag-loss {
+        color: #ff5f5f;
+        background: rgba(255, 95, 95, 0.14);
+        border-color: rgba(255, 95, 95, 0.45);
+        box-shadow: 0 0 6px rgba(255, 95, 95, 0.25);
+    }
+
+    &.bb-tag-na {
+        color: rgba(255, 255, 255, 0.55);
+        background: rgba(255, 255, 255, 0.06);
+        border-color: rgba(255, 255, 255, 0.12);
+    }
+}
+
+.bb-comp-left .bb-tag,
+.bb-comp-right .bb-tag {
+    margin-top: -1px;
 }

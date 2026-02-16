@@ -1,10 +1,55 @@
-<ng-template #verifyModal let-modal>
-    <div class="modal-header justify-content-center">
-      <h5 class="modal-title text-center w-100">Verifikacija</h5>
+<app-bb-modal-shell
+  title="Zaboravljena lozinka"
+  subtitle="Upiši email i poslat ćemo ti link za reset lozinke."
+  (closed)="close()"
+>
+  <form [formGroup]="emailForm" (ngSubmit)="requestReset()" autocomplete="off" novalidate>
+    <!-- STATUS (ako imaš u TS-u success/error poruke) -->
+    <div class="bb-alert bb-alert--success" *ngIf="successMessage">
+      {{ successMessage }}
     </div>
-    <div class="modal-body text-center">
-      <p>{{ modalMessage }}</p>
-      <button class="btn btn-primary mt-3" appAccessibleClick (accessibleClick)="goHome()">Povratak na početnu</button>
+
+    <div class="bb-alert bb-alert--error" *ngIf="errorMessage">
+      {{ errorMessage }}
     </div>
-  </ng-template>
- 
+
+    <div class="form-row">
+      <label for="email">Email adresa:</label>
+      <input
+        id="email"
+        formControlName="email"
+        type="email"
+        placeholder="Unesi svoj email"
+        autocomplete="email"
+        [class.invalid]="emailForm.get('email')?.invalid && (emailForm.get('email')?.touched || submitted)"
+      />
+
+      <div class="error-placeholder">
+        <p
+          class="error"
+          *ngIf="emailForm.get('email')?.hasError('required') && (emailForm.get('email')?.touched || submitted)"
+        >
+          Obavezno
+        </p>
+        <p
+          class="error"
+          *ngIf="emailForm.get('email')?.hasError('email') && (emailForm.get('email')?.touched || submitted)"
+        >
+          Neispravan email.
+        </p>
+      </div>
+    </div>
+
+    <div bbActions class="bb-actions">
+      <button type="button" class="oauth-btn" (click)="close()">Cancel</button>
+
+      <button
+        type="submit"
+        class="oauth-btn oauth-btn-primary"
+        [disabled]="emailForm.invalid || submitting"
+      >
+        {{ submitting ? 'Šaljem…' : 'Pošalji reset link' }}
+      </button>
+    </div>
+  </form>
+</app-bb-modal-shell>

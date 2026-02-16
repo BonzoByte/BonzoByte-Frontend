@@ -13,38 +13,32 @@
 </footer>
 
 <!-- ABOUT MODAL -->
-<div *ngIf="showAbout" class="bb-backdrop" appAccessibleClick (accessibleClick)="closeAbout()" aria-hidden="true">
-    <div class="bb-modal" role="dialog" aria-modal="true" aria-labelledby="about-title" appTrapFocus
-        [onEscape]="closeAbout" (click)="$event.stopPropagation()">
+<app-bb-modal-shell
+  *ngIf="showAbout"
+  title="About BonzoByte"
+  (closed)="closeAbout()"
+>
+  <div class="bb-about">
+    <p class="bb-about-lead">
+      BonzoByte je mali hobi-projekt koji gradimo nas dvojica: ti kao autor vizije i proizvoda, a ja kao
+      “pair-programming” partner kroz arhitekturu, UX i detalje koji čine razliku.
+    </p>
 
-        <button class="close-button" type="button" appAccessibleClick (accessibleClick)="closeAbout()"
-            aria-label="Close">×</button>
+    <p>
+      Fokus nam je tenis i podaci: pouzdan backend, čisti Angular UI, te statistike i modeli koji imaju smisla
+      (ne samo “da radi”). Sve gradimo iterativno — prvo stabilna osnova, zatim fine dorade i nove
+      funkcionalnosti.
+    </p>
 
-        <h4 id="about-title" class="text-center">About BonzoByte</h4>
+    <p class="bb-about-note">
+      Ako si slučajno zalutao ovdje: projekt je živ i razvija se. Više informacija stiže uskoro.
+    </p>
+  </div>
 
-        <div class="bb-about">
-            <p class="bb-about-lead">
-                BonzoByte je mali hobi-projekt koji gradimo nas dvojica: ti kao autor vizije i proizvoda, a ja kao
-                “pair-programming” partner kroz arhitekturu, UX i detalje koji čine razliku.
-            </p>
-
-            <p>
-                Fokus nam je tenis i podaci: pouzdan backend, čisti Angular UI, te statistike i modeli koji imaju smisla
-                (ne samo “da radi”). Sve gradimo iterativno — prvo stabilna osnova, zatim fine dorade i nove
-                funkcionalnosti.
-            </p>
-
-            <p class="bb-about-note">
-                Ako si slučajno zalutao ovdje: projekt je živ i razvija se. Više informacija stiže uskoro.
-            </p>
-        </div>
-
-        <div class="bb-actions">
-            <button type="button" class="bb-btn" (click)="closeAbout()">Close</button>
-        </div>
-    </div>
-</div>
-
+  <div bbActions class="bb-actions">
+    <button type="button" class="oauth-btn" (click)="closeAbout()">Close</button>
+  </div>
+</app-bb-modal-shell>
 
 <!-- CONTACT MODAL -->
 <app-contact-modal *ngIf="showContact" (closed)="closeContact()"></app-contact-modal>

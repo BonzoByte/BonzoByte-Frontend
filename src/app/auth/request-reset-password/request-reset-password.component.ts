@@ -2,16 +2,15 @@ import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
-import { AccessibleClickDirective } from '../../shared/directives/accessible-click.directive';
-import { TrapFocusDirective } from '../../shared/directives/trap-focus.directive';
 import { environment } from '@env/environment';
+import { BbModalShellComponent } from '../../shared/ui/bb-modal-shell.component/bb-modal-shell.component';
 
 @Component({
     selector: 'app-request-reset-password',
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule, MatSnackBarModule, AccessibleClickDirective, TrapFocusDirective],
+    imports: [CommonModule, ReactiveFormsModule, BbModalShellComponent],
     templateUrl: './request-reset-password.component.html'
 })
 export class RequestResetPasswordComponent implements OnInit, OnDestroy {

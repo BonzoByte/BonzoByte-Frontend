@@ -5,13 +5,12 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { finalize } from 'rxjs/operators';
 import { environment } from '@env/environment';
-import { AccessibleClickDirective } from '../../../shared/directives/accessible-click.directive';
-import { TrapFocusDirective } from '../../../shared/directives/trap-focus.directive';
+import { BbModalShellComponent } from "@app/shared/ui/bb-modal-shell.component/bb-modal-shell.component";
 
 @Component({
     selector: 'app-contact-modal',
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule, MatSnackBarModule, AccessibleClickDirective, TrapFocusDirective],
+    imports: [CommonModule, ReactiveFormsModule, MatSnackBarModule, BbModalShellComponent],
     templateUrl: './contact-modal.component.html',
     encapsulation: ViewEncapsulation.None
 })

@@ -12,8 +12,7 @@ import {
     ViewEncapsulation
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { AccessibleClickDirective } from '../../../shared/directives/accessible-click.directive';
-import { TrapFocusDirective } from '../../../shared/directives/trap-focus.directive';
+import { BbModalShellComponent } from '../../../shared/ui/bb-modal-shell.component/bb-modal-shell.component';
 
 export type MatchStatus = 'all' | 'finished' | 'unfinished';
 export type OddsFilter = 'all' | 'with' | 'without';
@@ -34,7 +33,7 @@ export type FilterPayload = {
     selector: 'app-match-filter-modal',
     standalone: true,
     templateUrl: './match-filter-modal.component.html',
-    imports: [CommonModule, FormsModule, AccessibleClickDirective, TrapFocusDirective],
+    imports: [CommonModule, FormsModule, BbModalShellComponent],
     encapsulation: ViewEncapsulation.None
 })
 export class MatchFilterModalComponent implements OnChanges, OnInit, OnDestroy {

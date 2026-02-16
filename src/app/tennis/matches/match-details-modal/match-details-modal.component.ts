@@ -22,6 +22,7 @@ import { Match } from 'src/app/core/models/tennis.model';
 import { ChangeDetectorRef } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { AuthService } from '@app/core/services/auth.service';
+import { BbModalShellComponent } from "@app/shared/ui/bb-modal-shell.component/bb-modal-shell.component";
 
 // =================================================================================================
 // TYPES (UI tabs, selectors, DTO-ish rows)
@@ -440,7 +441,7 @@ interface Vm {
 @Component({
     selector: 'app-match-details-modal',
     standalone: true,
-    imports: [CommonModule, FormsModule],
+    imports: [CommonModule, FormsModule, BbModalShellComponent],
     templateUrl: './match-details-modal.component.html',
     styleUrls: ['./match-details-modal.component.scss'],
 })

@@ -1,16 +1,13 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, OnDestroy, OnInit, Output } from '@angular/core';
-import { Router, RouterLink, RouterModule, NavigationEnd } from '@angular/router';
-import { NgbModalModule } from '@ng-bootstrap/ng-bootstrap';
+import { Component, EventEmitter, NgZone, OnDestroy, OnInit, Output } from '@angular/core';
+import { NavigationEnd, Router, RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
-import { Subscription } from 'rxjs';
-import { filter } from 'rxjs/operators';
+import { filter, Subscription } from 'rxjs';
 import { LoginComponent } from '../../../auth/login/login.component';
 import { RegisterComponent } from '../../../auth/register/register.component';
-import { User } from '../../../core/models/user.model';
-import { AuthService } from '../../../core/services/auth.service';
 import { BillingModalComponent } from '../../../billing/billing-modal/billing-modal.component';
-import { NgZone } from '@angular/core';
+import { AuthService } from '../../../core/services/auth.service';
+import { User } from '../../../core/models/user.model';
 
 @Component({
     selector: 'app-header',
@@ -19,14 +16,12 @@ import { NgZone } from '@angular/core';
     styleUrls: ['./header.component.scss'],
     imports: [
         CommonModule,
+        RouterModule,
+        TranslateModule,
         RegisterComponent,
         LoginComponent,
-        RouterModule,
-        RouterLink,
-        NgbModalModule,
-        TranslateModule,
         BillingModalComponent
-    ],
+    ]
 })
 export class HeaderComponent implements OnInit, OnDestroy {
     @Output() closed = new EventEmitter<void>();
@@ -48,29 +43,29 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
     private openLoginFromGlobal = () => {
         this.zone.run(() => {
-          this.showRegisterModal = false;
-          this.showLoginModal = true;
-          document.body.classList.add('modal-open');
+            this.showRegisterModal = false;
+            this.showLoginModal = true;
+            document.body.classList.add('modal-open');
         });
-      };
-      
-      private openRegisterFromGlobal = () => {
+    };
+
+    private openRegisterFromGlobal = () => {
         this.zone.run(() => {
-          this.showLoginModal = false;
-          this.showRegisterModal = true;
-          document.body.classList.add('modal-open');
+            this.showLoginModal = false;
+            this.showRegisterModal = true;
+            document.body.classList.add('modal-open');
         });
-      };
+    };
 
     private openBillingFromGlobal = () => {
         console.log('[HEADER] openBilling event received');
         this.zone.run(() => {
-          this.showLoginModal = false;
-          this.showRegisterModal = false;
-          this.showBillingModal = true;
-          document.body.classList.add('modal-open');
+            this.showLoginModal = false;
+            this.showRegisterModal = false;
+            this.showBillingModal = true;
+            document.body.classList.add('modal-open');
         });
-      };      
+    };
 
     constructor(
         private authService: AuthService,

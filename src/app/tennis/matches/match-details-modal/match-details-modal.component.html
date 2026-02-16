@@ -1,1243 +1,625 @@
-﻿<!-- =================================================================================================
-     MATCH DETAILS MODAL (TEMPLATE)
-     -------------------------------------------------------------------------------------------------
-     Goals:
-     - Keep the layout readable and predictable (sections are clearly separated).
-     - Reuse small templates (players header, TS controls) instead of duplicating markup.
-     - Keep TS/WP chart blocks consistent (same skeleton, different chart model + events).
-     - Add English comments so a new developer understands "why" each block exists.
-================================================================================================== -->
+﻿<!-- MATCH DETAILS MODAL (Shell version) -->
+<app-bb-modal-shell *ngIf="isOpen" title="Match details" modalClass="bb-modal--match-details" (closed)="close()">
+    <!-- =================================================================================================
+       REUSABLE TEMPLATES
+  ================================================================================================== -->
 
-<!-- Backdrop: closes the modal when clicking outside -->
-<div class="bb-backdrop" *ngIf="isOpen" (click)="close()"></div>
+    <!-- Players header (2-column card) used on most tabs -->
+    <ng-template #playersHeader let-v="v">
+        <div class="bb-players-2col">
+            <!-- PLAYER 1 -->
+            <div class="bb-player">
+                <div class="bb-player-head">
+                    <span class="bb-flag-wrap" *ngIf="flagIso2OrEmpty(v.p1.iso2) as iso" [title]="v.p1.countryName">
+                        <span class="fi fi-{{ iso }} bb-flag-sm"></span>
+                    </span>
 
-<!-- =================================================================================================
-     REUSABLE TEMPLATES
-================================================================================================== -->
-
-<!-- Players header (2-column card) used on most tabs -->
-<ng-template #playersHeader let-v="v">
-    <div class="bb-players-2col">
-        <!-- ====================================
-         PLAYER 1
-    ===================================== -->
-        <div class="bb-player">
-            <div class="bb-player-head">
-                <!-- Country flag -->
-                <span class="bb-flag-wrap" *ngIf="flagIso2OrEmpty(v.p1.iso2) as iso" [title]="v.p1.countryName">
-                    <span class="fi fi-{{ iso }} bb-flag-sm"></span>
-                </span>
-
-                <!-- Name + meta (iso3 / rank / seed) -->
-                <div class="bb-player-name">
-                    {{ v.p1.name }}
-                    <span *ngIf="v.p1.iso3">({{ v.p1.iso3 }})</span>
-                    <span class="bb-meta" *ngIf="v.p1.rank">#{{ v.p1.rank }}</span>
-                    <span class="bb-meta" *ngIf="v.p1.seed">({{ v.p1.seed }})</span>
+                    <div class="bb-player-name">
+                        {{ v.p1.name }}
+                        <span *ngIf="v.p1.iso3">({{ v.p1.iso3 }})</span>
+                        <span class="bb-meta" *ngIf="v.p1.rank">#{{ v.p1.rank }}</span>
+                        <span class="bb-meta" *ngIf="v.p1.seed">({{ v.p1.seed }})</span>
+                    </div>
                 </div>
-            </div>
 
-            <div class="bb-player-body">
-                <div class="bb-avatar">
+                <div class="bb-player-body">
                     <div class="bb-avatar">
                         <img [src]="playerAvatarUrlById(v.p1.playerTPId)" (error)="onAvatarError($event)"
                             alt="Player avatar" loading="lazy" />
                     </div>
-                </div>
 
-                <!-- Player bio details -->
-                <div class="bb-kv">
-                    <div class="bb-kv-row" *ngIf="v.p1.born">
-                        <div class="bb-k">Born</div>
-                        <div class="bb-v">{{ v.p1.born }}</div>
+                    <div class="bb-kv">
+                        <div class="bb-kv-row" *ngIf="v.p1.born">
+                            <div class="bb-k">Born</div>
+                            <div class="bb-v">{{ v.p1.born }}</div>
+                        </div>
+
+                        <div class="bb-kv-row" *ngIf="v.p1.plays">
+                            <div class="bb-k">Plays</div>
+                            <div class="bb-v">{{ v.p1.plays }}</div>
+                        </div>
+
+                        <div class="bb-kv-row" *ngIf="v.p1.height">
+                            <div class="bb-k">Height</div>
+                            <div class="bb-v">{{ v.p1.height }}</div>
+                        </div>
+
+                        <div class="bb-kv-row" *ngIf="v.p1.weight">
+                            <div class="bb-k">Weight</div>
+                            <div class="bb-v">{{ v.p1.weight }}</div>
+                        </div>
                     </div>
-
-                    <div class="bb-kv-row" *ngIf="v.p1.plays">
-                        <div class="bb-k">Plays</div>
-                        <div class="bb-v">{{ v.p1.plays }}</div>
-                    </div>
-
-                    <div class="bb-kv-row" *ngIf="v.p1.height">
-                        <div class="bb-k">Height</div>
-                        <div class="bb-v">{{ v.p1.height }}</div>
-                    </div>
-
-                    <div class="bb-kv-row" *ngIf="v.p1.weight">
-                        <div class="bb-k">Weight</div>
-                        <div class="bb-v">{{ v.p1.weight }}</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- ====================================
-         PLAYER 2
-    ===================================== -->
-        <div class="bb-player">
-            <div class="bb-player-head">
-                <span class="bb-flag-wrap" *ngIf="flagIso2OrEmpty(v.p2.iso2) as iso" [title]="v.p2.countryName">
-                    <span class="fi fi-{{ iso }} bb-flag-sm"></span>
-                </span>
-
-                <div class="bb-player-name">
-                    {{ v.p2.name }}
-                    <span *ngIf="v.p2.iso3">({{ v.p2.iso3 }})</span>
-                    <span class="bb-meta" *ngIf="v.p2.rank">#{{ v.p2.rank }}</span>
-                    <span class="bb-meta" *ngIf="v.p2.seed">({{ v.p2.seed }})</span>
                 </div>
             </div>
 
-            <div class="bb-player-body">
-                <div class="bb-avatar">
+            <!-- PLAYER 2 -->
+            <div class="bb-player">
+                <div class="bb-player-head">
+                    <span class="bb-flag-wrap" *ngIf="flagIso2OrEmpty(v.p2.iso2) as iso" [title]="v.p2.countryName">
+                        <span class="fi fi-{{ iso }} bb-flag-sm"></span>
+                    </span>
+
+                    <div class="bb-player-name">
+                        {{ v.p2.name }}
+                        <span *ngIf="v.p2.iso3">({{ v.p2.iso3 }})</span>
+                        <span class="bb-meta" *ngIf="v.p2.rank">#{{ v.p2.rank }}</span>
+                        <span class="bb-meta" *ngIf="v.p2.seed">({{ v.p2.seed }})</span>
+                    </div>
+                </div>
+
+                <div class="bb-player-body">
                     <div class="bb-avatar">
                         <img [src]="playerAvatarUrlById(v.p2.playerTPId)" (error)="onAvatarError($event)"
                             alt="Player avatar" loading="lazy" />
                     </div>
-                </div>
 
-                <div class="bb-kv">
-                    <div class="bb-kv-row" *ngIf="v.p2.born">
-                        <div class="bb-k">Born</div>
-                        <div class="bb-v">{{ v.p2.born }}</div>
-                    </div>
+                    <div class="bb-kv">
+                        <div class="bb-kv-row" *ngIf="v.p2.born">
+                            <div class="bb-k">Born</div>
+                            <div class="bb-v">{{ v.p2.born }}</div>
+                        </div>
 
-                    <div class="bb-kv-row" *ngIf="v.p2.plays">
-                        <div class="bb-k">Plays</div>
-                        <div class="bb-v">{{ v.p2.plays }}</div>
-                    </div>
+                        <div class="bb-kv-row" *ngIf="v.p2.plays">
+                            <div class="bb-k">Plays</div>
+                            <div class="bb-v">{{ v.p2.plays }}</div>
+                        </div>
 
-                    <div class="bb-kv-row" *ngIf="v.p2.height">
-                        <div class="bb-k">Height</div>
-                        <div class="bb-v">{{ v.p2.height }}</div>
-                    </div>
+                        <div class="bb-kv-row" *ngIf="v.p2.height">
+                            <div class="bb-k">Height</div>
+                            <div class="bb-v">{{ v.p2.height }}</div>
+                        </div>
 
-                    <div class="bb-kv-row" *ngIf="v.p2.weight">
-                        <div class="bb-k">Weight</div>
-                        <div class="bb-v">{{ v.p2.weight }}</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</ng-template>
-
-<!-- TrueSkill / chart selectors (used on Trueskill + TS/WP Breakdown tabs) -->
-<ng-template #tsControls>
-    <div class="bb-ts-controls">
-        <!-- Granularity -->
-        <div class="bb-ts-group">
-            <div class="bb-ts-group-title">Granularity</div>
-
-            <label class="bb-radio-pill">
-                <input type="radio" name="RatingMode" [value]="'M'" [(ngModel)]="RatingMode"
-                    (ngModelChange)="onTsSelectorsChanged()" />
-                <span>M</span>
-            </label>
-
-            <label class="bb-radio-pill">
-                <input type="radio" name="RatingMode" [value]="'SM'" [(ngModel)]="RatingMode"
-                    (ngModelChange)="onTsSelectorsChanged()" />
-                <span>SM</span>
-            </label>
-
-            <label class="bb-radio-pill">
-                <input type="radio" name="RatingMode" [value]="'GSM'" [(ngModel)]="RatingMode"
-                    (ngModelChange)="onTsSelectorsChanged()" />
-                <span>GSM</span>
-            </label>
-        </div>
-
-        <!-- Surface scope -->
-        <div class="bb-ts-group">
-            <div class="bb-ts-group-title">Surface</div>
-
-            <label class="bb-radio-pill">
-                <input type="radio" name="SurfaceScope" [value]="'ALL'" [(ngModel)]="SurfaceScope"
-                    (ngModelChange)="onTsSelectorsChanged()" />
-                <span>All</span>
-            </label>
-
-            <label class="bb-radio-pill">
-                <input type="radio" name="SurfaceScope" [value]="'S1'" [(ngModel)]="SurfaceScope"
-                    (ngModelChange)="onTsSelectorsChanged()" />
-                <span>S1 <span class="bb-hint" *ngIf="isCurrentSurface('S1')">(current)</span></span>
-            </label>
-
-            <label class="bb-radio-pill">
-                <input type="radio" name="SurfaceScope" [value]="'S2'" [(ngModel)]="SurfaceScope"
-                    (ngModelChange)="onTsSelectorsChanged()" />
-                <span>S2 <span class="bb-hint" *ngIf="isCurrentSurface('S2')">(current)</span></span>
-            </label>
-
-            <label class="bb-radio-pill">
-                <input type="radio" name="SurfaceScope" [value]="'S3'" [(ngModel)]="SurfaceScope"
-                    (ngModelChange)="onTsSelectorsChanged()" />
-                <span>S3 <span class="bb-hint" *ngIf="isCurrentSurface('S3')">(current)</span></span>
-            </label>
-
-            <label class="bb-radio-pill">
-                <input type="radio" name="SurfaceScope" [value]="'S4'" [(ngModel)]="SurfaceScope"
-                    (ngModelChange)="onTsSelectorsChanged()" />
-                <span>S4 <span class="bb-hint" *ngIf="isCurrentSurface('S4')">(current)</span></span>
-            </label>
-        </div>
-    </div>
-</ng-template>
-
-<!-- Pinned tooltip summary (used by TS + WP breakdown, identical markup) -->
-<ng-template #pinnedTooltipSummary let-tip="tip">
-    <div class="bb-chart-tooltip bb-tooltip-summary">
-        <div class="bb-chart-tooltip-title">{{ tip.dateLabel }}</div>
-
-        <div class="bb-tt-grid">
-            <!-- Player 1 -->
-            <div class="bb-tt-col">
-                <div class="bb-tt-player">
-                    <span class="bb-dot bb-dot-red"></span>
-                    {{ tip.p1Label }}
-                </div>
-                <div class="bb-tt-metrics">
-                    <div class="bb-tt-row"><span>Mean</span><b>{{ tip.mu1 | number:'1.2-2' }}</b></div>
-                    <div class="bb-tt-row"><span>SD</span>{{ tip.sd1 | number:'1.2-2' }}</div>
-                    <div class="bb-tt-row"><span>WP</span>{{ tip.wp1 * 100 | number:'1.1-1' }}%</div>
-                </div>
-            </div>
-
-            <!-- Player 2 -->
-            <div class="bb-tt-col">
-                <div class="bb-tt-player">
-                    <span class="bb-dot bb-dot-blue"></span>
-                    {{ tip.p2Label }}
-                </div>
-                <div class="bb-tt-metrics">
-                    <div class="bb-tt-row"><span>Mean</span><b>{{ tip.mu2 | number:'1.2-2' }}</b></div>
-                    <div class="bb-tt-row"><span>SD</span>{{ tip.sd2 | number:'1.2-2' }}</div>
-                    <div class="bb-tt-row"><span>WP</span>{{ tip.wp2 * 100 | number:'1.1-1' }}%</div>
-                </div>
-            </div>
-        </div>
-    </div>
-</ng-template>
-
-<!-- Hover tooltip (used by TS + WP charts, identical markup) -->
-<ng-template #hoverTooltipCard let-tip="tip">
-    <div class="bb-chart-tooltip" [class.bb-tooltip-show]="true" [style.left.px]="tip.leftPx"
-        [style.top.px]="tip.topPx">
-        <div class="bb-chart-tooltip-title">{{ tip.dateLabel }}</div>
-
-        <div class="bb-tt-grid">
-            <!-- LEFT player -->
-            <div class="bb-tt-col">
-                <div class="bb-tt-player">
-                    <span class="bb-dot bb-dot-red"></span>
-                    <span class="bb-tt-player-name">{{ tip.p1Label }}</span>
-                </div>
-
-                <div class="bb-tt-metrics">
-                    <div class="bb-tt-row">
-                        <span class="bb-tt-k">Mean</span>
-                        <span class="bb-tt-v"><b>μ {{ tip.mu1 | number:'1.2-2' }}</b></span>
-                    </div>
-                    <div class="bb-tt-row">
-                        <span class="bb-tt-k">SD</span>
-                        <span class="bb-tt-v">σ {{ tip.sd1 | number:'1.2-2' }}</span>
-                    </div>
-                    <div class="bb-tt-row">
-                        <span class="bb-tt-k">WP</span>
-                        <span class="bb-tt-v">{{ (tip.wp1 * 100) | number:'1.1-1' }}%</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- RIGHT player -->
-            <div class="bb-tt-col">
-                <div class="bb-tt-player">
-                    <span class="bb-dot bb-dot-blue"></span>
-                    <span class="bb-tt-player-name">{{ tip.p2Label }}</span>
-                </div>
-
-                <div class="bb-tt-metrics">
-                    <div class="bb-tt-row">
-                        <span class="bb-tt-k">Mean</span>
-                        <span class="bb-tt-v"><b>μ {{ tip.mu2 | number:'1.2-2' }}</b></span>
-                    </div>
-                    <div class="bb-tt-row">
-                        <span class="bb-tt-k">SD</span>
-                        <span class="bb-tt-v">σ {{ tip.sd2 | number:'1.2-2' }}</span>
-                    </div>
-                    <div class="bb-tt-row">
-                        <span class="bb-tt-k">WP</span>
-                        <span class="bb-tt-v">{{ (tip.wp2 * 100) | number:'1.1-1' }}%</span>
+                        <div class="bb-kv-row" *ngIf="v.p2.weight">
+                            <div class="bb-k">Weight</div>
+                            <div class="bb-v">{{ v.p2.weight }}</div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-</ng-template>
+    </ng-template>
 
-<!-- TrueSkill snapshot (was its own tab; now embedded where it makes sense) -->
-<ng-template #tsSnapshot let-v="v">
-    <div class="bb-ts-snapshot">
-        <div class="bb-ts-snapshot-title">TrueSkill snapshot (selected mode/surface)</div>
+    <!-- TrueSkill / chart selectors -->
+    <ng-template #tsControls>
+        <div class="bb-ts-controls">
+            <div class="bb-ts-group">
+                <div class="bb-ts-group-title">Granularity</div>
 
-        <div class="bb-compare bb-compare-ts">
-            <div class="bb-comp-row">
-                <div class="bb-comp-left">{{ tsNum(tsMean('p1')) }}</div>
-                <div class="bb-comp-mid">TS Mean</div>
-                <div class="bb-comp-right">{{ tsNum(tsMean('p2')) }}</div>
+                <label class="bb-radio-pill">
+                    <input type="radio" name="RatingMode" [value]="'M'" [(ngModel)]="RatingMode"
+                        (ngModelChange)="onTsSelectorsChanged()" />
+                    <span>M</span>
+                </label>
+
+                <label class="bb-radio-pill">
+                    <input type="radio" name="RatingMode" [value]="'SM'" [(ngModel)]="RatingMode"
+                        (ngModelChange)="onTsSelectorsChanged()" />
+                    <span>SM</span>
+                </label>
+
+                <label class="bb-radio-pill">
+                    <input type="radio" name="RatingMode" [value]="'GSM'" [(ngModel)]="RatingMode"
+                        (ngModelChange)="onTsSelectorsChanged()" />
+                    <span>GSM</span>
+                </label>
             </div>
 
-            <div class="bb-comp-row">
-                <div class="bb-comp-left">{{ tsNum(tsSd('p1')) }}</div>
-                <div class="bb-comp-mid">TS SD</div>
-                <div class="bb-comp-right">{{ tsNum(tsSd('p2')) }}</div>
-            </div>
+            <div class="bb-ts-group">
+                <div class="bb-ts-group-title">Surface</div>
 
-            <div class="bb-comp-row">
-                <div class="bb-comp-left">{{ wpPct(tsWp('p1')) }}</div>
-                <div class="bb-comp-mid">Win Probability</div>
-                <div class="bb-comp-right">{{ wpPct(tsWp('p2')) }}</div>
+                <label class="bb-radio-pill">
+                    <input type="radio" name="SurfaceScope" [value]="'ALL'" [(ngModel)]="SurfaceScope"
+                        (ngModelChange)="onTsSelectorsChanged()" />
+                    <span>All</span>
+                </label>
+
+                <label class="bb-radio-pill">
+                    <input type="radio" name="SurfaceScope" [value]="'S1'" [(ngModel)]="SurfaceScope"
+                        (ngModelChange)="onTsSelectorsChanged()" />
+                    <span>S1 <span class="bb-hint" *ngIf="isCurrentSurface('S1')">(current)</span></span>
+                </label>
+
+                <label class="bb-radio-pill">
+                    <input type="radio" name="SurfaceScope" [value]="'S2'" [(ngModel)]="SurfaceScope"
+                        (ngModelChange)="onTsSelectorsChanged()" />
+                    <span>S2 <span class="bb-hint" *ngIf="isCurrentSurface('S2')">(current)</span></span>
+                </label>
+
+                <label class="bb-radio-pill">
+                    <input type="radio" name="SurfaceScope" [value]="'S3'" [(ngModel)]="SurfaceScope"
+                        (ngModelChange)="onTsSelectorsChanged()" />
+                    <span>S3 <span class="bb-hint" *ngIf="isCurrentSurface('S3')">(current)</span></span>
+                </label>
+
+                <label class="bb-radio-pill">
+                    <input type="radio" name="SurfaceScope" [value]="'S4'" [(ngModel)]="SurfaceScope"
+                        (ngModelChange)="onTsSelectorsChanged()" />
+                    <span>S4 <span class="bb-hint" *ngIf="isCurrentSurface('S4')">(current)</span></span>
+                </label>
             </div>
         </div>
-    </div>
-</ng-template>
+    </ng-template>
 
-<!-- =================================================================================================
-     MODAL SHELL
-================================================================================================== -->
+    <!-- Pinned tooltip summary -->
+    <ng-template #pinnedTooltipSummary let-tip="tip">
+        <div class="bb-chart-tooltip bb-tooltip-summary">
+            <div class="bb-chart-tooltip-title">{{ tip.dateLabel }}</div>
 
-<!-- Shell blocks click propagation so backdrop click closes, but inside click doesn't -->
+            <div class="bb-tt-grid">
+                <div class="bb-tt-col">
+                    <div class="bb-tt-player">
+                        <span class="bb-dot bb-dot-red"></span>
+                        {{ tip.p1Label }}
+                    </div>
+                    <div class="bb-tt-metrics">
+                        <div class="bb-tt-row"><span>Mean</span><b>{{ tip.mu1 | number:'1.2-2' }}</b></div>
+                        <div class="bb-tt-row"><span>SD</span>{{ tip.sd1 | number:'1.2-2' }}</div>
+                        <div class="bb-tt-row"><span>WP</span>{{ tip.wp1 * 100 | number:'1.1-1' }}%</div>
+                    </div>
+                </div>
 
-<div class="bb-shell" *ngIf="isOpen">
-    <div class="bb-card" (click)="$event.stopPropagation()">
-
-        <!-- ============================================================================================
-         HEADER (title + tournament meta line)
-    ============================================================================================= -->
-        <div class="bb-header">
-            <div class="bb-header-top">
-                <div class="bb-title">Match details</div>
-                <button class="bb-close" (click)="close()" aria-label="Close">✕</button>
+                <div class="bb-tt-col">
+                    <div class="bb-tt-player">
+                        <span class="bb-dot bb-dot-blue"></span>
+                        {{ tip.p2Label }}
+                    </div>
+                    <div class="bb-tt-metrics">
+                        <div class="bb-tt-row"><span>Mean</span><b>{{ tip.mu2 | number:'1.2-2' }}</b></div>
+                        <div class="bb-tt-row"><span>SD</span>{{ tip.sd2 | number:'1.2-2' }}</div>
+                        <div class="bb-tt-row"><span>WP</span>{{ tip.wp2 * 100 | number:'1.1-1' }}%</div>
+                    </div>
+                </div>
             </div>
+        </div>
+    </ng-template>
 
-            <!-- Tournament line (only once details are loaded into vm) -->
-            <div class="bb-header-line" *ngIf="vm as v">
-                <span class="bb-flag-wrap" *ngIf="flagIso2OrEmpty(v.header.iso2) as iso"
-                    [title]="v.header.countryName || 'World'">
-                    <span class="fi fi-{{ iso }} bb-flag-sm"></span>
+    <!-- Hover tooltip -->
+    <ng-template #hoverTooltipCard let-tip="tip">
+        <div class="bb-chart-tooltip" [class.bb-tooltip-show]="true" [style.left.px]="tip.leftPx"
+            [style.top.px]="tip.topPx">
+            <div class="bb-chart-tooltip-title">{{ tip.dateLabel }}</div>
+
+            <div class="bb-tt-grid">
+                <div class="bb-tt-col">
+                    <div class="bb-tt-player">
+                        <span class="bb-dot bb-dot-red"></span>
+                        <span class="bb-tt-player-name">{{ tip.p1Label }}</span>
+                    </div>
+
+                    <div class="bb-tt-metrics">
+                        <div class="bb-tt-row">
+                            <span class="bb-tt-k">Mean</span>
+                            <span class="bb-tt-v"><b>μ {{ tip.mu1 | number:'1.2-2' }}</b></span>
+                        </div>
+                        <div class="bb-tt-row">
+                            <span class="bb-tt-k">SD</span>
+                            <span class="bb-tt-v">σ {{ tip.sd1 | number:'1.2-2' }}</span>
+                        </div>
+                        <div class="bb-tt-row">
+                            <span class="bb-tt-k">WP</span>
+                            <span class="bb-tt-v">{{ (tip.wp1 * 100) | number:'1.1-1' }}%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bb-tt-col">
+                    <div class="bb-tt-player">
+                        <span class="bb-dot bb-dot-blue"></span>
+                        <span class="bb-tt-player-name">{{ tip.p2Label }}</span>
+                    </div>
+
+                    <div class="bb-tt-metrics">
+                        <div class="bb-tt-row">
+                            <span class="bb-tt-k">Mean</span>
+                            <span class="bb-tt-v"><b>μ {{ tip.mu2 | number:'1.2-2' }}</b></span>
+                        </div>
+                        <div class="bb-tt-row">
+                            <span class="bb-tt-k">SD</span>
+                            <span class="bb-tt-v">σ {{ tip.sd2 | number:'1.2-2' }}</span>
+                        </div>
+                        <div class="bb-tt-row">
+                            <span class="bb-tt-k">WP</span>
+                            <span class="bb-tt-v">{{ (tip.wp2 * 100) | number:'1.1-1' }}%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </ng-template>
+
+    <!-- TrueSkill snapshot -->
+    <ng-template #tsSnapshot let-v="v">
+        <div class="bb-ts-snapshot">
+            <div class="bb-ts-snapshot-title">TrueSkill snapshot (selected mode/surface)</div>
+
+            <div class="bb-compare bb-compare-ts">
+                <div class="bb-comp-row">
+                    <div class="bb-comp-left">{{ tsNum(tsMean('p1')) }}</div>
+                    <div class="bb-comp-mid">TS Mean</div>
+                    <div class="bb-comp-right">{{ tsNum(tsMean('p2')) }}</div>
+                </div>
+
+                <div class="bb-comp-row">
+                    <div class="bb-comp-left">{{ tsNum(tsSd('p1')) }}</div>
+                    <div class="bb-comp-mid">TS SD</div>
+                    <div class="bb-comp-right">{{ tsNum(tsSd('p2')) }}</div>
+                </div>
+
+                <div class="bb-comp-row">
+                    <div class="bb-comp-left">{{ wpPct(tsWp('p1')) }}</div>
+                    <div class="bb-comp-mid">Win Probability</div>
+                    <div class="bb-comp-right">{{ wpPct(tsWp('p2')) }}</div>
+                </div>
+            </div>
+        </div>
+    </ng-template>
+
+    <!-- =================================================================================================
+       HEADER LINE (subtitle area in shell)
+       - We'll render the tournament meta line at the top of the content.
+       - Later we can move this into shell "subtitle" input if we want.
+  ================================================================================================== -->
+
+    <div class="bb-header-line" *ngIf="vm as v">
+        <span class="bb-flag-wrap" *ngIf="flagIso2OrEmpty(v.header.iso2) as iso"
+            [title]="v.header.countryName || 'World'">
+            <span class="fi fi-{{ iso }} bb-flag-sm"></span>
+        </span>
+
+        <span class="bb-pill">
+            {{ tourTypeLabel(raw) }}
+            {{ v.header.name }}<span *ngIf="v.header.iso3"> ({{ v.header.iso3 }})</span>
+        </span>
+
+        <span class="bb-pill">{{ v.header.round }}</span>
+        <span class="bb-pill">{{ v.header.surface }}</span>
+        <span class="bb-pill">{{ v.header.dateText }}</span>
+
+        <span class="bb-pill" *ngIf="v.header.prizeText !== '—'">Prize: {{ v.header.prizeText }}</span>
+
+        <span class="bb-pill bb-pill-strength" *ngIf="tournamentStrengthTs(raw) as ts">
+            Tournament strength:
+            <span class="strength-cell" [title]="'TS: ' + ts.toFixed(2)">
+                <span class="stars">
+                    <span *ngFor="let s of stars" class="star" [ngClass]="starClass(s, tsToStars(ts))"></span>
                 </span>
+            </span>
+        </span>
+    </div>
 
-                <span class="bb-pill">
-                    {{ tourTypeLabel(raw) }}
-                    {{ v.header.name }}<span *ngIf="v.header.iso3"> ({{ v.header.iso3 }})</span>
-                </span>
+    <!-- =================================================================================================
+       TABS
+  ================================================================================================== -->
 
-                <span class="bb-pill">{{ v.header.round }}</span>
-                <span class="bb-pill">{{ v.header.surface }}</span>
-                <span class="bb-pill">{{ v.header.dateText }}</span>
+    <div class="bb-tabs">
+        <button class="bb-tab" [class.active]="activeTab==='overview'"
+            (click)="onTabClick('overview')">Overview</button>
+        <button class="bb-tab" [class.active]="activeTab==='tsBreakdown'" (click)="onTabClick('tsBreakdown')">TS
+            Breakdown</button>
+        <button class="bb-tab" [class.active]="activeTab==='wpBreakdown'" (click)="onTabClick('wpBreakdown')">WP
+            Breakdown</button>
+        <button class="bb-tab" [class.active]="activeTab==='performance'"
+            (click)="setTab('performance')">Performance</button>
+        <button class="bb-tab" [class.active]="activeTab==='form'" (click)="setTab('form')">Form</button>
+        <button class="bb-tab" [class.active]="activeTab==='roleStats'" (click)="setTab('roleStats')">Role
+            Stats</button>
+        <button class="bb-tab" [class.active]="activeTab==='odds'" (click)="setTab('odds')">Odds</button>
+        <button class="bb-tab" [class.active]="activeTab==='h2h'" (click)="setTab('h2h')">H2H</button>
+    </div>
 
-                <span class="bb-pill" *ngIf="v.header.prizeText !== '—'">Prize: {{ v.header.prizeText }}</span>
+    <!-- =================================================================================================
+       BODY (loading / error / content)
+  ================================================================================================== -->
 
-                <!-- Tournament strength (TrueSkill-based stars) -->
-                <span class="bb-pill bb-pill-strength" *ngIf="tournamentStrengthTs(raw) as ts">
-                    Tournament strength:
-                    <span class="strength-cell" [title]="'TS: ' + ts.toFixed(2)">
-                        <span class="stars">
-                            <span *ngFor="let s of stars" class="star" [ngClass]="starClass(s, tsToStars(ts))"></span>
-                        </span>
-                    </span>
-                </span>
-            </div>
-        </div>
+    <div class="bb-body">
+        <div class="bb-loading" *ngIf="loading">Loading…</div>
 
-        <!-- ============================================================================================
-         TABS
-         Notes:
-         - overview/trueskill/tsBreakdown/wpBreakdown use onTabClick for debugging + TS series loading
-         - other tabs use setTab directly (no extra logic needed)
-    ============================================================================================= -->
-        <div class="bb-tabs">
-            <button class="bb-tab" [class.active]="activeTab==='overview'" (click)="onTabClick('overview')">
-                Overview
-            </button>
+        <!-- LOCKED / ERROR state (single block, no duplicates) -->
+        <div class="bb-error" *ngIf="!loading && error">
+            <div class="bb-error-title">{{ isLocked ? 'Details locked' : 'Could not load match details' }}</div>
+            <div class="bb-error-msg">{{ error }}</div>
 
-            <button class="bb-tab" [class.active]="activeTab==='tsBreakdown'" (click)="onTabClick('tsBreakdown')">
-                TS Breakdown
-            </button>
+            <div class="bb-actions" *ngIf="isLocked; else genericErr">
+                <button class="bb-btn" (click)="close()">Close</button>
 
-            <button class="bb-tab" [class.active]="activeTab==='wpBreakdown'" (click)="onTabClick('wpBreakdown')">
-                WP Breakdown
-            </button>
+                <ng-container *ngIf="!isLoggedIn; else loggedInLocked">
+                    <button class="bb-btn" (click)="openLogin()">Login</button>
+                    <button class="bb-btn" (click)="openRegister()">Register</button>
+                </ng-container>
 
-            <button class="bb-tab" [class.active]="activeTab==='performance'" (click)="setTab('performance')">
-                Performance
-            </button>
-
-            <button class="bb-tab" [class.active]="activeTab==='form'" (click)="setTab('form')">
-                Form
-            </button>
-
-            <button class="bb-tab" [class.active]="activeTab==='roleStats'" (click)="setTab('roleStats')">
-                Role Stats
-            </button>
-
-            <button class="bb-tab" [class.active]="activeTab==='odds'" (click)="setTab('odds')">
-                Odds
-            </button>
-
-            <button class="bb-tab" [class.active]="activeTab==='h2h'" (click)="setTab('h2h')">
-                H2H
-            </button>
-        </div>
-
-        <!-- ============================================================================================
-         BODY (loading / error / content)
-    ============================================================================================= -->
-        <div class="bb-body">
-            <div class="bb-loading" *ngIf="loading">Loading…</div>
-
-            <!-- LOCKED state -->
-            <div class="bb-error" *ngIf="!loading && error">
-                <div class="bb-error-title">Could not load match details</div>
-                <div class="bb-error-msg">{{ error }}</div>
-
-                <!-- LOCKED state actions -->
-                <div class="bb-actions" *ngIf="isLocked; else genericErr">
-                    <button class="bb-btn" (click)="close()">Close</button>
-
-                    <ng-container *ngIf="!isLoggedIn; else loggedInLocked">
-                        <button class="bb-btn" (click)="openLogin()">Login</button>
-                        <button class="bb-btn" (click)="openRegister()">Register</button>
-                    </ng-container>
-
-                    <ng-template #loggedInLocked>
-                        <button class="bb-btn" (click)="openUpgrade()">Unlock details</button>
-                    </ng-template>
-                </div>
-                <button class="bb-btn" *ngIf="isLoggedIn && !hasTrial && !isPremium" (click)="testClick()">
-                    Unlock details
-                </button>
-                <button class="bb-btn" *ngIf="showBillingBtn" (click)="openUpgrade()">
-                    Unlock details
-                </button>
-                <ng-template #genericErr>
-                    <button class="bb-btn" (click)="load()">Retry</button>
+                <ng-template #loggedInLocked>
+                    <button class="bb-btn" (click)="openUpgrade()">Unlock details</button>
                 </ng-template>
             </div>
 
-            <!-- Error state (samo za prave greške) -->
-            <div class="bb-error" *ngIf="!loading && !isLocked && error">
-                <div class="bb-error-title">{{ locked ? 'Details locked' : 'Could not load match details' }}</div>
-                <div class="bb-error-msg">{{ error }}</div>
+            <ng-template #genericErr>
                 <button class="bb-btn" (click)="load()">Retry</button>
-            </div>
-
-            <!-- Main content (only when we have vm and no errors) -->
-            <ng-container *ngIf="!loading && !error && vm as v">
-
-                <!-- ========================================================================================
-                OVERVIEW TAB
-                ========================================================================================= -->
-                <section *ngIf="activeTab==='overview'" class="bb-panel">
-                    <ng-container *ngTemplateOutlet="playersHeader; context: { v: v }"></ng-container>
-
-                    <!-- Match result (only for finished matches) -->
-                    <div class="bb-result-row" *ngIf="v.finished">
-                        <div class="bb-result">
-                            <div class="bb-result-main">{{ v.scoreMain }}</div>
-                            <div class="bb-result-sets">{{ v.scoreSets }}</div>
-                        </div>
-                    </div>
-
-                    <!-- Quick compare (strength/nn/wp/odds/edge/valuebet/pl) -->
-                    <div class="bb-compare">
-                        <!-- Strength -->
-                        <div class="bb-comp-row">
-                            <div class="bb-comp-left">
-                                <span class="strength-cell" [title]="p1StrengthTooltip(raw)">
-                                    <span class="stars">
-                                        <span *ngFor="let s of stars" class="star"
-                                            [ngClass]="starClass(s, p1StrengthStars(raw))"></span>
-                                    </span>
-                                </span>
-                            </div>
-                            <div class="bb-comp-mid">Strength</div>
-                            <div class="bb-comp-right">
-                                <span class="strength-cell" [title]="p2StrengthTooltip(raw)">
-                                    <span class="stars">
-                                        <span *ngFor="let s of stars" class="star"
-                                            [ngClass]="starClass(s, p2StrengthStars(raw))"></span>
-                                    </span>
-                                </span>
-                            </div>
-                        </div>
-
-                        <!-- NN win probability -->
-                        <div class="bb-comp-row">
-                            <div class="bb-comp-left">{{ nnPct(v.p1.nnProb) }}</div>
-                            <div class="bb-comp-mid">Win Probability</div>
-                            <div class="bb-comp-right">{{ nnPct(v.p2.nnProb) }}</div>
-                        </div>
-
-                        <!-- Odds -->
-                        <div class="bb-comp-row">
-                            <div class="bb-comp-left">{{ oddsText(v.p1.odds) }}</div>
-                            <div class="bb-comp-mid">Odds</div>
-                            <div class="bb-comp-right">{{ oddsText(v.p2.odds) }}</div>
-                        </div>
-
-                        <!-- Edge -->
-                        <div class="bb-comp-row">
-                            <div class="bb-comp-left">{{ edgeText(v.edgeP1) }}</div>
-                            <div class="bb-comp-mid">Edge</div>
-                            <div class="bb-comp-right">{{ edgeText(v.edgeP2) }}</div>
-                        </div>
-
-                        <!-- Value bet marker -->
-                        <div class="bb-comp-row">
-                            <div class="bb-comp-left">
-                                <span *ngIf="v.betSide === 'p1'" class="bb-bet-icon" title="Value bet">✓</span>
-                            </div>
-                            <div class="bb-comp-mid">Who2Bet</div>
-                            <div class="bb-comp-right">
-                                <span *ngIf="v.betSide === 'p2'" class="bb-bet-icon" title="Value bet">✓</span>
-                            </div>
-                        </div>
-
-                        <!-- PL (profit/loss assumption for demo stake=1) -->
-                        <div class="bb-comp-row">
-                            <div class="bb-comp-left">
-                                <span *ngIf="v.pl !== undefined && v.pl > 0" class="bb-pl bb-pl-positive">+{{
-                                    v.pl.toFixed(2) }}</span>
-                            </div>
-                            <div class="bb-comp-mid">PL</div>
-                            <div class="bb-comp-right">
-                                <span *ngIf="v.pl !== undefined && v.pl < 0" class="bb-pl bb-pl-negative">{{
-                                    v.pl.toFixed(2) }}</span>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- ========================================================================================
-                TS BREAKDOWN TAB (MU chart)
-                ========================================================================================= -->
-                <section *ngIf="activeTab==='tsBreakdown'" class="bb-panel">
-                    <ng-container *ngTemplateOutlet="playersHeader; context: { v: v }"></ng-container>
-                    <ng-container *ngTemplateOutlet="tsControls"></ng-container>
-                    <ng-container *ngTemplateOutlet="tsSnapshot; context: { v: v }"></ng-container>
-
-                    <!-- Pinned summary tooltip -->
-                    <ng-container *ngIf="pinnedTooltip as tip">
-                        <ng-container *ngTemplateOutlet="pinnedTooltipSummary; context: { tip: tip }"></ng-container>
-                    </ng-container>
-
-                    <div *ngIf="tsBreakdownLoading" class="bb-loading">Loading TS history…</div>
-                    <div *ngIf="!tsBreakdownLoading && tsBreakdownError" class="bb-error">{{ tsBreakdownError }}</div>
-
-                    <ng-container *ngIf="!tsBreakdownLoading && !tsBreakdownError">
-                        <ng-container *ngIf="getTsChartModel() as cm; else noTsChart">
-
-                            <!-- Legend -->
-                            <div class="bb-legend" style="margin: 6px 0 10px;">
-                                <span class="bb-legend-item">
-                                    <span class="bb-dot bb-dot-red"></span>{{ v.p1.name }}
-                                    <span *ngIf="v.p1.iso3"> ({{ v.p1.iso3 }})</span>
-                                </span>
-                                <span class="bb-legend-item">
-                                    <span class="bb-dot bb-dot-blue"></span>{{ v.p2.name }}
-                                    <span *ngIf="v.p2.iso3"> ({{ v.p2.iso3 }})</span>
-                                </span>
-                            </div>
-
-                            <!-- Chart -->
-                            <div class="bb-chart-wrap">
-                                <svg [attr.viewBox]="'0 0 ' + chartWidth + ' ' + chartHeight"
-                                    style="width:100%; height:auto; display:block;"
-                                    (mousemove)="onTsChartMouseMove($event, cm)" (mouseleave)="onTsChartMouseLeave()">
-                                    <!-- Grid + Y labels -->
-                                    <g *ngFor="let yt of cm.yTicks">
-                                        <line [attr.x1]="chartPad" [attr.x2]="chartWidth-chartPad" [attr.y1]="yt.y"
-                                            [attr.y2]="yt.y" stroke="rgba(255,255,255,0.08)"></line>
-                                        <text [attr.x]="6" [attr.y]="yt.y+4" font-size="11"
-                                            fill="rgba(255,255,255,0.65)">
-                                            {{ yt.label }}
-                                        </text>
-                                    </g>
-
-                                    <!-- X ticks -->
-                                    <g *ngFor="let xt of cm.xTicks">
-                                        <line [attr.x1]="xt.x" [attr.x2]="xt.x" [attr.y1]="chartHeight-chartPad"
-                                            [attr.y2]="chartHeight-chartPad+6" stroke="rgba(255,255,255,0.25)"></line>
-                                        <text [attr.x]="xt.x" [attr.y]="chartHeight-6" text-anchor="middle"
-                                            font-size="11" fill="rgba(255,255,255,0.65)">
-                                            {{ xt.label }}
-                                        </text>
-                                    </g>
-
-                                    <!-- Axis -->
-                                    <line [attr.x1]="chartPad" [attr.x2]="chartPad" [attr.y1]="chartPad"
-                                        [attr.y2]="chartHeight-chartPad" stroke="rgba(255,255,255,0.25)"></line>
-                                    <line [attr.x1]="chartPad" [attr.x2]="chartWidth-chartPad"
-                                        [attr.y1]="chartHeight-chartPad" [attr.y2]="chartHeight-chartPad"
-                                        stroke="rgba(255,255,255,0.25)"></line>
-
-                                    <!-- Match date line -->
-                                    <line *ngIf="cm.matchX !== null" [attr.x1]="cm.matchX" [attr.x2]="cm.matchX"
-                                        [attr.y1]="chartPad" [attr.y2]="20 + chartHeight-chartPad"
-                                        stroke="rgba(255,255,255,0.22)" stroke-dasharray="4 4"></line>
-
-                                    <!-- Match date label -->
-                                    <g *ngIf="cm.matchX !== null">
-                                        <text [attr.x]="cm.matchX" [attr.y]="20 + chartPad - 8" text-anchor="middle"
-                                            font-size="14" fill="rgba(255,255,255,0.75)">
-                                            Match date
-                                        </text>
-                                    </g>
-
-                                    <!-- Series lines -->
-                                    <path [attr.d]="cm.p1Path" fill="none" stroke="#ff4d4d" stroke-width="2.2"
-                                        opacity="0.95"></path>
-                                    <path [attr.d]="cm.p2Path" fill="none" stroke="#4da3ff" stroke-width="2.2"
-                                        opacity="0.95"></path>
-
-                                    <!-- Trend lines -->
-                                    <path *ngIf="cm.p1TrendPath" [attr.d]="cm.p1TrendPath" fill="none" stroke="#ff4d4d"
-                                        stroke-width="1.8" opacity="0.55" stroke-dasharray="6 6"></path>
-
-                                    <path *ngIf="cm.p2TrendPath" [attr.d]="cm.p2TrendPath" fill="none" stroke="#4da3ff"
-                                        stroke-width="1.8" opacity="0.55" stroke-dasharray="6 6"></path>
-
-                                    <!-- Hover marker -->
-                                    <g *ngIf="cm.hoverX !== null">
-                                        <line [attr.x1]="cm.hoverX" [attr.x2]="cm.hoverX" [attr.y1]="chartPad"
-                                            [attr.y2]="chartHeight-chartPad" stroke="rgba(255,255,255,0.20)"></line>
-                                        <circle [attr.cx]="cm.hoverX" [attr.cy]="cm.hoverY1" r="4.5" fill="#ff4d4d"
-                                            opacity="0.95"></circle>
-                                        <circle [attr.cx]="cm.hoverX" [attr.cy]="cm.hoverY2" r="4.5" fill="#4da3ff"
-                                            opacity="0.95"></circle>
-                                    </g>
-                                </svg>
-
-                                <!-- Hover tooltip -->
-                                <ng-container *ngIf="hoverTooltip as tip">
-                                    <ng-container
-                                        *ngTemplateOutlet="hoverTooltipCard; context: { tip: tip }"></ng-container>
-                                </ng-container>
-                            </div>
-                        </ng-container>
-
-                        <ng-template #noTsChart>
-                            <div class="bb-error">Not enough points to draw chart.</div>
-                        </ng-template>
-                    </ng-container>
-                </section>
-
-                <!-- ========================================================================================
-                WP BREAKDOWN TAB (WP step chart)
-                ========================================================================================= -->
-                <section *ngIf="activeTab==='wpBreakdown'" class="bb-panel">
-                    <ng-container *ngTemplateOutlet="playersHeader; context: { v: v }"></ng-container>
-                    <ng-container *ngTemplateOutlet="tsControls"></ng-container>
-                    <ng-container *ngTemplateOutlet="tsSnapshot; context: { v: v }"></ng-container>
-
-                    <!-- Pinned summary tooltip -->
-                    <ng-container *ngIf="pinnedTooltip as tip">
-                        <ng-container *ngTemplateOutlet="pinnedTooltipSummary; context: { tip: tip }"></ng-container>
-                    </ng-container>
-
-                    <div *ngIf="tsBreakdownLoading" class="bb-loading">Loading TS history…</div>
-                    <div *ngIf="!tsBreakdownLoading && tsBreakdownError" class="bb-error">{{ tsBreakdownError }}</div>
-
-                    <ng-container *ngIf="!tsBreakdownLoading && !tsBreakdownError">
-                        <ng-container *ngIf="getWpChartModel() as cm; else noWpChart">
-
-                            <!-- Legend -->
-                            <div class="bb-legend" style="margin: 6px 0 10px;">
-                                <span class="bb-legend-item">
-                                    <span class="bb-dot bb-dot-red"></span>{{ v.p1.name }}
-                                    <span *ngIf="v.p1.iso3"> ({{ v.p1.iso3 }})</span>
-                                </span>
-                                <span class="bb-legend-item">
-                                    <span class="bb-dot bb-dot-blue"></span>{{ v.p2.name }}
-                                    <span *ngIf="v.p2.iso3"> ({{ v.p2.iso3 }})</span>
-                                </span>
-                            </div>
-
-                            <!-- Chart -->
-                            <div class="bb-chart-wrap">
-                                <svg [attr.viewBox]="'0 0 ' + chartWidth + ' ' + chartHeight"
-                                    style="width:100%; height:auto; display:block;"
-                                    (mousemove)="onWpChartMouseMove($event, cm)" (mouseleave)="onWpChartMouseLeave()">
-                                    <!-- Grid + Y labels -->
-                                    <g *ngFor="let yt of cm.yTicks">
-                                        <line [attr.x1]="chartPad" [attr.x2]="chartWidth-chartPad" [attr.y1]="yt.y"
-                                            [attr.y2]="yt.y" stroke="rgba(255,255,255,0.08)"></line>
-                                        <text [attr.x]="6" [attr.y]="yt.y+4" font-size="11"
-                                            fill="rgba(255,255,255,0.65)">
-                                            {{ yt.label }}
-                                        </text>
-                                    </g>
-
-                                    <!-- X ticks -->
-                                    <g *ngFor="let xt of cm.xTicks">
-                                        <line [attr.x1]="xt.x" [attr.x2]="xt.x" [attr.y1]="chartHeight-chartPad"
-                                            [attr.y2]="chartHeight-chartPad+6" stroke="rgba(255,255,255,0.25)"></line>
-                                        <text [attr.x]="xt.x" [attr.y]="chartHeight-6" text-anchor="middle"
-                                            font-size="11" fill="rgba(255,255,255,0.65)">
-                                            {{ xt.label }}
-                                        </text>
-                                    </g>
-
-                                    <!-- Axis -->
-                                    <line [attr.x1]="chartPad" [attr.x2]="chartPad" [attr.y1]="chartPad"
-                                        [attr.y2]="chartHeight-chartPad" stroke="rgba(255,255,255,0.25)"></line>
-                                    <line [attr.x1]="chartPad" [attr.x2]="chartWidth-chartPad"
-                                        [attr.y1]="chartHeight-chartPad" [attr.y2]="chartHeight-chartPad"
-                                        stroke="rgba(255,255,255,0.25)"></line>
-
-                                    <!-- Match date line -->
-                                    <line *ngIf="cm.matchX !== null" [attr.x1]="cm.matchX" [attr.x2]="cm.matchX"
-                                        [attr.y1]="chartPad" [attr.y2]="20 + chartHeight-chartPad"
-                                        stroke="rgba(255,255,255,0.22)" stroke-dasharray="4 4"></line>
-
-                                    <!-- Match date label -->
-                                    <g *ngIf="cm.matchX !== null">
-                                        <text [attr.x]="cm.matchX" [attr.y]="20 + chartPad - 8" text-anchor="middle"
-                                            font-size="14" fill="rgba(255,255,255,0.75)">
-                                            Match date
-                                        </text>
-                                    </g>
-
-                                    <!-- Series paths -->
-                                    <path [attr.d]="cm.wp1Path" fill="none" stroke="#ff4d4d" stroke-width="2.2"
-                                        opacity="0.95"></path>
-                                    <path *ngIf="cm.wp2Path" [attr.d]="cm.wp2Path" fill="none" stroke="#4da3ff"
-                                        stroke-width="2.2" opacity="0.75"></path>
-
-                                    <!-- Hover marker -->
-                                    <g *ngIf="cm.hoverX !== null">
-                                        <line [attr.x1]="cm.hoverX" [attr.x2]="cm.hoverX" [attr.y1]="chartPad"
-                                            [attr.y2]="chartHeight-chartPad" stroke="rgba(255,255,255,0.20)"></line>
-                                        <circle [attr.cx]="cm.hoverX" [attr.cy]="cm.hoverY1" r="4.5" fill="#ff4d4d"
-                                            opacity="0.95"></circle>
-                                        <circle *ngIf="cm.hoverY2 !== null" [attr.cx]="cm.hoverX" [attr.cy]="cm.hoverY2"
-                                            r="4.5" fill="#4da3ff" opacity="0.85"></circle>
-                                    </g>
-                                </svg>
-
-                                <!-- Hover tooltip -->
-                                <ng-container *ngIf="hoverTooltip as tip">
-                                    <ng-container
-                                        *ngTemplateOutlet="hoverTooltipCard; context: { tip: tip }"></ng-container>
-                                </ng-container>
-                            </div>
-                        </ng-container>
-
-                        <ng-template #noWpChart>
-                            <div class="bb-error">Not enough points to draw chart.</div>
-                        </ng-template>
-                    </ng-container>
-                </section>
-
-                <!-- ========================================================================================
-             PERFORMANCE TAB
-        ========================================================================================= -->
-                <section *ngIf="activeTab === 'performance'" class="bb-panel">
-                    <ng-container *ngTemplateOutlet="playersHeader; context: { v: v }"></ng-container>
-
-                    <!-- Controls (unit/time/surface) -->
-                    <div class="bb-ts-controls">
-                        <div class="bb-ts-control-row">
-                            <div class="bb-ts-label">Unit</div>
-                            <div class="bb-ts-buttons">
-                                <button *ngFor="let opt of perfUnitOptions" type="button" class="bb-pill"
-                                    [class.active]="activePerfUnit === opt.value" (click)="setPerfUnit(opt.value)">
-                                    {{ opt.label }}
-                                </button>
-                            </div>
-                        </div>
-
-                        <div class="bb-ts-control-row">
-                            <div class="bb-ts-label">Time</div>
-                            <div class="bb-ts-buttons">
-                                <button *ngFor="let opt of perfTimeOptions" type="button" class="bb-pill"
-                                    [class.active]="activePerfTime === opt.value" (click)="setPerfTime(opt.value)">
-                                    {{ opt.label }}
-                                </button>
-                            </div>
-                        </div>
-
-                        <div class="bb-ts-control-row">
-                            <div class="bb-ts-label">Surface</div>
-                            <div class="bb-ts-buttons">
-                                <button *ngFor="let opt of perfSurfaceOptions" type="button" class="bb-pill"
-                                    [class.active]="activePerfSurface === opt.value"
-                                    (click)="setPerfSurface(opt.value)">
-                                    {{ opt.label }}
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Results -->
-                    <div class="bb-compare bb-compare-ts">
-                        <div class="bb-comp-row">
-                            <div class="bb-comp-left">{{ getW(1) }}</div>
-                            <div class="bb-comp-mid">Wins</div>
-                            <div class="bb-comp-right">{{ getW(2) }}</div>
-                        </div>
-
-                        <div class="bb-comp-row">
-                            <div class="bb-comp-left">{{ getL(1) }}</div>
-                            <div class="bb-comp-mid">Losses</div>
-                            <div class="bb-comp-right">{{ getL(2) }}</div>
-                        </div>
-
-                        <div class="bb-comp-row">
-                            <div class="bb-comp-left">{{ getWinPct(1) | number:'1.0-1' }}%</div>
-                            <div class="bb-comp-mid">Win %</div>
-                            <div class="bb-comp-right">{{ getWinPct(2) | number:'1.0-1' }}%</div>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- ========================================================================================
-             FORM TAB
-        ========================================================================================= -->
-                <section *ngIf="activeTab === 'form'" class="bb-panel">
-                    <ng-container *ngTemplateOutlet="playersHeader; context: { v: v }"></ng-container>
-
-                    <!-- Surface selector -->
-                    <div class="bb-ts-controls">
-                        <div class="bb-ts-control-row">
-                            <div class="bb-ts-label">Surface</div>
-                            <div class="bb-ts-buttons">
-                                <button *ngFor="let opt of perfSurfaceOptions" type="button" class="bb-pill"
-                                    [class.active]="activeFormSurface === opt.value"
-                                    (click)="activeFormSurface = opt.value">
-                                    {{ opt.label }}
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Form stats -->
-                    <div class="bb-compare bb-compare-ts">
-                        <div class="bb-comp-row">
-                            <div class="bb-comp-left">{{ fmtDays(getDaysSinceLastMatch(1, activeFormSurface)) }}</div>
-                            <div class="bb-comp-mid">Days since last match</div>
-                            <div class="bb-comp-right">{{ fmtDays(getDaysSinceLastMatch(2, activeFormSurface)) }}</div>
-                        </div>
-
-                        <div class="bb-comp-row">
-                            <div class="bb-comp-left">
-                                <span class="bb-tag" [ngClass]="{
-                    'bb-tag-win': getMoreRecentWas(1, activeFormSurface) === 'WIN',
-                    'bb-tag-loss': getMoreRecentWas(1, activeFormSurface) === 'LOSS',
-                    'bb-tag-na': getMoreRecentWas(1, activeFormSurface) === 'N/A'
-                  }">
-                                    {{ getMoreRecentWas(1, activeFormSurface) }}
-                                </span>
-                            </div>
-
-                            <div class="bb-comp-mid">More recent was</div>
-
-                            <div class="bb-comp-right">
-                                <span class="bb-tag" [ngClass]="{
-                    'bb-tag-win': getMoreRecentWas(2, activeFormSurface) === 'WIN',
-                    'bb-tag-loss': getMoreRecentWas(2, activeFormSurface) === 'LOSS',
-                    'bb-tag-na': getMoreRecentWas(2, activeFormSurface) === 'N/A'
-                  }">
-                                    {{ getMoreRecentWas(2, activeFormSurface) }}
-                                </span>
-                            </div>
-                        </div>
-
-                        <div class="bb-comp-row">
-                            <div class="bb-comp-left">{{ fmtDays(getDaysSinceLastWin(1, activeFormSurface)) }}</div>
-                            <div class="bb-comp-mid">Days since win</div>
-                            <div class="bb-comp-right">{{ fmtDays(getDaysSinceLastWin(2, activeFormSurface)) }}</div>
-                        </div>
-
-                        <div class="bb-comp-row">
-                            <div class="bb-comp-left">{{ fmtDays(getDaysSinceLastLoss(1, activeFormSurface)) }}</div>
-                            <div class="bb-comp-mid">Days since loss</div>
-                            <div class="bb-comp-right">{{ fmtDays(getDaysSinceLastLoss(2, activeFormSurface)) }}</div>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- ========================================================================================
-             ROLE STATS TAB
-        ========================================================================================= -->
-                <section *ngIf="activeTab === 'roleStats'" class="bb-panel">
-                    <ng-container *ngTemplateOutlet="playersHeader; context: { v: v }"></ng-container>
-
-                    <!-- Time selector -->
-                    <div class="bb-ts-controls">
-                        <div class="bb-ts-control-row">
-                            <div class="bb-ts-label">Time</div>
-                            <div class="bb-ts-buttons">
-                                <button *ngFor="let opt of roleTimeOptions" type="button" class="bb-pill"
-                                    [class.active]="activeRoleTime === opt.value" (click)="activeRoleTime = opt.value">
-                                    {{ opt.label }}
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Favourite block -->
-                    <div class="bb-compare bb-compare-ts">
-                        <div class="bb-comp-row">
-                            <div class="bb-comp-left bb-pl">{{ getRoleCount('WINS', 1, 'FAV') }}</div>
-                            <div class="bb-comp-mid">Wins as favourite</div>
-                            <div class="bb-comp-right bb-pl">{{ getRoleCount('WINS', 2, 'FAV') }}</div>
-                        </div>
-
-                        <div class="bb-comp-row">
-                            <div class="bb-comp-left bb-pl">{{ getRoleCount('LOSSES', 1, 'FAV') }}</div>
-                            <div class="bb-comp-mid">Losses as favourite</div>
-                            <div class="bb-comp-right bb-pl">{{ getRoleCount('LOSSES', 2, 'FAV') }}</div>
-                        </div>
-
-                        <div class="bb-comp-row">
-                            <div class="bb-comp-left">{{ wpPct01(getRoleAvg('AVG_WP_WON', 1, 'FAV')) }}</div>
-                            <div class="bb-comp-mid">Avg WP when won (fav)</div>
-                            <div class="bb-comp-right">{{ wpPct01(getRoleAvg('AVG_WP_WON', 2, 'FAV')) }}</div>
-                        </div>
-
-                        <div class="bb-comp-row">
-                            <div class="bb-comp-left">{{ wpPct01(getRoleAvg('AVG_WP_LOST', 1, 'FAV')) }}</div>
-                            <div class="bb-comp-mid">Avg WP when lost (fav)</div>
-                            <div class="bb-comp-right">{{ wpPct01(getRoleAvg('AVG_WP_LOST', 2, 'FAV')) }}</div>
-                        </div>
-
-                        <div class="bb-comp-row">
-                            <div class="bb-comp-left bb-pl">{{ getRoleMatches(1, 'FAV') }}</div>
-                            <div class="bb-comp-mid">Matches as favourite</div>
-                            <div class="bb-comp-right bb-pl">{{ getRoleMatches(2, 'FAV') }}</div>
-                        </div>
-
-                        <div class="bb-comp-row">
-                            <div class="bb-comp-left">{{ getRoleWinPct(1, 'FAV') | number:'1.0-1' }}%</div>
-                            <div class="bb-comp-mid">Win% as favourite</div>
-                            <div class="bb-comp-right">{{ getRoleWinPct(2, 'FAV') | number:'1.0-1' }}%</div>
-                        </div>
-                    </div>
-
-                    <!-- Underdog block -->
-                    <div class="bb-compare bb-compare-ts">
-                        <div class="bb-comp-row">
-                            <div class="bb-comp-left bb-pl">{{ getRoleCount('WINS', 1, 'DOG') }}</div>
-                            <div class="bb-comp-mid">Wins as underdog</div>
-                            <div class="bb-comp-right bb-pl">{{ getRoleCount('WINS', 2, 'DOG') }}</div>
-                        </div>
-
-                        <div class="bb-comp-row">
-                            <div class="bb-comp-left bb-pl">{{ getRoleCount('LOSSES', 1, 'DOG') }}</div>
-                            <div class="bb-comp-mid">Losses as underdog</div>
-                            <div class="bb-comp-right bb-pl">{{ getRoleCount('LOSSES', 2, 'DOG') }}</div>
-                        </div>
-
-                        <div class="bb-comp-row">
-                            <div class="bb-comp-left">{{ wpPct01(getRoleAvg('AVG_WP_WON', 1, 'DOG')) }}</div>
-                            <div class="bb-comp-mid">Avg WP when won (dog)</div>
-                            <div class="bb-comp-right">{{ wpPct01(getRoleAvg('AVG_WP_WON', 2, 'DOG')) }}</div>
-                        </div>
-
-                        <div class="bb-comp-row">
-                            <div class="bb-comp-left">{{ wpPct01(getRoleAvg('AVG_WP_LOST', 1, 'DOG')) }}</div>
-                            <div class="bb-comp-mid">Avg WP when lost (dog)</div>
-                            <div class="bb-comp-right">{{ wpPct01(getRoleAvg('AVG_WP_LOST', 2, 'DOG')) }}</div>
-                        </div>
-
-                        <div class="bb-comp-row">
-                            <div class="bb-comp-left bb-pl">{{ getRoleMatches(1, 'DOG') }}</div>
-                            <div class="bb-comp-mid">Matches as underdog</div>
-                            <div class="bb-comp-right bb-pl">{{ getRoleMatches(2, 'DOG') }}</div>
-                        </div>
-
-                        <div class="bb-comp-row">
-                            <div class="bb-comp-left">{{ getRoleWinPct(1, 'DOG') | number:'1.0-1' }}%</div>
-                            <div class="bb-comp-mid">Win% as underdog</div>
-                            <div class="bb-comp-right">{{ getRoleWinPct(2, 'DOG') | number:'1.0-1' }}%</div>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- ========================================================================================
-                    H2H TAB
-                ========================================================================================= -->
-                <section *ngIf="activeTab === 'h2h'" class="bb-panel">
-                    <ng-container *ngTemplateOutlet="playersHeader; context: { v: v }"></ng-container>
-
-                    <!-- Controls -->
-                    <div class="bb-ts-controls">
-                        <div class="bb-ts-control-row">
-                            <div class="bb-ts-label">Mode</div>
-                            <div class="bb-ts-buttons">
-                                <button *ngFor="let opt of h2hModeOptions" type="button" class="bb-pill"
-                                    [class.active]="activeH2HMode === opt.value" (click)="activeH2HMode = opt.value">
-                                    {{ opt.label }}
-                                </button>
-                            </div>
-                        </div>
-
-                        <div class="bb-ts-control-row">
-                            <div class="bb-ts-label">Surface</div>
-                            <div class="bb-ts-buttons">
-                                <button *ngFor="let opt of h2hSurfaceOptions" type="button" class="bb-pill"
-                                    [class.active]="activeH2HSurface === opt.value"
-                                    (click)="activeH2HSurface = opt.value">
-                                    {{ opt.label }}
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- H2H record -->
-                    <div class="bb-compare bb-compare-ts">
-                        <div class="bb-comp-row">
-                            <div class="bb-comp-left bb-pl">{{ getH2HWins(1, activeH2HSurface, false) }}</div>
-                            <div class="bb-comp-mid">H2H wins</div>
-                            <div class="bb-comp-right bb-pl">{{ getH2HWins(2, activeH2HSurface, false) }}</div>
-                        </div>
-
-                        <div class="bb-comp-row">
-                            <div class="bb-comp-left">{{ getH2HWins(1, activeH2HSurface, true) }}</div>
-                            <div class="bb-comp-mid">H2H wins (old)</div>
-                            <div class="bb-comp-right">{{ getH2HWins(2, activeH2HSurface, true) }}</div>
-                        </div>
-                    </div>
-
-                    <!-- H2H TS/WP -->
-                    <div class="bb-compare bb-compare-ts">
-                        <div class="bb-comp-row">
-                            <div class="bb-comp-left">
-                                {{
-                                activeH2HSurface === 'ALL'
-                                ? tsNum(getH2HTsMu(activeH2HMode, 1, false))
-                                : tsNum(getH2HSurfaceTsMu(activeH2HMode, activeH2HSurface, 1, false))
-                                }}
-                            </div>
-                            <div class="bb-comp-mid">H2H TS Mean</div>
-                            <div class="bb-comp-right">
-                                {{
-                                activeH2HSurface === 'ALL'
-                                ? tsNum(getH2HTsMu(activeH2HMode, 2, false))
-                                : tsNum(getH2HSurfaceTsMu(activeH2HMode, activeH2HSurface, 2, false))
-                                }}
-                            </div>
-                        </div>
-
-                        <div class="bb-comp-row">
-                            <div class="bb-comp-left">
-                                {{
-                                activeH2HSurface === 'ALL'
-                                ? tsNum(getH2HTsSd(activeH2HMode, 1, false))
-                                : tsNum(getH2HSurfaceTsSd(activeH2HMode, activeH2HSurface, 1, false))
-                                }}
-                            </div>
-                            <div class="bb-comp-mid">H2H TS SD</div>
-                            <div class="bb-comp-right">
-                                {{
-                                activeH2HSurface === 'ALL'
-                                ? tsNum(getH2HTsSd(activeH2HMode, 2, false))
-                                : tsNum(getH2HSurfaceTsSd(activeH2HMode, activeH2HSurface, 2, false))
-                                }}
-                            </div>
-                        </div>
-
-                        <div class="bb-comp-row">
-                            <div class="bb-comp-left">{{ wpPct01(getH2HWinProbP1(activeH2HMode, activeH2HSurface)) }}
-                            </div>
-                            <div class="bb-comp-mid">Win Probability (P1)</div>
-                            <div class="bb-comp-right">{{ wpPct01(1 - getH2HWinProbP1(activeH2HMode, activeH2HSurface))
-                                }}</div>
-                        </div>
-
-                        <div class="bb-comp-row">
-                            <div class="bb-comp-left">
-                                {{
-                                activeH2HSurface === 'ALL'
-                                ? tsNum(getH2HTsMu(activeH2HMode, 1, true))
-                                : tsNum(getH2HSurfaceTsMu(activeH2HMode, activeH2HSurface, 1, true))
-                                }}
-                            </div>
-                            <div class="bb-comp-mid">H2H TS Mean (old)</div>
-                            <div class="bb-comp-right">
-                                {{
-                                activeH2HSurface === 'ALL'
-                                ? tsNum(getH2HTsMu(activeH2HMode, 2, true))
-                                : tsNum(getH2HSurfaceTsMu(activeH2HMode, activeH2HSurface, 2, true))
-                                }}
-                            </div>
-                        </div>
-
-                        <div class="bb-comp-row">
-                            <div class="bb-comp-left">
-                                {{
-                                activeH2HSurface === 'ALL'
-                                ? tsNum(getH2HTsSd(activeH2HMode, 1, true))
-                                : tsNum(getH2HSurfaceTsSd(activeH2HMode, activeH2HSurface, 1, true))
-                                }}
-                            </div>
-                            <div class="bb-comp-mid">H2H TS SD (old)</div>
-                            <div class="bb-comp-right">
-                                {{
-                                activeH2HSurface === 'ALL'
-                                ? tsNum(getH2HTsSd(activeH2HMode, 2, true))
-                                : tsNum(getH2HSurfaceTsSd(activeH2HMode, activeH2HSurface, 2, true))
-                                }}
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- ========================================================================================
-                    ODDS TAB
-                ========================================================================================= -->
-                <section *ngIf="activeTab === 'odds'" class="bb-panel">
-                    <ng-container *ngTemplateOutlet="playersHeader; context: { v: v }"></ng-container>
-
-                    <!-- Best odds -->
-                    <div class="bb-compare bb-compare-ts" style="margin-top: 6px;">
-                        <div class="bb-comp-row">
-                            <div class="bb-comp-left">
-                                <span class="bb-pl">{{ oddsNum(bestOddsP1()?.o05 || 0) }}</span>
-                                <span class="bb-muted-sm" *ngIf="bestOddsP1() as b">({{ b.o02 }})</span>
-                            </div>
-                            <div class="bb-comp-mid">Best odds</div>
-                            <div class="bb-comp-right">
-                                <span class="bb-pl">{{ oddsNum(bestOddsP2()?.o06 || 0) }}</span>
-                                <span class="bb-muted-sm" *ngIf="bestOddsP2() as b">({{ b.o02 }})</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Market summary (min/max/median) -->
-                    <div class="bb-compare bb-compare-ts" style="margin-top: 6px;">
-                        <div class="bb-comp-row">
-                            <div class="bb-comp-left">
-                                <span class="bb-muted-sm">Min:</span>&nbsp;<span class="bb-pl">{{ oddsNum(marketMinP1()
-                                    || 0) }}</span>
-                                &nbsp;&nbsp;<span class="bb-muted-sm">Med:</span>&nbsp;<span class="bb-pl">{{
-                                    oddsNum(marketMedP1() || 0) }}</span>
-                                &nbsp;&nbsp;<span class="bb-muted-sm">Max:</span>&nbsp;<span class="bb-pl">{{
-                                    oddsNum(marketMaxP1() || 0) }}</span>
-                            </div>
-                            <div class="bb-comp-mid">Market</div>
-                            <div class="bb-comp-right">
-                                <span class="bb-muted-sm">Min:</span>&nbsp;<span class="bb-pl">{{ oddsNum(marketMinP2()
-                                    || 0) }}</span>
-                                &nbsp;&nbsp;<span class="bb-muted-sm">Med:</span>&nbsp;<span class="bb-pl">{{
-                                    oddsNum(marketMedP2() || 0) }}</span>
-                                &nbsp;&nbsp;<span class="bb-muted-sm">Max:</span>&nbsp;<span class="bb-pl">{{
-                                    oddsNum(marketMaxP2() || 0) }}</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Odds table -->
-                    <div class="bb-odds-table-wrap" *ngIf="latestOddsByBookie.length; else noOdds">
-                        <table class="bb-odds-table">
-                            <thead>
-                                <tr>
-                                    <th>Bookie</th>
-                                    <th class="bb-odds-num">Odds (L)</th>
-                                    <th class="bb-odds-num">Odds (R)</th>
-                                    <th class="bb-odds-num">Impl (L)</th>
-                                    <th class="bb-odds-num">Impl (R)</th>
-                                    <th class="bb-odds-num">Margin</th>
-                                </tr>
-                            </thead>
-
-                            <tbody>
-                                <ng-container *ngFor="let r of latestOddsByBookie">
-                                    <tr (click)="toggleBookie(r.o01)" style="cursor: pointer;">
-                                        <td class="bb-odds-bookie">{{ r.o02 }}</td>
-                                        <td class="bb-odds-num bb-pl">{{ oddsNum(r.o05) }}</td>
-                                        <td class="bb-odds-num bb-pl">{{ oddsNum(r.o06) }}</td>
-                                        <td class="bb-odds-num">{{ oddsPct01(oddsImplied(r.o05)) }}</td>
-                                        <td class="bb-odds-num">{{ oddsPct01(oddsImplied(r.o06)) }}</td>
-                                        <td class="bb-odds-num">{{ overroundPct(r) }}</td>
-                                    </tr>
-
-                                    <!-- Expanded details: history -->
-                                    <tr *ngIf="expandedBookieId === r.o01">
-                                        <td colspan="6" class="bb-odds-history-cell">
-                                            <div class="bb-muted-sm bb-odds-history-title">{{ r.o02 }} history</div>
-
-                                            <ng-container *ngIf="bookieHistory(r.o01).length; else noHistory">
-                                                <table class="bb-odds-table bb-odds-history-table">
-                                                    <thead>
-                                                        <tr>
-                                                            <th>Bookie</th>
-                                                            <th class="bb-odds-num">Odds (L)</th>
-                                                            <th class="bb-odds-num">Odds (R)</th>
-                                                            <th class="bb-odds-num">Impl (L)</th>
-                                                            <th class="bb-odds-num">Impl (R)</th>
-                                                            <th class="bb-odds-num">Margin</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        <tr *ngFor="let h of bookieHistory(r.o01)">
-                                                            <td class="bb-th-left">
-                                                                <ng-container *ngIf="h.o03; else noTime">
-                                                                    {{ h.o03 | date:'yyyy-MM-dd HH:mm' }}
-                                                                </ng-container>
-                                                                <ng-template #noTime>
-                                                                    Update #{{ (h.o04 ?? 0) }}
-                                                                </ng-template>
-                                                            </td>
-
-                                                            <td class="bb-odds-num bb-pl">{{ oddsNum(h.o05) }}</td>
-                                                            <td class="bb-odds-num bb-pl">{{ oddsNum(h.o06) }}</td>
-                                                            <td class="bb-odds-num">{{ oddsPct01(oddsImplied(h.o05)) }}
-                                                            </td>
-                                                            <td class="bb-odds-num">{{ oddsPct01(oddsImplied(h.o06)) }}
-                                                            </td>
-                                                            <td class="bb-odds-num">{{ overroundPct(h) }}</td>
-                                                        </tr>
-                                                    </tbody>
-                                                </table>
-                                            </ng-container>
-
-                                            <ng-template #noHistory>
-                                                <div class="bb-placeholder">No odds history available for this bookie.
-                                                </div>
-                                            </ng-template>
-                                        </td>
-                                    </tr>
-                                </ng-container>
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <ng-template #noOdds>
-                        <div class="bb-placeholder">No valid odds in archive.</div>
-                    </ng-template>
-                </section>
-
-
-                <!-- ========================================================================================
-             PLACEHOLDER (safety net)
-             If a new tab is introduced but not implemented in template yet,
-             this prevents accidental "empty page" confusion.
-        ========================================================================================= -->
-                <div *ngIf="
-            activeTab !== 'overview' &&
-            activeTab !== 'tsBreakdown' &&
-            activeTab !== 'wpBreakdown' &&
-            activeTab !== 'performance' &&
-            activeTab !== 'form' &&
-            activeTab !== 'roleStats' &&
-            activeTab !== 'odds' &&
-            activeTab !== 'h2h'
-          "></div>
-
-            </ng-container>
+            </ng-template>
         </div>
+
+        <!-- Main content -->
+        <ng-container *ngIf="!loading && !error && vm as v">
+            <!-- OVERVIEW -->
+            <section *ngIf="activeTab==='overview'" class="bb-panel">
+                <ng-container *ngTemplateOutlet="playersHeader; context: { v: v }"></ng-container>
+
+                <div class="bb-result-row" *ngIf="v.finished">
+                    <div class="bb-result">
+                        <div class="bb-result-main">{{ v.scoreMain }}</div>
+                        <div class="bb-result-sets">{{ v.scoreSets }}</div>
+                    </div>
+                </div>
+
+                <div class="bb-compare">
+                    <div class="bb-comp-row">
+                        <div class="bb-comp-left">
+                            <span class="strength-cell" [title]="p1StrengthTooltip(raw)">
+                                <span class="stars">
+                                    <span *ngFor="let s of stars" class="star"
+                                        [ngClass]="starClass(s, p1StrengthStars(raw))"></span>
+                                </span>
+                            </span>
+                        </div>
+                        <div class="bb-comp-mid">Strength</div>
+                        <div class="bb-comp-right">
+                            <span class="strength-cell" [title]="p2StrengthTooltip(raw)">
+                                <span class="stars">
+                                    <span *ngFor="let s of stars" class="star"
+                                        [ngClass]="starClass(s, p2StrengthStars(raw))"></span>
+                                </span>
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="bb-comp-row">
+                        <div class="bb-comp-left">{{ nnPct(v.p1.nnProb) }}</div>
+                        <div class="bb-comp-mid">Win Probability</div>
+                        <div class="bb-comp-right">{{ nnPct(v.p2.nnProb) }}</div>
+                    </div>
+
+                    <div class="bb-comp-row">
+                        <div class="bb-comp-left">{{ oddsText(v.p1.odds) }}</div>
+                        <div class="bb-comp-mid">Odds</div>
+                        <div class="bb-comp-right">{{ oddsText(v.p2.odds) }}</div>
+                    </div>
+
+                    <div class="bb-comp-row">
+                        <div class="bb-comp-left">{{ edgeText(v.edgeP1) }}</div>
+                        <div class="bb-comp-mid">Edge</div>
+                        <div class="bb-comp-right">{{ edgeText(v.edgeP2) }}</div>
+                    </div>
+
+                    <div class="bb-comp-row">
+                        <div class="bb-comp-left">
+                            <span *ngIf="v.betSide === 'p1'" class="bb-bet-icon" title="Value bet">✓</span>
+                        </div>
+                        <div class="bb-comp-mid">Who2Bet</div>
+                        <div class="bb-comp-right">
+                            <span *ngIf="v.betSide === 'p2'" class="bb-bet-icon" title="Value bet">✓</span>
+                        </div>
+                    </div>
+
+                    <div class="bb-comp-row">
+                        <div class="bb-comp-left">
+                            <span *ngIf="v.pl !== undefined && v.pl > 0" class="bb-pl bb-pl-positive">+{{
+                                v.pl.toFixed(2) }}</span>
+                        </div>
+                        <div class="bb-comp-mid">PL</div>
+                        <div class="bb-comp-right">
+                            <span *ngIf="v.pl !== undefined && v.pl < 0" class="bb-pl bb-pl-negative">{{ v.pl.toFixed(2)
+                                }}</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TS BREAKDOWN -->
+            <section *ngIf="activeTab==='tsBreakdown'" class="bb-panel">
+                <ng-container *ngTemplateOutlet="playersHeader; context: { v: v }"></ng-container>
+                <ng-container *ngTemplateOutlet="tsControls"></ng-container>
+                <ng-container *ngTemplateOutlet="tsSnapshot; context: { v: v }"></ng-container>
+
+                <ng-container *ngIf="pinnedTooltip as tip">
+                    <ng-container *ngTemplateOutlet="pinnedTooltipSummary; context: { tip: tip }"></ng-container>
+                </ng-container>
+
+                <div *ngIf="tsBreakdownLoading" class="bb-loading">Loading TS history…</div>
+                <div *ngIf="!tsBreakdownLoading && tsBreakdownError" class="bb-error">{{ tsBreakdownError }}</div>
+
+                <ng-container *ngIf="!tsBreakdownLoading && !tsBreakdownError">
+                    <ng-container *ngIf="getTsChartModel() as cm; else noTsChart">
+                        <div class="bb-legend" style="margin: 6px 0 10px;">
+                            <span class="bb-legend-item">
+                                <span class="bb-dot bb-dot-red"></span>{{ v.p1.name }}
+                                <span *ngIf="v.p1.iso3"> ({{ v.p1.iso3 }})</span>
+                            </span>
+                            <span class="bb-legend-item">
+                                <span class="bb-dot bb-dot-blue"></span>{{ v.p2.name }}
+                                <span *ngIf="v.p2.iso3"> ({{ v.p2.iso3 }})</span>
+                            </span>
+                        </div>
+
+                        <div class="bb-chart-wrap">
+                            <svg [attr.viewBox]="'0 0 ' + chartWidth + ' ' + chartHeight"
+                                style="width:100%; height:auto; display:block;"
+                                (mousemove)="onTsChartMouseMove($event, cm)" (mouseleave)="onTsChartMouseLeave()">
+                                <g *ngFor="let yt of cm.yTicks">
+                                    <line [attr.x1]="chartPad" [attr.x2]="chartWidth-chartPad" [attr.y1]="yt.y"
+                                        [attr.y2]="yt.y" stroke="rgba(255,255,255,0.08)"></line>
+                                    <text [attr.x]="6" [attr.y]="yt.y+4" font-size="11" fill="rgba(255,255,255,0.65)">{{
+                                        yt.label }}</text>
+                                </g>
+
+                                <g *ngFor="let xt of cm.xTicks">
+                                    <line [attr.x1]="xt.x" [attr.x2]="xt.x" [attr.y1]="chartHeight-chartPad"
+                                        [attr.y2]="chartHeight-chartPad+6" stroke="rgba(255,255,255,0.25)"></line>
+                                    <text [attr.x]="xt.x" [attr.y]="chartHeight-6" text-anchor="middle" font-size="11"
+                                        fill="rgba(255,255,255,0.65)">{{ xt.label }}</text>
+                                </g>
+
+                                <line [attr.x1]="chartPad" [attr.x2]="chartPad" [attr.y1]="chartPad"
+                                    [attr.y2]="chartHeight-chartPad" stroke="rgba(255,255,255,0.25)"></line>
+                                <line [attr.x1]="chartPad" [attr.x2]="chartWidth-chartPad"
+                                    [attr.y1]="chartHeight-chartPad" [attr.y2]="chartHeight-chartPad"
+                                    stroke="rgba(255,255,255,0.25)"></line>
+
+                                <line *ngIf="cm.matchX !== null" [attr.x1]="cm.matchX" [attr.x2]="cm.matchX"
+                                    [attr.y1]="chartPad" [attr.y2]="20 + chartHeight-chartPad"
+                                    stroke="rgba(255,255,255,0.22)" stroke-dasharray="4 4"></line>
+
+                                <g *ngIf="cm.matchX !== null">
+                                    <text [attr.x]="cm.matchX" [attr.y]="20 + chartPad - 8" text-anchor="middle"
+                                        font-size="14" fill="rgba(255,255,255,0.75)">
+                                        Match date
+                                    </text>
+                                </g>
+
+                                <path [attr.d]="cm.p1Path" fill="none" stroke="#ff4d4d" stroke-width="2.2"
+                                    opacity="0.95"></path>
+                                <path [attr.d]="cm.p2Path" fill="none" stroke="#4da3ff" stroke-width="2.2"
+                                    opacity="0.95"></path>
+
+                                <path *ngIf="cm.p1TrendPath" [attr.d]="cm.p1TrendPath" fill="none" stroke="#ff4d4d"
+                                    stroke-width="1.8" opacity="0.55" stroke-dasharray="6 6"></path>
+                                <path *ngIf="cm.p2TrendPath" [attr.d]="cm.p2TrendPath" fill="none" stroke="#4da3ff"
+                                    stroke-width="1.8" opacity="0.55" stroke-dasharray="6 6"></path>
+
+                                <g *ngIf="cm.hoverX !== null">
+                                    <line [attr.x1]="cm.hoverX" [attr.x2]="cm.hoverX" [attr.y1]="chartPad"
+                                        [attr.y2]="chartHeight-chartPad" stroke="rgba(255,255,255,0.20)"></line>
+                                    <circle [attr.cx]="cm.hoverX" [attr.cy]="cm.hoverY1" r="4.5" fill="#ff4d4d"
+                                        opacity="0.95"></circle>
+                                    <circle [attr.cx]="cm.hoverX" [attr.cy]="cm.hoverY2" r="4.5" fill="#4da3ff"
+                                        opacity="0.95"></circle>
+                                </g>
+                            </svg>
+
+                            <ng-container *ngIf="hoverTooltip as tip">
+                                <ng-container
+                                    *ngTemplateOutlet="hoverTooltipCard; context: { tip: tip }"></ng-container>
+                            </ng-container>
+                        </div>
+                    </ng-container>
+
+                    <ng-template #noTsChart>
+                        <div class="bb-error">Not enough points to draw chart.</div>
+                    </ng-template>
+                </ng-container>
+            </section>
+
+            <!-- WP BREAKDOWN -->
+            <section *ngIf="activeTab==='wpBreakdown'" class="bb-panel">
+                <ng-container *ngTemplateOutlet="playersHeader; context: { v: v }"></ng-container>
+                <ng-container *ngTemplateOutlet="tsControls"></ng-container>
+                <ng-container *ngTemplateOutlet="tsSnapshot; context: { v: v }"></ng-container>
+
+                <ng-container *ngIf="pinnedTooltip as tip">
+                    <ng-container *ngTemplateOutlet="pinnedTooltipSummary; context: { tip: tip }"></ng-container>
+                </ng-container>
+
+                <div *ngIf="tsBreakdownLoading" class="bb-loading">Loading TS history…</div>
+                <div *ngIf="!tsBreakdownLoading && tsBreakdownError" class="bb-error">{{ tsBreakdownError }}</div>
+
+                <ng-container *ngIf="!tsBreakdownLoading && !tsBreakdownError">
+                    <ng-container *ngIf="getWpChartModel() as cm; else noWpChart">
+                        <div class="bb-legend" style="margin: 6px 0 10px;">
+                            <span class="bb-legend-item">
+                                <span class="bb-dot bb-dot-red"></span>{{ v.p1.name }}
+                                <span *ngIf="v.p1.iso3"> ({{ v.p1.iso3 }})</span>
+                            </span>
+                            <span class="bb-legend-item">
+                                <span class="bb-dot bb-dot-blue"></span>{{ v.p2.name }}
+                                <span *ngIf="v.p2.iso3"> ({{ v.p2.iso3 }})</span>
+                            </span>
+                        </div>
+
+                        <div class="bb-chart-wrap">
+                            <svg [attr.viewBox]="'0 0 ' + chartWidth + ' ' + chartHeight"
+                                style="width:100%; height:auto; display:block;"
+                                (mousemove)="onWpChartMouseMove($event, cm)" (mouseleave)="onWpChartMouseLeave()">
+                                <g *ngFor="let yt of cm.yTicks">
+                                    <line [attr.x1]="chartPad" [attr.x2]="chartWidth-chartPad" [attr.y1]="yt.y"
+                                        [attr.y2]="yt.y" stroke="rgba(255,255,255,0.08)"></line>
+                                    <text [attr.x]="6" [attr.y]="yt.y+4" font-size="11" fill="rgba(255,255,255,0.65)">{{
+                                        yt.label }}</text>
+                                </g>
+
+                                <g *ngFor="let xt of cm.xTicks">
+                                    <line [attr.x1]="xt.x" [attr.x2]="xt.x" [attr.y1]="chartHeight-chartPad"
+                                        [attr.y2]="chartHeight-chartPad+6" stroke="rgba(255,255,255,0.25)"></line>
+                                    <text [attr.x]="xt.x" [attr.y]="chartHeight-6" text-anchor="middle" font-size="11"
+                                        fill="rgba(255,255,255,0.65)">{{ xt.label }}</text>
+                                </g>
+
+                                <line [attr.x1]="chartPad" [attr.x2]="chartPad" [attr.y1]="chartPad"
+                                    [attr.y2]="chartHeight-chartPad" stroke="rgba(255,255,255,0.25)"></line>
+                                <line [attr.x1]="chartPad" [attr.x2]="chartWidth-chartPad"
+                                    [attr.y1]="chartHeight-chartPad" [attr.y2]="chartHeight-chartPad"
+                                    stroke="rgba(255,255,255,0.25)"></line>
+
+                                <line *ngIf="cm.matchX !== null" [attr.x1]="cm.matchX" [attr.x2]="cm.matchX"
+                                    [attr.y1]="chartPad" [attr.y2]="20 + chartHeight-chartPad"
+                                    stroke="rgba(255,255,255,0.22)" stroke-dasharray="4 4"></line>
+
+                                <g *ngIf="cm.matchX !== null">
+                                    <text [attr.x]="cm.matchX" [attr.y]="20 + chartPad - 8" text-anchor="middle"
+                                        font-size="14" fill="rgba(255,255,255,0.75)">
+                                        Match date
+                                    </text>
+                                </g>
+
+                                <path [attr.d]="cm.wp1Path" fill="none" stroke="#ff4d4d" stroke-width="2.2"
+                                    opacity="0.95"></path>
+                                <path *ngIf="cm.wp2Path" [attr.d]="cm.wp2Path" fill="none" stroke="#4da3ff"
+                                    stroke-width="2.2" opacity="0.75"></path>
+
+                                <g *ngIf="cm.hoverX !== null">
+                                    <line [attr.x1]="cm.hoverX" [attr.x2]="cm.hoverX" [attr.y1]="chartPad"
+                                        [attr.y2]="chartHeight-chartPad" stroke="rgba(255,255,255,0.20)"></line>
+                                    <circle [attr.cx]="cm.hoverX" [attr.cy]="cm.hoverY1" r="4.5" fill="#ff4d4d"
+                                        opacity="0.95"></circle>
+                                    <circle *ngIf="cm.hoverY2 !== null" [attr.cx]="cm.hoverX" [attr.cy]="cm.hoverY2"
+                                        r="4.5" fill="#4da3ff" opacity="0.85"></circle>
+                                </g>
+                            </svg>
+
+                            <ng-container *ngIf="hoverTooltip as tip">
+                                <ng-container
+                                    *ngTemplateOutlet="hoverTooltipCard; context: { tip: tip }"></ng-container>
+                            </ng-container>
+                        </div>
+                    </ng-container>
+
+                    <ng-template #noWpChart>
+                        <div class="bb-error">Not enough points to draw chart.</div>
+                    </ng-template>
+                </ng-container>
+            </section>
+
+            <!-- PERFORMANCE / FORM / ROLE / H2H / ODDS -->
+            <!-- (ostatak tvojih sekcija ide 1:1, bez wrappera bb-shell/bb-card/bb-header jer to radi shell) -->
+
+            <!-- ... ostavi sve dalje kako imaš; ja sam ti gore pokazao pattern i već smo maknuli dupli overlay ... -->
+        </ng-container>
     </div>
-</div>
+</app-bb-modal-shell>

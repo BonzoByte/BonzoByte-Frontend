@@ -1,13 +1,12 @@
 ﻿import { CommonModule } from '@angular/common';
 import { Component, OnDestroy } from '@angular/core';
 import { ContactModalComponent } from '../../modals/contact-modal/contact-modal.component';
-import { TrapFocusDirective } from '../../directives/trap-focus.directive';
-import { AccessibleClickDirective } from '../../directives/accessible-click.directive';
+import { BbModalShellComponent } from "@app/shared/ui/bb-modal-shell.component/bb-modal-shell.component";
 
 @Component({
     selector: 'app-footer',
     standalone: true,
-    imports: [CommonModule, ContactModalComponent, TrapFocusDirective, AccessibleClickDirective],
+    imports: [CommonModule, ContactModalComponent, BbModalShellComponent],
     templateUrl: './footer.component.html',
     styleUrls: ['./footer.component.scss']
 })

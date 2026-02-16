@@ -14,8 +14,8 @@ import { HttpClient } from '@angular/common/http';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { environment } from '@env/environment';
 import { AccessibleClickDirective } from '../../shared/directives/accessible-click.directive';
-import { TrapFocusDirective } from '../../shared/directives/trap-focus.directive';
 import { finalize } from 'rxjs/operators';
+import { BbModalShellComponent } from '../../shared/ui/bb-modal-shell.component/bb-modal-shell.component';
 
 @Component({
     selector: 'app-reset-password',
@@ -25,7 +25,7 @@ import { finalize } from 'rxjs/operators';
         ReactiveFormsModule,
         MatSnackBarModule,
         AccessibleClickDirective,
-        TrapFocusDirective
+        BbModalShellComponent
     ],
     templateUrl: './reset-password.component.html',
     encapsulation: ViewEncapsulation.None
