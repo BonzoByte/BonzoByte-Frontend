@@ -1363,14 +1363,14 @@ body.modal-open {
 .bb-backdrop--billing {
     position: fixed;
     inset: 0;
-    z-index: 6000;
+    z-index: 10000;
     background: rgba(0, 0, 0, .55);
 }
 
 .bb-shell--billing {
     position: fixed;
     inset: 0;
-    z-index: 6001;
+    z-index: 10001;
     display: flex;
     align-items: center;
     justify-content: center;
