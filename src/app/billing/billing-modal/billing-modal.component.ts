@@ -1,12 +1,11 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Output, ViewEncapsulation } from '@angular/core';
 import { BILLING_PLANS, BillingPlan } from '../../core/config/billing-plans';
-import { BbModalShellComponent } from "@app/shared/ui/bb-modal-shell.component/bb-modal-shell.component";
 
 @Component({
     selector: 'app-billing-modal',
     standalone: true,
-    imports: [CommonModule, BbModalShellComponent],
+    imports: [CommonModule],
     templateUrl: './billing-modal.component.html',
     encapsulation: ViewEncapsulation.None,
 })
