@@ -435,7 +435,7 @@ main {
     inset: 0;
     background: rgba(0, 0, 0, 0.08);
     pointer-events: none;
-    z-index: 4;
+    z-index: 9997;
 }
 
 /* ----------------------------
@@ -505,7 +505,7 @@ main {
     position: fixed;
     inset: 0;
     /* top/right/bottom/left = 0 */
-    z-index: 1;
+    z-index: 9000;
     /* iznad headera, thead sticky, svega */
     display: flex;
     align-items: center;
@@ -517,19 +517,6 @@ main {
     /* ako ti ikad nešto “probija” */
     pointer-events: auto;
 }
-
-.bb-shell {
-    position: fixed !important;
-    inset: 0 !important;
-    z-index: 1 !important;
-    pointer-events: none !important; // shell ne hvata klikove
-  }
-
-  .bb-card {
-    pointer-events: auto !important; // ali kartica hvata
-    position: relative !important;
-    z-index: 3 !important;
-  }
 
 .bb-modal {
     position: relative;
