@@ -185,11 +185,11 @@
                 [activeOdds]="activeOdds" [activeValueFilter]="valueFilter" (filterApplied)="onFilterApplied($event)"
                 (resetFilter)="onFilterReset()"></app-match-filter-modal>
 
-            <app-match-details-modal #detailsModal *ngIf="isDetailsOpen && selectedMatchTPId" [isOpen]="isDetailsOpen"
-                [matchTPId]="selectedMatchTPId" [genderHint]="selectedMatch?.tournamentTypeName === 'WTA' ? 'W' : 'M'"
+            <app-match-details-modal #detailsModal [isOpen]="isDetailsOpen" [matchTPId]="selectedMatchTPId!"
                 [match]="selectedMatch!" (closed)="onDetailsClosed()" (requestLogin)="onDetailsRequestLogin()"
-                (requestRegister)="onDetailsRequestRegister()" (requestUpgrade)="onDetailsRequestUpgrade()">
-            </app-match-details-modal>
+                (requestRegister)="onDetailsRequestRegister()"
+                (requestUpgrade)="onDetailsRequestUpgrade()"></app-match-details-modal>
+
         </div>
 
         <div class="bb-loading-overlay" [class.is-active]="loading" aria-live="polite">

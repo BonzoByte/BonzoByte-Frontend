@@ -107,11 +107,16 @@ export class MatchesComponent implements OnInit, OnDestroy {
         queueMicrotask(() => this.openRegisterModal());
     }
 
+    // onDetailsRequestUpgrade(): void {
+    //     console.log('[PARENT] requestUpgrade');
+    //     this.pendingAfterDetailsClose = 'upgrade';
+    //     this.closeDetailsModal();
+    // }
+
     onDetailsRequestUpgrade(): void {
         console.log('[PARENT] requestUpgrade');
-        this.pendingAfterDetailsClose = 'upgrade';
-        this.closeDetailsModal();
-    }
+        this.openBillingModal();
+      }
 
     openLoginModal(): void {
         // Header sluša "openLogin"

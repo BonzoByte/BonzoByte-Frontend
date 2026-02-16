@@ -640,6 +640,7 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
     // =================================================================================================
 
     close(): void {
+        console.log('[DETAILS] close emit');
         this.isOpen = false;
         this.loading = false;
         this.error = null;

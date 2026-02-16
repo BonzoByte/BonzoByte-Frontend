@@ -404,27 +404,19 @@
                 <div class="bb-actions" *ngIf="isLocked; else genericErr">
                     <button class="bb-btn" (click)="close()">Close</button>
 
-                    <ng-container *ngIf="!isLoggedIn; else loggedInLocked">
-                        <button class="bb-btn" (click)="openLogin()">Existing user · Login</button>
-                        <button class="bb-btn" (click)="openRegister()">New user · Register</button>
-                    </ng-container>
-
-                    <ng-template #loggedInLocked>
-                        <button class="bb-btn" *ngIf="!hasTrial && !isPremium" (click)="openUpgrade()">
-                            Unlock details
-                        </button>
-
-                        <!-- Logged in, NOT premium/trial -> open billing -->
-                        <button class="bb-btn" *ngIf="isLoggedIn && !hasTrial && !isPremium" (click)="openUpgrade()">
-                            Unlock details
-                        </button>
-
-                        <!-- Logged in, premium/trial -> retry should work -->
-                        <button class="bb-btn" *ngIf="isLoggedIn && (hasTrial || isPremium)" (click)="load()">
-                            Retry (should unlock)
-                        </button>
-
-                    </ng-template>
+                    <!-- logged-out: login/register -->
+                    <button class="bb-btn" *ngIf="!isLoggedIn" (click)="openLogin()">Login</button>
+                    <button class="bb-btn" *ngIf="!isLoggedIn" (click)="openRegister()">Register</button>
+                    
+                    <!-- logged-in but locked: open billing -->
+                    <button class="bb-btn" *ngIf="isLoggedIn && !hasTrial && !isPremium" (click)="openUpgrade()">
+                      Unlock details
+                    </button>
+                    
+                    <!-- logged-in and SHOULD unlock: retry load -->
+                    <button class="bb-btn" *ngIf="isLoggedIn && (hasTrial || isPremium)" (click)="load()">
+                      Unlock details
+                    </button>
                 </div>
 
                 <ng-template #genericErr>
