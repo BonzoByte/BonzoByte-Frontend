@@ -10,6 +10,7 @@ import { RegisterComponent } from '../../../auth/register/register.component';
 import { User } from '../../../core/models/user.model';
 import { AuthService } from '../../../core/services/auth.service';
 import { BillingModalComponent } from '../../../billing/billing-modal/billing-modal.component';
+import { NgZone } from '@angular/core';
 
 @Component({
     selector: 'app-header',
@@ -46,25 +47,35 @@ export class HeaderComponent implements OnInit, OnDestroy {
     };
 
     private openLoginFromGlobal = () => {
-        this.showRegisterModal = false;
-        this.showLoginModal = true;
-    };
-
-    private openRegisterFromGlobal = () => {
-        this.showLoginModal = false;
-        this.showRegisterModal = true;
-    };
+        this.zone.run(() => {
+          this.showRegisterModal = false;
+          this.showLoginModal = true;
+          document.body.classList.add('modal-open');
+        });
+      };
+      
+      private openRegisterFromGlobal = () => {
+        this.zone.run(() => {
+          this.showLoginModal = false;
+          this.showRegisterModal = true;
+          document.body.classList.add('modal-open');
+        });
+      };
 
     private openBillingFromGlobal = () => {
-        this.showLoginModal = false;
-        this.showRegisterModal = false;
-        this.showBillingModal = true;
-        document.body.classList.add('modal-open');
-    };
+        console.log('[HEADER] openBilling event received');
+        this.zone.run(() => {
+          this.showLoginModal = false;
+          this.showRegisterModal = false;
+          this.showBillingModal = true;
+          document.body.classList.add('modal-open');
+        });
+      };      
 
     constructor(
         private authService: AuthService,
-        private router: Router
+        private router: Router,
+        private zone: NgZone
     ) { }
 
     ngOnInit(): void {
