@@ -1221,8 +1221,8 @@ body.modal-open {
 .bb-error {
     display: flex;
     flex-direction: column;
-    gap: 10px;          // ✅ razmak između blokova
-  }
+    gap: 10px; // ✅ razmak između blokova
+}
 
 .bb-locked .bb-error-title {
     margin-bottom: 4px;
@@ -1251,7 +1251,7 @@ body.modal-open {
 }
 
 .bb-error-msg {
-    line-height: 1.35;  // ✅ da tekst ne bude zgnječen
+    line-height: 1.35; // ✅ da tekst ne bude zgnječen
     white-space: normal;
 }
 
@@ -1347,7 +1347,7 @@ body.modal-open {
     gap: 10px;
     justify-content: center;
     margin-top: 8px;
-  }
+}
 
 .bb-btn-primary {
     border: 1px solid rgba(255, 255, 255, 0.35);
@@ -1358,4 +1358,27 @@ body.modal-open {
     margin-top: 10px;
     font-size: 12px;
     opacity: .7;
+}
+
+.bb-backdrop--billing {
+    position: fixed;
+    inset: 0;
+    z-index: 6000;
+    background: rgba(0, 0, 0, .55);
+}
+
+.bb-shell--billing {
+    position: fixed;
+    inset: 0;
+    z-index: 6001;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+}
+
+.bb-shell--billing .bb-card {
+    width: min(920px, 96vw);
+    max-height: min(80vh, 900px);
+    overflow: auto;
 }

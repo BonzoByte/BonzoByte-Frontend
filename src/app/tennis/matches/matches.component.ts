@@ -107,15 +107,10 @@ export class MatchesComponent implements OnInit, OnDestroy {
         queueMicrotask(() => this.openRegisterModal());
     }
 
-    // onDetailsRequestUpgrade(): void {
-    //     console.log('[PARENT] requestUpgrade');
-    //     this.pendingAfterDetailsClose = 'upgrade';
-    //     this.closeDetailsModal();
-    // }
-
     onDetailsRequestUpgrade(): void {
         console.log('[PARENT] requestUpgrade');
-        this.openBillingModal(); // direktno, bez closeDetailsModal
+        this.pendingAfterDetailsClose = 'upgrade';
+        this.closeDetailsModal(); // ovo mora okinuti (closed)
     }
 
     openLoginModal(): void {
@@ -1666,33 +1661,20 @@ export class MatchesComponent implements OnInit, OnDestroy {
 
     onDetailsClosed(): void {
         console.log('[PARENT] details closed', this.pendingAfterDetailsClose);
-        
+      
         this.isDetailsOpen = false;
         this.selectedMatchTPId = null;
         this.selectedMatch = null;
-
+      
         const action = this.pendingAfterDetailsClose;
         this.pendingAfterDetailsClose = null;
-
+      
         if (!action) return;
-
-        if (action === 'login') {
-            queueMicrotask(() => window.dispatchEvent(new CustomEvent('openLogin')));
-            return;
-        }
-
-        if (action === 'register') {
-            queueMicrotask(() => window.dispatchEvent(new CustomEvent('switchToRegister')));
-            return;
-        }
-
+      
         if (action === 'upgrade') {
-            // ✅ MACROTASK -> ne dijeli isti click event s prethodnim modalom
-            setTimeout(() => {
-                this.openBillingModal();
-            }, 0);
+          setTimeout(() => this.openBillingModal(), 0);
         }
-    }
+      }      
 
     // Bet simulation PL
     private parseDualNumbers(text?: string | null): [number | null, number | null] {
