@@ -413,10 +413,12 @@
                         (click)="dbg('UPGRADE_CLICK'); openUpgrade()">
                         Unlock details
                     </button>
-
+                    <div style="font-size:12px;opacity:.8;margin:8px 0;">
+                        DEBUG: isLocked={{isLocked}} | isLoggedIn={{isLoggedIn}} | hasTrial={{hasTrial}} | isPremium={{isPremium}}
+                      </div>
                     <!-- logged-in and SHOULD unlock: retry load -->
                     <button type="button" class="bb-btn" *ngIf="isLoggedIn && (hasTrial || isPremium)"
-                        (click)="dbg('RETRY_CLICK'); openUpgrade()">
+                        (click)="dbg('RETRY_CLICK'); load()">
                         Unlock details
                     </button>
                 </div>

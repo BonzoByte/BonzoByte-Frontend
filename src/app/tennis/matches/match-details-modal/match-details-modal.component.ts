@@ -2816,7 +2816,11 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
 
     openLogin(): void { this.requestLogin.emit(); }
     openRegister(): void { this.requestRegister.emit(); }
-    openUpgrade(): void { this.requestUpgrade.emit(); }
+    openUpgrade(): void { 
+    
+        this.closed.emit();
+        window.dispatchEvent(new CustomEvent('openBilling'));
+    }
 
     get user() {
         return this.auth.getUser();
