@@ -15,7 +15,11 @@ export class BillingModalComponent {
     plans: BillingPlan[] = BILLING_PLANS;
     selectedKey: BillingPlan['key'] = 'monthly';
 
+    private openedAt = Date.now();
+
     close(): void {
+        // ignoriraj klik unutar prvih 150ms (isti click koji je otvorio modal)
+        if (Date.now() - this.openedAt < 150) return;
         this.closed.emit();
     }
 

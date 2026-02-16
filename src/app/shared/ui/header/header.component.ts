@@ -79,6 +79,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
     ) { }
 
     ngOnInit(): void {
+        window.addEventListener('openBilling', () => console.log('[WINDOW] openBilling fired'));
         this.router.events
             .pipe(filter((e): e is NavigationEnd => e instanceof NavigationEnd))
             .subscribe((e) => {

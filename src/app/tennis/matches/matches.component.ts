@@ -1661,7 +1661,6 @@ export class MatchesComponent implements OnInit, OnDestroy {
     }
 
     onDetailsClosed(): void {
-        // safety: zatvori i očisti još jednom
         this.isDetailsOpen = false;
         this.selectedMatchTPId = null;
         this.selectedMatch = null;
@@ -1671,16 +1670,22 @@ export class MatchesComponent implements OnInit, OnDestroy {
 
         if (!action) return;
 
-        // otvori TEK kad je details zatvoren i maknut iz DOM-a
-        queueMicrotask(() => {
-            if (action === 'login') {
-                window.dispatchEvent(new CustomEvent('openLogin'));
-            } else if (action === 'register') {
-                window.dispatchEvent(new CustomEvent('switchToRegister'));
-            } else if (action === 'upgrade') {
+        if (action === 'login') {
+            queueMicrotask(() => window.dispatchEvent(new CustomEvent('openLogin')));
+            return;
+        }
+
+        if (action === 'register') {
+            queueMicrotask(() => window.dispatchEvent(new CustomEvent('switchToRegister')));
+            return;
+        }
+
+        if (action === 'upgrade') {
+            // ✅ MACROTASK -> ne dijeli isti click event s prethodnim modalom
+            setTimeout(() => {
                 this.openBillingModal();
-            }
-        });
+            }, 0);
+        }
     }
 
     // Bet simulation PL
