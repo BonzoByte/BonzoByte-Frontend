@@ -409,17 +409,14 @@
                     <button type="button" class="bb-btn" *ngIf="!isLoggedIn" (click)="openRegister()">Register</button>
 
                     <!-- logged-in but locked: open billing -->
-                    <button type="button" class="bb-btn" *ngIf="isLoggedIn && !hasTrial && !isPremium"
-                        (click)="dbg('UPGRADE_CLICK'); openUpgrade()">
-                        Unlock details
+                    <button class="bb-btn" *ngIf="isLoggedIn && !hasTrial && !isPremium" (click)="openUpgrade()">
+                        Unlock details (billing)
                     </button>
-                    <div style="font-size:12px;opacity:.8;margin:8px 0;">
+                    <!-- <div style="font-size:12px;opacity:.8;margin:8px 0;">
                         DEBUG: isLocked={{isLocked}} | isLoggedIn={{isLoggedIn}} | hasTrial={{hasTrial}} |
                         isPremium={{isPremium}}
-                    </div>
-                    <!-- logged-in and SHOULD unlock: retry load -->
-                    <button type="button" class="bb-btn" *ngIf="isLoggedIn && (hasTrial || isPremium)"
-                        (click)="dbg('RETRY_CLICK'); load()">
+                    </div> -->
+                    <button class="bb-btn" *ngIf="isLoggedIn" (click)="openUpgrade()">
                         Unlock details
                     </button>
                 </div>
