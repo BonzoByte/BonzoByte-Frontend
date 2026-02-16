@@ -505,7 +505,7 @@ main {
     position: fixed;
     inset: 0;
     /* top/right/bottom/left = 0 */
-    z-index: 1000;
+    z-index: 1;
     /* iznad headera, thead sticky, svega */
     display: flex;
     align-items: center;
@@ -521,14 +521,14 @@ main {
 .bb-shell {
     position: fixed !important;
     inset: 0 !important;
-    z-index: 1001 !important;
+    z-index: 1 !important;
     pointer-events: none !important; // shell ne hvata klikove
   }
 
   .bb-card {
     pointer-events: auto !important; // ali kartica hvata
     position: relative !important;
-    z-index: 1002 !important;
+    z-index: 3 !important;
   }
 
 .bb-modal {
