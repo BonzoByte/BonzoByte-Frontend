@@ -1666,6 +1666,8 @@ export class MatchesComponent implements OnInit, OnDestroy {
     }
 
     onDetailsClosed(): void {
+        console.log('[PARENT] details closed', this.pendingAfterDetailsClose);
+        
         this.isDetailsOpen = false;
         this.selectedMatchTPId = null;
         this.selectedMatch = null;

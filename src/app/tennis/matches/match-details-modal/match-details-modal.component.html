@@ -401,24 +401,18 @@
                 <div class="bb-error-title">Could not load match details</div>
                 <div class="bb-error-msg">{{ error }}</div>
 
+                <!-- LOCKED state actions -->
                 <div class="bb-actions" *ngIf="isLocked; else genericErr">
-                    <button type="button" class="bb-btn" (click)="close()">Close</button>
+                    <button class="bb-btn" (click)="close()">Close</button>
 
-                    <!-- logged-out: login/register -->
-                    <button type="button" class="bb-btn" *ngIf="!isLoggedIn" (click)="openLogin()">Login</button>
-                    <button type="button" class="bb-btn" *ngIf="!isLoggedIn" (click)="openRegister()">Register</button>
+                    <ng-container *ngIf="!isLoggedIn; else loggedInLocked">
+                        <button class="bb-btn" (click)="openLogin()">Login</button>
+                        <button class="bb-btn" (click)="openRegister()">Register</button>
+                    </ng-container>
 
-                    <!-- logged-in but locked: open billing -->
-                    <button class="bb-btn" *ngIf="isLoggedIn && !hasTrial && !isPremium" (click)="openUpgrade()">
-                        Unlock details (billing)
-                    </button>
-                    <!-- <div style="font-size:12px;opacity:.8;margin:8px 0;">
-                        DEBUG: isLocked={{isLocked}} | isLoggedIn={{isLoggedIn}} | hasTrial={{hasTrial}} |
-                        isPremium={{isPremium}}
-                    </div> -->
-                    <button class="bb-btn" *ngIf="isLoggedIn" (click)="openUpgrade()">
-                        Unlock details
-                    </button>
+                    <ng-template #loggedInLocked>
+                        <button class="bb-btn" (click)="openUpgrade()">Unlock details</button>
+                    </ng-template>
                 </div>
 
                 <ng-template #genericErr>
