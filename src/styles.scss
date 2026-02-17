@@ -282,6 +282,7 @@ main {
     &:hover {
         text-decoration: underline;
         opacity: 0.9;
+        transform: scale(1.06);
     }
 
     &:focus {
@@ -650,10 +651,6 @@ main {
         0 0 10px rgba(255, 215, 0, 0.25);
 }
 
-.bb-modal h4:hover {
-    transform: scale(1.03);
-}
-
 .bb-modal .form-row {
     margin: 10px 0;
     display: grid;
@@ -792,6 +789,7 @@ body.modal-open {
 
     &:hover:not(:disabled) {
         background: rgba(255, 255, 255, 0.06);
+        transform: scale(1.03);
     }
 
     &:disabled {
@@ -852,6 +850,7 @@ body.modal-open {
 
 .oauth-btn:hover {
     background: rgba(255, 255, 255, 0.12);
+    transform: scale(1.03);
 }
 
 .oauth-btn:disabled {
@@ -885,6 +884,7 @@ body.modal-open {
 
 .bb-secondary-action:hover {
     background: rgba(255, 255, 255, 0.1);
+    transform: scale(1.03);
 }
 
 .secondary-text {
@@ -907,6 +907,7 @@ body.modal-open {
 
 .bb-link:hover {
     color: #fff;
+    transform: scale(1.03);
 }
 
 .bb-link:disabled {
@@ -1166,6 +1167,7 @@ body.modal-open {
 /* hover */
 .radio-pill:hover {
     border-color: rgba(255, 255, 255, 0.45);
+    transform: scale(1.03);
 }
 
 .bb-ts-snapshot {
@@ -1258,6 +1260,7 @@ body.modal-open {
 
 .details-link.locked:hover {
     opacity: 1;
+    transform: scale(1.03);
 }
 
 /* LOCKED state spacing + readability */
@@ -1381,6 +1384,7 @@ body.modal-open {
 .bb-btn:hover {
     background: rgba(255, 255, 255, 0.14);
     border-color: rgba(255, 255, 255, 0.18);
+    transform: scale(1.03);
 }
 
 .bb-btn:active {
