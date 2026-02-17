@@ -1,9 +1,9 @@
 ﻿<nav id="main-header" class="custom-header app-header">
     <div>
         <div class="navbar-nav">
-            <a routerLink="/matches">Matches</a>
-            <a routerLink="/players">Players</a>
-            <a routerLink="/tournaments">Tournaments</a>
+            <a routerLink="/matches" class="logreg">Matches</a>
+            <a routerLink="/players" class="logreg">Players</a>
+            <a routerLink="/tournaments" class="logreg">Tournaments</a>
         </div>
 
         <div class="brand-title">
@@ -12,8 +12,8 @@
 
         <div class="navbar-nav">
             <ng-container *ngIf="!isLoggedIn; else loggedIn">
-                <button type="button" (click)="openLoginModal()">{{ 'login' | translate }}</button>
-                <button type="button" (click)="openRegisterModal()">{{ 'register' | translate }}</button>
+                <button type="button" class="logreg" (click)="openLoginModal()">{{ 'login' | translate }}</button>
+                <button type="button" class="logreg" (click)="openRegisterModal()">{{ 'register' | translate }}</button>
             </ng-container>
 
             <ng-template #loggedIn>
@@ -23,7 +23,7 @@
                     <img class="user-avatar" [src]="user?.avatarUrl || 'assets/images/defaultUser.png'" alt="Avatar"
                         (click)="openUserModal()" />
 
-                    <button type="button" (click)="logout()">{{ 'logout' | translate }}</button>
+                    <button type="button" (click)="logout()">{{ 'logout' | translate }} class="logreg"</button>
                 </div>
             </ng-template>
         </div>
