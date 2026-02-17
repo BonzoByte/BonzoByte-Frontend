@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, HostListener, Input, OnDestroy, OnInit, Output } from '@angular/core';
 
 let bbModalIdCounter = 0;
 
@@ -13,6 +13,19 @@ let bbModalIdCounter = 0;
 export class BbModalShellComponent implements OnInit, OnDestroy {
   @Input({ required: true }) title!: string;
   @Input() subtitle?: string;
+  @Input() closeOnEsc = true;
+
+  @HostListener('document:keydown', ['$event'])
+  onDocumentKeydown(event: KeyboardEvent): void {
+    if (!this.closeOnEsc) return;
+
+    // Escape
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      event.stopPropagation();
+      this.close();
+    }
+  }
 
   /** Extra classes appended to .bb-modal (e.g. 'bb-filter-modal', 'bb-modal--billing') */
   @Input() modalClass = '';

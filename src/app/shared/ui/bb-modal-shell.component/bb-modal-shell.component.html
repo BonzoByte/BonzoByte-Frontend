@@ -1,7 +1,10 @@
-<div class="bb-backdrop" appAccessibleClick (accessibleClick)="onBackdropClick()">
+<div class="bb-backdrop" appAccessibleClick (click)="onBackdropClick()" (accessibleClick)="onBackdropClick()">
+
     <div [class]="modalClassList" role="dialog" aria-modal="true" [attr.aria-labelledby]="titleId" appTrapFocus
         (click)="$event.stopPropagation()">
-        <button class="close-button" type="button" appAccessibleClick (accessibleClick)="close()" aria-label="Close">
+
+        <button class="close-button" type="button" appAccessibleClick (click)="close()" (accessibleClick)="close()"
+            aria-label="Close">
             ×
         </button>
 
@@ -9,10 +12,7 @@
 
         <div *ngIf="subtitle" class="bb-hint bb-modal-subtitle">{{ subtitle }}</div>
 
-        <!-- BODY (everything except [bbActions]) -->
         <ng-content select=":not([bbActions])"></ng-content>
-
-        <!-- ACTIONS (optional slot) -->
         <ng-content select="[bbActions]"></ng-content>
     </div>
 </div>
