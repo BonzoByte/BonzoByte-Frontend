@@ -3,7 +3,7 @@
         (click)="$event.stopPropagation()">
         <button class="close-button" type="button" appAccessibleClick (click)="close()" (accessibleClick)="close()"
             aria-label="Close">×</button>
-        <h4 [id]="titleId" class="text-center">{{ title }}</h4>
+        <h4 [id]="titleId" class="bb-modal-title">{{ title }}</h4>
         <div *ngIf="subtitle" class="bb-hint bb-modal-subtitle">{{ subtitle }}</div>
         <div class="bb-modal-separator"></div>
         <ng-content select=":not([bbActions])"></ng-content>

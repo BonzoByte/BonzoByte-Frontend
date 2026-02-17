@@ -1762,3 +1762,32 @@ body.modal-open {
             rgba(255, 255, 255, 0.16),
             transparent);
 }
+
+.bb-modal-title {
+    margin: 10px 0 12px;
+    text-align: center;
+    white-space: nowrap;
+  
+    font-family: var(--bb-brand-font, 'Orbitron', system-ui, sans-serif);
+    font-size: 28px;            /* po ukusu: 26–30 */
+    font-weight: 900;
+    letter-spacing: 1.6px;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.95);
+  }
+  
+  .bb-modal-title::after {
+    content: "";
+    margin: 6px auto 0;
+    width: min(420px, 92%);
+    height: 2px;
+    display: block;
+  
+    background: linear-gradient(
+      to right,
+      transparent,
+      rgba(255, 255, 255, 0.55),
+      transparent
+    );
+    opacity: 0.9;
+  }  
