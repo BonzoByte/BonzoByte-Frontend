@@ -7,7 +7,7 @@
 
             <div class="pagination-center-wrapper">
                 <button (click)="previousDay()" class="link-button" [disabled]="isPrevDisabled || loading">
-                    <img src="assets/icons/left.svg" alt="Previous" class="arrow-icon" />
+                    <img src="assets/icons/left.svg" alt="Previous" class="arrow-icon" class="logreg" />
                 </button>
 
                 <input #dateInput type="text" class="custom-date-input date-dmy" inputmode="numeric" autocomplete="off"
@@ -16,7 +16,7 @@
                     [disabled]="loading || !minDate || !maxDate" />
 
                 <button (click)="nextDay()" class="link-button" [disabled]="isNextDisabled || loading">
-                    <img src="assets/icons/right.svg" alt="Next" class="arrow-icon" />
+                    <img src="assets/icons/right.svg" alt="Next" class="arrow-icon" class="logreg" />
                 </button>
             </div>
 
@@ -29,7 +29,7 @@
                     Clear
                 </button>
 
-                <button (click)="openFilterModal()" class="link-button" [disabled]="loading">
+                <button (click)="openFilterModal()" class="link-button logreg" [disabled]="loading">
                     <img src="assets/icons/filter.svg" alt="Filter" class="icon icon-filter" />
                     Filter <span *ngIf="isFiltered" class="badge-on">●</span>
                 </button>

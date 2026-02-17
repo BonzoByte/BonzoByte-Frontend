@@ -1,13 +1,13 @@
 <footer class="custom-footer">
     <div class="footer-left">
-        <button type="button" class="footer-link" (click)="openAbout()">About Us</button>
+        <button type="button" class="footer-link" (click)="openAbout()" class="logreg">About Us</button>
     </div>
 
     <div class="footer-center">
-        <button type="button" class="footer-link" (click)="openContact()">Contact Us</button>
+        <button type="button" class="footer-link" (click)="openContact()" class="logreg">Contact Us</button>
     </div>
 
-    <div class="footer-right">
+    <div class="footer-right" class="logreg">
         <span>&copy; 2026 BonzoByte</span>
     </div>
 </footer>
@@ -16,7 +16,6 @@
 <app-bb-modal-shell
   *ngIf="showAbout"
   title="About BonzoByte"
-  class="logreg"
   (closed)="closeAbout()"
 >
   <div class="bb-about">
@@ -42,4 +41,4 @@
 </app-bb-modal-shell>
 
 <!-- CONTACT MODAL -->
-<app-contact-modal *ngIf="showContact" (closed)="closeContact()" class ="logreg"></app-contact-modal>
+<app-contact-modal *ngIf="showContact" (closed)="closeContact()"></app-contact-modal>
