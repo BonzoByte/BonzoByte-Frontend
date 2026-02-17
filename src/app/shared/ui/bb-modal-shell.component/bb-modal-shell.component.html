@@ -1,19 +1,12 @@
 <div class="bb-backdrop" appAccessibleClick (click)="onBackdropClick()" (accessibleClick)="onBackdropClick()">
-
     <div [class]="modalClassList" role="dialog" aria-modal="true" [attr.aria-labelledby]="titleId" appTrapFocus
         (click)="$event.stopPropagation()">
-
         <button class="close-button" type="button" appAccessibleClick (click)="close()" (accessibleClick)="close()"
-            aria-label="Close">
-            ×
-        </button>
-
+            aria-label="Close">×</button>
         <h4 [id]="titleId" class="text-center">{{ title }}</h4>
-
         <div *ngIf="subtitle" class="bb-hint bb-modal-subtitle">{{ subtitle }}</div>
-
+        <div class="bb-modal-separator"></div>
         <ng-content select=":not([bbActions])"></ng-content>
         <ng-content select="[bbActions]"></ng-content>
     </div>
-    <hr />
 </div>

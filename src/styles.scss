@@ -1753,3 +1753,12 @@ body.modal-open {
 .bb-modal.bb-modal--match-details .bb-result-main:hover {
     transform: scale(1.03);
 }
+
+.bb-modal-separator {
+    height: 1px;
+    margin: 12px 0 14px;
+    background: linear-gradient(to right,
+            transparent,
+            rgba(255, 255, 255, 0.16),
+            transparent);
+}
