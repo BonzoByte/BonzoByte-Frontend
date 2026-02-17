@@ -1763,7 +1763,7 @@ body.modal-open {
     color: rgba(255, 255, 255, 0.95);
   }
   
-  .bb-modal-title::after {
+  .bb-modal-title:after {
     content: "";
     margin: 6px auto 0;
     width: min(420px, 92%);
