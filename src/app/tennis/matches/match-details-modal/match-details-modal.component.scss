@@ -18,7 +18,20 @@
   --bb-md-surface-2: var(--bb-surface-2, rgba(0, 0, 0, 0.14));
 
   /* Tip: shell obično ima max-width; ovdje možemo pojačati specifično za match details */
-  max-width: min(782px, 96vw);
+  width: min(980px, calc(100vw - 24px));
+  max-height: min(90vh, 860px);
+
+  .bb-tabs {
+    flex-wrap: wrap;
+    overflow: visible;     /* nema scrolla */
+    justify-content: center;
+    row-gap: 8px;
+    padding-bottom: 12px;  /* da border-bottom lijepo “diše” */
+  }
+
+  .bb-tab {
+    white-space: nowrap;
+  }
 
   /* --------------------------------
      Header meta line (tournament line)
@@ -54,6 +67,7 @@
 
   .bb-loading,
   .bb-error {
+    text-align: center;
     color: rgba(255, 255, 255, 0.85);
   }
 
