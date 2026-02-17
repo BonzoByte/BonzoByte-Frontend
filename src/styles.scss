@@ -534,19 +534,23 @@ main {
     pointer-events: auto;
 }
 
-.bb-modal {
-    position: relative;
-    width: min(520px, calc(100vw - 24px));
-    max-height: min(80vh, 720px);
-    overflow: auto;
-    background: rgba(15, 15, 15, 0.92);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    border-radius: 14px;
-    box-shadow: 0 18px 60px rgba(0, 0, 0, 0.55);
-    padding: 18px 18px 16px;
-    z-index: var(--z-modal-card);
-    color: #eaeaea;
-}
+.bb-modal{
+    margin: 10px 0 14px;
+    text-align: center;
+  
+    font-size: 28px;              /* probaj 26–30 po ukusu */
+    font-weight: 900;
+    letter-spacing: 1.6px;
+  
+    /* “BONZO BYTE” feel */
+    text-transform: uppercase;
+    font-family: inherit;         /* ako imaš globalni brand font, naslijedit će ga */
+    color: rgba(255, 255, 255, 0.95);
+  
+    text-shadow:
+      0 0 10px rgba(255,255,255,0.10),
+      0 0 26px rgba(0,0,0,0.45);
+  }
 
 /* Match details modal modifier */
 .bb-modal.bb-modal--match-details {
@@ -604,25 +608,6 @@ main {
     font-size: 26px;
     line-height: 1;
     cursor: pointer;
-}
-
-/* Modal titles (all modals) */
-.bb-modal h4 {
-    margin: 10px 0 14px;
-    text-align: center;
-
-    font-size: 28px;
-    font-weight: 900;
-    letter-spacing: 1.6px;
-
-    /* “BONZO BYTE” feel */
-    text-transform: uppercase;
-    font-family: var(--bb-brand-font);
-    color: rgba(255, 255, 255, 0.95);
-
-    text-shadow:
-        0 0 10px rgba(255, 255, 255, 0.10),
-        0 0 26px rgba(0, 0, 0, 0.45);
 }
 
 .bb-modal .form-row {
