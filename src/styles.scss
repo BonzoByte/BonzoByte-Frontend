@@ -639,7 +639,7 @@ body.modal-open {
 }
 
 .pl-cell {
-    font-variant-numeric: tabular-nums; 
+    font-variant-numeric: tabular-nums;
 }
 
 .pl-positive {
@@ -1174,13 +1174,26 @@ body.modal-open {
 }
 
 .bb-error {
+    width: 100%;
+    box-sizing: border-box;
+  
+    border-radius: 12px;
+    padding: 12px 14px;
+    margin: 10px 0 14px;
+  
+    background: rgba(120, 20, 20, 0.35);
+    border: 1px solid rgba(255, 80, 80, 0.45);
+    color: rgba(255, 255, 255, 0.92);
+  
     display: flex;
     flex-direction: column;
     gap: 10px;
-}
+  }
 
 .bb-locked .bb-error-title {
     margin-bottom: 4px;
+    font-weight: 800;
+    font-size: 14px;
 }
 
 .bb-locked .bb-error-msg {
@@ -1201,6 +1214,8 @@ body.modal-open {
 }
 
 .bb-error-msg {
+    font-size: 13px;
+    opacity: 0.9;
     line-height: 1.35;
     white-space: normal;
 }
@@ -1249,6 +1264,42 @@ body.modal-open {
 .oauth-btn-primary {
     border: 1px solid rgba(255, 255, 255, 0.35);
     background: rgba(255, 255, 255, 0.10);
+}
+
+.bb-btn {
+    appearance: none;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    background: rgba(255, 255, 255, 0.10);
+    color: rgba(255, 255, 255, 0.92);
+
+    padding: 8px 14px;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 700;
+
+    cursor: pointer;
+    user-select: none;
+    transition: transform 120ms ease, background 120ms ease, border-color 120ms ease;
+}
+
+.bb-btn:hover {
+    background: rgba(255, 255, 255, 0.14);
+    border-color: rgba(255, 255, 255, 0.18);
+}
+
+.bb-btn:active {
+    transform: translateY(1px);
+}
+
+.bb-btn:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+/* Optional (ako nam zatreba kasnije) */
+.bb-btn-primary {
+    background: rgba(255, 255, 255, 0.18);
+    border-color: rgba(255, 255, 255, 0.22);
 }
 
 .bb-actions {
@@ -1344,13 +1395,26 @@ body.modal-open {
     display: flex;
     gap: 8px;
     padding: 10px 0 12px;
-    overflow-x: auto;
-    border-bottom: 1px solid var(--bb-md-border);
     margin-bottom: 12px;
+
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+
+    border-bottom: 1px solid var(--bb-border, rgba(255, 255, 255, 0.10));
+
+    /* Hide the native scrollbar (Windows/Chrome) but keep scrolling */
+    scrollbar-width: none;
+    /* Firefox */
+    -ms-overflow-style: none;
+    /* old Edge */
 }
 
-.bb-tabs {
-    border-bottom: 1px solid var(--bb-md-border, rgba(255, 255, 255, 0.10));
+.bb-tabs::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+    display: none;
+    /* Chromium */
 }
 
 .bb-tab {
