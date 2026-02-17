@@ -548,6 +548,30 @@ main {
     color: #eaeaea;
 }
 
+/* Match details modal modifier */
+.bb-modal.bb-modal--match-details {
+    width: min(980px, calc(100vw - 24px));
+    max-height: min(90vh, 860px);
+}
+
+/* Tabs behavior only for match-details */
+.bb-modal.bb-modal--match-details .bb-tabs {
+    flex-wrap: wrap;
+    overflow: visible;
+    justify-content: center;
+    row-gap: 8px;
+    padding-bottom: 12px;
+}
+
+.bb-modal.bb-modal--match-details .bb-tab {
+    white-space: nowrap;
+}
+
+/* Optional: center locked/error text in this modal */
+.bb-modal.bb-modal--match-details .bb-error {
+    text-align: center;
+}
+
 .bb-modal .close-button {
     position: absolute;
     top: 10px;
@@ -744,18 +768,18 @@ body.modal-open {
 
 .bb-btn,
 .oauth-btn {
-  /* baza gumba */
-  appearance: none;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  background: rgba(255, 255, 255, 0.10);
-  color: rgba(255, 255, 255, 0.92);
-  padding: 8px 14px;
-  border-radius: 12px;
-  font-size: 13px;
-  font-weight: 700;
-  cursor: pointer;
-  user-select: none;
-  transition: transform 120ms ease, background 120ms ease, border-color 120ms ease;
+    /* baza gumba */
+    appearance: none;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    background: rgba(255, 255, 255, 0.10);
+    color: rgba(255, 255, 255, 0.92);
+    padding: 8px 14px;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    user-select: none;
+    transition: transform 120ms ease, background 120ms ease, border-color 120ms ease;
 }
 
 .oauth-btn:hover {
@@ -1180,19 +1204,19 @@ body.modal-open {
 .bb-error {
     width: 100%;
     box-sizing: border-box;
-  
+
     border-radius: 12px;
     padding: 12px 14px;
     margin: 10px 0 14px;
-  
+
     background: rgba(120, 20, 20, 0.35);
     border: 1px solid rgba(255, 80, 80, 0.45);
     color: rgba(255, 255, 255, 0.92);
-  
+
     display: flex;
     flex-direction: column;
     gap: 10px;
-  }
+}
 
 .bb-locked .bb-error-title {
     margin-bottom: 4px;
