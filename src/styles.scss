@@ -1483,6 +1483,12 @@ body.modal-open {
     border-radius: 999px;
     cursor: pointer;
 
+    transform: translateZ(0);
+    transition: transform 200ms ease;
+    text-shadow:
+    0 0 4px rgba(255, 255, 255, 0.25),
+    0 0 10px rgba(255, 215, 0, 0.25);
+
     border: 1px solid rgba(255, 255, 255, 0.12);
     background: rgba(255, 255, 255, 0.06);
     color: rgba(255, 255, 255, 0.78);
@@ -1491,6 +1497,10 @@ body.modal-open {
         background: rgba(255, 255, 255, 0.14);
         color: rgba(255, 255, 255, 0.92);
     }
+}
+
+.bb-tab:hover {
+    transform: scale(1.03);
 }
 
 .bb-pill {
