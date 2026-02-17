@@ -643,8 +643,6 @@ main {
 .bb-modal h4 {
     margin: 6px 0 12px;
     font-size: large;
-    transform: translateZ(0);
-    transition: transform 200ms ease;
     color: var(--bb-text, #fff);
 
     text-shadow:
