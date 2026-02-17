@@ -523,7 +523,8 @@ main {
     /* top/right/bottom/left = 0 */
     z-index: var(--z-modal-backdrop);
     /* iznad headera, thead sticky, svega */
-    display: flex;
+    display: grid;
+    place-items: center;
     align-items: center;
     justify-content: center;
 
