@@ -16,6 +16,7 @@
 <app-bb-modal-shell
   *ngIf="showAbout"
   title="About BonzoByte"
+  class="logreg"
   (closed)="closeAbout()"
 >
   <div class="bb-about">
@@ -41,4 +42,4 @@
 </app-bb-modal-shell>
 
 <!-- CONTACT MODAL -->
-<app-contact-modal *ngIf="showContact" (closed)="closeContact()"></app-contact-modal>
+<app-contact-modal *ngIf="showContact" (closed)="closeContact()" class ="logreg"></app-contact-modal>
