@@ -520,18 +520,15 @@ main {
 .bb-backdrop {
     position: fixed;
     inset: 0;
-    /* top/right/bottom/left = 0 */
     z-index: var(--z-modal-backdrop);
-    /* iznad headera, thead sticky, svega */
     display: grid;
     place-items: center;
     align-items: center;
     justify-content: center;
-
+    min-height: 100vh;
+    width: 100vw;
     background: rgba(0, 0, 0, 0.65);
     backdrop-filter: blur(1px);
-
-    /* ako ti ikad nešto “probija” */
     pointer-events: auto;
 }
 
@@ -547,6 +544,8 @@ main {
     padding: 18px 18px 16px;
     z-index: var(--z-modal-card);
     color: #eaeaea;
+    align-self: center;
+    justify-self: center;
 }
 
 /* Match details modal modifier */
