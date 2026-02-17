@@ -567,6 +567,10 @@ main {
     gap: 8px;
 }
 
+.bb-modal.bb-modal--match-details .bb-pill--title:hover {
+    transform: scale(1.03);
+}
+
 /* Flag spacing inside pill */
 .bb-modal.bb-modal--match-details .bb-pill--title .bb-flag-wrap {
     display: inline-flex;
@@ -685,6 +689,10 @@ main {
     font-weight: 700;
     letter-spacing: 0.08em;
     text-transform: uppercase;
+}
+
+.custom-header .brand-title .main-title:hover {
+    transform: scale(1.06);
 }
 
 /* Avoid scroll if you use body class toggles */
