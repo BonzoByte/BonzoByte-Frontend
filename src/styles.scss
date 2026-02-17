@@ -538,13 +538,13 @@ main {
     margin: 10px 0 14px;
     text-align: center;
   
-    font-size: 20px;
+    font-size: 28px;              /* probaj 26–30 po ukusu */
     font-weight: 900;
     letter-spacing: 1.6px;
   
     /* “BONZO BYTE” feel */
     text-transform: uppercase;
-    font-family: inherit;
+    font-family: inherit;         /* ako imaš globalni brand font, naslijedit će ga */
     color: rgba(255, 255, 255, 0.95);
   
     text-shadow:
@@ -608,6 +608,25 @@ main {
     font-size: 26px;
     line-height: 1;
     cursor: pointer;
+}
+
+/* Modal titles (all modals) */
+.bb-modal h4 {
+    margin: 10px 0 14px;
+    text-align: center;
+
+    font-size: 20px;
+    font-weight: 900;
+    letter-spacing: 1.6px;
+
+    /* “BONZO BYTE” feel */
+    text-transform: uppercase;
+    font-family: var(--bb-brand-font);
+    color: rgba(255, 255, 255, 0.95);
+
+    text-shadow:
+        0 0 10px rgba(255, 255, 255, 0.10),
+        0 0 26px rgba(0, 0, 0, 0.45);
 }
 
 .bb-modal .form-row {
