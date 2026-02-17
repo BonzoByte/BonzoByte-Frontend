@@ -554,6 +554,25 @@ main {
     max-height: min(90vh, 860px);
 }
 
+/* Match details header line centering */
+.bb-modal.bb-modal--match-details .bb-header-line {
+    justify-content: center;
+    text-align: center;
+}
+
+/* Title pill layout (flag + text) */
+.bb-modal.bb-modal--match-details .bb-pill--title {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Flag spacing inside pill */
+.bb-modal.bb-modal--match-details .bb-pill--title .bb-flag-wrap {
+    display: inline-flex;
+    align-items: center;
+}
+
 /* Tabs behavior only for match-details */
 .bb-modal.bb-modal--match-details .bb-tabs {
     flex-wrap: wrap;

@@ -281,9 +281,14 @@
   ================================================================================================== -->
 
     <div class="bb-header-line" *ngIf="vm as v">
-        <span class="bb-flag-wrap" *ngIf="flagIso2OrEmpty(v.header.iso2) as iso"
-            [title]="v.header.countryName || 'World'">
-            <span class="fi fi-{{ iso }} bb-flag-sm"></span>
+        <span class="bb-pill bb-pill--title">
+            <span class="bb-flag-wrap" *ngIf="flagIso2OrEmpty(v.header.iso2) as iso"
+                [title]="v.header.countryName || 'World'">
+                <span class="fi fi-{{ iso }} bb-flag-sm"></span>
+            </span>
+
+            {{ tourTypeLabel(raw) }}
+            {{ v.header.name }}<span *ngIf="v.header.iso3"> ({{ v.header.iso3 }})</span>
         </span>
 
         <span class="bb-pill">
