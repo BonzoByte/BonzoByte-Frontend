@@ -210,6 +210,8 @@ main {
     align-items: center;
     gap: 6px;
     color: #fff;
+    cursor: pointer;
+    transform: scale(1.03);
 }
 
 /* ----------------------------
@@ -693,6 +695,7 @@ main {
 
 .custom-header .brand-title .main-title:hover {
     transform: scale(1.06);
+    cursor: pointer;
 }
 
 /* Avoid scroll if you use body class toggles */
@@ -768,6 +771,8 @@ body.modal-open {
     &:disabled {
         opacity: 0.55;
     }
+    cursor: pointer;
+    transform: scale(1.03);
 }
 
 .bb-alert {
