@@ -142,8 +142,7 @@ main {
     padding: 12px 16px;
 }
 
-.logreg:hover
-{
+.logreg:hover {
     transform: scale(1.06);
 }
 
@@ -181,8 +180,27 @@ main {
 }
 
 .date-right {
-    justify-self: end;
-    place-items: center;
+    display: flex;
+    align-items: center;
+    /* vertikalno poravnanje svih itema */
+    justify-content: flex-end;
+    gap: 12px;
+    /* po ukusu */
+}
+
+.date-right .link-button.logreg {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    line-height: 1;
+    /* makne baseline čudnosti */
+}
+
+.date-right .icon-filter {
+    display: block;
+    width: 16px;
+    /* ili koliko već želiš */
+    height: 16px;
 }
 
 .badge-on {
