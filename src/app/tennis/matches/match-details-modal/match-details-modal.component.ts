@@ -701,7 +701,7 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
     // LOAD DETAILS + BUILD VM
     // =================================================================================================
 
-    private readonly DEV_FORCE_LOCK_DETAILS = true;
+    private readonly DEV_FORCE_LOCK_DETAILS = false;
 
     load(): void {
         if (!this.isOpen) return;
