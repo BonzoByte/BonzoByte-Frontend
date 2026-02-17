@@ -402,10 +402,6 @@ main {
     background: rgba(0, 0, 0, 0.25);
 }
 
-.match-table tr:hover {
-    transform: scale(1.03);
-}
-
 .match-table th,
 .match-table td {
     border: 1px solid rgba(255, 255, 255, 0.12);
@@ -430,7 +426,7 @@ main {
 }
 
 .match-table thead th:hover {
-    background: #111;
+    background: #1f1e1e;
 }
 
 .match-table tbody tr:nth-child(odd) {
