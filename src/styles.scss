@@ -211,7 +211,6 @@ main {
     gap: 6px;
     color: #fff;
     cursor: pointer;
-    transform: scale(1.03);
 }
 
 /* ----------------------------
@@ -569,7 +568,7 @@ main {
     gap: 8px;
 }
 
-.bb-modal.bb-modal--match-details .bb-pill--title:hover {
+.bb-modal.bb-modal--match-details .bb-pill:hover {
     transform: scale(1.03);
 }
 
@@ -771,8 +770,6 @@ body.modal-open {
     &:disabled {
         opacity: 0.55;
     }
-    cursor: pointer;
-    transform: scale(1.03);
 }
 
 .bb-alert {
@@ -1529,7 +1526,7 @@ body.modal-open {
 }
 
 .bb-pill:hover {
-    transform: scale(1.03)!important;
+    transform: scale(1.03);
 }
 
 .bb-panel {
