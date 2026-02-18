@@ -1567,11 +1567,6 @@ body.modal-open {
     background: var(--bb-md-surface);
 }
 
-.bb-panel {
-    background: var(--bb-md-surface, rgba(0, 0, 0, 0.18));
-    // border: 1px solid var(--bb-md-border, rgba(255, 255, 255, 0.10));
-}
-
 .bb-players-2col {
     display: grid;
     grid-template-columns: 1fr 1fr;
