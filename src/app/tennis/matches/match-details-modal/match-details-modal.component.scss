@@ -1,18 +1,17 @@
 ﻿/* ================================================================================================
    Match Details Modal (scoped styles)
-   - Scoped under .bb-modal--match-details to avoid collisions with global bb-* utilities.
-   - Overlay / card / close / base padding / focus trap are handled by bb-modal-shell.
+   IMPORTANT:
+   - bb-modal element lives inside <app-bb-modal-shell> template (different component),
+     so we must pierce encapsulation with ::ng-deep OR move these styles to styles.scss.
+   - This file is mostly layout/component specifics; colors are via CSS variables for theming.
 ================================================================================================ */
 
 :host {
   display: contents;
 }
 
-/* NOTE:
-   We keep this file mostly about layout + component specifics.
-   Colors are expressed via CSS variables with fallbacks so themes can override globally later.
-*/
-.bb-modal--match-details {
+/* Encapsulation bridge (so styles actually apply to bb-modal-shell internals) */
+:host ::ng-deep .bb-modal--match-details {
   /* ---- Theme hooks (prefer global vars, fallback to sensible defaults) ---- */
   --bb-md-text: var(--bb-text, rgba(255, 255, 255, 0.92));
   --bb-md-muted: var(--bb-muted, rgba(255, 255, 255, 0.72));
@@ -20,16 +19,13 @@
   --bb-md-surface: var(--bb-surface, rgba(0, 0, 0, 0.18));
   --bb-md-surface-2: var(--bb-surface-2, rgba(0, 0, 0, 0.14));
 
-  /* semantic accents (theme-ready) */
   --bb-md-success: var(--bb-success, #3fd18b);
   --bb-md-danger: var(--bb-danger, #ff5f5f);
 
-  /* chart palette (theme-ready) */
   --bb-md-p1: var(--bb-chart-p1, #ff4d4d);
   --bb-md-p2: var(--bb-chart-p2, #4da3ff);
   --bb-md-neutral: var(--bb-chart-neutral, rgba(255, 255, 255, 0.35));
 
-  /* tooltip surface */
   --bb-md-tooltip-bg: var(--bb-tooltip-bg, rgba(20, 20, 20, 0.92));
   --bb-md-tooltip-border: var(--bb-tooltip-border, rgba(255, 255, 255, 0.10));
 
@@ -50,7 +46,6 @@
     text-align: center;
   }
 
-  /* Title pill (flag + text aligned nicely) */
   .bb-pill--title {
     display: inline-flex;
     align-items: center;
@@ -58,15 +53,9 @@
   }
 
   /* ============================================================================================
-     Pills / tabs
+     Tabs
   ============================================================================================ */
 
-  .bb-pill-strength {
-    white-space: nowrap;
-    flex-wrap: nowrap;
-  }
-
-  /* Tabs container should never force horizontal scroll */
   .bb-tabs {
     display: flex;
     flex-wrap: wrap;
@@ -81,7 +70,7 @@
   }
 
   /* ============================================================================================
-     Body / panels / states
+     Body / states
   ============================================================================================ */
 
   .bb-body {
@@ -173,8 +162,7 @@
   }
 
   /* ============================================================================================
-     TS controls (shared with chart tabs)
-     Keep pills inline, wrap nicely, no width stealing.
+     TS controls (inline pills + wrap)
   ============================================================================================ */
 
   .bb-ts-controls {
@@ -216,7 +204,7 @@
     color: rgba(255, 255, 255, 0.82);
 
     input {
-      display: none;
+      display: none !important;
     }
 
     &:has(input:checked) {
@@ -224,11 +212,6 @@
       color: rgba(255, 255, 255, 0.92);
       border-color: rgba(255, 255, 255, 0.18);
     }
-  }
-
-  /* hard safety override if any global styles break it */
-  .bb-radio-pill > input {
-    display: none !important;
   }
 
   .bb-hint {
@@ -242,93 +225,7 @@
   }
 
   /* ============================================================================================
-     Compact pinned summary (inline bar above chart)
-     - This is the "match day" summary when cursor is outside chart
-     - And updates live when hovering inside chart
-  ============================================================================================ */
-
-  .bb-tooltip-summary {
-    /* summary je dio layouta, nije floating tooltip */
-    position: static;
-    pointer-events: none;
-  
-    opacity: 1;
-    transform: none;
-    transition: none;
-  
-    width: 100%;
-    max-width: 760px;
-    margin: 10px auto 6px;
-    padding: 8px 10px;
-  
-    display: grid;
-    grid-template-columns: auto 1fr 1fr;
-    gap: 10px;
-    align-items: center;
-  
-    border-radius: 12px;
-  }
-  
-  /* datum kompaktan (lijevo) */
-  .bb-tooltip-summary .bb-chart-tooltip-title {
-    margin: 0;
-    white-space: nowrap;
-    font-size: 12px;
-    opacity: 0.85;
-  }
-  
-  /* dvije kolone metrika, ali “tight” */
-  .bb-tooltip-summary .bb-tt-grid {
-    margin: 0;
-    gap: 10px;
-  }
-  
-  .bb-tooltip-summary .bb-tt-metrics {
-    margin-top: 4px;
-    gap: 2px;
-  }
-  
-  .bb-tooltip-summary .bb-tt-row {
-    grid-template-columns: 44px 1fr;
-  }  
-
-  .bb-summary-date {
-    font-weight: 800;
-    opacity: 0.95;
-    margin-right: 6px;
-    white-space: nowrap;
-  }
-
-  .bb-summary-player {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    flex-wrap: wrap;
-    white-space: nowrap;
-
-    padding: 4px 8px;
-    border-radius: 999px;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    background: rgba(255, 255, 255, 0.04);
-  }
-
-  .bb-summary-name {
-    font-weight: 700;
-    opacity: 0.95;
-  }
-
-  .bb-summary-metric {
-    opacity: 0.9;
-    font-variant-numeric: tabular-nums;
-  }
-
-  .bb-summary-metric b {
-    opacity: 0.75;
-    margin-right: 3px;
-  }
-
-  /* ============================================================================================
-     Chart + hover tooltip
+     Chart + tooltips
   ============================================================================================ */
 
   .bb-chart-wrap {
@@ -336,10 +233,9 @@
     width: 100%;
     max-width: 100%;
     overflow: visible;
-    border-radius: 14px; 
+    border-radius: 14px;
   }
 
-  /* Hover tooltip (floating) keeps using the classic tooltip styles */
   .bb-chart-tooltip {
     position: absolute;
     z-index: 9999;
@@ -362,30 +258,90 @@
     will-change: opacity, transform;
   }
 
-  /* IMPORTANT: pinned summary uses .bb-tooltip-summary above, so we disable the old pinned positioning */
-  .bb-chart-tooltip.bb-tooltip-pinned {
-    position: static;
-    left: auto;
-    bottom: auto;
-    top: auto !important;
-    transform: none;
-    opacity: 1;
-    background: transparent;
-    border: 0;
-    box-shadow: none;
-    padding: 0;
-    border-radius: 0;
-  }
-
   .bb-chart-tooltip.bb-tooltip-show {
     opacity: 1;
     transform: translate3d(0, 0, 0) scale(1);
   }
 
-  .bb-chart-tooltip-title {
-    font-weight: 700;
-    margin-bottom: 6px;
+  /* --------------------------------------------------------------------------------------------
+     COMPACT SUMMARY (the “below chart” block you want to be inline / not tall)
+     - This targets your bb-tooltip-summary variant.
+     - Goal: one compact bar, minimal vertical footprint.
+  -------------------------------------------------------------------------------------------- */
+
+  .bb-chart-tooltip.bb-tooltip-summary {
+    position: static;
+    /* participates in normal flow (not overlay) */
+    pointer-events: auto;
+    opacity: 1;
+    transform: none;
+    margin: 10px auto 0;
+    width: fit-content;
+    max-width: 100%;
+    padding: 8px 10px;
+    border-radius: 12px;
+  }
+
+  .bb-chart-tooltip.bb-tooltip-summary .bb-chart-tooltip-title {
+    margin: 0;
+    font-weight: 800;
     opacity: 0.95;
+    white-space: nowrap;
+  }
+
+  /* Force the summary content inline */
+  .bb-chart-tooltip.bb-tooltip-summary .bb-tt-grid {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-top: 0;
+  }
+
+  .bb-chart-tooltip.bb-tooltip-summary .bb-tt-col {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .bb-chart-tooltip.bb-tooltip-summary .bb-tt-player {
+    margin: 0;
+    white-space: nowrap;
+    gap: 8px;
+  }
+
+  .bb-chart-tooltip.bb-tooltip-summary .bb-tt-metrics {
+    margin: 0;
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+  }
+
+  .bb-chart-tooltip.bb-tooltip-summary .bb-tt-row {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 6px;
+    grid-template-columns: unset;
+  }
+
+  .bb-chart-tooltip.bb-tooltip-summary .bb-tt-row>span:first-child {
+    opacity: 0.65;
+    font-size: 11px;
+    white-space: nowrap;
+  }
+
+  .bb-chart-tooltip.bb-tooltip-summary .bb-tt-row b,
+  .bb-chart-tooltip.bb-tooltip-summary .bb-tt-row span:last-child {
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  /* -------------------------------------------------------------------------------------------- */
+
+  .bb-chart-tooltip.bb-tooltip-pinned {
+    left: 50%;
+    bottom: 12px;
+    top: auto !important;
+    transform: translate3d(-50%, 0, 0) scale(1);
   }
 
   .bb-legend {
@@ -424,37 +380,9 @@
     }
   }
 
-  /* Hover tooltip internals (still used by hoverTooltipCard) */
-  .bb-tt-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 14px;
-    margin-top: 8px;
-  }
-
-  .bb-tt-player {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    white-space: nowrap;
-  }
-
   .bb-tt-player-name {
     font-weight: 700;
     opacity: 0.95;
-  }
-
-  .bb-tt-metrics {
-    margin-top: 6px;
-    display: grid;
-    gap: 4px;
-  }
-
-  .bb-tt-row {
-    display: grid;
-    grid-template-columns: 50px 1fr;
-    gap: 8px;
-    align-items: baseline;
   }
 
   .bb-tt-k {
@@ -532,18 +460,10 @@
       grid-template-columns: 1fr;
     }
 
-    .bb-tt-grid {
-      grid-template-columns: 1fr;
-    }
-  }
-
-  @media (max-width: 700px) {
-    .bb-tooltip-summary {
+    /* summary bar becomes stacked if needed */
+    .bb-chart-tooltip.bb-tooltip-summary .bb-tt-grid {
+      flex-wrap: wrap;
       justify-content: center;
-    }
-
-    .bb-summary-player {
-      white-space: normal;
     }
   }
 
