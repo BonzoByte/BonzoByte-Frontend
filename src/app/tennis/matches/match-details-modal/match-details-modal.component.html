@@ -108,19 +108,19 @@
                 <label class="bb-radio-pill">
                     <input type="radio" name="RatingMode" [value]="'M'" [(ngModel)]="RatingMode"
                         (ngModelChange)="onTsSelectorsChanged()" />
-                    <span>M</span>
+                    <span>Match</span>
                 </label>
 
                 <label class="bb-radio-pill">
                     <input type="radio" name="RatingMode" [value]="'SM'" [(ngModel)]="RatingMode"
                         (ngModelChange)="onTsSelectorsChanged()" />
-                    <span>SM</span>
+                    <span>Set Match</span>
                 </label>
 
                 <label class="bb-radio-pill">
                     <input type="radio" name="RatingMode" [value]="'GSM'" [(ngModel)]="RatingMode"
                         (ngModelChange)="onTsSelectorsChanged()" />
-                    <span>GSM</span>
+                    <span>Game Set Match</span>
                 </label>
             </div>
 
@@ -130,31 +130,31 @@
                 <label class="bb-radio-pill">
                     <input type="radio" name="SurfaceScope" [value]="'ALL'" [(ngModel)]="SurfaceScope"
                         (ngModelChange)="onTsSelectorsChanged()" />
-                    <span>All</span>
+                    <span>All Surfaces</span>
                 </label>
 
                 <label class="bb-radio-pill">
                     <input type="radio" name="SurfaceScope" [value]="'S1'" [(ngModel)]="SurfaceScope"
                         (ngModelChange)="onTsSelectorsChanged()" />
-                    <span>S1 <span class="bb-hint" *ngIf="isCurrentSurface('S1')">(current)</span></span>
+                    <span>Carpet<span class="bb-hint" *ngIf="isCurrentSurface('S1')">(current)</span></span>
                 </label>
 
                 <label class="bb-radio-pill">
                     <input type="radio" name="SurfaceScope" [value]="'S2'" [(ngModel)]="SurfaceScope"
                         (ngModelChange)="onTsSelectorsChanged()" />
-                    <span>S2 <span class="bb-hint" *ngIf="isCurrentSurface('S2')">(current)</span></span>
+                    <span>Clay<span class="bb-hint" *ngIf="isCurrentSurface('S2')">(current)</span></span>
                 </label>
 
                 <label class="bb-radio-pill">
                     <input type="radio" name="SurfaceScope" [value]="'S3'" [(ngModel)]="SurfaceScope"
                         (ngModelChange)="onTsSelectorsChanged()" />
-                    <span>S3 <span class="bb-hint" *ngIf="isCurrentSurface('S3')">(current)</span></span>
+                    <span>Grass<span class="bb-hint" *ngIf="isCurrentSurface('S3')">(current)</span></span>
                 </label>
 
                 <label class="bb-radio-pill">
                     <input type="radio" name="SurfaceScope" [value]="'S4'" [(ngModel)]="SurfaceScope"
                         (ngModelChange)="onTsSelectorsChanged()" />
-                    <span>S4 <span class="bb-hint" *ngIf="isCurrentSurface('S4')">(current)</span></span>
+                    <span>Hard<span class="bb-hint" *ngIf="isCurrentSurface('S4')">(current)</span></span>
                 </label>
             </div>
         </div>
