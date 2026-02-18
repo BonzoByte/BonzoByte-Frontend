@@ -228,12 +228,18 @@
      Chart + tooltips
   ============================================================================================ */
 
+  .bb-ts-snapshot {
+    margin-top: 8px;
+    margin-bottom: 6px;
+  }
+
   .bb-chart-wrap {
     position: relative;
     width: 100%;
     max-width: 100%;
     overflow: visible;
-    border-radius: 14px;
+    border-radius: 10px;
+    margin-top: 6px;
   }
 
   .bb-chart-tooltip {
@@ -422,6 +428,15 @@
     &.bb-dot-gray {
       background: var(--bb-md-neutral);
     }
+  }
+
+  .bb-dot-inline {
+    width: 8px;
+    height: 8px;
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 8px;
+    transform: translateY(-1px);
   }
 
   .bb-tt-player-name {

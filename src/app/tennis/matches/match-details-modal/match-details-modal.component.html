@@ -15,6 +15,7 @@
                     </span>
 
                     <div class="bb-player-name">
+                        <span class="bb-dot bb-dot-red bb-dot-inline" aria-hidden="true"></span>
                         {{ v.p1.name }}
                         <span *ngIf="v.p1.iso3">({{ v.p1.iso3 }})</span>
                         <span class="bb-meta" *ngIf="v.p1.rank">#{{ v.p1.rank }}</span>
@@ -60,6 +61,7 @@
                     </span>
 
                     <div class="bb-player-name">
+                        <span class="bb-dot bb-dot-blue bb-dot-inline" aria-hidden="true"></span>
                         {{ v.p2.name }}
                         <span *ngIf="v.p2.iso3">({{ v.p2.iso3 }})</span>
                         <span class="bb-meta" *ngIf="v.p2.rank">#{{ v.p2.rank }}</span>
@@ -240,8 +242,6 @@
     <!-- TrueSkill snapshot -->
     <ng-template #tsSnapshot let-v="v">
         <div class="bb-ts-snapshot">
-            <div class="bb-ts-snapshot-title">TrueSkill snapshot (selected mode/surface)</div>
-
             <div class="bb-compare bb-compare-ts">
                 <div class="bb-comp-row">
                     <div class="bb-comp-left">{{ tsNum(tsMean('p1')) }}</div>
@@ -433,10 +433,6 @@
                 <ng-container *ngTemplateOutlet="playersHeader; context: { v: v }"></ng-container>
                 <ng-container *ngTemplateOutlet="tsControls"></ng-container>
                 <ng-container *ngTemplateOutlet="tsSnapshot; context: { v: v }"></ng-container>
-
-                <ng-container *ngIf="pinnedTooltip as tip">
-                    <ng-container *ngTemplateOutlet="pinnedTooltipSummary; context: { tip: tip }"></ng-container>
-                </ng-container>
 
                 <div *ngIf="tsBreakdownLoading" class="bb-loading">Loading TS history…</div>
                 <div *ngIf="!tsBreakdownLoading && tsBreakdownError" class="bb-error">{{ tsBreakdownError }}</div>
