@@ -269,17 +269,61 @@
      - Goal: one compact bar, minimal vertical footprint.
   -------------------------------------------------------------------------------------------- */
 
+  /* pinned summary = compact inline bar */
   .bb-chart-tooltip.bb-tooltip-summary {
-    position: static;
-    /* participates in normal flow (not overlay) */
-    pointer-events: auto;
-    opacity: 1;
-    transform: none;
-    margin: 10px auto 0;
-    width: fit-content;
-    max-width: 100%;
+    position: sticky;
+    /* ostaje vidljivo dok scrollaš tab */
+    top: 0;
+    z-index: 5;
+
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    margin: 10px 0 0;
     padding: 8px 10px;
+
+    width: 100%;
+    max-width: 100%;
+
     border-radius: 12px;
+  }
+
+  /* date left, players to the right */
+  .bb-summary-date {
+    font-weight: 800;
+    white-space: nowrap;
+    opacity: 0.95;
+    margin-right: 6px;
+  }
+
+  /* each player row becomes inline */
+  .bb-summary-player {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: nowrap;
+    white-space: nowrap;
+  }
+
+  /* metrics inline, not stacked */
+  .bb-summary-metric {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 4px;
+    opacity: 0.95;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .bb-summary-name {
+    font-weight: 700;
+    opacity: 0.95;
+  }
+
+  /* dots smaller so they don't “push” vertical alignment */
+  .bb-summary-player .bb-dot {
+    width: 8px;
+    height: 8px;
   }
 
   .bb-chart-tooltip.bb-tooltip-summary .bb-chart-tooltip-title {
