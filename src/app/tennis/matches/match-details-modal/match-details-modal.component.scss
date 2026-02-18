@@ -42,7 +42,6 @@
     flex-wrap: wrap;
     align-items: center;
     justify-content: center;
-    /* keep centered */
     gap: 8px;
 
     margin: 0 0 10px;
@@ -175,7 +174,7 @@
 
   /* ============================================================================================
      TS controls (shared with chart tabs)
-     FIX: keep pills inline, wrap nicely, no "left labels / right radios" layout.
+     Keep pills inline, wrap nicely, no width stealing.
   ============================================================================================ */
 
   .bb-ts-controls {
@@ -191,7 +190,6 @@
     align-items: center;
     gap: 10px;
     flex-wrap: wrap;
-    /* key to avoid stealing width */
   }
 
   .bb-ts-group-title {
@@ -229,7 +227,7 @@
   }
 
   /* hard safety override if any global styles break it */
-  .bb-radio-pill>input {
+  .bb-radio-pill > input {
     display: none !important;
   }
 
@@ -244,7 +242,67 @@
   }
 
   /* ============================================================================================
-     Chart + tooltip
+     Compact pinned summary (inline bar above chart)
+     - This is the "match day" summary when cursor is outside chart
+     - And updates live when hovering inside chart
+  ============================================================================================ */
+
+  .bb-tooltip-summary {
+    position: static; /* no longer absolute/overlay */
+    pointer-events: none;
+
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px 12px;
+
+    padding: 8px 10px;
+    border-radius: 12px;
+
+    background: rgba(20, 20, 20, 0.55);
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    box-shadow: none;
+
+    margin: 10px 0 8px;
+  }
+
+  .bb-summary-date {
+    font-weight: 800;
+    opacity: 0.95;
+    margin-right: 6px;
+    white-space: nowrap;
+  }
+
+  .bb-summary-player {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    white-space: nowrap;
+
+    padding: 4px 8px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.04);
+  }
+
+  .bb-summary-name {
+    font-weight: 700;
+    opacity: 0.95;
+  }
+
+  .bb-summary-metric {
+    opacity: 0.9;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .bb-summary-metric b {
+    opacity: 0.75;
+    margin-right: 3px;
+  }
+
+  /* ============================================================================================
+     Chart + hover tooltip
   ============================================================================================ */
 
   .bb-chart-wrap {
@@ -255,6 +313,7 @@
     border-radius: 14px;
   }
 
+  /* Hover tooltip (floating) keeps using the classic tooltip styles */
   .bb-chart-tooltip {
     position: absolute;
     z-index: 9999;
@@ -277,16 +336,24 @@
     will-change: opacity, transform;
   }
 
+  /* IMPORTANT: pinned summary uses .bb-tooltip-summary above, so we disable the old pinned positioning */
+  .bb-chart-tooltip.bb-tooltip-pinned {
+    position: static;
+    left: auto;
+    bottom: auto;
+    top: auto !important;
+    transform: none;
+    opacity: 1;
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+    padding: 0;
+    border-radius: 0;
+  }
+
   .bb-chart-tooltip.bb-tooltip-show {
     opacity: 1;
     transform: translate3d(0, 0, 0) scale(1);
-  }
-
-  .bb-chart-tooltip.bb-tooltip-pinned {
-    left: 50%;
-    bottom: 12px;
-    top: auto !important;
-    transform: translate3d(-50%, 0, 0) scale(1);
   }
 
   .bb-chart-tooltip-title {
@@ -331,6 +398,7 @@
     }
   }
 
+  /* Hover tooltip internals (still used by hoverTooltipCard) */
   .bb-tt-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -440,6 +508,16 @@
 
     .bb-tt-grid {
       grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 700px) {
+    .bb-tooltip-summary {
+      justify-content: center;
+    }
+
+    .bb-summary-player {
+      white-space: normal;
     }
   }
 

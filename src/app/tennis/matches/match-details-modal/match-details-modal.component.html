@@ -163,32 +163,22 @@
     <!-- Pinned tooltip summary -->
     <ng-template #pinnedTooltipSummary let-tip="tip">
         <div class="bb-chart-tooltip bb-tooltip-summary">
-            <div class="bb-chart-tooltip-title">{{ tip.dateLabel }}</div>
+            <div class="bb-summary-date">{{ tip.dateLabel }}</div>
 
-            <div class="bb-tt-grid">
-                <div class="bb-tt-col">
-                    <div class="bb-tt-player">
-                        <span class="bb-dot bb-dot-red"></span>
-                        {{ tip.p1Label }}
-                    </div>
-                    <div class="bb-tt-metrics">
-                        <div class="bb-tt-row"><span>Mean</span><b>{{ tip.mu1 | number:'1.2-2' }}</b></div>
-                        <div class="bb-tt-row"><span>SD</span>{{ tip.sd1 | number:'1.2-2' }}</div>
-                        <div class="bb-tt-row"><span>WP</span>{{ tip.wp1 * 100 | number:'1.1-1' }}%</div>
-                    </div>
-                </div>
+            <div class="bb-summary-player bb-summary-p1">
+                <span class="bb-dot bb-dot-red"></span>
+                <span class="bb-summary-name">{{ tip.p1Label }}</span>
+                <span class="bb-summary-metric"><b>μ</b> {{ tip.mu1 | number:'1.2-2' }}</span>
+                <span class="bb-summary-metric"><b>σ</b> {{ tip.sd1 | number:'1.2-2' }}</span>
+                <span class="bb-summary-metric"><b>WP</b> {{ tip.wp1 * 100 | number:'1.1-1' }}%</span>
+            </div>
 
-                <div class="bb-tt-col">
-                    <div class="bb-tt-player">
-                        <span class="bb-dot bb-dot-blue"></span>
-                        {{ tip.p2Label }}
-                    </div>
-                    <div class="bb-tt-metrics">
-                        <div class="bb-tt-row"><span>Mean</span><b>{{ tip.mu2 | number:'1.2-2' }}</b></div>
-                        <div class="bb-tt-row"><span>SD</span>{{ tip.sd2 | number:'1.2-2' }}</div>
-                        <div class="bb-tt-row"><span>WP</span>{{ tip.wp2 * 100 | number:'1.1-1' }}%</div>
-                    </div>
-                </div>
+            <div class="bb-summary-player bb-summary-p2">
+                <span class="bb-dot bb-dot-blue"></span>
+                <span class="bb-summary-name">{{ tip.p2Label }}</span>
+                <span class="bb-summary-metric"><b>μ</b> {{ tip.mu2 | number:'1.2-2' }}</span>
+                <span class="bb-summary-metric"><b>σ</b> {{ tip.sd2 | number:'1.2-2' }}</span>
+                <span class="bb-summary-metric"><b>WP</b> {{ tip.wp2 * 100 | number:'1.1-1' }}%</span>
             </div>
         </div>
     </ng-template>
