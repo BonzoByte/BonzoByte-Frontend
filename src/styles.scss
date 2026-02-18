@@ -1560,13 +1560,6 @@ body.modal-open {
     transform: scale(1.03);
 }
 
-.bb-panel {
-    // padding: 12px;
-    // border-radius: 4px;
-
-    background: var(--bb-md-surface);
-}
-
 .bb-players-2col {
     display: grid;
     grid-template-columns: 1fr 1fr;
