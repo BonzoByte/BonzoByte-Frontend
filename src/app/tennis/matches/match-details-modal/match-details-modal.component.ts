@@ -609,6 +609,9 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
     hoverTooltip: ChartTooltip | null = null;
     pinnedTooltip: ChartTooltip | null = null;
 
+    private pinnedDefaultTooltip: ChartTooltip | null = null;
+    private isChartHovering = false;
+
     // -----------------------------------------------------------------------------------------------
     // Constructor / lifecycle
     // -----------------------------------------------------------------------------------------------
@@ -1723,17 +1726,26 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
                     // Pin tooltip near match date (or last point fallback).
                     const matchMs = Date.parse(String(this.raw?.['m003'] ?? ''));
                     if (this.mergedSeries.length) {
-                        let idx = this.mergedSeries.length - 1;
 
-                        if (Number.isFinite(matchMs)) {
-                            idx = this.nearestIndexByTime(this.mergedSeries, matchMs);
+                        this.pinnedDefaultTooltip = null;
+                        this.pinnedTooltip = null;
+                        this.isChartHovering = false;
+                        if (this.mergedSeries.length) {
+                            let idx = this.mergedSeries.length - 1;
+
+                            if (Number.isFinite(matchMs)) {
+                                idx = this.nearestIndexByTime(this.mergedSeries, matchMs);
+                            }
+
+                            const base: ChartTooltip = {
+                                leftPx: 0,
+                                topPx: 0,
+                                ...this.buildTooltipFromMerged(this.mergedSeries[idx]),
+                            };
+
+                            this.pinnedDefaultTooltip = base;
+                            this.pinnedTooltip = base; // <-- ovo je jedini summary koji renderamo
                         }
-
-                        this.pinnedTooltip = {
-                            leftPx: 0,
-                            topPx: 0,
-                            ...this.buildTooltipFromMerged(this.mergedSeries[idx]),
-                        };
                     }
 
                     return true;
@@ -1892,7 +1904,7 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
         if (!data?.length) return;
 
         const svg = ev.currentTarget as SVGElement;
-        const { rect, sx, sy } = this.getSvgViewport(svg);
+        const { rect, sx } = this.getSvgViewport(svg);
 
         // mouse X in real pixels
         const xPx = ev.clientX - rect.left;
@@ -1905,46 +1917,20 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
         this.hoverIdx = idx;
 
         const p = data[idx];
-        const wp1 = Math.min(1, Math.max(0, Number(p.wp1)));
-        const wp2 = 1 - wp1;
 
-        // virtual coordinates
-        const hoverXVirtual = this.scaleX(p.time, cm.tMin, cm.tMax);
-        const hoverYVirtual = this.scaleY(wp1, cm.vMin, cm.vMax);
+        this.isChartHovering = true;
 
-        // convert to real pixels for tooltip
-        const hoverXPx = hoverXVirtual * sx;
-        const hoverYPx = hoverYVirtual * sy;
-
-        // tooltip dimensions (aligned with CSS max-width)
-        const tipW = 360;
-        const tipH = 95;
-        const pad = 10;
-
-        const left = this.clamp(hoverXPx - tipW / 2, pad, rect.width - tipW - pad);
-        const top = this.clamp(hoverYPx - tipH - 10, pad, rect.height - tipH - pad);
-
-        this.hoverTooltip = {
-            leftPx: left,
-            topPx: top,
-            dateLabel: this.formatDateShort(p.time),
-
-            p1Label: this.playerLabel('p1'),
-            p2Label: this.playerLabel('p2'),
-
-            mu1: p.p1mu,
-            sd1: p.p1sd,
-            wp1,
-
-            mu2: p.p2mu,
-            sd2: p.p2sd,
-            wp2,
+        this.pinnedTooltip = {
+            leftPx: 0,
+            topPx: 0,
+            ...this.buildTooltipFromMerged(p),
         };
     }
 
     onWpChartMouseLeave(): void {
         this.hoverIdx = null;
-        this.hoverTooltip = null;
+        this.isChartHovering = false;
+        this.pinnedTooltip = this.pinnedDefaultTooltip;
     }
 
     // =================================================================================================

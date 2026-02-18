@@ -248,23 +248,49 @@
   ============================================================================================ */
 
   .bb-tooltip-summary {
-    position: static; /* no longer absolute/overlay */
+    /* summary je dio layouta, nije floating tooltip */
+    position: static;
     pointer-events: none;
-
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 8px 12px;
-
+  
+    opacity: 1;
+    transform: none;
+    transition: none;
+  
+    width: 100%;
+    max-width: 760px;
+    margin: 10px auto 6px;
     padding: 8px 10px;
+  
+    display: grid;
+    grid-template-columns: auto 1fr 1fr;
+    gap: 10px;
+    align-items: center;
+  
     border-radius: 12px;
-
-    background: rgba(20, 20, 20, 0.55);
-    border: 1px solid rgba(255, 255, 255, 0.10);
-    box-shadow: none;
-
-    margin: 10px 0 8px;
   }
+  
+  /* datum kompaktan (lijevo) */
+  .bb-tooltip-summary .bb-chart-tooltip-title {
+    margin: 0;
+    white-space: nowrap;
+    font-size: 12px;
+    opacity: 0.85;
+  }
+  
+  /* dvije kolone metrika, ali “tight” */
+  .bb-tooltip-summary .bb-tt-grid {
+    margin: 0;
+    gap: 10px;
+  }
+  
+  .bb-tooltip-summary .bb-tt-metrics {
+    margin-top: 4px;
+    gap: 2px;
+  }
+  
+  .bb-tooltip-summary .bb-tt-row {
+    grid-template-columns: 44px 1fr;
+  }  
 
   .bb-summary-date {
     font-weight: 800;
