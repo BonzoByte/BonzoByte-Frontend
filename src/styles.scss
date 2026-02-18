@@ -1747,25 +1747,80 @@ body.modal-open {
     margin: 10px 0 12px;
     text-align: center;
     white-space: nowrap;
-  
-    font-size: 28px;           
+
+    font-size: 28px;
     font-weight: 900;
     letter-spacing: 1.6px;
     color: rgba(255, 255, 255, 0.95);
-  }
-  
-  .bb-modal-title:after {
+}
+
+.bb-modal-title:after {
     content: "";
     margin: 6px auto 0;
     width: min(420px, 92%);
     height: 2px;
     display: block;
-  
-    background: linear-gradient(
-      to right,
-      transparent,
-      rgba(255, 255, 255, 0.55),
-      transparent
-    );
+
+    background: linear-gradient(to right,
+            transparent,
+            rgba(255, 255, 255, 0.55),
+            transparent);
     opacity: 0.9;
-  }  
+}
+
+/* Radio pill (used in TS controls) */
+.bb-radio-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    border-radius: 999px;
+    cursor: pointer;
+    user-select: none;
+    font-size: 12px;
+
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.06);
+    color: rgba(255, 255, 255, 0.85);
+}
+
+/* Hide native radio */
+.bb-radio-pill input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+    width: 0;
+    height: 0;
+}
+
+/* Checked state (works without :has) */
+.bb-radio-pill input[type="radio"]:checked+span {
+    font-weight: 800;
+    color: rgba(255, 255, 255, 0.95);
+}
+
+.bb-radio-pill:has(input[type="radio"]:checked) {
+    background: rgba(255, 255, 255, 0.14);
+    border-color: rgba(255, 255, 255, 0.18);
+}
+
+.bb-ts-controls {
+    margin-top: 12px;
+    padding-top: 10px;
+    display: grid;
+    gap: 10px;
+    border-top: 1px solid rgba(255, 255, 255, 0.10);
+}
+
+.bb-ts-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+}
+
+.bb-ts-group-title {
+    min-width: 86px;
+    font-size: 12px;
+    opacity: 0.75;
+}
