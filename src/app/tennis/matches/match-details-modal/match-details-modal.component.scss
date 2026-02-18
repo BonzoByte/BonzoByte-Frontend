@@ -1,49 +1,89 @@
 ﻿/* ================================================================================================
    Match Details Modal (scoped styles)
-   - All styles live under .bb-modal--match-details to avoid collisions with global bb-* utilities.
+   - Scoped under .bb-modal--match-details to avoid collisions with global bb-* utilities.
    - Overlay / card / close / base padding / focus trap are handled by bb-modal-shell.
 ================================================================================================ */
 
 :host {
   display: contents;
-  /* modal-shell već nosi layout; host nam ne treba box */
 }
 
+/* NOTE:
+   We keep this file mostly about layout + component specifics.
+   Colors are expressed via CSS variables with fallbacks so themes can override globally later.
+*/
 .bb-modal--match-details {
-  /* ---- Theme hooks (use CSS variables so later themes are trivial) ---- */
-  --bb-md-text: var(--bb-text, rgba(255, 255, 255, 0.9));
+  /* ---- Theme hooks (prefer global vars, fallback to sensible defaults) ---- */
+  --bb-md-text: var(--bb-text, rgba(255, 255, 255, 0.92));
   --bb-md-muted: var(--bb-muted, rgba(255, 255, 255, 0.72));
-  --bb-md-border: var(--bb-border, rgba(255, 255, 255, 0.10));
+  --bb-md-border: var(--bb-border, rgba(255, 255, 255, 0.12));
   --bb-md-surface: var(--bb-surface, rgba(0, 0, 0, 0.18));
   --bb-md-surface-2: var(--bb-surface-2, rgba(0, 0, 0, 0.14));
 
-  /* --------------------------------
+  /* semantic accents (theme-ready) */
+  --bb-md-success: var(--bb-success, #3fd18b);
+  --bb-md-danger: var(--bb-danger, #ff5f5f);
+
+  /* chart palette (theme-ready) */
+  --bb-md-p1: var(--bb-chart-p1, #ff4d4d);
+  --bb-md-p2: var(--bb-chart-p2, #4da3ff);
+  --bb-md-neutral: var(--bb-chart-neutral, rgba(255, 255, 255, 0.35));
+
+  /* tooltip surface */
+  --bb-md-tooltip-bg: var(--bb-tooltip-bg, rgba(20, 20, 20, 0.92));
+  --bb-md-tooltip-border: var(--bb-tooltip-border, rgba(255, 255, 255, 0.10));
+
+  /* ============================================================================================
      Header meta line (tournament line)
-  --------------------------------- */
+  ============================================================================================ */
 
   .bb-header-line {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
+    justify-content: center;
+    /* keep centered */
     gap: 8px;
 
     margin: 0 0 10px;
     font-size: 12px;
     color: var(--bb-md-muted);
+    text-align: center;
   }
 
-  /* --------------------------------
+  /* Title pill (flag + text aligned nicely) */
+  .bb-pill--title {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* ============================================================================================
      Pills / tabs
-  --------------------------------- */
+  ============================================================================================ */
 
   .bb-pill-strength {
     white-space: nowrap;
     flex-wrap: nowrap;
   }
 
-  /* --------------------------------
+  /* Tabs container should never force horizontal scroll */
+  .bb-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    row-gap: 8px;
+    padding-bottom: 12px;
+  }
+
+  .bb-tab {
+    white-space: nowrap;
+  }
+
+  /* ============================================================================================
      Body / panels / states
-  --------------------------------- */
+  ============================================================================================ */
 
   .bb-body {
     overflow: visible;
@@ -54,14 +94,21 @@
     color: rgba(255, 255, 255, 0.85);
   }
 
-  /* --------------------------------
+  .bb-loading,
+  .bb-error,
+  .bb-error-title,
+  .bb-error-msg {
+    text-align: center;
+  }
+
+  /* ============================================================================================
      Players header
-  --------------------------------- */
+  ============================================================================================ */
 
   .bb-player-name {
     font-weight: 800;
     font-size: 14px;
-    color: rgba(255, 255, 255, 0.92);
+    color: var(--bb-md-text);
   }
 
   .bb-meta {
@@ -80,9 +127,9 @@
     font-size: 13px;
   }
 
-  /* --------------------------------
+  /* ============================================================================================
      Flags
-  --------------------------------- */
+  ============================================================================================ */
 
   .bb-flag-wrap {
     display: inline-flex;
@@ -94,9 +141,9 @@
     border-radius: 3px;
   }
 
-  /* --------------------------------
+  /* ============================================================================================
      Bet icon / PL
-  --------------------------------- */
+  ============================================================================================ */
 
   .bb-bet-icon {
     display: inline-flex;
@@ -108,27 +155,28 @@
 
     font-size: 12px;
     font-weight: 900;
-    color: #3fd18b;
 
-    border: 1px solid rgba(63, 209, 139, 0.45);
-    background: rgba(63, 209, 139, 0.15);
+    color: var(--bb-md-success);
+    border: 1px solid color-mix(in srgb, var(--bb-md-success) 45%, transparent);
+    background: color-mix(in srgb, var(--bb-md-success) 15%, transparent);
   }
 
   .bb-pl {
     font-weight: 800;
 
     &.bb-pl-positive {
-      color: #3fd18b;
+      color: var(--bb-md-success);
     }
 
     &.bb-pl-negative {
-      color: #ff5f5f;
+      color: var(--bb-md-danger);
     }
   }
 
-  /* --------------------------------
+  /* ============================================================================================
      TS controls (shared with chart tabs)
-  --------------------------------- */
+     FIX: keep pills inline, wrap nicely, no "left labels / right radios" layout.
+  ============================================================================================ */
 
   .bb-ts-controls {
     margin-top: 12px;
@@ -140,18 +188,21 @@
 
   .bb-ts-group {
     display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
     align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    /* key to avoid stealing width */
   }
 
   .bb-ts-group-title {
+    flex: 0 0 auto;
     min-width: 86px;
     font-size: 12px;
     opacity: 0.75;
   }
 
   .bb-radio-pill {
+    flex: 0 0 auto;
     display: inline-flex;
     align-items: center;
     gap: 6px;
@@ -160,6 +211,7 @@
     cursor: pointer;
     user-select: none;
     font-size: 12px;
+    white-space: nowrap;
 
     border: 1px solid rgba(255, 255, 255, 0.12);
     background: rgba(255, 255, 255, 0.06);
@@ -169,12 +221,16 @@
       display: none;
     }
 
-    /* :has je OK za moderne browsere; fallback po potrebi u TS (class) */
     &:has(input:checked) {
       background: rgba(255, 255, 255, 0.14);
       color: rgba(255, 255, 255, 0.92);
       border-color: rgba(255, 255, 255, 0.18);
     }
+  }
+
+  /* hard safety override if any global styles break it */
+  .bb-radio-pill>input {
+    display: none !important;
   }
 
   .bb-hint {
@@ -187,9 +243,9 @@
     margin-top: 12px;
   }
 
-  /* --------------------------------
+  /* ============================================================================================
      Chart + tooltip
-  --------------------------------- */
+  ============================================================================================ */
 
   .bb-chart-wrap {
     position: relative;
@@ -207,8 +263,8 @@
 
     padding: 10px 12px;
     border-radius: 12px;
-    background: rgba(20, 20, 20, 0.92);
-    border: 1px solid rgba(255, 255, 255, 0.10);
+    background: var(--bb-md-tooltip-bg);
+    border: 1px solid var(--bb-md-tooltip-border);
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
 
     font-size: 12px;
@@ -253,6 +309,7 @@
     gap: 8px;
     align-items: center;
     font-size: 12px;
+    white-space: nowrap;
   }
 
   .bb-dot {
@@ -262,15 +319,15 @@
     display: inline-block;
 
     &.bb-dot-red {
-      background: #ff4d4d;
+      background: var(--bb-md-p1);
     }
 
     &.bb-dot-blue {
-      background: #4da3ff;
+      background: var(--bb-md-p2);
     }
 
     &.bb-dot-gray {
-      background: rgba(255, 255, 255, 0.35);
+      background: var(--bb-md-neutral);
     }
   }
 
@@ -317,9 +374,9 @@
     white-space: nowrap;
   }
 
-  /* --------------------------------
+  /* ============================================================================================
      Odds table
-  --------------------------------- */
+  ============================================================================================ */
 
   .bb-muted-sm {
     opacity: 0.7;
@@ -372,12 +429,16 @@
     text-overflow: ellipsis;
   }
 
-  /* --------------------------------
+  /* ============================================================================================
      Responsive + motion
-  --------------------------------- */
+  ============================================================================================ */
 
   @media (max-width: 900px) {
     .bb-players-2col {
+      grid-template-columns: 1fr;
+    }
+
+    .bb-tt-grid {
       grid-template-columns: 1fr;
     }
   }

@@ -43,6 +43,9 @@
 
     --font-size-base: 13px;
     --line-height-base: 1.1;
+
+    --bb-md-success: var(--bb-success, #3fd18b);
+    --bb-md-danger: var(--bb-danger, #ff5f5f);
 }
 
 html,
