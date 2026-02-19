@@ -520,19 +520,6 @@
 
                 <ng-container *ngIf="!tsBreakdownLoading && !tsBreakdownError">
                     <ng-container *ngIf="getWpChartModel() as cm; else noWpChart">
-
-                        <!-- Legend -->
-                        <div class="bb-legend" style="margin: 6px 0 10px;">
-                            <span class="bb-legend-item">
-                                <span class="bb-dot bb-dot-red"></span>{{ v.p1.name }}
-                                <span *ngIf="v.p1.iso3"> ({{ v.p1.iso3 }})</span>
-                            </span>
-                            <span class="bb-legend-item">
-                                <span class="bb-dot bb-dot-blue"></span>{{ v.p2.name }}
-                                <span *ngIf="v.p2.iso3"> ({{ v.p2.iso3 }})</span>
-                            </span>
-                        </div>
-
                         <!-- Chart -->
                         <div class="bb-chart-wrap">
                             <svg [attr.viewBox]="'0 0 ' + chartWidth + ' ' + chartHeight"
