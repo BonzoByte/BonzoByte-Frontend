@@ -827,7 +827,7 @@
                         <div class="bb-ts-buttons">
                             <button *ngFor="let opt of h2hModeOptions" type="button" class="bb-pill"
                                 [class.active]="activeH2HMode === opt.value" (click)="activeH2HMode = opt.value">
-                                {{ opt.label }}
+                                {{ modeLabel(opt.value) }}
                             </button>
                         </div>
                     </div>
@@ -837,7 +837,7 @@
                         <div class="bb-ts-buttons">
                             <button *ngFor="let opt of h2hSurfaceOptions" type="button" class="bb-pill"
                                 [class.active]="activeH2HSurface === opt.value" (click)="activeH2HSurface = opt.value">
-                                {{ opt.label }}
+                                {{ surfaceLabel(opt.value) }}
                             </button>
                         </div>
                     </div>

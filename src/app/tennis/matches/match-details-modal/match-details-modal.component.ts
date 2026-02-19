@@ -2888,4 +2888,13 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
             default: return val;
         }
     }
+
+    modeLabel(val: string): string {
+        switch (val) {
+            case 'M': return 'Match';
+            case 'SM': return 'Set Match';
+            case 'GSM': return 'Game Set Match';
+            default: return val;
+        }
+    }
 }
