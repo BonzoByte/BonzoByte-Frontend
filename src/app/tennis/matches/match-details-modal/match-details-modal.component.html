@@ -570,11 +570,599 @@
                     </ng-template>
                 </ng-container>
             </section>
+            <!-- ========================================================================================
+             WP BREAKDOWN TAB (WP step chart)
+        ========================================================================================= -->
+            <section *ngIf="activeTab==='wpBreakdown'" class="bb-panel">
+                <ng-container *ngTemplateOutlet="playersHeader; context: { v: v }"></ng-container>
+                <ng-container *ngTemplateOutlet="tsControls"></ng-container>
+                <ng-container *ngTemplateOutlet="tsSnapshot; context: { v: v }"></ng-container>
 
-            <!-- PERFORMANCE / FORM / ROLE / H2H / ODDS -->
-            <!-- (ostatak tvojih sekcija ide 1:1, bez wrappera bb-shell/bb-card/bb-header jer to radi shell) -->
+                <!-- Pinned summary tooltip -->
+                <ng-container *ngIf="pinnedTooltip as tip">
+                    <ng-container *ngTemplateOutlet="pinnedTooltipSummary; context: { tip: tip }"></ng-container>
+                </ng-container>
 
-            <!-- ... ostavi sve dalje kako imaš; ja sam ti gore pokazao pattern i već smo maknuli dupli overlay ... -->
+                <div *ngIf="tsBreakdownLoading" class="bb-loading">Loading TS history…</div>
+                <div *ngIf="!tsBreakdownLoading && tsBreakdownError" class="bb-error">{{ tsBreakdownError }}</div>
+
+                <ng-container *ngIf="!tsBreakdownLoading && !tsBreakdownError">
+                    <ng-container *ngIf="getWpChartModel() as cm; else noWpChart">
+
+                        <!-- Legend -->
+                        <div class="bb-legend" style="margin: 6px 0 10px;">
+                            <span class="bb-legend-item">
+                                <span class="bb-dot bb-dot-red"></span>{{ v.p1.name }}
+                                <span *ngIf="v.p1.iso3"> ({{ v.p1.iso3 }})</span>
+                            </span>
+                            <span class="bb-legend-item">
+                                <span class="bb-dot bb-dot-blue"></span>{{ v.p2.name }}
+                                <span *ngIf="v.p2.iso3"> ({{ v.p2.iso3 }})</span>
+                            </span>
+                        </div>
+
+                        <!-- Chart -->
+                        <div class="bb-chart-wrap">
+                            <svg [attr.viewBox]="'0 0 ' + chartWidth + ' ' + chartHeight"
+                                style="width:100%; height:auto; display:block;"
+                                (mousemove)="onWpChartMouseMove($event, cm)" (mouseleave)="onWpChartMouseLeave()">
+                                <!-- Grid + Y labels -->
+                                <g *ngFor="let yt of cm.yTicks">
+                                    <line [attr.x1]="chartPad" [attr.x2]="chartWidth-chartPad" [attr.y1]="yt.y"
+                                        [attr.y2]="yt.y" stroke="rgba(255,255,255,0.08)"></line>
+                                    <text [attr.x]="6" [attr.y]="yt.y+4" font-size="11" fill="rgba(255,255,255,0.65)">
+                                        {{ yt.label }}
+                                    </text>
+                                </g>
+
+                                <!-- X ticks -->
+                                <g *ngFor="let xt of cm.xTicks">
+                                    <line [attr.x1]="xt.x" [attr.x2]="xt.x" [attr.y1]="chartHeight-chartPad"
+                                        [attr.y2]="chartHeight-chartPad+6" stroke="rgba(255,255,255,0.25)"></line>
+                                    <text [attr.x]="xt.x" [attr.y]="chartHeight-6" text-anchor="middle" font-size="11"
+                                        fill="rgba(255,255,255,0.65)">
+                                        {{ xt.label }}
+                                    </text>
+                                </g>
+
+                                <!-- Axis -->
+                                <line [attr.x1]="chartPad" [attr.x2]="chartPad" [attr.y1]="chartPad"
+                                    [attr.y2]="chartHeight-chartPad" stroke="rgba(255,255,255,0.25)"></line>
+                                <line [attr.x1]="chartPad" [attr.x2]="chartWidth-chartPad"
+                                    [attr.y1]="chartHeight-chartPad" [attr.y2]="chartHeight-chartPad"
+                                    stroke="rgba(255,255,255,0.25)"></line>
+
+                                <!-- Match date line -->
+                                <line *ngIf="cm.matchX !== null" [attr.x1]="cm.matchX" [attr.x2]="cm.matchX"
+                                    [attr.y1]="chartPad" [attr.y2]="chartHeight-chartPad"
+                                    stroke="rgba(255,255,255,0.22)" stroke-dasharray="4 4"></line>
+
+                                <!-- Series paths -->
+                                <path [attr.d]="cm.wp1Path" fill="none" stroke="#ff4d4d" stroke-width="2.2"
+                                    opacity="0.95"></path>
+                                <path *ngIf="cm.wp2Path" [attr.d]="cm.wp2Path" fill="none" stroke="#4da3ff"
+                                    stroke-width="2.2" opacity="0.75"></path>
+
+                                <!-- Hover marker -->
+                                <g *ngIf="cm.hoverX !== null">
+                                    <line [attr.x1]="cm.hoverX" [attr.x2]="cm.hoverX" [attr.y1]="chartPad"
+                                        [attr.y2]="chartHeight-chartPad" stroke="rgba(255,255,255,0.20)"></line>
+                                    <circle [attr.cx]="cm.hoverX" [attr.cy]="cm.hoverY1" r="4.5" fill="#ff4d4d"
+                                        opacity="0.95"></circle>
+                                    <circle *ngIf="cm.hoverY2 !== null" [attr.cx]="cm.hoverX" [attr.cy]="cm.hoverY2"
+                                        r="4.5" fill="#4da3ff" opacity="0.85"></circle>
+                                </g>
+                            </svg>
+
+                            <!-- Hover tooltip -->
+                            <ng-container *ngIf="hoverTooltip as tip">
+                                <ng-container
+                                    *ngTemplateOutlet="hoverTooltipCard; context: { tip: tip }"></ng-container>
+                            </ng-container>
+                        </div>
+                    </ng-container>
+
+                    <ng-template #noWpChart>
+                        <div class="bb-error">Not enough points to draw chart.</div>
+                    </ng-template>
+                </ng-container>
+            </section>
+
+            <!-- ========================================================================================
+     PERFORMANCE TAB
+========================================================================================= -->
+            <section *ngIf="activeTab === 'performance'" class="bb-panel">
+                <ng-container *ngTemplateOutlet="playersHeader; context: { v: v }"></ng-container>
+
+                <!-- Controls (unit/time/surface) -->
+                <div class="bb-ts-controls">
+                    <div class="bb-ts-control-row">
+                        <div class="bb-ts-label">Unit</div>
+                        <div class="bb-ts-buttons">
+                            <button *ngFor="let opt of perfUnitOptions" type="button" class="bb-pill"
+                                [class.active]="activePerfUnit === opt.value" (click)="setPerfUnit(opt.value)">
+                                {{ opt.label }}
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="bb-ts-control-row">
+                        <div class="bb-ts-label">Time</div>
+                        <div class="bb-ts-buttons">
+                            <button *ngFor="let opt of perfTimeOptions" type="button" class="bb-pill"
+                                [class.active]="activePerfTime === opt.value" (click)="setPerfTime(opt.value)">
+                                {{ opt.label }}
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="bb-ts-control-row">
+                        <div class="bb-ts-label">Surface</div>
+                        <div class="bb-ts-buttons">
+                            <button *ngFor="let opt of perfSurfaceOptions" type="button" class="bb-pill"
+                                [class.active]="activePerfSurface === opt.value" (click)="setPerfSurface(opt.value)">
+                                {{ opt.label }}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Results -->
+                <div class="bb-compare bb-compare-ts">
+                    <div class="bb-comp-row">
+                        <div class="bb-comp-left">{{ getW(1) }}</div>
+                        <div class="bb-comp-mid">Wins</div>
+                        <div class="bb-comp-right">{{ getW(2) }}</div>
+                    </div>
+
+                    <div class="bb-comp-row">
+                        <div class="bb-comp-left">{{ getL(1) }}</div>
+                        <div class="bb-comp-mid">Losses</div>
+                        <div class="bb-comp-right">{{ getL(2) }}</div>
+                    </div>
+
+                    <div class="bb-comp-row">
+                        <div class="bb-comp-left">{{ getWinPct(1) | number:'1.0-1' }}%</div>
+                        <div class="bb-comp-mid">Win %</div>
+                        <div class="bb-comp-right">{{ getWinPct(2) | number:'1.0-1' }}%</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ========================================================================================
+     FORM TAB
+========================================================================================= -->
+            <section *ngIf="activeTab === 'form'" class="bb-panel">
+                <ng-container *ngTemplateOutlet="playersHeader; context: { v: v }"></ng-container>
+
+                <!-- Surface selector -->
+                <div class="bb-ts-controls">
+                    <div class="bb-ts-control-row">
+                        <div class="bb-ts-label">Surface</div>
+                        <div class="bb-ts-buttons">
+                            <button *ngFor="let opt of perfSurfaceOptions" type="button" class="bb-pill"
+                                [class.active]="activeFormSurface === opt.value"
+                                (click)="activeFormSurface = opt.value">
+                                {{ opt.label }}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Form stats -->
+                <div class="bb-compare bb-compare-ts">
+                    <div class="bb-comp-row">
+                        <div class="bb-comp-left">{{ fmtDays(getDaysSinceLastMatch(1, activeFormSurface)) }}</div>
+                        <div class="bb-comp-mid">Days since last match</div>
+                        <div class="bb-comp-right">{{ fmtDays(getDaysSinceLastMatch(2, activeFormSurface)) }}</div>
+                    </div>
+
+                    <div class="bb-comp-row">
+                        <div class="bb-comp-left">
+                            <span class="bb-tag" [ngClass]="{
+            'bb-tag-win': getMoreRecentWas(1, activeFormSurface) === 'WIN',
+            'bb-tag-loss': getMoreRecentWas(1, activeFormSurface) === 'LOSS',
+            'bb-tag-na': getMoreRecentWas(1, activeFormSurface) === 'N/A'
+          }">
+                                {{ getMoreRecentWas(1, activeFormSurface) }}
+                            </span>
+                        </div>
+
+                        <div class="bb-comp-mid">More recent was</div>
+
+                        <div class="bb-comp-right">
+                            <span class="bb-tag" [ngClass]="{
+            'bb-tag-win': getMoreRecentWas(2, activeFormSurface) === 'WIN',
+            'bb-tag-loss': getMoreRecentWas(2, activeFormSurface) === 'LOSS',
+            'bb-tag-na': getMoreRecentWas(2, activeFormSurface) === 'N/A'
+          }">
+                                {{ getMoreRecentWas(2, activeFormSurface) }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="bb-comp-row">
+                        <div class="bb-comp-left">{{ fmtDays(getDaysSinceLastWin(1, activeFormSurface)) }}</div>
+                        <div class="bb-comp-mid">Days since win</div>
+                        <div class="bb-comp-right">{{ fmtDays(getDaysSinceLastWin(2, activeFormSurface)) }}</div>
+                    </div>
+
+                    <div class="bb-comp-row">
+                        <div class="bb-comp-left">{{ fmtDays(getDaysSinceLastLoss(1, activeFormSurface)) }}</div>
+                        <div class="bb-comp-mid">Days since loss</div>
+                        <div class="bb-comp-right">{{ fmtDays(getDaysSinceLastLoss(2, activeFormSurface)) }}</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ========================================================================================
+     ROLE STATS TAB
+========================================================================================= -->
+            <section *ngIf="activeTab === 'roleStats'" class="bb-panel">
+                <ng-container *ngTemplateOutlet="playersHeader; context: { v: v }"></ng-container>
+
+                <!-- Time selector -->
+                <div class="bb-ts-controls">
+                    <div class="bb-ts-control-row">
+                        <div class="bb-ts-label">Time</div>
+                        <div class="bb-ts-buttons">
+                            <button *ngFor="let opt of roleTimeOptions" type="button" class="bb-pill"
+                                [class.active]="activeRoleTime === opt.value" (click)="activeRoleTime = opt.value">
+                                {{ opt.label }}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Favourite block -->
+                <div class="bb-compare bb-compare-ts">
+                    <div class="bb-comp-row">
+                        <div class="bb-comp-left bb-pl">{{ getRoleCount('WINS', 1, 'FAV') }}</div>
+                        <div class="bb-comp-mid">Wins as favourite</div>
+                        <div class="bb-comp-right bb-pl">{{ getRoleCount('WINS', 2, 'FAV') }}</div>
+                    </div>
+
+                    <div class="bb-comp-row">
+                        <div class="bb-comp-left bb-pl">{{ getRoleCount('LOSSES', 1, 'FAV') }}</div>
+                        <div class="bb-comp-mid">Losses as favourite</div>
+                        <div class="bb-comp-right bb-pl">{{ getRoleCount('LOSSES', 2, 'FAV') }}</div>
+                    </div>
+
+                    <div class="bb-comp-row">
+                        <div class="bb-comp-left">{{ wpPct01(getRoleAvg('AVG_WP_WON', 1, 'FAV')) }}</div>
+                        <div class="bb-comp-mid">Avg WP when won (fav)</div>
+                        <div class="bb-comp-right">{{ wpPct01(getRoleAvg('AVG_WP_WON', 2, 'FAV')) }}</div>
+                    </div>
+
+                    <div class="bb-comp-row">
+                        <div class="bb-comp-left">{{ wpPct01(getRoleAvg('AVG_WP_LOST', 1, 'FAV')) }}</div>
+                        <div class="bb-comp-mid">Avg WP when lost (fav)</div>
+                        <div class="bb-comp-right">{{ wpPct01(getRoleAvg('AVG_WP_LOST', 2, 'FAV')) }}</div>
+                    </div>
+
+                    <div class="bb-comp-row">
+                        <div class="bb-comp-left bb-pl">{{ getRoleMatches(1, 'FAV') }}</div>
+                        <div class="bb-comp-mid">Matches as favourite</div>
+                        <div class="bb-comp-right bb-pl">{{ getRoleMatches(2, 'FAV') }}</div>
+                    </div>
+
+                    <div class="bb-comp-row">
+                        <div class="bb-comp-left">{{ getRoleWinPct(1, 'FAV') | number:'1.0-1' }}%</div>
+                        <div class="bb-comp-mid">Win% as favourite</div>
+                        <div class="bb-comp-right">{{ getRoleWinPct(2, 'FAV') | number:'1.0-1' }}%</div>
+                    </div>
+                </div>
+
+                <!-- Underdog block -->
+                <div class="bb-compare bb-compare-ts">
+                    <div class="bb-comp-row">
+                        <div class="bb-comp-left bb-pl">{{ getRoleCount('WINS', 1, 'DOG') }}</div>
+                        <div class="bb-comp-mid">Wins as underdog</div>
+                        <div class="bb-comp-right bb-pl">{{ getRoleCount('WINS', 2, 'DOG') }}</div>
+                    </div>
+
+                    <div class="bb-comp-row">
+                        <div class="bb-comp-left bb-pl">{{ getRoleCount('LOSSES', 1, 'DOG') }}</div>
+                        <div class="bb-comp-mid">Losses as underdog</div>
+                        <div class="bb-comp-right bb-pl">{{ getRoleCount('LOSSES', 2, 'DOG') }}</div>
+                    </div>
+
+                    <div class="bb-comp-row">
+                        <div class="bb-comp-left">{{ wpPct01(getRoleAvg('AVG_WP_WON', 1, 'DOG')) }}</div>
+                        <div class="bb-comp-mid">Avg WP when won (dog)</div>
+                        <div class="bb-comp-right">{{ wpPct01(getRoleAvg('AVG_WP_WON', 2, 'DOG')) }}</div>
+                    </div>
+
+                    <div class="bb-comp-row">
+                        <div class="bb-comp-left">{{ wpPct01(getRoleAvg('AVG_WP_LOST', 1, 'DOG')) }}</div>
+                        <div class="bb-comp-mid">Avg WP when lost (dog)</div>
+                        <div class="bb-comp-right">{{ wpPct01(getRoleAvg('AVG_WP_LOST', 2, 'DOG')) }}</div>
+                    </div>
+
+                    <div class="bb-comp-row">
+                        <div class="bb-comp-left bb-pl">{{ getRoleMatches(1, 'DOG') }}</div>
+                        <div class="bb-comp-mid">Matches as underdog</div>
+                        <div class="bb-comp-right bb-pl">{{ getRoleMatches(2, 'DOG') }}</div>
+                    </div>
+
+                    <div class="bb-comp-row">
+                        <div class="bb-comp-left">{{ getRoleWinPct(1, 'DOG') | number:'1.0-1' }}%</div>
+                        <div class="bb-comp-mid">Win% as underdog</div>
+                        <div class="bb-comp-right">{{ getRoleWinPct(2, 'DOG') | number:'1.0-1' }}%</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ========================================================================================
+            H2H TAB
+        ========================================================================================= -->
+            <section *ngIf="activeTab === 'h2h'" class="bb-panel">
+                <ng-container *ngTemplateOutlet="playersHeader; context: { v: v }"></ng-container>
+
+                <!-- Controls -->
+                <div class="bb-ts-controls">
+                    <div class="bb-ts-control-row">
+                        <div class="bb-ts-label">Mode</div>
+                        <div class="bb-ts-buttons">
+                            <button *ngFor="let opt of h2hModeOptions" type="button" class="bb-pill"
+                                [class.active]="activeH2HMode === opt.value" (click)="activeH2HMode = opt.value">
+                                {{ opt.label }}
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="bb-ts-control-row">
+                        <div class="bb-ts-label">Surface</div>
+                        <div class="bb-ts-buttons">
+                            <button *ngFor="let opt of h2hSurfaceOptions" type="button" class="bb-pill"
+                                [class.active]="activeH2HSurface === opt.value" (click)="activeH2HSurface = opt.value">
+                                {{ opt.label }}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- H2H record -->
+                <div class="bb-compare bb-compare-ts">
+                    <div class="bb-comp-row">
+                        <div class="bb-comp-left bb-pl">{{ getH2HWins(1, activeH2HSurface, false) }}</div>
+                        <div class="bb-comp-mid">H2H wins</div>
+                        <div class="bb-comp-right bb-pl">{{ getH2HWins(2, activeH2HSurface, false) }}</div>
+                    </div>
+
+                    <div class="bb-comp-row">
+                        <div class="bb-comp-left">{{ getH2HWins(1, activeH2HSurface, true) }}</div>
+                        <div class="bb-comp-mid">H2H wins (old)</div>
+                        <div class="bb-comp-right">{{ getH2HWins(2, activeH2HSurface, true) }}</div>
+                    </div>
+                </div>
+
+                <!-- H2H TS/WP -->
+                <div class="bb-compare bb-compare-ts">
+                    <div class="bb-comp-row">
+                        <div class="bb-comp-left">
+                            {{
+                            activeH2HSurface === 'ALL'
+                            ? tsNum(getH2HTsMu(activeH2HMode, 1, false))
+                            : tsNum(getH2HSurfaceTsMu(activeH2HMode, activeH2HSurface, 1, false))
+                            }}
+                        </div>
+                        <div class="bb-comp-mid">H2H TS Mean</div>
+                        <div class="bb-comp-right">
+                            {{
+                            activeH2HSurface === 'ALL'
+                            ? tsNum(getH2HTsMu(activeH2HMode, 2, false))
+                            : tsNum(getH2HSurfaceTsMu(activeH2HMode, activeH2HSurface, 2, false))
+                            }}
+                        </div>
+                    </div>
+
+                    <div class="bb-comp-row">
+                        <div class="bb-comp-left">
+                            {{
+                            activeH2HSurface === 'ALL'
+                            ? tsNum(getH2HTsSd(activeH2HMode, 1, false))
+                            : tsNum(getH2HSurfaceTsSd(activeH2HMode, activeH2HSurface, 1, false))
+                            }}
+                        </div>
+                        <div class="bb-comp-mid">H2H TS SD</div>
+                        <div class="bb-comp-right">
+                            {{
+                            activeH2HSurface === 'ALL'
+                            ? tsNum(getH2HTsSd(activeH2HMode, 2, false))
+                            : tsNum(getH2HSurfaceTsSd(activeH2HMode, activeH2HSurface, 2, false))
+                            }}
+                        </div>
+                    </div>
+
+                    <div class="bb-comp-row">
+                        <div class="bb-comp-left">{{ wpPct01(getH2HWinProbP1(activeH2HMode, activeH2HSurface)) }}
+                        </div>
+                        <div class="bb-comp-mid">Win Probability (P1)</div>
+                        <div class="bb-comp-right">{{ wpPct01(1 - getH2HWinProbP1(activeH2HMode, activeH2HSurface))
+                            }}</div>
+                    </div>
+
+                    <div class="bb-comp-row">
+                        <div class="bb-comp-left">
+                            {{
+                            activeH2HSurface === 'ALL'
+                            ? tsNum(getH2HTsMu(activeH2HMode, 1, true))
+                            : tsNum(getH2HSurfaceTsMu(activeH2HMode, activeH2HSurface, 1, true))
+                            }}
+                        </div>
+                        <div class="bb-comp-mid">H2H TS Mean (old)</div>
+                        <div class="bb-comp-right">
+                            {{
+                            activeH2HSurface === 'ALL'
+                            ? tsNum(getH2HTsMu(activeH2HMode, 2, true))
+                            : tsNum(getH2HSurfaceTsMu(activeH2HMode, activeH2HSurface, 2, true))
+                            }}
+                        </div>
+                    </div>
+
+                    <div class="bb-comp-row">
+                        <div class="bb-comp-left">
+                            {{
+                            activeH2HSurface === 'ALL'
+                            ? tsNum(getH2HTsSd(activeH2HMode, 1, true))
+                            : tsNum(getH2HSurfaceTsSd(activeH2HMode, activeH2HSurface, 1, true))
+                            }}
+                        </div>
+                        <div class="bb-comp-mid">H2H TS SD (old)</div>
+                        <div class="bb-comp-right">
+                            {{
+                            activeH2HSurface === 'ALL'
+                            ? tsNum(getH2HTsSd(activeH2HMode, 2, true))
+                            : tsNum(getH2HSurfaceTsSd(activeH2HMode, activeH2HSurface, 2, true))
+                            }}
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ========================================================================================
+            ODDS TAB
+        ========================================================================================= -->
+            <section *ngIf="activeTab === 'odds'" class="bb-panel">
+                <ng-container *ngTemplateOutlet="playersHeader; context: { v: v }"></ng-container>
+
+                <!-- Best odds -->
+                <div class="bb-compare bb-compare-ts" style="margin-top: 6px;">
+                    <div class="bb-comp-row">
+                        <div class="bb-comp-left">
+                            <span class="bb-pl">{{ oddsNum(bestOddsP1()?.o05 || 0) }}</span>
+                            <span class="bb-muted-sm" *ngIf="bestOddsP1() as b">({{ b.o02 }})</span>
+                        </div>
+                        <div class="bb-comp-mid">Best odds</div>
+                        <div class="bb-comp-right">
+                            <span class="bb-pl">{{ oddsNum(bestOddsP2()?.o06 || 0) }}</span>
+                            <span class="bb-muted-sm" *ngIf="bestOddsP2() as b">({{ b.o02 }})</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Market summary (min/max/median) -->
+                <div class="bb-compare bb-compare-ts" style="margin-top: 6px;">
+                    <div class="bb-comp-row">
+                        <div class="bb-comp-left">
+                            <span class="bb-muted-sm">Min:</span>&nbsp;<span class="bb-pl">{{ oddsNum(marketMinP1()
+                                || 0) }}</span>
+                            &nbsp;&nbsp;<span class="bb-muted-sm">Med:</span>&nbsp;<span class="bb-pl">{{
+                                oddsNum(marketMedP1() || 0) }}</span>
+                            &nbsp;&nbsp;<span class="bb-muted-sm">Max:</span>&nbsp;<span class="bb-pl">{{
+                                oddsNum(marketMaxP1() || 0) }}</span>
+                        </div>
+                        <div class="bb-comp-mid">Market</div>
+                        <div class="bb-comp-right">
+                            <span class="bb-muted-sm">Min:</span>&nbsp;<span class="bb-pl">{{ oddsNum(marketMinP2()
+                                || 0) }}</span>
+                            &nbsp;&nbsp;<span class="bb-muted-sm">Med:</span>&nbsp;<span class="bb-pl">{{
+                                oddsNum(marketMedP2() || 0) }}</span>
+                            &nbsp;&nbsp;<span class="bb-muted-sm">Max:</span>&nbsp;<span class="bb-pl">{{
+                                oddsNum(marketMaxP2() || 0) }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Odds table -->
+                <div class="bb-odds-table-wrap" *ngIf="latestOddsByBookie.length; else noOdds">
+                    <table class="bb-odds-table">
+                        <thead>
+                            <tr>
+                                <th>Bookie</th>
+                                <th class="bb-odds-num">Odds (L)</th>
+                                <th class="bb-odds-num">Odds (R)</th>
+                                <th class="bb-odds-num">Impl (L)</th>
+                                <th class="bb-odds-num">Impl (R)</th>
+                                <th class="bb-odds-num">Margin</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            <ng-container *ngFor="let r of latestOddsByBookie">
+                                <tr (click)="toggleBookie(r.o01)" style="cursor: pointer;">
+                                    <td class="bb-odds-bookie">{{ r.o02 }}</td>
+                                    <td class="bb-odds-num bb-pl">{{ oddsNum(r.o05) }}</td>
+                                    <td class="bb-odds-num bb-pl">{{ oddsNum(r.o06) }}</td>
+                                    <td class="bb-odds-num">{{ oddsPct01(oddsImplied(r.o05)) }}</td>
+                                    <td class="bb-odds-num">{{ oddsPct01(oddsImplied(r.o06)) }}</td>
+                                    <td class="bb-odds-num">{{ overroundPct(r) }}</td>
+                                </tr>
+
+                                <!-- Expanded details: history -->
+                                <tr *ngIf="expandedBookieId === r.o01">
+                                    <td colspan="6" class="bb-odds-history-cell">
+                                        <div class="bb-muted-sm bb-odds-history-title">{{ r.o02 }} history</div>
+
+                                        <ng-container *ngIf="bookieHistory(r.o01).length; else noHistory">
+                                            <table class="bb-odds-table bb-odds-history-table">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Bookie</th>
+                                                        <th class="bb-odds-num">Odds (L)</th>
+                                                        <th class="bb-odds-num">Odds (R)</th>
+                                                        <th class="bb-odds-num">Impl (L)</th>
+                                                        <th class="bb-odds-num">Impl (R)</th>
+                                                        <th class="bb-odds-num">Margin</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr *ngFor="let h of bookieHistory(r.o01)">
+                                                        <td class="bb-th-left">
+                                                            <ng-container *ngIf="h.o03; else noTime">
+                                                                {{ h.o03 | date:'yyyy-MM-dd HH:mm' }}
+                                                            </ng-container>
+                                                            <ng-template #noTime>
+                                                                Update #{{ (h.o04 ?? 0) }}
+                                                            </ng-template>
+                                                        </td>
+
+                                                        <td class="bb-odds-num bb-pl">{{ oddsNum(h.o05) }}</td>
+                                                        <td class="bb-odds-num bb-pl">{{ oddsNum(h.o06) }}</td>
+                                                        <td class="bb-odds-num">{{ oddsPct01(oddsImplied(h.o05)) }}
+                                                        </td>
+                                                        <td class="bb-odds-num">{{ oddsPct01(oddsImplied(h.o06)) }}
+                                                        </td>
+                                                        <td class="bb-odds-num">{{ overroundPct(h) }}</td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </ng-container>
+
+                                        <ng-template #noHistory>
+                                            <div class="bb-placeholder">No odds history available for this bookie.
+                                            </div>
+                                        </ng-template>
+                                    </td>
+                                </tr>
+                            </ng-container>
+                        </tbody>
+                    </table>
+                </div>
+
+                <ng-template #noOdds>
+                    <div class="bb-placeholder">No valid odds in archive.</div>
+                </ng-template>
+            </section>
+
+
+            <!-- ========================================================================================
+     PLACEHOLDER (safety net)
+     If a new tab is introduced but not implemented in template yet,
+     this prevents accidental "empty page" confusion.
+========================================================================================= -->
+            <div *ngIf="
+    activeTab !== 'overview' &&
+    activeTab !== 'tsBreakdown' &&
+    activeTab !== 'wpBreakdown' &&
+    activeTab !== 'performance' &&
+    activeTab !== 'form' &&
+    activeTab !== 'roleStats' &&
+    activeTab !== 'odds' &&
+    activeTab !== 'h2h'
+  "></div>
+
         </ng-container>
     </div>
 </app-bb-modal-shell>
