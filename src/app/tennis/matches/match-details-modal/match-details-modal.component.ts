@@ -97,6 +97,9 @@ type DetailsLockedError = {
     message?: string;
 };
 
+const TS_DEFAULT_MU = 25;
+const TS_DEFAULT_SD = 8.3333333333;
+
 // =================================================================================================
 // PURE HELPERS (safe reads + minified key generators)
 // -------------------------------------------------------------------------------------------------
@@ -607,6 +610,11 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
 
     hoverIdx: number | null = null;
     hoverTooltip: ChartTooltip | null = null;
+
+    // Chart-selected point (mousemove). Used to drive the snapshot numbers above the chart.
+    private activeChartPoint: TsMergedPoint | null = null;
+    // Default point (match date) for currently selected mode/surface.
+    private defaultChartPoint: TsMergedPoint | null = null;
     pinnedTooltip: ChartTooltip | null = null;
 
     private pinnedDefaultTooltip: ChartTooltip | null = null;
@@ -1513,32 +1521,50 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
         return TS_MIN_MAP[key];
     }
 
+    private getSnapshotPoint(): TsMergedPoint | null {
+        // Only chart tabs should drive the snapshot from the time series.
+        if (this.activeTab !== 'tsBreakdown' && this.activeTab !== 'wpBreakdown') return null;
+        return this.activeChartPoint ?? this.defaultChartPoint;
+    }
+
     private tsMinValue(side: 'p1' | 'p2', metric: RatingMetric): number | undefined {
         const mk = this.tsMinKey(side, metric);
         if (!mk) return undefined;
         return this.numOrUndef(this.raw?.[mk]);
     }
 
-    tsMean(side: 'p1' | 'p2'): number | undefined {
-        return this.tsMinValue(side, 'Mean');
+    tsMean(who: 'p1' | 'p2'): number {
+        const tip = this.hoverTooltip ?? this.pinnedTooltip;
+        if (tip) {
+            const v = who === 'p1' ? tip.mu1 : tip.mu2;
+            return v ?? TS_DEFAULT_MU;
+        }
+
+        return this.tsMinValue(who, 'Mean') ?? TS_DEFAULT_MU;
     }
 
-    tsSd(side: 'p1' | 'p2'): number | undefined {
-        return this.tsMinValue(side, 'SD');
+    tsSd(who: 'p1' | 'p2'): number {
+        const tip = this.hoverTooltip ?? this.pinnedTooltip;
+        if (tip) {
+            const v = who === 'p1' ? tip.sd1 : tip.sd2;
+            return v ?? TS_DEFAULT_SD;
+        }
+
+        return this.tsMinValue(who, 'SD') ?? TS_DEFAULT_SD;
     }
 
     /**
      * Reads only P1 WP key and derives P2 as (1 - P1).
      * WP is normalized to 0..1 (some sources might store 0..100).
      */
-    tsWp(side: 'p1' | 'p2'): number | undefined {
-        const wp1Key = this.tsMinKey('p1', 'WP');
-        const wp1 = this.numOrUndef(this.raw?.[wp1Key ?? '']);
+    tsWp(who: 'p1' | 'p2'): number {
+        const tip = this.hoverTooltip ?? this.pinnedTooltip;
+        if (tip) {
+            const v = who === 'p1' ? tip.wp1 : tip.wp2;
+            return v ?? 0.5;
+        }
 
-        if (typeof wp1 !== 'number' || !isFinite(wp1)) return undefined;
-
-        const wp01 = wp1 > 1 ? wp1 / 100 : wp1;
-        return side === 'p1' ? wp01 : 1 - wp01;
+        return this.tsMinValue(who, 'WP') ?? 0.5;
     }
 
     tsNum(v: number | undefined): string {
@@ -1743,6 +1769,9 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
                                 ...this.buildTooltipFromMerged(this.mergedSeries[idx]),
                             };
 
+                            this.defaultChartPoint = this.mergedSeries[idx];
+                            this.activeChartPoint = null;
+
                             this.pinnedDefaultTooltip = base;
                             this.pinnedTooltip = base; // <-- ovo je jedini summary koji renderamo
                         }
@@ -1918,6 +1947,8 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
 
         const p = data[idx];
 
+        this.activeChartPoint = p;
+
         this.isChartHovering = true;
 
         this.pinnedTooltip = {
@@ -1931,6 +1962,7 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
         this.hoverIdx = null;
         this.isChartHovering = false;
         this.pinnedTooltip = this.pinnedDefaultTooltip;
+        this.activeChartPoint = null;
     }
 
     // =================================================================================================
@@ -2154,6 +2186,8 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
     onTsChartMouseLeave(): void {
         this.hoverIdx = null;
         this.hoverTooltip = null;
+        this.activeChartPoint = null;
+        this.pinnedTooltip = this.pinnedDefaultTooltip;
     }
 
     private getChartValuePair(p: TsMergedPoint): { y1: number; y2: number; isPercent: boolean } {
@@ -2173,9 +2207,6 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
 
     private mergeForwardFillWithDefaults(p1: TsPoint[], p2: TsPoint[]): TsMergedPoint[] {
         if (!p1.length && !p2.length) return [];
-
-        const TS_DEFAULT_MU = 25;
-        const TS_DEFAULT_SD = 8.3333333333;
 
         // Forward-fill strategy:
         // - If a player has no rating yet, start from TrueSkill defaults (mu=25, sd=8.33).

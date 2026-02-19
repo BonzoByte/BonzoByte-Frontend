@@ -508,10 +508,6 @@
                 <ng-container *ngTemplateOutlet="tsControls"></ng-container>
                 <ng-container *ngTemplateOutlet="tsSnapshot; context: { v: v }"></ng-container>
 
-                <ng-container *ngIf="pinnedTooltip as tip">
-                    <ng-container *ngTemplateOutlet="pinnedTooltipSummary; context: { tip: tip }"></ng-container>
-                </ng-container>
-
                 <div *ngIf="tsBreakdownLoading" class="bb-loading">Loading TS history…</div>
                 <div *ngIf="!tsBreakdownLoading && tsBreakdownError" class="bb-error">{{ tsBreakdownError }}</div>
 
