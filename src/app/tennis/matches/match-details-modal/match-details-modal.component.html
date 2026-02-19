@@ -665,7 +665,7 @@
                             <button *ngFor="let opt of perfSurfaceOptions" type="button" class="bb-pill"
                                 [class.active]="activeFormSurface === opt.value"
                                 (click)="activeFormSurface = opt.value">
-                                {{ opt.label }}
+                                {{ surfaceLabel(opt.value) }}
                             </button>
                         </div>
                     </div>
@@ -724,15 +724,14 @@
                 <ng-container *ngTemplateOutlet="playersHeader; context: { v: v }"></ng-container>
 
                 <!-- Time selector -->
-                <div class="bb-ts-controls">
-                    <div class="bb-ts-control-row">
-                        <div class="bb-ts-label">Time</div>
-                        <div class="bb-ts-buttons">
-                            <button *ngFor="let opt of roleTimeOptions" type="button" class="bb-pill"
-                                [class.active]="activeRoleTime === opt.value" (click)="activeRoleTime = opt.value">
-                                {{ opt.label }}
-                            </button>
-                        </div>
+                <div class="bb-perf-controls">
+                    <div class="bb-perf-group">
+                        <span class="bb-perf-label">Period</span>
+
+                        <button *ngFor="let opt of roleTimeOptions" type="button" class="bb-pill"
+                            [class.active]="activeRoleTime === opt.value" (click)="activeRoleTime = opt.value">
+                            {{ opt.label }}
+                        </button>
                     </div>
                 </div>
 
