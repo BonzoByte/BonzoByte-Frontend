@@ -2877,4 +2877,15 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
         if (this.DEV_FORCE_SHOW_BILLING_BTN) return this.isLoggedIn;
         return this.isLoggedIn && !this.hasTrial && !this.isPremium;
     }
+
+    surfaceLabel(val: string): string {
+        switch (val) {
+            case 'ALL': return 'All Surfaces';
+            case 'S1': return 'Carpet';
+            case 'S2': return 'Clay';
+            case 'S3': return 'Grass';
+            case 'S4': return 'Hard';
+            default: return val;
+        }
+    }
 }

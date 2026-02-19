@@ -594,36 +594,39 @@
                 <ng-container *ngTemplateOutlet="playersHeader; context: { v: v }"></ng-container>
 
                 <!-- Controls (unit/time/surface) -->
-                <div class="bb-ts-controls">
-                    <div class="bb-ts-control-row">
-                        <div class="bb-ts-label">Unit</div>
-                        <div class="bb-ts-buttons">
-                            <button *ngFor="let opt of perfUnitOptions" type="button" class="bb-pill"
-                                [class.active]="activePerfUnit === opt.value" (click)="setPerfUnit(opt.value)">
-                                {{ opt.label }}
-                            </button>
-                        </div>
+                <!-- Controls (scope / period / surface) -->
+                <div class="bb-perf-controls">
+
+                    <!-- Scope -->
+                    <div class="bb-perf-group">
+                        <span class="bb-perf-label">Scope</span>
+
+                        <button *ngFor="let opt of perfUnitOptions" type="button" class="bb-pill"
+                            [class.active]="activePerfUnit === opt.value" (click)="setPerfUnit(opt.value)">
+                            {{ opt.label }}
+                        </button>
                     </div>
 
-                    <div class="bb-ts-control-row">
-                        <div class="bb-ts-label">Time</div>
-                        <div class="bb-ts-buttons">
-                            <button *ngFor="let opt of perfTimeOptions" type="button" class="bb-pill"
-                                [class.active]="activePerfTime === opt.value" (click)="setPerfTime(opt.value)">
-                                {{ opt.label }}
-                            </button>
-                        </div>
+                    <!-- Period -->
+                    <div class="bb-perf-group">
+                        <span class="bb-perf-label">Period</span>
+
+                        <button *ngFor="let opt of perfTimeOptions" type="button" class="bb-pill"
+                            [class.active]="activePerfTime === opt.value" (click)="setPerfTime(opt.value)">
+                            {{ opt.label }}
+                        </button>
                     </div>
 
-                    <div class="bb-ts-control-row">
-                        <div class="bb-ts-label">Surface</div>
-                        <div class="bb-ts-buttons">
-                            <button *ngFor="let opt of perfSurfaceOptions" type="button" class="bb-pill"
-                                [class.active]="activePerfSurface === opt.value" (click)="setPerfSurface(opt.value)">
-                                {{ opt.label }}
-                            </button>
-                        </div>
+                    <!-- Surface -->
+                    <div class="bb-perf-group">
+                        <span class="bb-perf-label">Surface</span>
+
+                        <button *ngFor="let opt of perfSurfaceOptions" type="button" class="bb-pill"
+                            [class.active]="activePerfSurface === opt.value" (click)="setPerfSurface(opt.value)">
+                            {{ surfaceLabel(opt.value) }}
+                        </button>
                     </div>
+
                 </div>
 
                 <!-- Results -->
