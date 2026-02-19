@@ -531,6 +531,59 @@
     min-width: 70px;
   }
 
+    /* ============================================================================================
+     Shared control rows (Performance / Form / Role tabs)
+     - label + pills inline, wrap nicely
+  ============================================================================================ */
+
+  .bb-ts-control-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .bb-ts-label {
+    flex: 0 0 auto;
+    min-width: 76px; /* malo uži od 86 da ne krade prostor */
+    font-size: 12px;
+    opacity: 0.75;
+    line-height: 1;
+  }
+
+  .bb-ts-buttons {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    min-width: 0;
+  }
+
+  /* pill buttons inside these controls */
+  .bb-ts-buttons .bb-pill {
+    white-space: nowrap;
+  }
+
+  /* ============================================================================================
+     Role Stats: keep mid labels in one line (save vertical space)
+     - On small screens, allow wrapping again to avoid overflow.
+  ============================================================================================ */
+
+  .bb-compare .bb-comp-mid {
+    white-space: nowrap;
+  }
+
+  @media (max-width: 700px) {
+    .bb-ts-label {
+      min-width: 68px;
+    }
+
+    .bb-compare .bb-comp-mid {
+      white-space: normal;
+    }
+  }
+
+
   /* ============================================================================================
      Responsive + motion
   ============================================================================================ */
