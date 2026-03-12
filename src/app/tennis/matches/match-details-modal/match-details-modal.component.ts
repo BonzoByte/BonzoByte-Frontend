@@ -61,16 +61,41 @@ type PerfOption<T extends string> = { value: T; label: string };
 // =================================================================================================
 
 type OddsRow = {
-    o01: number;              // bookieId
-    o02: string;              // bookieName
-    o03?: string | Date | null; // oddsDateTime
-    o04?: number | null;      // seriesOrdinal
-    o05: number;              // odds(L)
-    o06: number;              // odds(R)
-    o07?: boolean | number | null; // suspicious?
-    o08?: boolean | number | null; // likely switched?
-    o09?: number | null;      // suspiciousMask
-};
+    o01: number;   // bookieId
+    o02: string;   // bookieName
+    o03?: string;  // oddsDateTime
+    o04: number;   // seriesOrdinal
+    o05: number;   // player1Odds
+    o06: number;   // player2Odds
+    o07: boolean;  // isSuspicious
+    o08: boolean;  // isLikelySwitched
+    o09: number;   // suspiciousMask
+    o10?: string;  // ingestedAt / fallback
+  };
+  
+  type BookieOfferDTOv2 = {
+    b: number;
+    q: number;
+    d?: string;
+    r: number;
+  };
+  
+  type SelectionDTOv2 = {
+    k: string;
+    p?: number;
+    o: BookieOfferDTOv2[];
+  };
+  
+  type MarketDTOv2 = {
+    s?: string;
+    l?: number;
+    x: SelectionDTOv2[];
+  };
+  
+  type BetTypeGroupDTOv2 = {
+    i: number;
+    m: MarketDTOv2[];
+  };
 
 type ChartTooltip = {
     leftPx: number;
@@ -926,8 +951,11 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
         }
 
         // Odds: m012/m013
-        p1.odds = this.numOrUndef(d?.m012);
-        p2.odds = this.numOrUndef(d?.m013);
+        const bestP1 = this.bestOddsP1();
+        const bestP2 = this.bestOddsP2();
+        
+        p1.odds = this.numOrUndef(d?.m012) ?? this.numOrUndef(bestP1?.o05);
+        p2.odds = this.numOrUndef(d?.m013) ?? this.numOrUndef(bestP2?.o06);
 
         // Edge = NNprob - impliedProb
         const edgeP1 = this.edge(p1.nnProb, p1.odds);
@@ -1421,8 +1449,163 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
     }
 
     get oddsRows(): OddsRow[] {
-        const o = (this._details as any)?.o as OddsRow[] | undefined;
-        return Array.isArray(o) ? o : [];
+        const rawOdds = (this._details as any)?.o;
+        if (!Array.isArray(rawOdds) || !rawOdds.length) return [];
+    
+        // legacy format support
+        if (this.isLegacyOddsArray(rawOdds)) {
+            return rawOdds;
+        }
+    
+        // new nested format support
+        if (this.isNestedOddsArray(rawOdds)) {
+            return this.buildWinnerOddsRowsFromNested(rawOdds);
+        }
+    
+        return [];
+    }
+
+    private isLegacyOddsArray(value: any[]): value is OddsRow[] {
+        return !!value.length && typeof value[0]?.o01 === 'number';
+    }
+    
+    private isNestedOddsArray(value: any[]): value is BetTypeGroupDTOv2[] {
+        return !!value.length && typeof value[0]?.i === 'number' && Array.isArray(value[0]?.m);
+    }
+
+    private buildWinnerOddsRowsFromNested(groups: BetTypeGroupDTOv2[]): OddsRow[] {
+        const winnerGroup = groups.find(g => g?.i === 1);
+        if (!winnerGroup || !Array.isArray(winnerGroup.m) || !winnerGroup.m.length) return [];
+    
+        // za prvi prolaz uzimamo prvi market unutar betType=1
+        const market = winnerGroup.m[0];
+        if (!market || !Array.isArray(market.x)) return [];
+    
+        const p1Selection =
+            market.x.find(s => s?.p === this._details?.['m004']) ??
+            market.x.find(s => s?.k?.toLowerCase?.() === 'p1');
+    
+        const p2Selection =
+            market.x.find(s => s?.p === this._details?.['m005']) ??
+            market.x.find(s => s?.k?.toLowerCase?.() === 'p2');
+    
+        if (!p1Selection || !p2Selection) return [];
+    
+        const p1Offers = Array.isArray(p1Selection.o) ? p1Selection.o : [];
+        const p2Offers = Array.isArray(p2Selection.o) ? p2Selection.o : [];
+    
+        const rows: OddsRow[] = [];
+        const seen = new Set<string>();
+    
+        // spajamo ponude po bookieId + seriesOrdinal
+        for (const left of p1Offers) {
+            const matches = p2Offers.filter(right =>
+                Number(right?.b) === Number(left?.b) &&
+                Number(right?.r ?? 0) === Number(left?.r ?? 0)
+            );
+    
+            for (const right of matches) {
+                const row = this.toUnifiedOddsRow(left, right);
+                if (!row) continue;
+    
+                const key = `${row.o01}|${row.o04}|${row.o03 ?? ''}|${row.o05}|${row.o06}`;
+                if (seen.has(key)) continue;
+                seen.add(key);
+    
+                rows.push(row);
+            }
+        }
+    
+        // fallback: ako isti seriesOrdinal ne postoji na obje strane,
+        // pokušaj spariti latest left/right po bookieju
+        if (!rows.length) {
+            const bookieIds = new Set<number>([
+                ...p1Offers.map(x => Number(x.b)),
+                ...p2Offers.map(x => Number(x.b)),
+            ]);
+    
+            for (const bookieId of bookieIds) {
+                const left = this.pickLatestOfferForBookie(p1Offers, bookieId);
+                const right = this.pickLatestOfferForBookie(p2Offers, bookieId);
+                const row = this.toUnifiedOddsRow(left, right);
+                if (row) rows.push(row);
+            }
+        }
+    
+        return rows;
+    }
+
+    private toUnifiedOddsRow(
+        left?: BookieOfferDTOv2,
+        right?: BookieOfferDTOv2
+    ): OddsRow | null {
+        if (!left || !right) return null;
+    
+        const o01 = Number(left.b);
+        const o05 = Number(left.q);
+        const o06 = Number(right.q);
+    
+        if (!Number.isFinite(o01) || !Number.isFinite(o05) || !Number.isFinite(o06)) {
+            return null;
+        }
+    
+        const leftSeries = Number(left.r ?? 0);
+        const rightSeries = Number(right.r ?? 0);
+    
+        return {
+            o01,
+            o02: this.getBookieName(o01),
+            o03: left.d ?? right.d,
+            o04: Math.max(leftSeries, rightSeries),
+            o05,
+            o06,
+            o07: false,
+            o08: false,
+            o09: 0,
+            o10: left.d ?? right.d,
+        };
+    }
+    
+    private pickLatestOfferForBookie(offers: BookieOfferDTOv2[], bookieId: number): BookieOfferDTOv2 | undefined {
+        const rows = offers
+            .filter(x => Number(x?.b) === Number(bookieId))
+            .slice()
+            .sort((a, b) => {
+                const tb = this.offerTimeMs(b) ?? -1;
+                const ta = this.offerTimeMs(a) ?? -1;
+                if (tb !== ta) return tb - ta;
+                return Number(b?.r ?? 0) - Number(a?.r ?? 0);
+            });
+    
+        return rows[0];
+    }
+
+    private readonly bookieNames: Record<number, string> = {
+        1: 'Bet-At-Home',
+        2: 'Bet365',
+        3: 'Bwin',
+        5: 'Interwetten',
+        6: 'Ladbrokes',
+        7: 'Pinnacle',
+        8: 'Sportingbet',
+        9: 'Unibet',
+        10: 'William Hill',
+        11: 'BetVictor',
+        12: 'Marathonbet',
+        13: '188Bet',
+        14: '10Bet',
+        15: 'Sbobet',
+        // dodavat ćemo po potrebi
+    };
+
+    private getBookieName(bookieId: number): string {
+        return this.bookieNames[bookieId] ?? `Bookie #${bookieId}`;
+    }
+    
+    private offerTimeMs(o?: BookieOfferDTOv2): number | null {
+        if (!o?.d) return null;
+        const ms = new Date(o.d).getTime();
+        return Number.isFinite(ms) ? ms : null;
     }
 
     private isCleanOddsRow(r: OddsRow): boolean {

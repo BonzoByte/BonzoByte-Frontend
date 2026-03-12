@@ -40,17 +40,41 @@ export interface PlayerDTO {
     t18?: number;
   }
   
-  export interface MatchOddsDTO {
+  export interface LegacyMatchOddsDTO {
     o01: number;
     o02: string;
-    o03?: string;  // ISO string
+    o03?: string;
     o04: number;
     o05: number;
     o06: number;
     o07: boolean;
     o08: boolean;
     o09: number;
-    o10: string;   // ISO string
+    o10?: string;
+  }
+  
+  export interface BookieOfferDTOv2 {
+    b: number;      // bookieId
+    q: number;      // odds
+    d?: string;     // oddsDateTime
+    r: number;      // seriesOrdinal
+  }
+  
+  export interface SelectionDTOv2 {
+    k: string;      // selectionKey
+    p?: number;     // selectionPlayerTPId
+    o: BookieOfferDTOv2[];
+  }
+  
+  export interface MarketDTOv2 {
+    s?: string;     // marketScope
+    l?: number;     // line
+    x: SelectionDTOv2[];
+  }
+  
+  export interface BetTypeGroupDTOv2 {
+    i: number;      // betTypeId
+    m: MarketDTOv2[];
   }
   
   /**
@@ -58,31 +82,38 @@ export interface PlayerDTO {
    * It contains minified keys (m001..m656) plus nested p1/p2/t/o.
    */
   export type MatchDetailsRaw = Record<string, any> & {
-    // core fields we use now (add more later as needed)
-    m001: number;         // matchTPId
-    m002?: number;        // tournamentEventTPId
-    m003: string;         // datetime ISO
-    m004: number;         // player1TPId
-    m005: number;         // player2TPId
-    m006?: number;        // p1 rank
-    m007?: number;        // p2 rank
-    m008?: string;        // p1 seed
-    m009?: string;        // p2 seed
-    m010?: string;        // result
-    m011?: string;        // result details
-    m012?: number;        // p1 odds
-    m013?: number;        // p2 odds
-    m014?: number;        // offered bookies
-    m015?: string;        // odds updated
-    m019: number;         // surfaceId
-    m020?: string;        // surfaceName
-    m021: number;         // roundId
-    m022?: string;        // roundName
-    m655?: number;        // NN win prob (?) sample is 50.0 meaning %
-    m656: boolean;        // isFinished
+    m001: number;
+    m002?: number;
+    m003: string;
+    m004: number;
+    m005: number;
+    m006?: number;
+    m007?: number;
+    m008?: string;
+    m009?: string;
+    m010?: string;
+    m011?: string;
+  
+    // stari summary odds više ne moraju postojati
+    m012?: number;
+    m013?: number;
+  
+    m014?: number;
+    m015?: string;
+    m019: number;
+    m020?: string;
+    m021: number;
+    m022?: string;
+    m655?: number;
+    m656: boolean;
   
     p1: PlayerDTO;
     p2: PlayerDTO;
     t: TournamentEventDTO;
-    o: MatchOddsDTO[];
+  
+    // novi odds
+    o?: BetTypeGroupDTOv2[];
+  
+    // NN blok ćemo dodati kasnije do kraja ili odmah
+    n?: any;
   };
