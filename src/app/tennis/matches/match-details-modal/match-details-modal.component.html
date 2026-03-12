@@ -947,13 +947,13 @@
                 <div class="bb-compare bb-compare-ts" style="margin-top: 6px;">
                     <div class="bb-comp-row">
                         <div class="bb-comp-left">
-                            <span class="bb-pl">{{ oddsNum(bestOddsP1()?.o05 || 0) }}</span>
-                            <span class="bb-muted-sm" *ngIf="bestOddsP1() as b">({{ b.o02 }})</span>
+                            <span class="bb-pl">{{ oddsNum(bestOddsP1Row?.o05 ?? null) }}</span>
+                            <span class="bb-muted-sm" *ngIf="bestOddsP1Row as b">({{ b.o02 }})</span>
                         </div>
                         <div class="bb-comp-mid">Best odds</div>
                         <div class="bb-comp-right">
-                            <span class="bb-pl">{{ oddsNum(bestOddsP2()?.o06 || 0) }}</span>
-                            <span class="bb-muted-sm" *ngIf="bestOddsP2() as b">({{ b.o02 }})</span>
+                            <span class="bb-pl">{{ oddsNum(bestOddsP1Row?.o05 ?? null) }}</span>
+                            <span class="bb-muted-sm" *ngIf="bestOddsP1Row as b">({{ b.o02 }})</span>
                         </div>
                     </div>
                 </div>

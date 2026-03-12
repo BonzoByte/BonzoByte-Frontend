@@ -13,6 +13,13 @@ import {
     QueryList,
     ViewChildren,
 } from '@angular/core';
+import {
+    MatchDetailsRaw,
+    BetTypeGroupDTOv2,
+    MarketDTOv2,
+    SelectionDTOv2,
+    BookieOfferDTOv2,
+} from 'src/app/core/models/match-details.model';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { StaticArchivesService } from '../../../core/services/static-archives.service';
@@ -73,30 +80,6 @@ type OddsRow = {
     o10?: string;  // ingestedAt / fallback
   };
   
-  type BookieOfferDTOv2 = {
-    b: number;
-    q: number;
-    d?: string;
-    r: number;
-  };
-  
-  type SelectionDTOv2 = {
-    k: string;
-    p?: number;
-    o: BookieOfferDTOv2[];
-  };
-  
-  type MarketDTOv2 = {
-    s?: string;
-    l?: number;
-    x: SelectionDTOv2[];
-  };
-  
-  type BetTypeGroupDTOv2 = {
-    i: number;
-    m: MarketDTOv2[];
-  };
-
 type ChartTooltip = {
     leftPx: number;
     topPx: number;
@@ -110,8 +93,6 @@ type ChartTooltip = {
     sd2: number;
     wp2: number;
 };
-
-type MatchDetailsRaw = Record<string, any>;
 
 type DetailsLockedError = {
     status: 'error';
@@ -951,8 +932,8 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
         }
 
         // Odds: m012/m013
-        const bestP1 = this.bestOddsP1();
-        const bestP2 = this.bestOddsP2();
+        const bestP1 = this.bestOddsP1Row;
+        const bestP2 = this.bestOddsP2Row;
         
         p1.odds = this.numOrUndef(d?.m012) ?? this.numOrUndef(bestP1?.o05);
         p2.odds = this.numOrUndef(d?.m013) ?? this.numOrUndef(bestP2?.o06);
@@ -1384,10 +1365,10 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
     }
 
     /** Best odds rows */
-    bestOddsP1(): OddsRow | null {
+    get bestOddsP1Row(): OddsRow | null {
         let best: OddsRow | null = null;
         let bestVal = -Infinity;
-
+    
         for (const r of this.oddsRows) {
             if (!this.isCleanOddsRow(r)) continue;
             const v = this.toNum(r?.o05);
@@ -1396,13 +1377,14 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
                 best = r;
             }
         }
+    
         return best;
     }
-
-    bestOddsP2(): OddsRow | null {
+    
+    get bestOddsP2Row(): OddsRow | null {
         let best: OddsRow | null = null;
         let bestVal = -Infinity;
-
+    
         for (const r of this.oddsRows) {
             if (!this.isCleanOddsRow(r)) continue;
             const v = this.toNum(r?.o06);
@@ -1411,6 +1393,7 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
                 best = r;
             }
         }
+    
         return best;
     }
 
