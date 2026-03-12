@@ -950,7 +950,7 @@
                             <span class="bb-pl">{{ oddsNum(bestOddsP1Row?.o05 ?? null) }}</span>
                             <span class="bb-muted-sm" *ngIf="bestOddsP1Row as b">({{ b.o02 }})</span>
                         </div>
-                        <div class="bb-comp-mid">Best odds</div>
+                        <div class="bb-comp-mid">{{ oddsSummaryMidLabel }}</div>
                         <div class="bb-comp-right">
                             <span class="bb-pl">{{ oddsNum(bestOddsP1Row?.o05 ?? null) }}</span>
                             <span class="bb-muted-sm" *ngIf="bestOddsP1Row as b">({{ b.o02 }})</span>
@@ -1019,10 +1019,10 @@
                         <thead>
                             <tr>
                                 <th>Bookie</th>
-                                <th class="bb-odds-num">Odds (L)</th>
-                                <th class="bb-odds-num">Odds (R)</th>
-                                <th class="bb-odds-num">Impl (L)</th>
-                                <th class="bb-odds-num">Impl (R)</th>
+                                <th class="bb-odds-num">Odds ({{ oddsLeftLabel }})</th>
+                                <th class="bb-odds-num">Odds ({{ oddsRightLabel }})</th>
+                                <th class="bb-odds-num">Impl ({{ oddsLeftLabel }})</th>
+                                <th class="bb-odds-num">Impl ({{ oddsRightLabel }})</th>
                                 <th class="bb-odds-num">Margin</th>
                             </tr>
                         </thead>

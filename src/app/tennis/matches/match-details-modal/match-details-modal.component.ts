@@ -594,6 +594,39 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
         return d?.p2?.p01 ?? d?.p2?.name ?? 'P2';
     }
 
+    get oddsLeftLabel(): string {
+        switch (this.activeOddsMarket) {
+            case 'winner':
+                return 'P1';
+            case 'totals':
+                return 'Over';
+            case 'handicap':
+                return 'P1';
+        }
+    }
+    
+    get oddsRightLabel(): string {
+        switch (this.activeOddsMarket) {
+            case 'winner':
+                return 'P2';
+            case 'totals':
+                return 'Under';
+            case 'handicap':
+                return 'P2';
+        }
+    }
+
+    get oddsSummaryMidLabel(): string {
+        switch (this.activeOddsMarket) {
+            case 'winner':
+                return 'Winner';
+            case 'totals':
+                return 'Totals';
+            case 'handicap':
+                return 'Handicap';
+        }
+    }
+
     get nestedOddsGroups(): BetTypeGroupDTOv2[] {
         const rawOdds = (this._details as any)?.o;
         if (!Array.isArray(rawOdds) || !rawOdds.length) return [];
@@ -1447,17 +1480,26 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
         const rawOdds = (this._details as any)?.o;
         if (!Array.isArray(rawOdds) || !rawOdds.length) return [];
     
-        // legacy format support
+        // legacy format: uvijek winner
         if (this.isLegacyOddsArray(rawOdds)) {
-            return rawOdds;
+            return this.activeOddsMarket === 'winner' ? rawOdds : [];
         }
     
-        // new nested format support
-        if (this.isNestedOddsArray(rawOdds)) {
-            return this.buildWinnerOddsRowsFromNested(rawOdds);
-        }
+        if (!this.isNestedOddsArray(rawOdds)) return [];
     
-        return [];
+        switch (this.activeOddsMarket) {
+            case 'winner':
+                return this.buildWinnerOddsRowsFromNested(rawOdds);
+    
+            case 'totals':
+                return this.buildTotalsOddsRowsFromNested(rawOdds);
+    
+            case 'handicap':
+                return this.buildHandicapOddsRowsFromNested(rawOdds);
+    
+            default:
+                return [];
+        }
     }
 
     private isLegacyOddsArray(value: any[]): value is OddsRow[] {
@@ -1470,11 +1512,10 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
 
     private buildWinnerOddsRowsFromNested(groups: BetTypeGroupDTOv2[]): OddsRow[] {
         const winnerGroup = groups.find(g => g?.i === 1);
-        if (!winnerGroup || !Array.isArray(winnerGroup.m) || !winnerGroup.m.length) return [];
+        if (!winnerGroup?.m?.length) return [];
     
-        // za prvi prolaz uzimamo prvi market unutar betType=1
         const market = winnerGroup.m[0];
-        if (!market || !Array.isArray(market.x)) return [];
+        if (!market?.x?.length) return [];
     
         const p1Selection =
             market.x.find(s => s?.p === this._details?.['m004']) ??
@@ -1489,45 +1530,51 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
         const p1Offers = Array.isArray(p1Selection.o) ? p1Selection.o : [];
         const p2Offers = Array.isArray(p2Selection.o) ? p2Selection.o : [];
     
-        const rows: OddsRow[] = [];
-        const seen = new Set<string>();
+        return this.buildPairedOddsRows(p1Offers, p2Offers);
+    }
+
+    private buildTotalsOddsRowsFromNested(groups: BetTypeGroupDTOv2[]): OddsRow[] {
+        const totalsGroup = groups.find(g => g?.i === 2);
+        if (!totalsGroup?.m?.length) return [];
     
-        // spajamo ponude po bookieId + seriesOrdinal
-        for (const left of p1Offers) {
-            const matches = p2Offers.filter(right =>
-                Number(right?.b) === Number(left?.b) &&
-                Number(right?.r ?? 0) === Number(left?.r ?? 0)
-            );
+        const market = this.getActiveNestedMarket();
+        if (!market?.x?.length) return [];
     
-            for (const right of matches) {
-                const row = this.toUnifiedOddsRow(left, right);
-                if (!row) continue;
+        const overSelection =
+            market.x.find(s => s?.k?.toLowerCase?.() === 'over');
     
-                const key = `${row.o01}|${row.o04}|${row.o03 ?? ''}|${row.o05}|${row.o06}`;
-                if (seen.has(key)) continue;
-                seen.add(key);
+        const underSelection =
+            market.x.find(s => s?.k?.toLowerCase?.() === 'under');
     
-                rows.push(row);
-            }
-        }
+        if (!overSelection || !underSelection) return [];
     
-        // fallback: ako isti seriesOrdinal ne postoji na obje strane,
-        // pokušaj spariti latest left/right po bookieju
-        if (!rows.length) {
-            const bookieIds = new Set<number>([
-                ...p1Offers.map(x => Number(x.b)),
-                ...p2Offers.map(x => Number(x.b)),
-            ]);
+        const overOffers = Array.isArray(overSelection.o) ? overSelection.o : [];
+        const underOffers = Array.isArray(underSelection.o) ? underSelection.o : [];
     
-            for (const bookieId of bookieIds) {
-                const left = this.pickLatestOfferForBookie(p1Offers, bookieId);
-                const right = this.pickLatestOfferForBookie(p2Offers, bookieId);
-                const row = this.toUnifiedOddsRow(left, right);
-                if (row) rows.push(row);
-            }
-        }
+        return this.buildPairedOddsRows(overOffers, underOffers);
+    }
+
+    private buildHandicapOddsRowsFromNested(groups: BetTypeGroupDTOv2[]): OddsRow[] {
+        const handicapGroup = groups.find(g => g?.i === 3);
+        if (!handicapGroup?.m?.length) return [];
     
-        return rows;
+        const market = this.getActiveNestedMarket();
+        if (!market?.x?.length) return [];
+    
+        const p1Selection =
+            market.x.find(s => s?.p === this._details?.['m004']) ??
+            market.x.find(s => s?.k?.toLowerCase?.() === 'p1');
+    
+        const p2Selection =
+            market.x.find(s => s?.p === this._details?.['m005']) ??
+            market.x.find(s => s?.k?.toLowerCase?.() === 'p2');
+    
+        if (!p1Selection || !p2Selection) return [];
+    
+        const p1Offers = Array.isArray(p1Selection.o) ? p1Selection.o : [];
+        const p2Offers = Array.isArray(p2Selection.o) ? p2Selection.o : [];
+    
+        return this.buildPairedOddsRows(p1Offers, p2Offers);
     }
 
     private toUnifiedOddsRow(
@@ -1816,6 +1863,67 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
         }
     
         return `Showing: ${parts.join(' · ')}`;
+    }
+
+    private getActiveNestedMarket() {
+        const group = this.activeOddsGroup;
+        if (!group?.m?.length) return null;
+    
+        if (this.activeOddsMarket === 'winner') {
+            return group.m[0] ?? null;
+        }
+    
+        return group.m.find(m => {
+            const scope = this.normalizeScope(m?.s);
+            const line = m?.l !== null && m?.l !== undefined ? String(m.l) : null;
+    
+            if (this.activeOddsScope && scope !== this.activeOddsScope) return false;
+            if (this.activeOddsLine && line !== this.activeOddsLine) return false;
+    
+            return true;
+        }) ?? null;
+    }
+    
+    private buildPairedOddsRows(
+        leftOffers: BookieOfferDTOv2[],
+        rightOffers: BookieOfferDTOv2[]
+    ): OddsRow[] {
+        const rows: OddsRow[] = [];
+        const seen = new Set<string>();
+    
+        for (const left of leftOffers) {
+            const matches = rightOffers.filter(right =>
+                Number(right?.b) === Number(left?.b) &&
+                Number(right?.r ?? 0) === Number(left?.r ?? 0)
+            );
+    
+            for (const right of matches) {
+                const row = this.toUnifiedOddsRow(left, right);
+                if (!row) continue;
+    
+                const key = `${row.o01}|${row.o04}|${row.o03 ?? ''}|${row.o05}|${row.o06}`;
+                if (seen.has(key)) continue;
+                seen.add(key);
+    
+                rows.push(row);
+            }
+        }
+    
+        if (!rows.length) {
+            const bookieIds = new Set<number>([
+                ...leftOffers.map(x => Number(x.b)),
+                ...rightOffers.map(x => Number(x.b)),
+            ]);
+    
+            for (const bookieId of bookieIds) {
+                const left = this.pickLatestOfferForBookie(leftOffers, bookieId);
+                const right = this.pickLatestOfferForBookie(rightOffers, bookieId);
+                const row = this.toUnifiedOddsRow(left, right);
+                if (row) rows.push(row);
+            }
+        }
+    
+        return rows;
     }
 
     historyFirstColLabel = 'Time';
