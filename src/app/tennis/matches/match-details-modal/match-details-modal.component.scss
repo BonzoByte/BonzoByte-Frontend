@@ -598,6 +598,26 @@
     cursor: pointer;
   }
 
+  .bb-odds-select {
+    min-width: 96px;
+    height: 28px;
+    padding: 2px 8px;
+    border-radius: 8px;
+    background: #161616;
+    color: #f3f3f3;
+    border: 1px solid rgba(255, 255, 255, 0.10);
+  }
+
+  .bb-odds-select:focus {
+    outline: none;
+    border-color: rgba(255, 255, 255, 0.18);
+  }
+
+  .bb-odds-select option {
+    background: #1f1f1f;
+    color: rgba(255, 255, 255, 0.92);
+  }
+
   /* ============================================================================================
      Role Stats: keep mid labels in one line (save vertical space)
      - On small screens, allow wrapping again to avoid overflow.
