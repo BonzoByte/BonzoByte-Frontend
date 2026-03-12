@@ -589,6 +589,15 @@
     color: rgba(255, 255, 255, 0.9);
   }
 
+  .bb-odds-select:focus {
+    outline: none;
+    border-color: rgba(255, 255, 255, 0.18);
+  }
+
+  .bb-pill {
+    cursor: pointer;
+  }
+
   /* ============================================================================================
      Role Stats: keep mid labels in one line (save vertical space)
      - On small screens, allow wrapping again to avoid overflow.
