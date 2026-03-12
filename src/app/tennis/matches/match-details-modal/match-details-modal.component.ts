@@ -16,8 +16,6 @@ import {
 import {
     MatchDetailsRaw,
     BetTypeGroupDTOv2,
-    MarketDTOv2,
-    SelectionDTOv2,
     BookieOfferDTOv2,
 } from 'src/app/core/models/match-details.model';
 import { CommonModule } from '@angular/common';
