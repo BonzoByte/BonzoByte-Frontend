@@ -76,11 +76,20 @@ type OddsRow = {
     o08: boolean;  // isLikelySwitched
     o09: number;   // suspiciousMask
     o10?: string;  // ingestedAt / fallback
-  };
+};
 
-  type OddsMarket = 'winner' | 'totals' | 'handicap';
-  type OddsScope = 'games' | 'sets';
-  
+type CorrectScoreRow = {
+    bookieId: number;
+    bookieName: string;
+    score20?: number;
+    score21?: number;
+    score02?: number;
+    score12?: number;
+};
+
+type OddsMarket = 'winner' | 'totals' | 'handicap' | 'correctScore';
+type OddsScope = 'games' | 'sets';
+
 type ChartTooltip = {
     leftPx: number;
     topPx: number;
@@ -602,9 +611,13 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
                 return 'Over';
             case 'handicap':
                 return 'P1';
+            case 'correctScore':
+                return '';
+            default:
+                return 'P1';
         }
     }
-    
+
     get oddsRightLabel(): string {
         switch (this.activeOddsMarket) {
             case 'winner':
@@ -612,6 +625,10 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
             case 'totals':
                 return 'Under';
             case 'handicap':
+                return 'P2';
+            case 'correctScore':
+                return '';
+            default:
                 return 'P2';
         }
     }
@@ -624,6 +641,10 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
                 return 'Totals';
             case 'handicap':
                 return 'Handicap';
+            case 'correctScore':
+                return 'Correct Score';
+            default:
+                return 'Winner';
         }
     }
 
@@ -631,6 +652,50 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
         const rawOdds = (this._details as any)?.o;
         if (!Array.isArray(rawOdds) || !rawOdds.length) return [];
         return this.isNestedOddsArray(rawOdds) ? rawOdds : [];
+    }
+
+    get correctScoreRows(): CorrectScoreRow[] {
+        const rawOdds = (this._details as any)?.o;
+        if (!Array.isArray(rawOdds) || !rawOdds.length) return [];
+        if (!this.isNestedOddsArray(rawOdds)) return [];
+
+        const group = rawOdds.find(g => g?.i === 4);
+        if (!group?.m?.length) return [];
+
+        const market = group.m[0];
+        if (!market?.x?.length) return [];
+
+        const sel20 = market.x.find(s => s?.k === '2:0');
+        const sel21 = market.x.find(s => s?.k === '2:1');
+        const sel02 = market.x.find(s => s?.k === '0:2');
+        const sel12 = market.x.find(s => s?.k === '1:2');
+
+        const map20 = this.buildLatestOddsMapByBookie(Array.isArray(sel20?.o) ? sel20.o : []);
+        const map21 = this.buildLatestOddsMapByBookie(Array.isArray(sel21?.o) ? sel21.o : []);
+        const map02 = this.buildLatestOddsMapByBookie(Array.isArray(sel02?.o) ? sel02.o : []);
+        const map12 = this.buildLatestOddsMapByBookie(Array.isArray(sel12?.o) ? sel12.o : []);
+
+        const allBookieIds = new Set<number>([
+            ...map20.keys(),
+            ...map21.keys(),
+            ...map02.keys(),
+            ...map12.keys(),
+        ]);
+
+        const rows: CorrectScoreRow[] = [];
+
+        for (const bookieId of allBookieIds) {
+            rows.push({
+                bookieId,
+                bookieName: this.getBookieName(bookieId),
+                score20: map20.get(bookieId),
+                score21: map21.get(bookieId),
+                score02: map02.get(bookieId),
+                score12: map12.get(bookieId),
+            });
+        }
+
+        return rows.sort((a, b) => a.bookieName.localeCompare(b.bookieName));
     }
 
     private authSub?: Subscription;
@@ -979,7 +1044,7 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
         // Odds: m012/m013
         const bestP1 = this.bestOddsP1Row;
         const bestP2 = this.bestOddsP2Row;
-        
+
         p1.odds = this.numOrUndef(d?.m012) ?? this.numOrUndef(bestP1?.o05);
         p2.odds = this.numOrUndef(d?.m013) ?? this.numOrUndef(bestP2?.o06);
 
@@ -1413,7 +1478,7 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
     get bestOddsP1Row(): OddsRow | null {
         let best: OddsRow | null = null;
         let bestVal = -Infinity;
-    
+
         for (const r of this.oddsRows) {
             if (!this.isCleanOddsRow(r)) continue;
             const v = this.toNum(r?.o05);
@@ -1422,14 +1487,14 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
                 best = r;
             }
         }
-    
+
         return best;
     }
-    
+
     get bestOddsP2Row(): OddsRow | null {
         let best: OddsRow | null = null;
         let bestVal = -Infinity;
-    
+
         for (const r of this.oddsRows) {
             if (!this.isCleanOddsRow(r)) continue;
             const v = this.toNum(r?.o06);
@@ -1438,7 +1503,7 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
                 best = r;
             }
         }
-    
+
         return best;
     }
 
@@ -1479,24 +1544,25 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
     get oddsRows(): OddsRow[] {
         const rawOdds = (this._details as any)?.o;
         if (!Array.isArray(rawOdds) || !rawOdds.length) return [];
-    
+
         // legacy format: uvijek winner
         if (this.isLegacyOddsArray(rawOdds)) {
             return this.activeOddsMarket === 'winner' ? rawOdds : [];
         }
-    
+
         if (!this.isNestedOddsArray(rawOdds)) return [];
-    
+
         switch (this.activeOddsMarket) {
             case 'winner':
                 return this.buildWinnerOddsRowsFromNested(rawOdds);
-    
+
             case 'totals':
                 return this.buildTotalsOddsRowsFromNested(rawOdds);
-    
+
             case 'handicap':
                 return this.buildHandicapOddsRowsFromNested(rawOdds);
-    
+            case 'correctScore':
+                return [];
             default:
                 return [];
         }
@@ -1505,7 +1571,7 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
     private isLegacyOddsArray(value: any[]): value is OddsRow[] {
         return !!value.length && typeof value[0]?.o01 === 'number';
     }
-    
+
     private isNestedOddsArray(value: any[]): value is BetTypeGroupDTOv2[] {
         return !!value.length && typeof value[0]?.i === 'number' && Array.isArray(value[0]?.m);
     }
@@ -1513,67 +1579,67 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
     private buildWinnerOddsRowsFromNested(groups: BetTypeGroupDTOv2[]): OddsRow[] {
         const winnerGroup = groups.find(g => g?.i === 1);
         if (!winnerGroup?.m?.length) return [];
-    
+
         const market = winnerGroup.m[0];
         if (!market?.x?.length) return [];
-    
+
         const p1Selection =
             market.x.find(s => s?.p === this._details?.['m004']) ??
             market.x.find(s => s?.k?.toLowerCase?.() === 'p1');
-    
+
         const p2Selection =
             market.x.find(s => s?.p === this._details?.['m005']) ??
             market.x.find(s => s?.k?.toLowerCase?.() === 'p2');
-    
+
         if (!p1Selection || !p2Selection) return [];
-    
+
         const p1Offers = Array.isArray(p1Selection.o) ? p1Selection.o : [];
         const p2Offers = Array.isArray(p2Selection.o) ? p2Selection.o : [];
-    
+
         return this.buildPairedOddsRows(p1Offers, p2Offers);
     }
 
     private buildTotalsOddsRowsFromNested(groups: BetTypeGroupDTOv2[]): OddsRow[] {
         const totalsGroup = groups.find(g => g?.i === 2);
         if (!totalsGroup?.m?.length) return [];
-    
+
         const market = this.getActiveNestedMarket();
         if (!market?.x?.length) return [];
-    
+
         const overSelection =
             market.x.find(s => s?.k?.toLowerCase?.() === 'over');
-    
+
         const underSelection =
             market.x.find(s => s?.k?.toLowerCase?.() === 'under');
-    
+
         if (!overSelection || !underSelection) return [];
-    
+
         const overOffers = Array.isArray(overSelection.o) ? overSelection.o : [];
         const underOffers = Array.isArray(underSelection.o) ? underSelection.o : [];
-    
+
         return this.buildPairedOddsRows(overOffers, underOffers);
     }
 
     private buildHandicapOddsRowsFromNested(groups: BetTypeGroupDTOv2[]): OddsRow[] {
         const handicapGroup = groups.find(g => g?.i === 3);
         if (!handicapGroup?.m?.length) return [];
-    
+
         const market = this.getActiveNestedMarket();
         if (!market?.x?.length) return [];
-    
+
         const p1Selection =
             market.x.find(s => s?.p === this._details?.['m004']) ??
             market.x.find(s => s?.k?.toLowerCase?.() === 'p1');
-    
+
         const p2Selection =
             market.x.find(s => s?.p === this._details?.['m005']) ??
             market.x.find(s => s?.k?.toLowerCase?.() === 'p2');
-    
+
         if (!p1Selection || !p2Selection) return [];
-    
+
         const p1Offers = Array.isArray(p1Selection.o) ? p1Selection.o : [];
         const p2Offers = Array.isArray(p2Selection.o) ? p2Selection.o : [];
-    
+
         return this.buildPairedOddsRows(p1Offers, p2Offers);
     }
 
@@ -1582,18 +1648,18 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
         right?: BookieOfferDTOv2
     ): OddsRow | null {
         if (!left || !right) return null;
-    
+
         const o01 = Number(left.b);
         const o05 = Number(left.q);
         const o06 = Number(right.q);
-    
+
         if (!Number.isFinite(o01) || !Number.isFinite(o05) || !Number.isFinite(o06)) {
             return null;
         }
-    
+
         const leftSeries = Number(left.r ?? 0);
         const rightSeries = Number(right.r ?? 0);
-    
+
         return {
             o01,
             o02: this.getBookieName(o01),
@@ -1607,7 +1673,7 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
             o10: left.d ?? right.d,
         };
     }
-    
+
     private pickLatestOfferForBookie(offers: BookieOfferDTOv2[], bookieId: number): BookieOfferDTOv2 | undefined {
         const rows = offers
             .filter(x => Number(x?.b) === Number(bookieId))
@@ -1618,7 +1684,7 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
                 if (tb !== ta) return tb - ta;
                 return Number(b?.r ?? 0) - Number(a?.r ?? 0);
             });
-    
+
         return rows[0];
     }
 
@@ -1643,7 +1709,7 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
     private getBookieName(bookieId: number): string {
         return this.bookieNames[bookieId] ?? `Bookie #${bookieId}`;
     }
-    
+
     private offerTimeMs(o?: BookieOfferDTOv2): number | null {
         if (!o?.d) return null;
         const ms = new Date(o.d).getTime();
@@ -1726,9 +1792,11 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
             case 'winner': return 1;
             case 'totals': return 2;
             case 'handicap': return 3;
+            case 'correctScore': return 4;
+            default: return 1;
         }
     }
-    
+
     private normalizeScope(scope: unknown): OddsScope | null {
         const s = String(scope ?? '').trim().toLowerCase();
         if (s === 'games') return 'games';
@@ -1738,18 +1806,18 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
 
     get availableOddsMarkets(): OddsMarket[] {
         const rawOdds = (this._details as any)?.o;
-    
+
         if (Array.isArray(rawOdds) && rawOdds.length && this.isLegacyOddsArray(rawOdds)) {
             return ['winner'];
         }
-    
+
         const groups = this.nestedOddsGroups;
         const result: OddsMarket[] = [];
-    
+
         if (groups.some(g => g?.i === 1 && Array.isArray(g.m) && g.m.length > 0)) result.push('winner');
         if (groups.some(g => g?.i === 2 && Array.isArray(g.m) && g.m.length > 0)) result.push('totals');
         if (groups.some(g => g?.i === 3 && Array.isArray(g.m) && g.m.length > 0)) result.push('handicap');
-    
+        if (groups.some(g => g?.i === 4 && Array.isArray(g.m) && g.m.length > 0)) result.push('correctScore');
         return result;
     }
 
@@ -1760,63 +1828,63 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
 
     get availableOddsScopes(): OddsScope[] {
         if (this.activeOddsMarket === 'winner') return [];
-    
+
         const group = this.activeOddsGroup;
         if (!group?.m?.length) return [];
-    
+
         const scopes = new Set<OddsScope>();
-    
+
         for (const market of group.m) {
             const scope = this.normalizeScope(market?.s);
             if (scope) scopes.add(scope);
         }
-    
+
         return Array.from(scopes.values());
     }
 
     get availableOddsLines(): string[] {
         if (this.activeOddsMarket === 'winner') return [];
-    
+
         const group = this.activeOddsGroup;
         if (!group?.m?.length) return [];
-    
+
         const lines = new Set<string>();
-    
+
         for (const market of group.m) {
             const scope = this.normalizeScope(market?.s);
-    
+
             if (this.activeOddsScope && scope !== this.activeOddsScope) continue;
             if (market?.l === null || market?.l === undefined) continue;
-    
+
             lines.add(String(market.l));
         }
-    
+
         return Array.from(lines.values()).sort((a, b) => Number(a) - Number(b));
     }
 
     private syncOddsSelection(): void {
         const availableMarkets = this.availableOddsMarkets;
-    
+
         if (!availableMarkets.includes(this.activeOddsMarket)) {
             this.activeOddsMarket = availableMarkets[0] ?? 'winner';
         }
-    
-        if (this.activeOddsMarket === 'winner') {
+
+        if (this.activeOddsMarket === 'winner' || this.activeOddsMarket === 'correctScore') {
             this.activeOddsScope = null;
             this.activeOddsLine = null;
             return;
         }
-    
+
         const availableScopes = this.availableOddsScopes;
-    
+
         if (!availableScopes.length) {
             this.activeOddsScope = null;
         } else if (!this.activeOddsScope || !availableScopes.includes(this.activeOddsScope)) {
             this.activeOddsScope = availableScopes[0];
         }
-    
+
         const availableLines = this.availableOddsLines;
-    
+
         if (!availableLines.length) {
             this.activeOddsLine = null;
         } else if (!this.activeOddsLine || !availableLines.includes(this.activeOddsLine)) {
@@ -1829,13 +1897,13 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
         this.activeOddsMarket = market;
         this.syncOddsSelection();
     }
-    
+
     setOddsScope(scope: OddsScope): void {
         if (this.activeOddsScope === scope) return;
         this.activeOddsScope = scope;
         this.syncOddsSelection();
     }
-    
+
     setOddsLine(line: string | null): void {
         this.activeOddsLine = line;
         this.syncOddsSelection();
@@ -1846,75 +1914,77 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
             case 'winner': return 'Winner';
             case 'totals': return 'Totals';
             case 'handicap': return 'Handicap';
+            case 'correctScore': return 'Correct Score';
+            default: return 'Winner';
         }
     }
-    
+
     get activeOddsDescription(): string {
         if (this.activeOddsMarket === 'winner') return 'Showing: Winner';
-    
+
         const parts = [this.activeOddsMarketLabel];
-    
+
         if (this.activeOddsScope) {
             parts.push(this.activeOddsScope === 'games' ? 'Games' : 'Sets');
         }
-    
+
         if (this.activeOddsLine) {
             parts.push(this.activeOddsLine);
         }
-    
+
         return `Showing: ${parts.join(' · ')}`;
     }
 
     private getActiveNestedMarket() {
         const group = this.activeOddsGroup;
         if (!group?.m?.length) return null;
-    
+
         if (this.activeOddsMarket === 'winner') {
             return group.m[0] ?? null;
         }
-    
+
         return group.m.find(m => {
             const scope = this.normalizeScope(m?.s);
             const line = m?.l !== null && m?.l !== undefined ? String(m.l) : null;
-    
+
             if (this.activeOddsScope && scope !== this.activeOddsScope) return false;
             if (this.activeOddsLine && line !== this.activeOddsLine) return false;
-    
+
             return true;
         }) ?? null;
     }
-    
+
     private buildPairedOddsRows(
         leftOffers: BookieOfferDTOv2[],
         rightOffers: BookieOfferDTOv2[]
     ): OddsRow[] {
         const rows: OddsRow[] = [];
         const seen = new Set<string>();
-    
+
         for (const left of leftOffers) {
             const matches = rightOffers.filter(right =>
                 Number(right?.b) === Number(left?.b) &&
                 Number(right?.r ?? 0) === Number(left?.r ?? 0)
             );
-    
+
             for (const right of matches) {
                 const row = this.toUnifiedOddsRow(left, right);
                 if (!row) continue;
-    
+
                 const key = `${row.o01}|${row.o04}|${row.o03 ?? ''}|${row.o05}|${row.o06}`;
                 if (seen.has(key)) continue;
                 seen.add(key);
-    
+
                 rows.push(row);
             }
         }
-    
+
         if (!rows.length) {
             const bookieIds = new Set<number>([
                 ...leftOffers.map(x => Number(x.b)),
                 ...rightOffers.map(x => Number(x.b)),
             ]);
-    
+
             for (const bookieId of bookieIds) {
                 const left = this.pickLatestOfferForBookie(leftOffers, bookieId);
                 const right = this.pickLatestOfferForBookie(rightOffers, bookieId);
@@ -1922,8 +1992,23 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
                 if (row) rows.push(row);
             }
         }
-    
+
         return rows;
+    }
+
+    private buildLatestOddsMapByBookie(offers: BookieOfferDTOv2[]): Map<number, number> {
+        const bookieIds = new Set<number>(offers.map(x => Number(x.b)));
+        const result = new Map<number, number>();
+
+        for (const bookieId of bookieIds) {
+            const latest = this.pickLatestOfferForBookie(offers, bookieId);
+            const q = Number(latest?.q);
+            if (Number.isFinite(q) && q > 0) {
+                result.set(bookieId, q);
+            }
+        }
+
+        return result;
     }
 
     historyFirstColLabel = 'Time';

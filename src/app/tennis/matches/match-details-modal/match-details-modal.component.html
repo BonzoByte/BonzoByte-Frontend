@@ -185,6 +185,33 @@
         </div>
     </ng-template>
 
+    <ng-template #correctScoreBlock>
+        <div class="bb-odds-table-wrap" *ngIf="correctScoreRows.length">
+            <table class="bb-odds-table">
+                <thead>
+                    <tr>
+                        <th>Bookie</th>
+                        <th class="bb-odds-num">2:0</th>
+                        <th class="bb-odds-num">2:1</th>
+                        <th class="bb-odds-num">0:2</th>
+                        <th class="bb-odds-num">1:2</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let r of correctScoreRows">
+                        <td class="bb-odds-bookie">{{ r.bookieName }}</td>
+                        <td class="bb-odds-num bb-pl">{{ oddsNum(r.score20) }}</td>
+                        <td class="bb-odds-num bb-pl">{{ oddsNum(r.score21) }}</td>
+                        <td class="bb-odds-num bb-pl">{{ oddsNum(r.score02) }}</td>
+                        <td class="bb-odds-num bb-pl">{{ oddsNum(r.score12) }}</td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="bb-placeholder" *ngIf="!correctScoreRows.length">
+                No valid odds in archive.
+            </div>
+        </div>
+    </ng-template>
     <!-- Hover tooltip -->
     <ng-template #hoverTooltipCard let-tip="tip">
         <div class="bb-chart-tooltip" [class.bb-tooltip-show]="true" [style.left.px]="tip.leftPx"
@@ -953,7 +980,8 @@
                                 {{
                                 market === 'winner' ? 'Winner' :
                                 market === 'totals' ? 'Totals' :
-                                'Handicap'
+                                market === 'handicap' ? 'Handicap' :
+                                'Correct Score'
                                 }}
                             </button>
                         </div>
@@ -989,75 +1017,79 @@
                     {{ activeOddsDescription }}
                 </div>
 
-                <!-- Summary -->
-                <div class="bb-odds-summary">
-                    <!-- Best odds -->
-                    <div class="bb-compare bb-compare-ts">
-                        <div class="bb-comp-row">
-                            <div class="bb-comp-left">
-                                <span class="bb-pl">{{ oddsNum(bestOddsP1Row?.o05) }}</span>
-                                <span class="bb-muted-sm" *ngIf="bestOddsP1Row as b">({{ b.o02 }})</span>
+                <ng-container *ngIf="activeOddsMarket !== 'correctScore'; else correctScoreBlock">
+                    <!-- Summary -->
+                    <div class="bb-odds-summary">
+                        <!-- Best odds -->
+                        <div class="bb-compare bb-compare-ts">
+                            <div class="bb-comp-row">
+                                <div class="bb-comp-left">
+                                    <span class="bb-pl">{{ oddsNum(bestOddsP1Row?.o05) }}</span>
+                                    <span class="bb-muted-sm" *ngIf="bestOddsP1Row as b">({{ b.o02 }})</span>
+                                </div>
+                                <div class="bb-comp-mid">{{ oddsSummaryMidLabel }}</div>
+                                <div class="bb-comp-right">
+                                    <span class="bb-pl">{{ oddsNum(bestOddsP2Row?.o06) }}</span>
+                                    <span class="bb-muted-sm" *ngIf="bestOddsP2Row as b">({{ b.o02 }})</span>
+                                </div>
                             </div>
-                            <div class="bb-comp-mid">{{ oddsSummaryMidLabel }}</div>
-                            <div class="bb-comp-right">
-                                <span class="bb-pl">{{ oddsNum(bestOddsP2Row?.o06) }}</span>
-                                <span class="bb-muted-sm" *ngIf="bestOddsP2Row as b">({{ b.o02 }})</span>
+                        </div>
+
+                        <!-- Market summary (min/max/median) -->
+                        <div class="bb-compare bb-compare-ts">
+                            <div class="bb-comp-row">
+                                <div class="bb-comp-left">
+                                    <span class="bb-muted-sm">Min:</span>&nbsp;<span class="bb-pl">{{
+                                        oddsNum(marketMinP1()
+                                        || 0) }}</span>
+                                    &nbsp;&nbsp;<span class="bb-muted-sm">Med:</span>&nbsp;<span class="bb-pl">{{
+                                        oddsNum(marketMedP1() || 0) }}</span>
+                                    &nbsp;&nbsp;<span class="bb-muted-sm">Max:</span>&nbsp;<span class="bb-pl">{{
+                                        oddsNum(marketMaxP1() || 0) }}</span>
+                                </div>
+                                <div class="bb-comp-mid">Market</div>
+                                <div class="bb-comp-right">
+                                    <span class="bb-muted-sm">Min:</span>&nbsp;<span class="bb-pl">{{
+                                        oddsNum(marketMinP2()
+                                        || 0) }}</span>
+                                    &nbsp;&nbsp;<span class="bb-muted-sm">Med:</span>&nbsp;<span class="bb-pl">{{
+                                        oddsNum(marketMedP2() || 0) }}</span>
+                                    &nbsp;&nbsp;<span class="bb-muted-sm">Max:</span>&nbsp;<span class="bb-pl">{{
+                                        oddsNum(marketMaxP2() || 0) }}</span>
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Market summary (min/max/median) -->
-                    <div class="bb-compare bb-compare-ts">
-                        <div class="bb-comp-row">
-                            <div class="bb-comp-left">
-                                <span class="bb-muted-sm">Min:</span>&nbsp;<span class="bb-pl">{{ oddsNum(marketMinP1()
-                                    || 0) }}</span>
-                                &nbsp;&nbsp;<span class="bb-muted-sm">Med:</span>&nbsp;<span class="bb-pl">{{
-                                    oddsNum(marketMedP1() || 0) }}</span>
-                                &nbsp;&nbsp;<span class="bb-muted-sm">Max:</span>&nbsp;<span class="bb-pl">{{
-                                    oddsNum(marketMaxP1() || 0) }}</span>
-                            </div>
-                            <div class="bb-comp-mid">Market</div>
-                            <div class="bb-comp-right">
-                                <span class="bb-muted-sm">Min:</span>&nbsp;<span class="bb-pl">{{ oddsNum(marketMinP2()
-                                    || 0) }}</span>
-                                &nbsp;&nbsp;<span class="bb-muted-sm">Med:</span>&nbsp;<span class="bb-pl">{{
-                                    oddsNum(marketMedP2() || 0) }}</span>
-                                &nbsp;&nbsp;<span class="bb-muted-sm">Max:</span>&nbsp;<span class="bb-pl">{{
-                                    oddsNum(marketMaxP2() || 0) }}</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Odds table -->
-                <div class="bb-odds-table-wrap" *ngIf="latestOddsByBookie.length; else noOdds">
-                    <table class="bb-odds-table">
-                        <thead>
-                            <tr>
-                                <th>Bookie</th>
-                                <th class="bb-odds-num">Odds ({{ oddsLeftLabel }})</th>
-                                <th class="bb-odds-num">Odds ({{ oddsRightLabel }})</th>
-                                <th class="bb-odds-num">Impl ({{ oddsLeftLabel }})</th>
-                                <th class="bb-odds-num">Impl ({{ oddsRightLabel }})</th>
-                                <th class="bb-odds-num">Margin</th>
-                            </tr>
-                        </thead>
-
-                        <tbody>
-                            <ng-container *ngFor="let r of latestOddsByBookie">
+                    <!-- Odds table -->
+                    <div class="bb-odds-table-wrap" *ngIf="latestOddsByBookie.length; else noOdds">
+                        <table class="bb-odds-table">
+                            <thead>
                                 <tr>
-                                    <td class="bb-odds-bookie">{{ r.o02 }}</td>
-                                    <td class="bb-odds-num bb-pl">{{ oddsNum(r.o05) }}</td>
-                                    <td class="bb-odds-num bb-pl">{{ oddsNum(r.o06) }}</td>
-                                    <td class="bb-odds-num">{{ oddsPct01(oddsImplied(r.o05)) }}</td>
-                                    <td class="bb-odds-num">{{ oddsPct01(oddsImplied(r.o06)) }}</td>
-                                    <td class="bb-odds-num">{{ overroundPct(r) }}</td>
+                                    <th>Bookie</th>
+                                    <th class="bb-odds-num">Odds ({{ oddsLeftLabel }})</th>
+                                    <th class="bb-odds-num">Odds ({{ oddsRightLabel }})</th>
+                                    <th class="bb-odds-num">Impl ({{ oddsLeftLabel }})</th>
+                                    <th class="bb-odds-num">Impl ({{ oddsRightLabel }})</th>
+                                    <th class="bb-odds-num">Margin</th>
                                 </tr>
-                            </ng-container>
-                        </tbody>
-                    </table>
-                </div>
+                            </thead>
+
+                            <tbody>
+                                <ng-container *ngFor="let r of latestOddsByBookie">
+                                    <tr>
+                                        <td class="bb-odds-bookie">{{ r.o02 }}</td>
+                                        <td class="bb-odds-num bb-pl">{{ oddsNum(r.o05) }}</td>
+                                        <td class="bb-odds-num bb-pl">{{ oddsNum(r.o06) }}</td>
+                                        <td class="bb-odds-num">{{ oddsPct01(oddsImplied(r.o05)) }}</td>
+                                        <td class="bb-odds-num">{{ oddsPct01(oddsImplied(r.o06)) }}</td>
+                                        <td class="bb-odds-num">{{ overroundPct(r) }}</td>
+                                    </tr>
+                                </ng-container>
+                            </tbody>
+                        </table>
+                    </div>
+                </ng-container>
 
                 <ng-template #noOdds>
                     <div class="bb-placeholder">No valid odds in archive.</div>
