@@ -1,6 +1,6 @@
 ﻿<!-- MATCH DETAILS MODAL (Shell version) -->
 <app-bb-modal-shell *ngIf="isOpen" title="Match detailsss" modalClass="bb-modal--match-details" (closed)="close()">
-  <!-- =================================================================================================
+    <!-- =================================================================================================
        REUSABLE TEMPLATES
   ================================================================================================== -->
 
@@ -956,6 +956,38 @@
                             <span class="bb-muted-sm" *ngIf="bestOddsP1Row as b">({{ b.o02 }})</span>
                         </div>
                     </div>
+                </div>
+
+                <div class="bb-chip-row" *ngIf="availableOddsMarkets.length > 1" style="margin-top: 8px;">
+                    <button type="button" class="bb-chip" *ngFor="let market of availableOddsMarkets"
+                        [class.active]="activeOddsMarket === market" (click)="setOddsMarket(market)">
+                        {{
+                        market === 'winner' ? 'Winner' :
+                        market === 'totals' ? 'Totals' :
+                        'Handicap'
+                        }}
+                    </button>
+                </div>
+
+                <div class="bb-chip-row" *ngIf="activeOddsMarket !== 'winner' && availableOddsScopes.length > 1"
+                    style="margin-top: 8px;">
+                    <button type="button" class="bb-chip" *ngFor="let scope of availableOddsScopes"
+                        [class.active]="activeOddsScope === scope" (click)="setOddsScope(scope)">
+                        {{ scope === 'games' ? 'Games' : 'Sets' }}
+                    </button>
+                </div>
+
+                <div *ngIf="activeOddsMarket !== 'winner' && availableOddsLines.length > 1" style="margin-top: 8px;">
+                    <label class="bb-muted-sm" for="odds-line-select">Line:</label>
+                    <select id="odds-line-select" [ngModel]="activeOddsLine" (ngModelChange)="setOddsLine($event)">
+                        <option *ngFor="let line of availableOddsLines" [ngValue]="line">
+                            {{ line }}
+                        </option>
+                    </select>
+                </div>
+
+                <div class="bb-muted-sm" style="margin-top: 8px;">
+                    {{ activeOddsDescription }}
                 </div>
 
                 <!-- Market summary (min/max/median) -->

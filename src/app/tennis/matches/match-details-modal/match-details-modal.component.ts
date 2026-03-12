@@ -77,6 +77,9 @@ type OddsRow = {
     o09: number;   // suspiciousMask
     o10?: string;  // ingestedAt / fallback
   };
+
+  type OddsMarket = 'winner' | 'totals' | 'handicap';
+  type OddsScope = 'games' | 'sets';
   
 type ChartTooltip = {
     leftPx: number;
@@ -501,6 +504,10 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
     // Odds tab selectors
     activeOddsSeries = 0;
     showSuspiciousOnly = false;
+    activeOddsMarket: OddsMarket = 'winner';
+    activeOddsScope: OddsScope | null = null;
+    activeOddsLine: string | null = null;
+
 
     isLocked = false;
     locked: DetailsLockedError | null = null;
@@ -585,6 +592,12 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
     get oddsLabelP2(): string {
         const d: any = this._details as any;
         return d?.p2?.p01 ?? d?.p2?.name ?? 'P2';
+    }
+
+    get nestedOddsGroups(): BetTypeGroupDTOv2[] {
+        const rawOdds = (this._details as any)?.o;
+        if (!Array.isArray(rawOdds) || !rawOdds.length) return [];
+        return this.isNestedOddsArray(rawOdds) ? rawOdds : [];
     }
 
     private authSub?: Subscription;
@@ -758,6 +771,7 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
 
                 this.raw = details;
                 this._details = details;
+                this.syncOddsSelection();
 
                 this.genderHint = this.tourTypeLabel(details) === 'WTA' ? 'W' : 'M';
 
@@ -1658,6 +1672,150 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
         });
 
         return rows;
+    }
+
+    private getOddsBetTypeId(market: OddsMarket): number {
+        switch (market) {
+            case 'winner': return 1;
+            case 'totals': return 2;
+            case 'handicap': return 3;
+        }
+    }
+    
+    private normalizeScope(scope: unknown): OddsScope | null {
+        const s = String(scope ?? '').trim().toLowerCase();
+        if (s === 'games') return 'games';
+        if (s === 'sets') return 'sets';
+        return null;
+    }
+
+    get availableOddsMarkets(): OddsMarket[] {
+        const rawOdds = (this._details as any)?.o;
+    
+        if (Array.isArray(rawOdds) && rawOdds.length && this.isLegacyOddsArray(rawOdds)) {
+            return ['winner'];
+        }
+    
+        const groups = this.nestedOddsGroups;
+        const result: OddsMarket[] = [];
+    
+        if (groups.some(g => g?.i === 1 && Array.isArray(g.m) && g.m.length > 0)) result.push('winner');
+        if (groups.some(g => g?.i === 2 && Array.isArray(g.m) && g.m.length > 0)) result.push('totals');
+        if (groups.some(g => g?.i === 3 && Array.isArray(g.m) && g.m.length > 0)) result.push('handicap');
+    
+        return result;
+    }
+
+    get activeOddsGroup(): BetTypeGroupDTOv2 | null {
+        const betTypeId = this.getOddsBetTypeId(this.activeOddsMarket);
+        return this.nestedOddsGroups.find(g => g?.i === betTypeId) ?? null;
+    }
+
+    get availableOddsScopes(): OddsScope[] {
+        if (this.activeOddsMarket === 'winner') return [];
+    
+        const group = this.activeOddsGroup;
+        if (!group?.m?.length) return [];
+    
+        const scopes = new Set<OddsScope>();
+    
+        for (const market of group.m) {
+            const scope = this.normalizeScope(market?.s);
+            if (scope) scopes.add(scope);
+        }
+    
+        return Array.from(scopes.values());
+    }
+
+    get availableOddsLines(): string[] {
+        if (this.activeOddsMarket === 'winner') return [];
+    
+        const group = this.activeOddsGroup;
+        if (!group?.m?.length) return [];
+    
+        const lines = new Set<string>();
+    
+        for (const market of group.m) {
+            const scope = this.normalizeScope(market?.s);
+    
+            if (this.activeOddsScope && scope !== this.activeOddsScope) continue;
+            if (market?.l === null || market?.l === undefined) continue;
+    
+            lines.add(String(market.l));
+        }
+    
+        return Array.from(lines.values()).sort((a, b) => Number(a) - Number(b));
+    }
+
+    private syncOddsSelection(): void {
+        const availableMarkets = this.availableOddsMarkets;
+    
+        if (!availableMarkets.includes(this.activeOddsMarket)) {
+            this.activeOddsMarket = availableMarkets[0] ?? 'winner';
+        }
+    
+        if (this.activeOddsMarket === 'winner') {
+            this.activeOddsScope = null;
+            this.activeOddsLine = null;
+            return;
+        }
+    
+        const availableScopes = this.availableOddsScopes;
+    
+        if (!availableScopes.length) {
+            this.activeOddsScope = null;
+        } else if (!this.activeOddsScope || !availableScopes.includes(this.activeOddsScope)) {
+            this.activeOddsScope = availableScopes[0];
+        }
+    
+        const availableLines = this.availableOddsLines;
+    
+        if (!availableLines.length) {
+            this.activeOddsLine = null;
+        } else if (!this.activeOddsLine || !availableLines.includes(this.activeOddsLine)) {
+            this.activeOddsLine = availableLines[0];
+        }
+    }
+
+    setOddsMarket(market: OddsMarket): void {
+        if (this.activeOddsMarket === market) return;
+        this.activeOddsMarket = market;
+        this.syncOddsSelection();
+    }
+    
+    setOddsScope(scope: OddsScope): void {
+        if (this.activeOddsScope === scope) return;
+        this.activeOddsScope = scope;
+        this.syncOddsSelection();
+    }
+    
+    setOddsLine(line: string | null): void {
+        this.activeOddsLine = line;
+        this.syncOddsSelection();
+    }
+
+    get activeOddsMarketLabel(): string {
+        switch (this.activeOddsMarket) {
+            case 'winner': return 'Winner';
+            case 'totals': return 'Totals';
+            case 'handicap': return 'Handicap';
+        }
+    }
+    
+    get activeOddsDescription(): string {
+        if (this.activeOddsMarket === 'winner') return 'Showing: Winner';
+    
+        const parts = [this.activeOddsMarketLabel];
+    
+        if (this.activeOddsScope) {
+            parts.push(this.activeOddsScope === 'games' ? 'Games' : 'Sets');
+        }
+    
+        if (this.activeOddsLine) {
+            parts.push(this.activeOddsLine);
+        }
+    
+        return `Showing: ${parts.join(' · ')}`;
     }
 
     historyFirstColLabel = 'Time';
