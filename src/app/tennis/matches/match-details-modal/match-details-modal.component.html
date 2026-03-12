@@ -939,76 +939,93 @@
 
             <!-- ========================================================================================
             ODDS TAB
-        ========================================================================================= -->
+            ========================================================================================= -->
             <section *ngIf="activeTab === 'odds'" class="bb-panel">
                 <ng-container *ngTemplateOutlet="playersHeader; context: { v: v }"></ng-container>
 
-                <!-- Best odds -->
-                <div class="bb-compare bb-compare-ts" style="margin-top: 6px;">
-                    <div class="bb-comp-row">
-                        <div class="bb-comp-left">
-                            <span class="bb-pl">{{ oddsNum(bestOddsP1Row?.o05 ?? null) }}</span>
-                            <span class="bb-muted-sm" *ngIf="bestOddsP1Row as b">({{ b.o02 }})</span>
+                <!-- Controls -->
+                <div class="bb-ts-controls bb-odds-controls">
+                    <div class="bb-ts-control-row" *ngIf="availableOddsMarkets.length > 1">
+                        <div class="bb-ts-label">Market</div>
+                        <div class="bb-ts-buttons">
+                            <button *ngFor="let market of availableOddsMarkets" type="button" class="bb-pill"
+                                [class.active]="activeOddsMarket === market" (click)="setOddsMarket(market)">
+                                {{
+                                market === 'winner' ? 'Winner' :
+                                market === 'totals' ? 'Totals' :
+                                'Handicap'
+                                }}
+                            </button>
                         </div>
-                        <div class="bb-comp-mid">{{ oddsSummaryMidLabel }}</div>
-                        <div class="bb-comp-right">
-                            <span class="bb-pl">{{ oddsNum(bestOddsP1Row?.o05 ?? null) }}</span>
-                            <span class="bb-muted-sm" *ngIf="bestOddsP1Row as b">({{ b.o02 }})</span>
+                    </div>
+
+                    <div class="bb-ts-control-row"
+                        *ngIf="activeOddsMarket !== 'winner' && availableOddsScopes.length > 1">
+                        <div class="bb-ts-label">Scope</div>
+                        <div class="bb-ts-buttons">
+                            <button *ngFor="let scope of availableOddsScopes" type="button" class="bb-pill"
+                                [class.active]="activeOddsScope === scope" (click)="setOddsScope(scope)">
+                                {{ scope === 'games' ? 'Games' : 'Sets' }}
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="bb-ts-control-row"
+                        *ngIf="activeOddsMarket !== 'winner' && availableOddsLines.length > 1">
+                        <div class="bb-ts-label">Line</div>
+                        <div class="bb-ts-buttons">
+                            <select id="odds-line-select" class="bb-odds-select" [ngModel]="activeOddsLine"
+                                (ngModelChange)="setOddsLine($event)">
+                                <option *ngFor="let line of availableOddsLines" [ngValue]="line">
+                                    {{ line }}
+                                </option>
+                            </select>
                         </div>
                     </div>
                 </div>
 
-                <div class="bb-chip-row" *ngIf="availableOddsMarkets.length > 1" style="margin-top: 8px;">
-                    <button type="button" class="bb-chip" *ngFor="let market of availableOddsMarkets"
-                        [class.active]="activeOddsMarket === market" (click)="setOddsMarket(market)">
-                        {{
-                        market === 'winner' ? 'Winner' :
-                        market === 'totals' ? 'Totals' :
-                        'Handicap'
-                        }}
-                    </button>
-                </div>
-
-                <div class="bb-chip-row" *ngIf="activeOddsMarket !== 'winner' && availableOddsScopes.length > 1"
-                    style="margin-top: 8px;">
-                    <button type="button" class="bb-chip" *ngFor="let scope of availableOddsScopes"
-                        [class.active]="activeOddsScope === scope" (click)="setOddsScope(scope)">
-                        {{ scope === 'games' ? 'Games' : 'Sets' }}
-                    </button>
-                </div>
-
-                <div *ngIf="activeOddsMarket !== 'winner' && availableOddsLines.length > 1" style="margin-top: 8px;">
-                    <label class="bb-muted-sm" for="odds-line-select">Line:</label>
-                    <select id="odds-line-select" [ngModel]="activeOddsLine" (ngModelChange)="setOddsLine($event)">
-                        <option *ngFor="let line of availableOddsLines" [ngValue]="line">
-                            {{ line }}
-                        </option>
-                    </select>
-                </div>
-
-                <div class="bb-muted-sm" style="margin-top: 8px;">
+                <!-- Active market description -->
+                <div class="bb-muted-sm bb-odds-active-market">
                     {{ activeOddsDescription }}
                 </div>
 
-                <!-- Market summary (min/max/median) -->
-                <div class="bb-compare bb-compare-ts" style="margin-top: 6px;">
-                    <div class="bb-comp-row">
-                        <div class="bb-comp-left">
-                            <span class="bb-muted-sm">Min:</span>&nbsp;<span class="bb-pl">{{ oddsNum(marketMinP1()
-                                || 0) }}</span>
-                            &nbsp;&nbsp;<span class="bb-muted-sm">Med:</span>&nbsp;<span class="bb-pl">{{
-                                oddsNum(marketMedP1() || 0) }}</span>
-                            &nbsp;&nbsp;<span class="bb-muted-sm">Max:</span>&nbsp;<span class="bb-pl">{{
-                                oddsNum(marketMaxP1() || 0) }}</span>
+                <!-- Summary -->
+                <div class="bb-odds-summary">
+                    <!-- Best odds -->
+                    <div class="bb-compare bb-compare-ts">
+                        <div class="bb-comp-row">
+                            <div class="bb-comp-left">
+                                <span class="bb-pl">{{ oddsNum(bestOddsP1Row?.o05) }}</span>
+                                <span class="bb-muted-sm" *ngIf="bestOddsP1Row as b">({{ b.o02 }})</span>
+                            </div>
+                            <div class="bb-comp-mid">{{ oddsSummaryMidLabel }}</div>
+                            <div class="bb-comp-right">
+                                <span class="bb-pl">{{ oddsNum(bestOddsP2Row?.o06) }}</span>
+                                <span class="bb-muted-sm" *ngIf="bestOddsP2Row as b">({{ b.o02 }})</span>
+                            </div>
                         </div>
-                        <div class="bb-comp-mid">Market</div>
-                        <div class="bb-comp-right">
-                            <span class="bb-muted-sm">Min:</span>&nbsp;<span class="bb-pl">{{ oddsNum(marketMinP2()
-                                || 0) }}</span>
-                            &nbsp;&nbsp;<span class="bb-muted-sm">Med:</span>&nbsp;<span class="bb-pl">{{
-                                oddsNum(marketMedP2() || 0) }}</span>
-                            &nbsp;&nbsp;<span class="bb-muted-sm">Max:</span>&nbsp;<span class="bb-pl">{{
-                                oddsNum(marketMaxP2() || 0) }}</span>
+                    </div>
+
+                    <!-- Market summary (min/max/median) -->
+                    <div class="bb-compare bb-compare-ts">
+                        <div class="bb-comp-row">
+                            <div class="bb-comp-left">
+                                <span class="bb-muted-sm">Min:</span>&nbsp;<span class="bb-pl">{{ oddsNum(marketMinP1()
+                                    || 0) }}</span>
+                                &nbsp;&nbsp;<span class="bb-muted-sm">Med:</span>&nbsp;<span class="bb-pl">{{
+                                    oddsNum(marketMedP1() || 0) }}</span>
+                                &nbsp;&nbsp;<span class="bb-muted-sm">Max:</span>&nbsp;<span class="bb-pl">{{
+                                    oddsNum(marketMaxP1() || 0) }}</span>
+                            </div>
+                            <div class="bb-comp-mid">Market</div>
+                            <div class="bb-comp-right">
+                                <span class="bb-muted-sm">Min:</span>&nbsp;<span class="bb-pl">{{ oddsNum(marketMinP2()
+                                    || 0) }}</span>
+                                &nbsp;&nbsp;<span class="bb-muted-sm">Med:</span>&nbsp;<span class="bb-pl">{{
+                                    oddsNum(marketMedP2() || 0) }}</span>
+                                &nbsp;&nbsp;<span class="bb-muted-sm">Max:</span>&nbsp;<span class="bb-pl">{{
+                                    oddsNum(marketMaxP2() || 0) }}</span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1046,8 +1063,6 @@
                     <div class="bb-placeholder">No valid odds in archive.</div>
                 </ng-template>
             </section>
-
-
             <!-- ========================================================================================
      PLACEHOLDER (safety net)
      If a new tab is introduced but not implemented in template yet,

@@ -531,7 +531,7 @@
     min-width: 70px;
   }
 
-    /* ============================================================================================
+  /* ============================================================================================
      Shared control rows (Performance / Form / Role tabs)
      - label + pills inline, wrap nicely
   ============================================================================================ */
@@ -545,7 +545,8 @@
 
   .bb-ts-label {
     flex: 0 0 auto;
-    min-width: 76px; /* malo uži od 86 da ne krade prostor */
+    min-width: 76px;
+    /* malo uži od 86 da ne krade prostor */
     font-size: 12px;
     opacity: 0.75;
     line-height: 1;
@@ -562,6 +563,30 @@
   /* pill buttons inside these controls */
   .bb-ts-buttons .bb-pill {
     white-space: nowrap;
+  }
+
+  .bb-odds-controls {
+    margin-top: 12px;
+  }
+
+  .bb-odds-active-market {
+    margin-top: 10px;
+  }
+
+  .bb-odds-summary {
+    display: grid;
+    gap: 6px;
+    margin-top: 8px;
+  }
+
+  .bb-odds-select {
+    min-width: 96px;
+    height: 28px;
+    padding: 2px 8px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    color: rgba(255, 255, 255, 0.9);
   }
 
   /* ============================================================================================
