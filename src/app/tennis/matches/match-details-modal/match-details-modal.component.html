@@ -997,60 +997,13 @@
 
                         <tbody>
                             <ng-container *ngFor="let r of latestOddsByBookie">
-                                <tr (click)="toggleBookie(r.o01)" style="cursor: pointer;">
+                                <tr>
                                     <td class="bb-odds-bookie">{{ r.o02 }}</td>
                                     <td class="bb-odds-num bb-pl">{{ oddsNum(r.o05) }}</td>
                                     <td class="bb-odds-num bb-pl">{{ oddsNum(r.o06) }}</td>
                                     <td class="bb-odds-num">{{ oddsPct01(oddsImplied(r.o05)) }}</td>
                                     <td class="bb-odds-num">{{ oddsPct01(oddsImplied(r.o06)) }}</td>
                                     <td class="bb-odds-num">{{ overroundPct(r) }}</td>
-                                </tr>
-
-                                <!-- Expanded details: history -->
-                                <tr *ngIf="expandedBookieId === r.o01">
-                                    <td colspan="6" class="bb-odds-history-cell">
-                                        <div class="bb-muted-sm bb-odds-history-title">{{ r.o02 }} history</div>
-
-                                        <ng-container *ngIf="bookieHistory(r.o01).length; else noHistory">
-                                            <table class="bb-odds-table bb-odds-history-table">
-                                                <thead>
-                                                    <tr>
-                                                        <th>Bookie</th>
-                                                        <th class="bb-odds-num">Odds (L)</th>
-                                                        <th class="bb-odds-num">Odds (R)</th>
-                                                        <th class="bb-odds-num">Impl (L)</th>
-                                                        <th class="bb-odds-num">Impl (R)</th>
-                                                        <th class="bb-odds-num">Margin</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    <tr *ngFor="let h of bookieHistory(r.o01)">
-                                                        <td class="bb-th-left">
-                                                            <ng-container *ngIf="h.o03; else noTime">
-                                                                {{ h.o03 | date:'yyyy-MM-dd HH:mm' }}
-                                                            </ng-container>
-                                                            <ng-template #noTime>
-                                                                Update #{{ (h.o04) }}
-                                                            </ng-template>
-                                                        </td>
-
-                                                        <td class="bb-odds-num bb-pl">{{ oddsNum(h.o05) }}</td>
-                                                        <td class="bb-odds-num bb-pl">{{ oddsNum(h.o06) }}</td>
-                                                        <td class="bb-odds-num">{{ oddsPct01(oddsImplied(h.o05)) }}
-                                                        </td>
-                                                        <td class="bb-odds-num">{{ oddsPct01(oddsImplied(h.o06)) }}
-                                                        </td>
-                                                        <td class="bb-odds-num">{{ overroundPct(h) }}</td>
-                                                    </tr>
-                                                </tbody>
-                                            </table>
-                                        </ng-container>
-
-                                        <ng-template #noHistory>
-                                            <div class="bb-placeholder">No odds history available for this bookie.
-                                            </div>
-                                        </ng-template>
-                                    </td>
                                 </tr>
                             </ng-container>
                         </tbody>
