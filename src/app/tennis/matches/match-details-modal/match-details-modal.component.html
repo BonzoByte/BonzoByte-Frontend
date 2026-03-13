@@ -1115,185 +1115,275 @@
                             </div>
                         </div>
 
-                        <section *ngIf="activeNnSection !== 'overview' && activeNnGroup as group" class="bb-section nn-group-section">
+                        <section *ngIf="activeNnSection === 'overview'" class="bb-section nn-overview-section">
+                            <h3>NN Overview</h3>
+
+                            <div class="nn-overview-meta">
+                                <div class="nn-meta-row">
+                                    <div class="nn-meta-label">Model</div>
+                                    <div class="nn-meta-value">{{ nn.modelFamily }}</div>
+                                </div>
+
+                                <div class="nn-meta-row">
+                                    <div class="nn-meta-label">Version</div>
+                                    <div class="nn-meta-value">{{ nn.version }}</div>
+                                </div>
+
+                                <div class="nn-meta-row">
+                                    <div class="nn-meta-label">H2H Included</div>
+                                    <div class="nn-meta-value">{{ nn.includeH2h ? 'Yes' : 'No' }}</div>
+                                </div>
+
+                                <div class="nn-meta-row">
+                                    <div class="nn-meta-label">Groups</div>
+                                    <div class="nn-meta-value">{{ nn.groupCount }}</div>
+                                </div>
+
+                                <div class="nn-meta-row">
+                                    <div class="nn-meta-label">Features</div>
+                                    <div class="nn-meta-value">{{ nn.featureCount }}</div>
+                                </div>
+                            </div>
+
+                            <div class="nn-overview-copy">
+                                <section class="nn-copy-block">
+                                    <h4>What this model view shows</h4>
+                                    <p>
+                                        This tab reveals the structured feature groups behind the neural-network-based
+                                        match probability shown in the modal. It is designed as a transparency layer,
+                                        exposing the main input families that contribute to the final prediction instead
+                                        of presenting the result as a black box.
+                                    </p>
+                                    <p>
+                                        Rather than relying on a single heuristic or a bookmaker-style shortcut, the
+                                        displayed probability comes from a curated modelling pipeline built around
+                                        explicit feature selection, grouped signals, and controlled promotion into the
+                                        production prediction field.
+                                    </p>
+                                </section>
+
+                                <section class="nn-copy-block">
+                                    <h4>How to read this tab</h4>
+                                    <p>
+                                        Each sub-section represents one feature family used by the model. Some groups
+                                        describe the tournament and match context, others reflect core win-probability
+                                        signals, rating-based strength estimates, normalized transformations, derived
+                                        precision-style signals, and optional head-to-head inputs.
+                                    </p>
+                                    <p>
+                                        The purpose of this tab is interpretability. It helps advanced users understand
+                                        that the final probability is generated from a structured analytical system, not
+                                        from a single opaque score.
+                                    </p>
+                                </section>
+
+                                <section class="nn-copy-block">
+                                    <h4>Model notes</h4>
+                                    <p>
+                                        The current production setup follows a trusted feature policy, treats ATP and
+                                        WTA
+                                        as separate modelling domains, and retains head-to-head information only when it
+                                        improves the final model profile. The feature groups shown here are a compact
+                                        view
+                                        of the promoted model inputs behind the stored match probability.
+                                    </p>
+                                </section>
+                            </div>
+                        </section>
+
+                        <section *ngIf="activeNnSection !== 'overview' && activeNnGroup as group"
+                            class="bb-section nn-group-section">
                             <h3>{{ group.title }}</h3>
-                          
+
                             <div class="nn-group-copy" *ngIf="activeNnSection === 'c'">
-                              <section class="nn-copy-block">
-                                <h4>What this section represents</h4>
-                                <p>
-                                  The Context section captures the match environment around the players rather than
-                                  the players themselves. It includes tournament structure, playing surface, event
-                                  strength, round context, and a compact set of competition-level signals that help
-                                  the model understand where and under what conditions the match takes place.
-                                </p>
-                                <p>
-                                  These inputs provide situational framing for the prediction. They do not attempt
-                                  to describe player strength directly, but instead supply the surrounding context
-                                  that can influence how rating-based and probability-based signals should be read.
-                                </p>
-                              </section>
-                          
-                              <section class="nn-copy-block">
-                                <h4>How to read these values</h4>
-                                <p>
-                                  Some fields are categorical identifiers such as surface or tournament type, while
-                                  others are normalized or transformed quantities that represent event strength,
-                                  surface profile, experience balance, or structural match conditions. Together,
-                                  they form the environmental layer of the model input.
-                                </p>
-                              </section>
+                                <section class="nn-copy-block">
+                                    <h4>What this section represents</h4>
+                                    <p>
+                                        The Context section captures the match environment around the players rather
+                                        than
+                                        the players themselves. It includes tournament structure, playing surface, event
+                                        strength, round context, and a compact set of competition-level signals that
+                                        help
+                                        the model understand where and under what conditions the match takes place.
+                                    </p>
+                                    <p>
+                                        These inputs provide situational framing for the prediction. They do not attempt
+                                        to describe player strength directly, but instead supply the surrounding context
+                                        that can influence how rating-based and probability-based signals should be
+                                        read.
+                                    </p>
+                                </section>
+
+                                <section class="nn-copy-block">
+                                    <h4>How to read these values</h4>
+                                    <p>
+                                        Some fields are categorical identifiers such as surface or tournament type,
+                                        while
+                                        others are normalized or transformed quantities that represent event strength,
+                                        surface profile, experience balance, or structural match conditions. Together,
+                                        they form the environmental layer of the model input.
+                                    </p>
+                                </section>
                             </div>
-                          
+
                             <div class="nn-group-copy" *ngIf="activeNnSection === 'w'">
-                              <section class="nn-copy-block">
-                                <h4>What this section represents</h4>
-                                <p>
-                                  WP Core contains the central probability-style signals that sit closest to the
-                                  model’s base match expectation. These values summarize different win-probability
-                                  perspectives and related rating-informed projections that give the model an
-                                  immediate sense of which side appears stronger before deeper feature interaction.
-                                </p>
-                                <p>
-                                  This is one of the most direct signal families in the NN view. While it is still
-                                  only one part of the full model input, it represents the core probabilistic layer
-                                  on top of which contextual and transformed signals are interpreted.
-                                </p>
-                              </section>
-                          
-                              <section class="nn-copy-block">
-                                <h4>How to read these values</h4>
-                                <p>
-                                  Most values in this section are probability-like inputs derived from structured
-                                  pre-model calculations. They should be understood as calibrated directional signals,
-                                  not as standalone final predictions. The production probability is generated only
-                                  after these values are combined with the wider feature set.
-                                </p>
-                              </section>
+                                <section class="nn-copy-block">
+                                    <h4>What this section represents</h4>
+                                    <p>
+                                        WP Core contains the central probability-style signals that sit closest to the
+                                        model’s base match expectation. These values summarize different win-probability
+                                        perspectives and related rating-informed projections that give the model an
+                                        immediate sense of which side appears stronger before deeper feature
+                                        interaction.
+                                    </p>
+                                    <p>
+                                        This is one of the most direct signal families in the NN view. While it is still
+                                        only one part of the full model input, it represents the core probabilistic
+                                        layer
+                                        on top of which contextual and transformed signals are interpreted.
+                                    </p>
+                                </section>
+
+                                <section class="nn-copy-block">
+                                    <h4>How to read these values</h4>
+                                    <p>
+                                        Most values in this section are probability-like inputs derived from structured
+                                        pre-model calculations. They should be understood as calibrated directional
+                                        signals,
+                                        not as standalone final predictions. The production probability is generated
+                                        only
+                                        after these values are combined with the wider feature set.
+                                    </p>
+                                </section>
                             </div>
-                          
+
                             <div class="nn-group-copy" *ngIf="activeNnSection === 'r'">
-                              <section class="nn-copy-block">
-                                <h4>What this section represents</h4>
-                                <p>
-                                  Raw TrueSkill contains the direct strength estimates and uncertainty measures used
-                                  as rating-based inputs for both players. These values describe underlying player
-                                  quality from the rating system’s perspective before normalization or additional
-                                  transformations are applied.
-                                </p>
-                                <p>
-                                  In practical terms, this section reflects how the model sees player strength and
-                                  confidence at the rating layer. It provides one of the main structural foundations
-                                  for the downstream comparison features used elsewhere in the tab.
-                                </p>
-                              </section>
-                          
-                              <section class="nn-copy-block">
-                                <h4>How to read these values</h4>
-                                <p>
-                                  Mean values represent estimated player strength, while SD values represent the
-                                  remaining uncertainty around that estimate. Because the model consumes multiple
-                                  rating variants, these inputs are shown as a grouped family rather than as a
-                                  single score per player.
-                                </p>
-                              </section>
+                                <section class="nn-copy-block">
+                                    <h4>What this section represents</h4>
+                                    <p>
+                                        Raw TrueSkill contains the direct strength estimates and uncertainty measures
+                                        used
+                                        as rating-based inputs for both players. These values describe underlying player
+                                        quality from the rating system’s perspective before normalization or additional
+                                        transformations are applied.
+                                    </p>
+                                    <p>
+                                        In practical terms, this section reflects how the model sees player strength and
+                                        confidence at the rating layer. It provides one of the main structural
+                                        foundations
+                                        for the downstream comparison features used elsewhere in the tab.
+                                    </p>
+                                </section>
+
+                                <section class="nn-copy-block">
+                                    <h4>How to read these values</h4>
+                                    <p>
+                                        Mean values represent estimated player strength, while SD values represent the
+                                        remaining uncertainty around that estimate. Because the model consumes multiple
+                                        rating variants, these inputs are shown as a grouped family rather than as a
+                                        single score per player.
+                                    </p>
+                                </section>
                             </div>
-                          
+
                             <div class="nn-group-copy" *ngIf="activeNnSection === 'z'">
-                              <section class="nn-copy-block">
-                                <h4>What this section represents</h4>
-                                <p>
-                                  Normalized TrueSkill contains transformed rating-based features that make raw
-                                  signals easier for the model to compare across matches, players, and competitive
-                                  contexts. These values help stabilize scale differences and improve consistency
-                                  when the network processes the broader feature set.
-                                </p>
-                                <p>
-                                  This section is less about direct human interpretation and more about preparing
-                                  rating information in a model-friendly form. It acts as a bridge between raw
-                                  strength estimates and higher-level derived comparisons.
-                                </p>
-                              </section>
-                          
-                              <section class="nn-copy-block">
-                                <h4>How to read these values</h4>
-                                <p>
-                                  Values here are typically normalized or transformed versions of rating-based
-                                  comparisons. They are intended to improve comparability and numerical stability,
-                                  not to function as standalone headline metrics.
-                                </p>
-                              </section>
+                                <section class="nn-copy-block">
+                                    <h4>What this section represents</h4>
+                                    <p>
+                                        Normalized TrueSkill contains transformed rating-based features that make raw
+                                        signals easier for the model to compare across matches, players, and competitive
+                                        contexts. These values help stabilize scale differences and improve consistency
+                                        when the network processes the broader feature set.
+                                    </p>
+                                    <p>
+                                        This section is less about direct human interpretation and more about preparing
+                                        rating information in a model-friendly form. It acts as a bridge between raw
+                                        strength estimates and higher-level derived comparisons.
+                                    </p>
+                                </section>
+
+                                <section class="nn-copy-block">
+                                    <h4>How to read these values</h4>
+                                    <p>
+                                        Values here are typically normalized or transformed versions of rating-based
+                                        comparisons. They are intended to improve comparability and numerical stability,
+                                        not to function as standalone headline metrics.
+                                    </p>
+                                </section>
                             </div>
-                          
+
                             <div class="nn-group-copy" *ngIf="activeNnSection === 'd'">
-                              <section class="nn-copy-block">
-                                <h4>What this section represents</h4>
-                                <p>
-                                  Derived TrueSkill contains compact comparison features built from the broader
-                                  rating and probability foundation. These values capture higher-level relationships
-                                  such as precision-style or weighted comparative signals that can help the model
-                                  distinguish between superficially similar matches.
-                                </p>
-                                <p>
-                                  This is a smaller feature family, but it is useful because it compresses more
-                                  complex rating behaviour into a concise set of structured inputs that the model
-                                  can consume efficiently.
-                                </p>
-                              </section>
-                          
-                              <section class="nn-copy-block">
-                                <h4>How to read these values</h4>
-                                <p>
-                                  The features shown here are not raw measurements. They are engineered comparison
-                                  signals derived from upstream rating and probability components, designed to
-                                  express match-level separation in a more model-friendly way.
-                                </p>
-                              </section>
+                                <section class="nn-copy-block">
+                                    <h4>What this section represents</h4>
+                                    <p>
+                                        Derived TrueSkill contains compact comparison features built from the broader
+                                        rating and probability foundation. These values capture higher-level
+                                        relationships
+                                        such as precision-style or weighted comparative signals that can help the model
+                                        distinguish between superficially similar matches.
+                                    </p>
+                                    <p>
+                                        This is a smaller feature family, but it is useful because it compresses more
+                                        complex rating behaviour into a concise set of structured inputs that the model
+                                        can consume efficiently.
+                                    </p>
+                                </section>
+
+                                <section class="nn-copy-block">
+                                    <h4>How to read these values</h4>
+                                    <p>
+                                        The features shown here are not raw measurements. They are engineered comparison
+                                        signals derived from upstream rating and probability components, designed to
+                                        express match-level separation in a more model-friendly way.
+                                    </p>
+                                </section>
                             </div>
-                          
+
                             <div class="nn-group-copy" *ngIf="activeNnSection === 'h'">
-                              <section class="nn-copy-block">
-                                <h4>What this section represents</h4>
-                                <p>
-                                  The Head-to-Head section contains historical interaction signals between the two
-                                  players when that information is included by the promoted model version. These
-                                  values are treated as a secondary input family rather than as the primary source
-                                  of the final probability.
-                                </p>
-                                <p>
-                                  In the current production setup, head-to-head information is retained only where
-                                  it improves the final model profile. It acts as supporting evidence on top of the
-                                  broader contextual, probabilistic, and rating-based layers.
-                                </p>
-                              </section>
-                          
-                              <section class="nn-copy-block">
-                                <h4>How to read these values</h4>
-                                <p>
-                                  These inputs summarize prior interaction patterns in a compact way. They can add
-                                  useful context in some matchups, but they should be read as a complementary signal,
-                                  not as a substitute for the rest of the model structure.
-                                </p>
-                              </section>
+                                <section class="nn-copy-block">
+                                    <h4>What this section represents</h4>
+                                    <p>
+                                        The Head-to-Head section contains historical interaction signals between the two
+                                        players when that information is included by the promoted model version. These
+                                        values are treated as a secondary input family rather than as the primary source
+                                        of the final probability.
+                                    </p>
+                                    <p>
+                                        In the current production setup, head-to-head information is retained only where
+                                        it improves the final model profile. It acts as supporting evidence on top of
+                                        the
+                                        broader contextual, probabilistic, and rating-based layers.
+                                    </p>
+                                </section>
+
+                                <section class="nn-copy-block">
+                                    <h4>How to read these values</h4>
+                                    <p>
+                                        These inputs summarize prior interaction patterns in a compact way. They can add
+                                        useful context in some matchups, but they should be read as a complementary
+                                        signal,
+                                        not as a substitute for the rest of the model structure.
+                                    </p>
+                                </section>
                             </div>
-                          
+
                             <div class="table-wrap">
-                              <table class="stats-table nn-table">
-                                <thead>
-                                  <tr>
-                                    <th>Feature</th>
-                                    <th>Value</th>
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                  <tr *ngFor="let item of group.items">
-                                    <td class="nn-feature-cell">{{ item.label }}</td>
-                                    <td class="nn-value-cell">{{ item.displayValue }}</td>
-                                  </tr>
-                                </tbody>
-                              </table>
+                                <table class="stats-table nn-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Feature</th>
+                                            <th>Value</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr *ngFor="let item of group.items">
+                                            <td class="nn-feature-cell">{{ item.label }}</td>
+                                            <td class="nn-value-cell">{{ item.displayValue }}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
                             </div>
-                          </section>
+                        </section>
                     </div>
                 </ng-container>
 
