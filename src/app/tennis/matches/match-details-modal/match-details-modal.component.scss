@@ -805,20 +805,31 @@
   }
 
   .nn-feature-help {
-    margin-left: 0.4rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1rem;
+    height: 1rem;
+    margin-left: 0.38rem;
     padding: 0;
-    border: 0;
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    border-radius: 50%;
     background: transparent;
-    color: inherit;
-    opacity: 0.72;
+    color: rgba(255, 255, 255, 0.78);
     cursor: help;
-    font-size: 0.85rem;
+    font-size: 0.68rem;
+    font-weight: 700;
     line-height: 1;
     vertical-align: middle;
+    opacity: 0.85;
+    transition: opacity 120ms ease, border-color 120ms ease, transform 120ms ease;
   }
-
+  
   .nn-feature-help:hover,
   .nn-feature-help:focus {
     opacity: 1;
+    border-color: rgba(255, 255, 255, 0.5);
+    color: rgba(255, 255, 255, 0.95);
+    transform: translateY(-1px);
   }
 }
