@@ -667,31 +667,31 @@
     max-width: 980px;
     margin: 0 auto;
   }
-  
+
   .nn-subtabs {
     margin-bottom: 1rem;
   }
-  
+
   .nn-subtabs .bb-ts-control-row {
     justify-content: center;
   }
-  
+
   .nn-subtabs .bb-ts-buttons {
     justify-content: center;
     flex-wrap: wrap;
     width: 100%;
   }
-  
+
   .nn-subtabs .bb-pill {
     margin-bottom: 0.35rem;
   }
-  
-  .nn-overview-section > h3,
-  .nn-group-section > h3 {
+
+  .nn-overview-section>h3,
+  .nn-group-section>h3 {
     text-align: center;
     margin-bottom: 1rem;
   }
-  
+
   .nn-overview-meta {
     max-width: 720px;
     margin: 0 auto 1.5rem;
@@ -699,7 +699,7 @@
     grid-template-columns: repeat(2, minmax(240px, 1fr));
     gap: 0.45rem 1.25rem;
   }
-  
+
   .nn-meta-row {
     display: grid;
     grid-template-columns: 140px 1fr;
@@ -708,68 +708,68 @@
     padding: 0.3rem 0;
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   }
-  
+
   .nn-meta-label {
     font-size: 0.85rem;
     opacity: 0.72;
   }
-  
+
   .nn-meta-value {
     font-weight: 600;
   }
-  
+
   .nn-overview-copy,
   .nn-group-copy {
     max-width: 820px;
     margin: 1.25rem auto 1.25rem;
   }
-  
-  .nn-copy-block + .nn-copy-block {
+
+  .nn-copy-block+.nn-copy-block {
     margin-top: 1.25rem;
   }
-  
+
   .nn-copy-block h4 {
     text-align: center;
     margin: 0 0 0.65rem;
     font-size: 0.98rem;
     font-weight: 700;
   }
-  
+
   .nn-copy-block p {
     margin: 0.45rem 0 0;
     line-height: 1.6;
     opacity: 0.92;
   }
-  
+
   .nn-group-section .table-wrap {
     max-width: 720px;
     margin: 0 auto;
   }
-  
+
   .nn-table {
     margin: 0 auto;
   }
-  
+
   .nn-table th {
     text-align: center;
   }
-  
+
   .nn-feature-cell {
     text-align: left;
     font-weight: 500;
   }
-  
+
   .nn-value-cell {
     text-align: right;
     white-space: nowrap;
     font-variant-numeric: tabular-nums;
   }
-  
+
   @media (max-width: 768px) {
     .nn-overview-meta {
       grid-template-columns: 1fr;
     }
-  
+
     .nn-meta-row {
       grid-template-columns: 130px 1fr;
     }
@@ -783,15 +783,42 @@
     gap: 1.5rem;
     align-items: start;
   }
-  
+
   .nn-table-grid .table-wrap {
     max-width: none;
     margin: 0;
   }
-  
+
   @media (max-width: 900px) {
     .nn-table-grid {
       grid-template-columns: 1fr;
     }
+  }
+
+  .nn-feature-cell {
+    text-align: left;
+    font-weight: 500;
+  }
+
+  .nn-feature-label {
+    vertical-align: middle;
+  }
+
+  .nn-feature-help {
+    margin-left: 0.4rem;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    opacity: 0.72;
+    cursor: help;
+    font-size: 0.85rem;
+    line-height: 1;
+    vertical-align: middle;
+  }
+
+  .nn-feature-help:hover,
+  .nn-feature-help:focus {
+    opacity: 1;
   }
 }

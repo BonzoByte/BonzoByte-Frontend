@@ -29,6 +29,7 @@ import { Subscription } from 'rxjs';
 import { AuthService } from '@app/core/services/auth.service';
 import { BbModalShellComponent } from "@app/shared/ui/bb-modal-shell.component/bb-modal-shell.component";
 import { NN_FEATURE_GROUPS, NnFeatureGroupVm, NnFeatureItemVm, NnTabVm } from './match-details-vm';
+import { NN_FEATURE_HELP, NnFeatureHelpEntry } from 'src/app/localization/nn/match-details-nn-help';
 
 // =================================================================================================
 // TYPES (UI tabs, selectors, DTO-ish rows)
@@ -3573,4 +3574,26 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
             right: group.items.slice(midpoint),
         };
     }
+
+    // =================================================================================================
+    // Localization
+    // =================================================================================================
+    public readonly nnFeatureHelp = NN_FEATURE_HELP;
+
+    public getNnFeatureHelp(featureName: string | null | undefined): NnFeatureHelpEntry | null {
+        if (!featureName) {
+            return null;
+        }
+    
+        return this.nnFeatureHelp[featureName] ?? null;
+    }
+
+    public hasNnFeatureHelp(featureName: string | null | undefined): boolean {
+        return !!this.getNnFeatureHelp(featureName);
+    }
+
+    public getNnFeatureHelpText(featureName: string | null | undefined): string {
+        return this.getNnFeatureHelp(featureName)?.shortDescription ?? '';
+    }
+    
 }
