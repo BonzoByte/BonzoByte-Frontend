@@ -1096,6 +1096,7 @@
             NN TAB
             ========================================================================================= -->
             <section *ngIf="activeTab === 'nn'" class="bb-tab-panel">
+                <ng-container *ngTemplateOutlet="playersHeader; context: { v: v }"></ng-container>
                 <ng-container *ngIf="vm.nn as nn; else nnUnavailable">
                     <div class="nn-shell">
                         <div class="bb-ts-controls nn-subtabs">
