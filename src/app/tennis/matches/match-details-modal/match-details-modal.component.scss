@@ -777,4 +777,25 @@
     max-width: 820px;
     margin: 0 auto 1.25rem;
   }
+
+  .nn-group-section .table-wrap {
+    max-width: 720px;
+    margin: 0 auto;
+  }
+  
+  .nn-table {
+    margin: 0 auto;
+  }
+  
+  .nn-table th {
+    text-align: center;
+  }
+  
+  .nn-feature-cell {
+    text-align: left;
+  }
+  
+  .nn-value-cell {
+    text-align: center;
+  }
 }
