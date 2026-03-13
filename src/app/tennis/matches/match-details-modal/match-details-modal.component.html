@@ -1,8 +1,8 @@
 ﻿<!-- MATCH DETAILS MODAL (Shell version) -->
-<app-bb-modal-shell *ngIf="isOpen" title="" modalClass="bb-modal--match-details" (closed)="close()">
+<app-bb-modal-shell *ngIf="isOpen" title="Match Details" modalClass="bb-modal--match-details" (closed)="close()">
     <!-- =================================================================================================
        REUSABLE TEMPLATES
-  ================================================================================================== -->
+    ================================================================================================== -->
 
     <!-- Players header (2-column card) used on most tabs -->
     <ng-template #playersHeader let-v="v">
@@ -295,7 +295,7 @@
        HEADER LINE (subtitle area in shell)
        - We'll render the tournament meta line at the top of the content.
        - Later we can move this into shell "subtitle" input if we want.
-  ================================================================================================== -->
+    ================================================================================================== -->
 
     <div class="bb-header-line" *ngIf="vm as v">
         <span class="bb-pill bb-pill--title">
@@ -329,17 +329,12 @@
   ================================================================================================== -->
 
     <div class="bb-tabs">
-        <button class="bb-tab" [class.active]="activeTab==='overview'"
-            (click)="onTabClick('overview')">Overview</button>
-        <button class="bb-tab" [class.active]="activeTab==='tsBreakdown'" (click)="onTabClick('tsBreakdown')">TS
-            Breakdown</button>
-        <button class="bb-tab" [class.active]="activeTab==='wpBreakdown'" (click)="onTabClick('wpBreakdown')">WP
-            Breakdown</button>
-        <button class="bb-tab" [class.active]="activeTab==='performance'"
-            (click)="setTab('performance')">Performance</button>
+        <button class="bb-tab" [class.active]="activeTab==='overview'" (click)="onTabClick('overview')">Overview</button>
+        <button class="bb-tab" [class.active]="activeTab==='tsBreakdown'" (click)="onTabClick('tsBreakdown')">TS Breakdown</button>
+        <button class="bb-tab" [class.active]="activeTab==='wpBreakdown'" (click)="onTabClick('wpBreakdown')">WP Breakdown</button>
+        <button class="bb-tab" [class.active]="activeTab==='performance'" (click)="setTab('performance')">Performance</button>
         <button class="bb-tab" [class.active]="activeTab==='form'" (click)="setTab('form')">Form</button>
-        <button class="bb-tab" [class.active]="activeTab==='roleStats'" (click)="setTab('roleStats')">Role
-            Stats</button>
+        <button class="bb-tab" [class.active]="activeTab==='roleStats'" (click)="setTab('roleStats')">Role Stats</button>
         <button class="bb-tab" [class.active]="activeTab==='odds'" (click)="setTab('odds')">Odds</button>
         <button class="bb-tab" [class.active]="activeTab==='h2h'" (click)="setTab('h2h')">H2H</button>
         <button class="bb-tab" [class.active]="activeTab==='nn'" (click)="setTab('nn')">NN</button>
@@ -347,7 +342,7 @@
 
     <!-- =================================================================================================
        BODY (loading / error / content)
-  ================================================================================================== -->
+    ================================================================================================== -->
 
     <div class="bb-body">
         <div class="bb-loading" *ngIf="loading">Loading…</div>
@@ -527,7 +522,7 @@
 
             <!-- ========================================================================================
              WP BREAKDOWN TAB (WP step chart)
-        ========================================================================================= -->
+            ========================================================================================= -->
             <section *ngIf="activeTab==='wpBreakdown'" class="bb-panel">
                 <ng-container *ngTemplateOutlet="playersHeader; context: { v: v }"></ng-container>
                 <ng-container *ngTemplateOutlet="tsControls"></ng-container>
@@ -611,8 +606,8 @@
             </section>
 
             <!-- ========================================================================================
-     PERFORMANCE TAB
-========================================================================================= -->
+            PERFORMANCE TAB
+            ========================================================================================= -->
             <section *ngIf="activeTab === 'performance'" class="bb-panel">
                 <ng-container *ngTemplateOutlet="playersHeader; context: { v: v }"></ng-container>
 
@@ -675,8 +670,8 @@
             </section>
 
             <!-- ========================================================================================
-     FORM TAB
-========================================================================================= -->
+            FORM TAB
+            ========================================================================================= -->
             <section *ngIf="activeTab === 'form'" class="bb-panel">
                 <ng-container *ngTemplateOutlet="playersHeader; context: { v: v }"></ng-container>
 
@@ -741,8 +736,8 @@
             </section>
 
             <!-- ========================================================================================
-     ROLE STATS TAB
-========================================================================================= -->
+            ROLE STATS TAB
+            ========================================================================================= -->
             <section *ngIf="activeTab === 'roleStats'" class="bb-panel">
                 <ng-container *ngTemplateOutlet="playersHeader; context: { v: v }"></ng-container>
 
@@ -1102,9 +1097,7 @@
             ========================================================================================= -->
             <section *ngIf="activeTab === 'nn'" class="bb-tab-panel">
                 <ng-container *ngIf="vm.nn as nn; else nnUnavailable">
-
                     <div class="nn-shell">
-
                         <div class="bb-ts-controls nn-subtabs">
                             <div class="bb-ts-control-row">
                                 <div class="bb-ts-buttons">
