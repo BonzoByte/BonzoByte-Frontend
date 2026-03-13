@@ -720,4 +720,25 @@
       grid-template-columns: 1fr;
     }
   }
+
+  .nn-overview-copy {
+    max-width: 820px;
+    margin: 1.5rem auto 0;
+  }
+
+  .nn-copy-block+.nn-copy-block {
+    margin-top: 1.25rem;
+  }
+
+  .nn-copy-block h4 {
+    margin: 0 0 0.45rem;
+    font-size: 0.98rem;
+    font-weight: 700;
+  }
+
+  .nn-copy-block p {
+    margin: 0.45rem 0 0;
+    line-height: 1.6;
+    opacity: 0.92;
+  }
 }

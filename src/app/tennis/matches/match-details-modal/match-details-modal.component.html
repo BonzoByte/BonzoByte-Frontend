@@ -1118,34 +1118,77 @@
 
                         <section *ngIf="activeNnSection === 'overview'" class="bb-section nn-overview-section">
                             <h3>NN Overview</h3>
-
+                          
                             <div class="nn-overview-grid">
-                                <div class="nn-overview-item">
-                                    <div class="nn-overview-label">Model</div>
-                                    <div class="nn-overview-value">{{ nn.modelFamily }}</div>
-                                </div>
-
-                                <div class="nn-overview-item">
-                                    <div class="nn-overview-label">Version</div>
-                                    <div class="nn-overview-value">{{ nn.version }}</div>
-                                </div>
-
-                                <div class="nn-overview-item">
-                                    <div class="nn-overview-label">H2H Included</div>
-                                    <div class="nn-overview-value">{{ nn.includeH2h ? 'Yes' : 'No' }}</div>
-                                </div>
-
-                                <div class="nn-overview-item">
-                                    <div class="nn-overview-label">Groups</div>
-                                    <div class="nn-overview-value">{{ nn.groupCount }}</div>
-                                </div>
-
-                                <div class="nn-overview-item">
-                                    <div class="nn-overview-label">Features</div>
-                                    <div class="nn-overview-value">{{ nn.featureCount }}</div>
-                                </div>
+                              <div class="nn-overview-item">
+                                <div class="nn-overview-label">Model</div>
+                                <div class="nn-overview-value">{{ nn.modelFamily }}</div>
+                              </div>
+                          
+                              <div class="nn-overview-item">
+                                <div class="nn-overview-label">Version</div>
+                                <div class="nn-overview-value">{{ nn.version }}</div>
+                              </div>
+                          
+                              <div class="nn-overview-item">
+                                <div class="nn-overview-label">H2H Included</div>
+                                <div class="nn-overview-value">{{ nn.includeH2h ? 'Yes' : 'No' }}</div>
+                              </div>
+                          
+                              <div class="nn-overview-item">
+                                <div class="nn-overview-label">Groups</div>
+                                <div class="nn-overview-value">{{ nn.groupCount }}</div>
+                              </div>
+                          
+                              <div class="nn-overview-item">
+                                <div class="nn-overview-label">Features</div>
+                                <div class="nn-overview-value">{{ nn.featureCount }}</div>
+                              </div>
                             </div>
-                        </section>
+                          
+                            <div class="nn-overview-copy">
+                              <section class="nn-copy-block">
+                                <h4>What this model view shows</h4>
+                                <p>
+                                  This tab reveals the structured feature groups behind the neural-network-based
+                                  match probability shown in the modal. It is designed as a transparency layer,
+                                  exposing the main input families that contribute to the final prediction instead
+                                  of presenting the result as a black box.
+                                </p>
+                                <p>
+                                  Rather than relying on a single heuristic or a bookmaker-style shortcut, the
+                                  displayed probability comes from a curated modelling pipeline built around
+                                  explicit feature selection, grouped signals, and controlled promotion into the
+                                  production prediction field.
+                                </p>
+                              </section>
+                          
+                              <section class="nn-copy-block">
+                                <h4>How to read this tab</h4>
+                                <p>
+                                  Each sub-section represents one feature family used by the model. Some groups
+                                  describe the tournament and match context, others reflect core win-probability
+                                  signals, rating-based strength estimates, normalized transformations, derived
+                                  precision-style signals, and optional head-to-head inputs.
+                                </p>
+                                <p>
+                                  The purpose of this tab is interpretability. It helps advanced users understand
+                                  that the final probability is generated from a structured analytical system, not
+                                  from a single opaque score.
+                                </p>
+                              </section>
+                          
+                              <section class="nn-copy-block">
+                                <h4>Model notes</h4>
+                                <p>
+                                  The current production setup follows a trusted feature policy, treats ATP and WTA
+                                  as separate modelling domains, and retains head-to-head information only when it
+                                  improves the final model profile. The feature groups shown here are a compact view
+                                  of the promoted model inputs behind the stored match probability.
+                                </p>
+                              </section>
+                            </div>
+                          </section>
 
                         <section *ngIf="activeNnSection !== 'overview' && activeNnGroup as group"
                             class="bb-section nn-group-section">
