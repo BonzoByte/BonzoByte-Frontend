@@ -1101,54 +1101,74 @@
             NN TAB
             ========================================================================================= -->
             <section *ngIf="activeTab === 'nn'" class="bb-tab-panel">
-                <ng-container *ngTemplateOutlet="playersHeader; context: { v: v }"></ng-container>
                 <ng-container *ngIf="vm.nn as nn; else nnUnavailable">
 
-                    <section class="bb-section">
-                        <h3>NN Overview</h3>
+                    <div class="nn-shell">
 
-                        <div class="bb-kv-grid">
-                            <div><strong>Model</strong></div>
-                            <div>{{ nn.modelFamily }}</div>
-
-                            <div><strong>Version</strong></div>
-                            <div>{{ nn.version }}</div>
-
-                            <div><strong>H2H Included</strong></div>
-                            <div>{{ nn.includeH2h ? 'Yes' : 'No' }}</div>
-
-                            <div><strong>Groups</strong></div>
-                            <div>{{ nn.groupCount }}</div>
-
-                            <div><strong>Features</strong></div>
-                            <div>{{ nn.featureCount }}</div>
+                        <div class="bb-ts-controls nn-subtabs">
+                            <div class="bb-ts-control-row">
+                                <div class="bb-ts-buttons">
+                                    <button *ngFor="let tab of nnSectionTabs" type="button" class="bb-pill"
+                                        [class.active]="isActiveNnSection(tab.id)" (click)="setActiveNnSection(tab.id)">
+                                        {{ tab.title }}
+                                    </button>
+                                </div>
+                            </div>
                         </div>
-                    </section>
 
-                    <section *ngFor="let group of nn.groups" class="bb-section">
-                        <h3>{{ group.title }}</h3>
+                        <section *ngIf="activeNnSection === 'overview'" class="bb-section nn-overview-section">
+                            <h3>NN Overview</h3>
 
-                        <div class="table-wrap">
-                            <table class="stats-table">
-                                <thead>
-                                    <tr>
-                                        <th>Feature</th>
-                                        <th>Value</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr *ngFor="let item of group.items">
-                                        <td>
-                                            <div class="nn-feature-name">{{ item.label }}</div>
-                                            <div class="nn-feature-key">{{ item.featureName }}</div>
-                                        </td>
-                                        <td>{{ item.displayValue }}</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </section>
+                            <div class="nn-overview-grid">
+                                <div class="nn-overview-item">
+                                    <div class="nn-overview-label">Model</div>
+                                    <div class="nn-overview-value">{{ nn.modelFamily }}</div>
+                                </div>
 
+                                <div class="nn-overview-item">
+                                    <div class="nn-overview-label">Version</div>
+                                    <div class="nn-overview-value">{{ nn.version }}</div>
+                                </div>
+
+                                <div class="nn-overview-item">
+                                    <div class="nn-overview-label">H2H Included</div>
+                                    <div class="nn-overview-value">{{ nn.includeH2h ? 'Yes' : 'No' }}</div>
+                                </div>
+
+                                <div class="nn-overview-item">
+                                    <div class="nn-overview-label">Groups</div>
+                                    <div class="nn-overview-value">{{ nn.groupCount }}</div>
+                                </div>
+
+                                <div class="nn-overview-item">
+                                    <div class="nn-overview-label">Features</div>
+                                    <div class="nn-overview-value">{{ nn.featureCount }}</div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section *ngIf="activeNnSection !== 'overview' && activeNnGroup as group"
+                            class="bb-section nn-group-section">
+                            <h3>{{ group.title }}</h3>
+
+                            <div class="table-wrap">
+                                <table class="stats-table nn-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Feature</th>
+                                            <th>Value</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr *ngFor="let item of group.items">
+                                            <td class="nn-feature-cell">{{ item.label }}</td>
+                                            <td class="nn-value-cell">{{ item.displayValue }}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </section>
+                    </div>
                 </ng-container>
 
                 <ng-template #nnUnavailable>

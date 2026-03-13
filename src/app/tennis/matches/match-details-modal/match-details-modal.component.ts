@@ -879,6 +879,8 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
 
                 this.vm = this.buildVm(details);
 
+                this.activeNnSection = 'overview';
+
                 this.loading = false;
                 this.cdr.markForCheck();
             },
@@ -1112,83 +1114,113 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
     }
 
     // =================================================================================================
-    // NN
-    // =================================================================================================    
+    // NN TAB
+    // ================================================================================================= 
     private buildNnVm(nn?: MatchDetailsNeuralNetworkDTO | null): NnTabVm | null {
         if (!nn?.f) {
-          return null;
+            return null;
         }
-      
-        const groups: NnFeatureGroupVm[] = NN_FEATURE_GROUPS.map(groupDef => {
-          const rawGroup = nn.f?.[groupDef.id] as Record<string, unknown> | undefined;
-      
-          const items: NnFeatureItemVm[] = groupDef.definitions
-            .filter(def => rawGroup && Object.prototype.hasOwnProperty.call(rawGroup, def.key))
-            .map(def => {
-              const value = rawGroup?.[def.key];
-      
-              return {
-                minifiedKey: def.key,
-                featureName: def.featureName,
-                label: def.label,
-                value,
-                displayValue: this.formatNnFeatureValue(value),
-              };
-            });
-      
-          return {
-            id: groupDef.id,
-            title: groupDef.title,
-            items,
-            visible: items.length > 0,
-          };
-        }).filter(g => g.visible);
-      
-        const featureCount = groups.reduce((sum, group) => sum + group.items.length, 0);
-      
-        return {
-          version: String(nn.v ?? '—'),
-          modelFamily: nn.m ?? '—',
-          includeH2h: nn.h === true || nn.h === 1,
-          groupCount: groups.length,
-          featureCount,
-          groups,
-        };
-      }
 
-      private formatNnFeatureValue(value: unknown): string {
+        const groups: NnFeatureGroupVm[] = NN_FEATURE_GROUPS.map(groupDef => {
+            const rawGroup = nn.f?.[groupDef.id] as Record<string, unknown> | undefined;
+
+            const items: NnFeatureItemVm[] = groupDef.definitions
+                .filter(def => rawGroup && Object.prototype.hasOwnProperty.call(rawGroup, def.key))
+                .map(def => {
+                    const value = rawGroup?.[def.key];
+
+                    return {
+                        minifiedKey: def.key,
+                        featureName: def.featureName,
+                        label: def.label,
+                        value,
+                        displayValue: this.formatNnFeatureValue(value),
+                    };
+                });
+
+            return {
+                id: groupDef.id,
+                title: groupDef.title,
+                items,
+                visible: items.length > 0,
+            };
+        }).filter(g => g.visible);
+
+        const featureCount = groups.reduce((sum, group) => sum + group.items.length, 0);
+
+        return {
+            version: String(nn.v ?? '—'),
+            modelFamily: nn.m ?? '—',
+            includeH2h: nn.h === true || nn.h === 1,
+            groupCount: groups.length,
+            featureCount,
+            groups,
+        };
+    }
+
+    private formatNnFeatureValue(value: unknown): string {
         if (value === null || value === undefined) {
-          return '—';
+            return '—';
         }
-      
+
         if (typeof value === 'boolean') {
-          return value ? 'Yes' : 'No';
+            return value ? 'Yes' : 'No';
         }
-      
+
         if (typeof value === 'number') {
-          if (Number.isInteger(value)) {
-            return String(value);
-          }
-      
-          const abs = Math.abs(value);
-      
-          if (abs >= 100) {
-            return value.toFixed(2);
-          }
-      
-          if (abs >= 1) {
-            return value.toFixed(4);
-          }
-      
-          if (abs >= 0.01) {
-            return value.toFixed(6);
-          }
-      
-          return value.toFixed(8);
+            if (Number.isInteger(value)) {
+                return String(value);
+            }
+
+            const abs = Math.abs(value);
+
+            if (abs >= 100) {
+                return value.toFixed(2);
+            }
+
+            if (abs >= 1) {
+                return value.toFixed(4);
+            }
+
+            if (abs >= 0.01) {
+                return value.toFixed(6);
+            }
+
+            return value.toFixed(8);
         }
-      
+
         return String(value);
-      }
+    }
+
+    public activeNnSection: 'overview' | 'c' | 'w' | 'r' | 'z' | 'd' | 'h' = 'overview';
+
+    public setActiveNnSection(section: 'overview' | 'c' | 'w' | 'r' | 'z' | 'd' | 'h'): void {
+        this.activeNnSection = section;
+    }
+
+    public isActiveNnSection(section: 'overview' | 'c' | 'w' | 'r' | 'z' | 'd' | 'h'): boolean {
+        return this.activeNnSection === section;
+    }
+
+    public get nnSectionTabs(): { id: 'overview' | 'c' | 'w' | 'r' | 'z' | 'd' | 'h'; title: string }[] {
+        const groups = this.vm?.nn?.groups ?? [];
+
+        return [
+            { id: 'overview', title: 'Overview' },
+            ...groups.map(group => ({
+                id: group.id as 'c' | 'w' | 'r' | 'z' | 'd' | 'h',
+                title: group.title,
+            })),
+        ];
+    }
+
+    public get activeNnGroup(): NnFeatureGroupVm | null {
+        if (!this.vm?.nn || this.activeNnSection === 'overview') {
+            return null;
+        }
+
+        return this.vm.nn.groups.find(group => group.id === this.activeNnSection) ?? null;
+    }
 
     // =================================================================================================
     // AVATARS
