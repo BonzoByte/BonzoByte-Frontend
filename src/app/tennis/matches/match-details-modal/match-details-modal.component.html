@@ -1119,32 +1119,32 @@
                         <section *ngIf="activeNnSection === 'overview'" class="bb-section nn-overview-section">
                             <h3>NN Overview</h3>
                           
-                            <div class="nn-overview-grid">
-                              <div class="nn-overview-item">
-                                <div class="nn-overview-label">Model</div>
-                                <div class="nn-overview-value">{{ nn.modelFamily }}</div>
+                            <div class="nn-overview-meta">
+                                <div class="nn-meta-row">
+                                  <div class="nn-meta-label">Model</div>
+                                  <div class="nn-meta-value">{{ nn.modelFamily }}</div>
+                                </div>
+                              
+                                <div class="nn-meta-row">
+                                  <div class="nn-meta-label">Version</div>
+                                  <div class="nn-meta-value">{{ nn.version }}</div>
+                                </div>
+                              
+                                <div class="nn-meta-row">
+                                  <div class="nn-meta-label">H2H Included</div>
+                                  <div class="nn-meta-value">{{ nn.includeH2h ? 'Yes' : 'No' }}</div>
+                                </div>
+                              
+                                <div class="nn-meta-row">
+                                  <div class="nn-meta-label">Groups</div>
+                                  <div class="nn-meta-value">{{ nn.groupCount }}</div>
+                                </div>
+                              
+                                <div class="nn-meta-row">
+                                  <div class="nn-meta-label">Features</div>
+                                  <div class="nn-meta-value">{{ nn.featureCount }}</div>
+                                </div>
                               </div>
-                          
-                              <div class="nn-overview-item">
-                                <div class="nn-overview-label">Version</div>
-                                <div class="nn-overview-value">{{ nn.version }}</div>
-                              </div>
-                          
-                              <div class="nn-overview-item">
-                                <div class="nn-overview-label">H2H Included</div>
-                                <div class="nn-overview-value">{{ nn.includeH2h ? 'Yes' : 'No' }}</div>
-                              </div>
-                          
-                              <div class="nn-overview-item">
-                                <div class="nn-overview-label">Groups</div>
-                                <div class="nn-overview-value">{{ nn.groupCount }}</div>
-                              </div>
-                          
-                              <div class="nn-overview-item">
-                                <div class="nn-overview-label">Features</div>
-                                <div class="nn-overview-value">{{ nn.featureCount }}</div>
-                              </div>
-                            </div>
                           
                             <div class="nn-overview-copy">
                               <section class="nn-copy-block">

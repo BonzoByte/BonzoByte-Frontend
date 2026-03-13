@@ -667,78 +667,93 @@
     max-width: 980px;
     margin: 0 auto;
   }
-
+  
   .nn-subtabs {
-    margin-bottom: 1rem;
+    margin-bottom: 0.35rem;
   }
-
+  
+  .nn-subtabs .bb-ts-control-row {
+    justify-content: center;
+  }
+  
+  .nn-subtabs .bb-ts-buttons {
+    justify-content: center;
+    flex-wrap: wrap;
+    width: 100%;
+  }
+  
   .nn-overview-section,
   .nn-group-section {
     margin-top: 0.75rem;
   }
-
-  .nn-overview-grid {
+  
+  .nn-overview-meta {
+    max-width: 720px;
+    margin: 0 auto 1.5rem;
     display: grid;
-    grid-template-columns: repeat(2, minmax(220px, 1fr));
-    gap: 0.75rem 1rem;
-    align-items: stretch;
+    grid-template-columns: repeat(2, minmax(240px, 1fr));
+    gap: 0.45rem 1.25rem;
   }
-
-  .nn-overview-item {
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 14px;
-    padding: 0.75rem 0.9rem;
-    background: rgba(255, 255, 255, 0.03);
+  
+  .nn-meta-row {
+    display: grid;
+    grid-template-columns: 140px 1fr;
+    gap: 0.75rem;
+    align-items: baseline;
+    padding: 0.3rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   }
-
-  .nn-overview-label {
-    font-size: 0.78rem;
-    opacity: 0.75;
-    margin-bottom: 0.2rem;
+  
+  .nn-meta-label {
+    font-size: 0.85rem;
+    opacity: 0.72;
   }
-
-  .nn-overview-value {
-    font-size: 1rem;
+  
+  .nn-meta-value {
     font-weight: 600;
   }
-
-  .nn-table th,
-  .nn-table td {
-    vertical-align: middle;
-  }
-
-  .nn-feature-cell {
-    font-weight: 500;
-  }
-
-  .nn-value-cell {
-    white-space: nowrap;
-  }
-
-  @media (max-width: 768px) {
-    .nn-overview-grid {
-      grid-template-columns: 1fr;
-    }
-  }
-
+  
   .nn-overview-copy {
     max-width: 820px;
-    margin: 1.5rem auto 0;
+    margin: 1.25rem auto 0;
   }
-
-  .nn-copy-block+.nn-copy-block {
+  
+  .nn-copy-block + .nn-copy-block {
     margin-top: 1.25rem;
   }
-
+  
   .nn-copy-block h4 {
     margin: 0 0 0.45rem;
     font-size: 0.98rem;
     font-weight: 700;
   }
-
+  
   .nn-copy-block p {
     margin: 0.45rem 0 0;
     line-height: 1.6;
     opacity: 0.92;
+  }
+  
+  .nn-table th,
+  .nn-table td {
+    vertical-align: middle;
+  }
+  
+  .nn-feature-cell {
+    font-weight: 500;
+  }
+  
+  .nn-value-cell {
+    white-space: nowrap;
+  }
+  
+  @media (max-width: 768px) {
+    .nn-overview-meta {
+      grid-template-columns: 1fr;
+    }
+  
+    .nn-meta-row {
+      grid-template-columns: 130px 1fr;
+    }
   }
 }
