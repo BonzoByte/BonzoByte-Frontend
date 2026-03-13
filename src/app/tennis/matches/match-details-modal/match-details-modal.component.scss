@@ -692,6 +692,21 @@
     margin-bottom: 1rem;
   }
 
+  .nn-overview-section>h3:after,
+  .nn-group-section>h3:after {
+    content: "";
+    margin: 6px auto 0;
+    width: min(420px, 92%);
+    height: 2px;
+    display: block;
+
+    background: linear-gradient(to right,
+            transparent,
+            rgba(255, 255, 255, 0.55),
+            transparent);
+    opacity: 0.9;
+}
+
   .nn-overview-meta {
     max-width: 720px;
     margin: 0 auto 1.5rem;

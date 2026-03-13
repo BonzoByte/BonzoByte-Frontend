@@ -76,6 +76,37 @@ export interface NnFeatureHelpEntry {
     },
   };
 
+  export const NN_WP_CORE_FEATURE_HELP: Record<string, NnFeatureHelpEntry> = {
+    WP: {
+      shortDescription: 'The baseline win-probability style signal used as one of the central directional inputs to the model.',
+    },
+    WPS: {
+      shortDescription: 'A surface-aware variant of the core win-probability signal, adjusted to reflect surface-specific context.',
+    },
+    WPPondered: {
+      shortDescription: 'A weighted version of the core win-probability signal that incorporates additional structured context from the upstream pipeline.',
+    },
+    WPM: {
+      shortDescription: 'A match-oriented probability signal variant used to give the model a direct view of player advantage at the match level.',
+    },
+    WPSM: {
+      shortDescription: 'A surface-sensitive match-level probability signal that combines base directional strength with surface context.',
+    },
+    WPGSM: {
+      shortDescription: 'A game/set-informed probability-style signal designed to reflect player advantage through a more granular competitive lens.',
+    },
+    WPMS: {
+      shortDescription: 'A probability-derived signal variant that combines match-level interpretation with additional structural context.',
+    },
+    WPSMS: {
+      shortDescription: 'A surface-aware extension of the broader match-structured probability family used by the model.',
+    },
+    WPGSMS: {
+      shortDescription: 'A richer probability-style signal that blends match, game/set, and surface-aware structure into a compact model input.',
+    },
+  };
+
   export const NN_FEATURE_HELP: Record<string, NnFeatureHelpEntry> = {
     ...NN_CONTEXT_FEATURE_HELP,
+    ...NN_WP_CORE_FEATURE_HELP,
   };
