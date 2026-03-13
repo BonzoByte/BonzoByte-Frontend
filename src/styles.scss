@@ -513,8 +513,7 @@ main {
 }
 
 .bb-loading-card {
-    background: rgba(20, 20, 20, 0.88);
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: transparent;
     border-radius: 18px;
     padding: 18px 20px;
 
@@ -523,7 +522,6 @@ main {
     align-items: center;
     gap: 8px;
 
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
     backdrop-filter: blur(6px);
 }
 
@@ -532,8 +530,8 @@ main {
     height: 42px;
     border-radius: 50%;
 
-    // border: 3px solid rgba(255, 255, 255, 0.25);
-    // border-top-color: rgba(255, 255, 255, 0.85);
+    border: 3px solid rgba(255, 255, 255, 0.25);
+    border-top-color: rgba(255, 255, 255, 0.85);
 
     animation: bb-spin 0.9s linear infinite;
 }
@@ -585,7 +583,7 @@ main {
 /* Match details modal modifier */
 .bb-modal.bb-modal--match-details {
     width: min(980px, calc(100vw - 24px));
-    max-height: min(90vh, 880px);
+    max-height: min(90vh, 860px);
 }
 
 /* Match details header line centering */
