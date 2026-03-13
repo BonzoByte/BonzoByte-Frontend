@@ -532,8 +532,8 @@ main {
     height: 42px;
     border-radius: 50%;
 
-    border: 3px solid rgba(255, 255, 255, 0.25);
-    border-top-color: rgba(255, 255, 255, 0.85);
+    // border: 3px solid rgba(255, 255, 255, 0.25);
+    // border-top-color: rgba(255, 255, 255, 0.85);
 
     animation: bb-spin 0.9s linear infinite;
 }
@@ -585,7 +585,7 @@ main {
 /* Match details modal modifier */
 .bb-modal.bb-modal--match-details {
     width: min(980px, calc(100vw - 24px));
-    max-height: min(90vh, 860px);
+    max-height: min(90vh, 880px);
 }
 
 /* Match details header line centering */
