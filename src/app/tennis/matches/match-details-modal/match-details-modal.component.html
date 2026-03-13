@@ -1379,7 +1379,7 @@
                                         <tbody>
                                             <tr *ngFor="let item of columns.left">
                                                 <td class="nn-feature-cell">
-                                                    <span class="nn-feature-label">{{ item.label }}</span>
+                                                    <span class="nn-feature-label">{{ item.label }} | {{ item.featureName }}</span>
                                                     <button *ngIf="hasNnFeatureHelp(item.featureName)" type="button"
                                                         class="nn-feature-help"
                                                         [attr.title]="getNnFeatureHelpText(item.featureName)"
@@ -1405,7 +1405,7 @@
                                             <tbody>
                                                 <tr *ngFor="let item of columns.left">
                                                     <td class="nn-feature-cell">
-                                                        <span class="nn-feature-label">{{ item.label }}</span>
+                                                        <span class="nn-feature-label">{{ item.label }} | {{ item.featureName }}</span>
                                                         <button *ngIf="hasNnFeatureHelp(item.featureName)" type="button"
                                                             class="nn-feature-help"
                                                             [attr.title]="getNnFeatureHelpText(item.featureName)"
@@ -1430,7 +1430,7 @@
                                             <tbody>
                                                 <tr *ngFor="let item of columns.right">
                                                     <td class="nn-feature-cell">
-                                                        <span class="nn-feature-label">{{ item.label }}</span>
+                                                        <span class="nn-feature-label">{{ item.label }} | {{ item.featureName }}</span>
                                                         <button *ngIf="hasNnFeatureHelp(item.featureName)" type="button"
                                                             class="nn-feature-help"
                                                             [attr.title]="getNnFeatureHelpText(item.featureName)"
