@@ -774,4 +774,24 @@
       grid-template-columns: 130px 1fr;
     }
   }
+
+  .nn-table-grid {
+    max-width: 980px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(320px, 1fr));
+    gap: 1.5rem;
+    align-items: start;
+  }
+  
+  .nn-table-grid .table-wrap {
+    max-width: none;
+    margin: 0;
+  }
+  
+  @media (max-width: 900px) {
+    .nn-table-grid {
+      grid-template-columns: 1fr;
+    }
+  }
 }

@@ -3531,4 +3531,46 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
             default: return val;
         }
     }
+
+    public shouldSplitNnGroup(group: NnFeatureGroupVm | null): boolean {
+        if (!group) {
+            return false;
+        }
+    
+        return group.id === 'c' || group.id === 'r';
+    }
+
+    public getNnGroupColumns(group: NnFeatureGroupVm | null): { left: NnFeatureItemVm[]; right: NnFeatureItemVm[] } {
+        if (!group?.items?.length) {
+            return { left: [], right: [] };
+        }
+    
+        if (!this.shouldSplitNnGroup(group)) {
+            return { left: group.items, right: [] };
+        }
+    
+        const midpoint = Math.ceil(group.items.length / 2);
+    
+        return {
+            left: group.items.slice(0, midpoint),
+            right: group.items.slice(midpoint),
+        };
+    }
+
+    public nnGroupColumns(group: NnFeatureGroupVm | null): { left: NnFeatureItemVm[]; right: NnFeatureItemVm[] } {
+        if (!group?.items?.length) {
+            return { left: [], right: [] };
+        }
+    
+        if (!this.shouldSplitNnGroup(group)) {
+            return { left: group.items, right: [] };
+        }
+    
+        const midpoint = Math.ceil(group.items.length / 2);
+    
+        return {
+            left: group.items.slice(0, midpoint),
+            right: group.items.slice(midpoint),
+        };
+    }
 }

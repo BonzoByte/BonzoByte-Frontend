@@ -1367,22 +1367,60 @@
                                 </section>
                             </div>
 
-                            <div class="table-wrap">
-                                <table class="stats-table nn-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Feature</th>
-                                            <th>Value</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr *ngFor="let item of group.items">
-                                            <td class="nn-feature-cell">{{ item.label }}</td>
-                                            <td class="nn-value-cell">{{ item.displayValue }}</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
+                            <ng-container *ngIf="nnGroupColumns(group) as columns">
+                                <div *ngIf="!shouldSplitNnGroup(group)" class="table-wrap">
+                                    <table class="stats-table nn-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Feature</th>
+                                                <th>Value</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr *ngFor="let item of columns.left">
+                                                <td class="nn-feature-cell">{{ item.label }}</td>
+                                                <td class="nn-value-cell">{{ item.displayValue }}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <div *ngIf="shouldSplitNnGroup(group)" class="nn-table-grid">
+                                    <div class="table-wrap">
+                                        <table class="stats-table nn-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Feature</th>
+                                                    <th>Value</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr *ngFor="let item of columns.left">
+                                                    <td class="nn-feature-cell">{{ item.label }}</td>
+                                                    <td class="nn-value-cell">{{ item.displayValue }}</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                    <div class="table-wrap" *ngIf="columns.right.length">
+                                        <table class="stats-table nn-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Feature</th>
+                                                    <th>Value</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr *ngFor="let item of columns.right">
+                                                    <td class="nn-feature-cell">{{ item.label }}</td>
+                                                    <td class="nn-value-cell">{{ item.displayValue }}</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </ng-container>
                         </section>
                     </div>
                 </ng-container>
@@ -1398,7 +1436,7 @@
      PLACEHOLDER (safety net)
      If a new tab is introduced but not implemented in template yet,
      this prevents accidental "empty page" confusion.
-========================================================================================= -->
+    ========================================================================================= -->
             <div *ngIf="
     activeTab !== 'overview' &&
     activeTab !== 'tsBreakdown' &&
