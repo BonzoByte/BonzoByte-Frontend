@@ -23,11 +23,12 @@ import { FormsModule } from '@angular/forms';
 import { StaticArchivesService } from '../../../core/services/static-archives.service';
 import { Observable, of } from 'rxjs';
 import { map, switchMap, catchError } from 'rxjs/operators';
-import { Match } from 'src/app/core/models/tennis.model';
+import { Match, MatchDetailsNeuralNetworkDTO } from 'src/app/core/models/tennis.model';
 import { ChangeDetectorRef } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { AuthService } from '@app/core/services/auth.service';
 import { BbModalShellComponent } from "@app/shared/ui/bb-modal-shell.component/bb-modal-shell.component";
+import { NN_FEATURE_GROUPS, NnFeatureGroupVm, NnFeatureItemVm, NnTabVm } from './match-details-vm';
 
 // =================================================================================================
 // TYPES (UI tabs, selectors, DTO-ish rows)
@@ -43,7 +44,8 @@ type Tab =
     | 'roleStats'
     | 'odds'
     | 'h2h'
-    | 'raw';
+    | 'raw'
+    | 'nn';
 
 type PerfUnit = 'MATCH' | 'SET' | 'GAME';
 type TimeScope = 'ALL' | 'YEAR' | 'MONTH' | 'WEEK';
@@ -451,6 +453,8 @@ interface Vm {
 
     betSide: 'p1' | 'p2' | null;
     pl?: number; // profit/loss for stake=1
+
+    nn: NnTabVm | null;
 }
 
 // =================================================================================================
@@ -1041,6 +1045,9 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
             p2.nnProb = 1 - p1.nnProb;
         }
 
+        // NN
+        const nn = this.buildNnVm(d?.n);
+
         // Odds: m012/m013
         const bestP1 = this.bestOddsP1Row;
         const bestP2 = this.bestOddsP2Row;
@@ -1076,6 +1083,7 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
             edgeP2,
             betSide,
             pl,
+            nn,
         };
     }
 
@@ -1102,6 +1110,85 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
             tsMean: this.numOrUndef(p?.trueSkillMean),
         };
     }
+
+    // =================================================================================================
+    // NN
+    // =================================================================================================    
+    private buildNnVm(nn?: MatchDetailsNeuralNetworkDTO | null): NnTabVm | null {
+        if (!nn?.f) {
+          return null;
+        }
+      
+        const groups: NnFeatureGroupVm[] = NN_FEATURE_GROUPS.map(groupDef => {
+          const rawGroup = nn.f?.[groupDef.id] as Record<string, unknown> | undefined;
+      
+          const items: NnFeatureItemVm[] = groupDef.definitions
+            .filter(def => rawGroup && Object.prototype.hasOwnProperty.call(rawGroup, def.key))
+            .map(def => {
+              const value = rawGroup?.[def.key];
+      
+              return {
+                minifiedKey: def.key,
+                featureName: def.featureName,
+                label: def.label,
+                value,
+                displayValue: this.formatNnFeatureValue(value),
+              };
+            });
+      
+          return {
+            id: groupDef.id,
+            title: groupDef.title,
+            items,
+            visible: items.length > 0,
+          };
+        }).filter(g => g.visible);
+      
+        const featureCount = groups.reduce((sum, group) => sum + group.items.length, 0);
+      
+        return {
+          version: String(nn.v ?? '—'),
+          modelFamily: nn.m ?? '—',
+          includeH2h: nn.h === true || nn.h === 1,
+          groupCount: groups.length,
+          featureCount,
+          groups,
+        };
+      }
+
+      private formatNnFeatureValue(value: unknown): string {
+        if (value === null || value === undefined) {
+          return '—';
+        }
+      
+        if (typeof value === 'boolean') {
+          return value ? 'Yes' : 'No';
+        }
+      
+        if (typeof value === 'number') {
+          if (Number.isInteger(value)) {
+            return String(value);
+          }
+      
+          const abs = Math.abs(value);
+      
+          if (abs >= 100) {
+            return value.toFixed(2);
+          }
+      
+          if (abs >= 1) {
+            return value.toFixed(4);
+          }
+      
+          if (abs >= 0.01) {
+            return value.toFixed(6);
+          }
+      
+          return value.toFixed(8);
+        }
+      
+        return String(value);
+      }
 
     // =================================================================================================
     // AVATARS

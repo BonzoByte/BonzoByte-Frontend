@@ -1,5 +1,5 @@
 ﻿<!-- MATCH DETAILS MODAL (Shell version) -->
-<app-bb-modal-shell *ngIf="isOpen" title="Match detailsss" modalClass="bb-modal--match-details" (closed)="close()">
+<app-bb-modal-shell *ngIf="isOpen" title="Match details" modalClass="bb-modal--match-details" (closed)="close()">
     <!-- =================================================================================================
        REUSABLE TEMPLATES
   ================================================================================================== -->
@@ -342,6 +342,7 @@
             Stats</button>
         <button class="bb-tab" [class.active]="activeTab==='odds'" (click)="setTab('odds')">Odds</button>
         <button class="bb-tab" [class.active]="activeTab==='h2h'" (click)="setTab('h2h')">H2H</button>
+        <button class="bb-tab" [class.active]="activeTab==='nn'" (click)="setTab('nn')">NN</button>
     </div>
 
     <!-- =================================================================================================
@@ -1095,6 +1096,67 @@
                     <div class="bb-placeholder">No valid odds in archive.</div>
                 </ng-template>
             </section>
+
+            <!-- ========================================================================================
+            NN TAB
+            ========================================================================================= --> 
+            <section *ngIf="activeTab === 'nn'" class="bb-tab-panel">
+                <ng-container *ngIf="vm.nn as nn; else nnUnavailable">
+              
+                  <section class="bb-section">
+                    <h3>NN Overview</h3>
+              
+                    <div class="bb-kv-grid">
+                      <div><strong>Model</strong></div>
+                      <div>{{ nn.modelFamily }}</div>
+              
+                      <div><strong>Version</strong></div>
+                      <div>{{ nn.version }}</div>
+              
+                      <div><strong>H2H Included</strong></div>
+                      <div>{{ nn.includeH2h ? 'Yes' : 'No' }}</div>
+              
+                      <div><strong>Groups</strong></div>
+                      <div>{{ nn.groupCount }}</div>
+              
+                      <div><strong>Features</strong></div>
+                      <div>{{ nn.featureCount }}</div>
+                    </div>
+                  </section>
+              
+                  <section *ngFor="let group of nn.groups" class="bb-section">
+                    <h3>{{ group.title }}</h3>
+              
+                    <div class="table-wrap">
+                      <table class="stats-table">
+                        <thead>
+                          <tr>
+                            <th>Feature</th>
+                            <th>Value</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr *ngFor="let item of group.items">
+                            <td>
+                              <div class="nn-feature-name">{{ item.label }}</div>
+                              <div class="nn-feature-key">{{ item.featureName }}</div>
+                            </td>
+                            <td>{{ item.displayValue }}</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </section>
+              
+                </ng-container>
+              
+                <ng-template #nnUnavailable>
+                  <div class="bb-alert">
+                    Neural network feature data is not available for this match.
+                  </div>
+                </ng-template>
+            </section>            
+            
             <!-- ========================================================================================
      PLACEHOLDER (safety net)
      If a new tab is introduced but not implemented in template yet,
@@ -1108,7 +1170,8 @@
     activeTab !== 'form' &&
     activeTab !== 'roleStats' &&
     activeTab !== 'odds' &&
-    activeTab !== 'h2h'
+    activeTab !== 'h2h'&&
+    activeTab !== 'nn'
   "></div>
 
         </ng-container>

@@ -970,3 +970,19 @@ export interface TournamentEventApiResponse {
 export interface TournamentEventDayApiResponse {
   tournaments: TournamentEvent[];
 }
+
+export interface MatchDetailsNeuralNetworkDTO {
+  v?: number | string;
+  m?: string;
+  h?: number | boolean;
+  f?: MatchDetailsNeuralNetworkFeatureGroupsDTO;
+}
+
+export interface MatchDetailsNeuralNetworkFeatureGroupsDTO {
+  c?: Record<string, unknown>;
+  w?: Record<string, unknown>;
+  r?: Record<string, unknown>;
+  z?: Record<string, unknown>;
+  d?: Record<string, unknown>;
+  h?: Record<string, unknown>;
+}
