@@ -263,10 +263,6 @@ export class StaticArchivesService {
   }
 
   getAnalyticsDashboard(): Observable<AnalyticsDashboard> {
-    if (this.mode === 'api') {
-      return this.http.get<AnalyticsDashboard>(`${this.apiUrl}/archives/analytics/dashboard`);
-    }
-
     return this.http
       .get(`${this.analyticsStaticBase}/analytics-dashboard.br`, { responseType: 'arraybuffer' as const })
       .pipe(
