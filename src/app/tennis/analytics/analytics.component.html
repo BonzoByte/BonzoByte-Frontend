@@ -57,104 +57,126 @@
 
     <section class="analytics-section">
         <h2>Match Landscape</h2>
-
+      
         <div class="analytics-inline-stats">
-            <div class="analytics-inline-stat">
-                <span class="label">Average offered bookies per match:</span>
-                <span>{{ a.matchLandscape.averageOfferedBookiesPerMatch }}</span>
-            </div>
+          <div class="analytics-inline-stat">
+            <span class="label">Average offered bookies per match:</span>
+            <span>{{ a.matchLandscape.averageOfferedBookiesPerMatch }}</span>
+          </div>
         </div>
-
+      
         <div class="analytics-chart-grid">
-            <div class="analytics-chart-card">
-                <h3>Matches by Surface</h3>
-
-                <div class="analytics-chart-canvas analytics-chart-canvas--medium">
-                    <canvas baseChart [data]="matchesBySurfaceChartData" [options]="barOptions" [type]="'bar'">
-                    </canvas>
-                </div>
+          <div class="analytics-chart-card">
+            <h3>Matches by Surface</h3>
+      
+            <div class="analytics-chart-canvas analytics-chart-canvas--medium">
+              <canvas
+                baseChart
+                [data]="matchesBySurfaceChartData"
+                [options]="barOptions"
+                [type]="'bar'">
+              </canvas>
             </div>
-
-            <div class="analytics-chart-card">
-                <h3>Matches by Year</h3>
-
-                <div class="analytics-chart-canvas analytics-chart-canvas--medium">
-                    <canvas baseChart [data]="matchesByYearChartData" [options]="lineOptions" [type]="'line'">
-                    </canvas>
-                </div>
+          </div>
+      
+          <div class="analytics-chart-card">
+            <h3>Matches by Year</h3>
+      
+            <div class="analytics-chart-canvas analytics-chart-canvas--medium">
+              <canvas
+                baseChart
+                [data]="matchesByYearChartData"
+                [options]="lineOptions"
+                [type]="'line'">
+              </canvas>
             </div>
-
-            <div class="analytics-chart-card">
-                <h3>Matches by Round</h3>
-                <div class="analytics-data-list">
-                    <div class="analytics-data-row"
-                        *ngFor="let item of a.matchLandscape.matchesByRound; trackBy: trackByLabel">
-                        <span>{{ item.label }}</span>
-                        <strong>{{ item.value | number }}</strong>
-                    </div>
-                </div>
+          </div>
+      
+          <div class="analytics-chart-card">
+            <h3>Matches by Round</h3>
+      
+            <div class="analytics-chart-canvas analytics-chart-canvas--medium">
+              <canvas
+                baseChart
+                [data]="matchesByRoundChartData"
+                [options]="barOptions"
+                [type]="'bar'">
+              </canvas>
             </div>
-
-            <div class="analytics-chart-card">
-                <h3>Match Length Split</h3>
-                <div class="analytics-data-list">
-                    <div class="analytics-data-row"
-                        *ngFor="let item of a.matchLandscape.matchLengthSplit; trackBy: trackByLabel">
-                        <span>{{ item.label }}</span>
-                        <strong>{{ item.value | number }}</strong>
-                    </div>
-                </div>
+          </div>
+      
+          <div class="analytics-chart-card">
+            <h3>Match Length Split</h3>
+      
+            <div class="analytics-chart-canvas">
+              <canvas
+                baseChart
+                [data]="matchLengthSplitChartData"
+                [options]="doughnutOptions"
+                [type]="'doughnut'">
+              </canvas>
             </div>
+          </div>
         </div>
-    </section>
+      </section>
 
-    <section class="analytics-section">
+      <section class="analytics-section">
         <h2>Tournament Insights</h2>
-
+      
         <div class="analytics-chart-grid">
-            <div class="analytics-chart-card">
-                <h3>Tournaments by Level</h3>
-                <div class="analytics-data-list">
-                    <div class="analytics-data-row" *ngFor="let item of a.tournamentInsights.tournamentsByLevel">
-                        <span>{{ item.label }}</span>
-                        <strong>{{ item.value | number }}</strong>
-                    </div>
-                </div>
+          <div class="analytics-chart-card">
+            <h3>Tournaments by Level</h3>
+      
+            <div class="analytics-chart-canvas analytics-chart-canvas--medium">
+              <canvas
+                baseChart
+                [data]="tournamentsByLevelChartData"
+                [options]="barOptions"
+                [type]="'bar'">
+              </canvas>
             </div>
-
-            <div class="analytics-chart-card">
-                <h3>Tournaments by Surface</h3>
-                <div class="analytics-data-list">
-                    <div class="analytics-data-row" *ngFor="let item of a.tournamentInsights.tournamentsBySurface">
-                        <span>{{ item.label }}</span>
-                        <strong>{{ item.value | number }}</strong>
-                    </div>
-                </div>
+          </div>
+      
+          <div class="analytics-chart-card">
+            <h3>Tournaments by Surface</h3>
+      
+            <div class="analytics-chart-canvas analytics-chart-canvas--medium">
+              <canvas
+                baseChart
+                [data]="tournamentsBySurfaceChartData"
+                [options]="barOptions"
+                [type]="'bar'">
+              </canvas>
             </div>
-
-            <div class="analytics-chart-card">
-                <h3>Top Countries</h3>
-                <div class="analytics-data-list">
-                    <div class="analytics-data-row"
-                        *ngFor="let item of a.tournamentInsights.topCountriesByTournamentCount">
-                        <span>{{ item.label }}</span>
-                        <strong>{{ item.value | number }}</strong>
-                    </div>
-                </div>
+          </div>
+      
+          <div class="analytics-chart-card">
+            <h3>Top Countries</h3>
+      
+            <div class="analytics-chart-canvas analytics-chart-canvas--large">
+              <canvas
+                baseChart
+                [data]="topCountriesChartData"
+                [options]="horizontalBarOptions"
+                [type]="'bar'">
+              </canvas>
             </div>
-
-            <div class="analytics-chart-card">
-                <h3>Average StrengthMeanTS by Level</h3>
-                <div class="analytics-data-list">
-                    <div class="analytics-data-row"
-                        *ngFor="let item of a.tournamentInsights.averageStrengthMeanTsByLevel">
-                        <span>{{ item.label }}</span>
-                        <strong>{{ item.value }}</strong>
-                    </div>
-                </div>
+          </div>
+      
+          <div class="analytics-chart-card">
+            <h3>Average StrengthMeanTS by Level</h3>
+      
+            <div class="analytics-chart-canvas analytics-chart-canvas--medium">
+              <canvas
+                baseChart
+                [data]="averageStrengthMeanTsByLevelChartData"
+                [options]="barOptions"
+                [type]="'bar'">
+              </canvas>
             </div>
+          </div>
         </div>
-    </section>
+      </section>
 
     <section class="analytics-section">
         <h2>Market Behaviour</h2>
