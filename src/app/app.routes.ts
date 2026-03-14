@@ -1,6 +1,4 @@
 import { Routes } from '@angular/router';
-import { AnalyticsComponent } from './tennis/analytics/analytics.component';
-
 export const routes: Routes = [
     {
         path: '',
@@ -39,7 +37,8 @@ export const routes: Routes = [
     },
     {
         path: 'analytics',
-        component: AnalyticsComponent
-      },    
+        loadComponent: () =>
+            import('./tennis/analytics/analytics.component').then(m => m.AnalyticsComponent),
+    },
     { path: '**', redirectTo: '' }
 ];
