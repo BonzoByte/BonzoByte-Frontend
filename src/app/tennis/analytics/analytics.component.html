@@ -1,0 +1,149 @@
+<div class="analytics-page" *ngIf="!isLoading && analytics as a">
+    <div class="analytics-header">
+      <div>
+        <h1>Analytics</h1>
+        <p class="analytics-subtitle">
+          A curated overview of match, tournament and market patterns across the BonzoByte dataset.
+        </p>
+      </div>
+  
+      <div class="analytics-meta" *ngIf="updatedAt">
+        Updated: {{ updatedAt | date:'dd.MM.yyyy HH:mm':'UTC' }} UTC
+      </div>
+    </div>
+  
+    <section class="analytics-section">
+      <h2>Overview</h2>
+  
+      <div class="analytics-cards">
+        <div class="analytics-card" *ngFor="let card of a.overview.cards">
+          <div class="analytics-card-label">{{ card.label }}</div>
+          <div class="analytics-card-value">{{ card.value }}</div>
+        </div>
+      </div>
+  
+      <div class="analytics-inline-stats">
+        <div class="analytics-inline-stat">
+          <span class="label">From:</span>
+          <span>{{ a.overview.dateRange.from }}</span>
+        </div>
+        <div class="analytics-inline-stat">
+          <span class="label">To:</span>
+          <span>{{ a.overview.dateRange.to }}</span>
+        </div>
+      </div>
+  
+      <!-- chart placeholders -->
+      <div class="analytics-chart-grid">
+        <div class="analytics-chart-card">
+          <h3>ATP vs WTA</h3>
+          <pre>{{ a.overview.tournamentTypeSplit | json }}</pre>
+        </div>
+  
+        <div class="analytics-chart-card">
+          <h3>Finished vs Unfinished</h3>
+          <pre>{{ a.overview.matchStatusSplit | json }}</pre>
+        </div>
+      </div>
+    </section>
+  
+    <section class="analytics-section">
+      <h2>Match Landscape</h2>
+  
+      <div class="analytics-inline-stats">
+        <div class="analytics-inline-stat">
+          <span class="label">Average offered bookies per match:</span>
+          <span>{{ a.matchLandscape.averageOfferedBookiesPerMatch }}</span>
+        </div>
+      </div>
+  
+      <div class="analytics-chart-grid">
+        <div class="analytics-chart-card">
+          <h3>Matches by Surface</h3>
+          <pre>{{ a.matchLandscape.matchesBySurface | json }}</pre>
+        </div>
+  
+        <div class="analytics-chart-card">
+          <h3>Matches by Year</h3>
+          <pre>{{ a.matchLandscape.matchesByYear | json }}</pre>
+        </div>
+  
+        <div class="analytics-chart-card">
+          <h3>Matches by Round</h3>
+          <pre>{{ a.matchLandscape.matchesByRound | json }}</pre>
+        </div>
+  
+        <div class="analytics-chart-card">
+          <h3>Match Length Split</h3>
+          <pre>{{ a.matchLandscape.matchLengthSplit | json }}</pre>
+        </div>
+      </div>
+    </section>
+  
+    <section class="analytics-section">
+      <h2>Tournament Insights</h2>
+  
+      <div class="analytics-chart-grid">
+        <div class="analytics-chart-card">
+          <h3>Tournaments by Level</h3>
+          <pre>{{ a.tournamentInsights.tournamentsByLevel | json }}</pre>
+        </div>
+  
+        <div class="analytics-chart-card">
+          <h3>Tournaments by Surface</h3>
+          <pre>{{ a.tournamentInsights.tournamentsBySurface | json }}</pre>
+        </div>
+  
+        <div class="analytics-chart-card">
+          <h3>Top Countries</h3>
+          <pre>{{ a.tournamentInsights.topCountriesByTournamentCount | json }}</pre>
+        </div>
+  
+        <div class="analytics-chart-card">
+          <h3>Average StrengthMeanTS by Level</h3>
+          <pre>{{ a.tournamentInsights.averageStrengthMeanTsByLevel | json }}</pre>
+        </div>
+      </div>
+    </section>
+  
+    <section class="analytics-section">
+      <h2>Market Behaviour</h2>
+  
+      <div class="analytics-inline-stats">
+        <div class="analytics-inline-stat">
+          <span class="label">Suspicious odds share:</span>
+          <span>{{ a.marketBehaviour.suspiciousOddsShare }}</span>
+        </div>
+      </div>
+  
+      <div class="analytics-chart-grid">
+        <div class="analytics-chart-card">
+          <h3>Favorite Win Rate by Bucket</h3>
+          <pre>{{ a.marketBehaviour.favoriteWinRateByImpliedProbabilityBucket | json }}</pre>
+        </div>
+  
+        <div class="analytics-chart-card">
+          <h3>Underdog Win Rate by Bucket</h3>
+          <pre>{{ a.marketBehaviour.underdogWinRateByImpliedProbabilityBucket | json }}</pre>
+        </div>
+  
+        <div class="analytics-chart-card">
+          <h3>Odds Coverage Over Time</h3>
+          <pre>{{ a.marketBehaviour.oddsCoverageOverTime | json }}</pre>
+        </div>
+  
+        <div class="analytics-chart-card">
+          <h3>Average Bookies per Match by Year</h3>
+          <pre>{{ a.marketBehaviour.averageBookiesPerMatchByYear | json }}</pre>
+        </div>
+      </div>
+    </section>
+  </div>
+  
+  <div class="analytics-loading" *ngIf="isLoading">
+    Loading analytics...
+  </div>
+  
+  <div class="analytics-error" *ngIf="!isLoading && error">
+    {{ error }}
+  </div>

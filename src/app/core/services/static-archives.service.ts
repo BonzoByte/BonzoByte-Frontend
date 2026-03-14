@@ -7,6 +7,7 @@ import brotliDecompress from 'brotli/decompress';
 import { MatchDetailsRaw } from '../models/match-details.model';
 import { AuthService } from './auth.service';
 import { environment } from '../../../environments/environment';
+import { AnalyticsDashboard } from '../models/analytics.model';
 
 export interface DailyArchiveIndex {
   minDate: string;
@@ -52,6 +53,7 @@ export class StaticArchivesService {
   private dailyStaticBase = `${this.staticBase}/daily`;
   private detailsStaticBase = `${this.staticBase}/matches`;
   private tsStaticBase = `${this.staticBase}/players/ts`;
+  private analyticsStaticBase = `${this.staticBase}/analytics`;
 
   private readonly PHOTO_BASE = `${environment.apiBase}/players/photo`;
 
@@ -258,6 +260,19 @@ export class StaticArchivesService {
         return throwError(() => err);
       })
     );
+  }
+
+  getAnalyticsDashboard(): Observable<AnalyticsDashboard> {
+    if (this.mode === 'api') {
+      return this.http.get<AnalyticsDashboard>(`${this.apiUrl}/archives/analytics/dashboard`);
+    }
+
+    return this.http
+      .get(`${this.analyticsStaticBase}/analytics-dashboard.br`, { responseType: 'arraybuffer' as const })
+      .pipe(
+        map(buf => this.decodeBrotliJson<AnalyticsDashboard>(buf)),
+        shareReplay(1)
+      );
   }
 
   private calcUnlocksAtIso(match: Match, lockHours: number): string | null {
