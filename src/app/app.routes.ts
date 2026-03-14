@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { AnalyticsComponent } from './tennis/analytics/analytics.component';
 
 export const routes: Routes = [
     {
@@ -36,5 +37,9 @@ export const routes: Routes = [
         loadComponent: () =>
             import('./tennis/tournaments/tournaments.component').then(m => m.TournamentsComponent),
     },
+    {
+        path: 'analytics',
+        component: AnalyticsComponent
+      },    
     { path: '**', redirectTo: '' }
 ];

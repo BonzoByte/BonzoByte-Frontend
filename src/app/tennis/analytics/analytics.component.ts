@@ -5,6 +5,7 @@ import { AnalyticsDashboard } from '../../core/models/analytics.model';
 
 @Component({
   selector: 'app-analytics',
+  standalone: true,
   templateUrl: './analytics.component.html',
   styleUrls: ['./analytics.component.scss'],
     imports: [
