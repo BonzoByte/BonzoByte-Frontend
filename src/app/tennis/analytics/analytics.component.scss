@@ -144,3 +144,20 @@
   font-weight: 700;
   white-space: nowrap;
 }
+
+.analytics-chart-canvas {
+  position: relative;
+  height: 240px;
+}
+
+.analytics-chart-canvas--medium {
+  height: 260px;
+}
+
+.analytics-chart-card--wide {
+  min-height: 320px;
+}
+
+.analytics-chart-card canvas {
+  display: block;
+}
