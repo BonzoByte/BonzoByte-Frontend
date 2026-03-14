@@ -3,7 +3,11 @@
 
         <!-- Top sticky bar -->
         <div class="date-nav-sticky">
-            <div class="date-left"></div>
+            <div class="date-left">
+                <button class="link-button analytics-link" routerLink="/analytics" routerLinkActive="active">
+                    Analytics
+                </button>
+            </div>
 
             <div class="pagination-center-wrapper">
                 <button (click)="previousDay()" class="link-button" [disabled]="isPrevDisabled || loading">
