@@ -263,8 +263,13 @@ export class StaticArchivesService {
   }
 
   getAnalyticsDashboard(): Observable<AnalyticsDashboard> {
+    const url =
+      this.mode === 'api'
+        ? `${this.apiUrl}/archives/analytics/dashboard`
+        : `${this.analyticsStaticBase}/analytics-dashboard.br`;
+  
     return this.http
-      .get(`${this.analyticsStaticBase}/analytics-dashboard.br`, { responseType: 'arraybuffer' as const })
+      .get(url, { responseType: 'arraybuffer' as const })
       .pipe(
         map(buf => this.decodeBrotliJson<AnalyticsDashboard>(buf)),
         shareReplay(1)
