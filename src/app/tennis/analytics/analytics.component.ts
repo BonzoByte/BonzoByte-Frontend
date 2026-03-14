@@ -244,4 +244,82 @@ export class AnalyticsComponent implements OnInit {
             }
         }
     };
+
+    get favoriteWinRateByBucketChartData(): ChartData<'bar'> {
+        const items = this.analytics?.marketBehaviour?.favoriteWinRateByImpliedProbabilityBucket ?? [];
+        return {
+            labels: items.map(x => x.label),
+            datasets: [
+                {
+                    data: items.map(x => x.value),
+                    label: 'Favorite Win Rate (%)'
+                }
+            ]
+        };
+    }
+
+    get underdogWinRateByBucketChartData(): ChartData<'bar'> {
+        const items = this.analytics?.marketBehaviour?.underdogWinRateByImpliedProbabilityBucket ?? [];
+        return {
+            labels: items.map(x => x.label),
+            datasets: [
+                {
+                    data: items.map(x => x.value),
+                    label: 'Underdog Win Rate (%)'
+                }
+            ]
+        };
+    }
+
+    get oddsCoverageOverTimeChartData(): ChartData<'line'> {
+        const items = this.analytics?.marketBehaviour?.oddsCoverageOverTime ?? [];
+        return {
+            labels: items.map(x => x.label),
+            datasets: [
+                {
+                    data: items.map(x => x.value),
+                    label: 'Matches With Odds',
+                    tension: 0.25,
+                    fill: false
+                }
+            ]
+        };
+    }
+
+    get averageBookiesPerMatchByYearChartData(): ChartData<'line'> {
+        const items = this.analytics?.marketBehaviour?.averageBookiesPerMatchByYear ?? [];
+        return {
+            labels: items.map(x => x.label),
+            datasets: [
+                {
+                    data: items.map(x => x.value),
+                    label: 'Average Bookies',
+                    tension: 0.25,
+                    fill: false
+                }
+            ]
+        };
+    }
+
+    readonly percentBarOptions: ChartOptions<'bar'> = {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+            x: {
+                ticks: { color: '#d1d5db' },
+                grid: { color: 'rgba(255,255,255,0.08)' }
+            },
+            y: {
+                beginAtZero: true,
+                max: 100,
+                ticks: { color: '#d1d5db' },
+                grid: { color: 'rgba(255,255,255,0.08)' }
+            }
+        },
+        plugins: {
+            legend: {
+                display: false
+            }
+        }
+    };
 }

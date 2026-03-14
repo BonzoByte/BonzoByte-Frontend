@@ -178,60 +178,70 @@
         </div>
       </section>
 
-    <section class="analytics-section">
+      <section class="analytics-section">
         <h2>Market Behaviour</h2>
-
+      
         <div class="analytics-inline-stats">
-            <div class="analytics-inline-stat">
-                <span class="label">Suspicious odds share:</span>
-                <span>{{ a.marketBehaviour.suspiciousOddsShare }}</span>
-            </div>
+          <div class="analytics-inline-stat">
+            <span class="label">Suspicious odds share:</span>
+            <span>{{ a.marketBehaviour.suspiciousOddsShare }}</span>
+          </div>
         </div>
-
+      
         <div class="analytics-chart-grid">
-            <div class="analytics-chart-card">
-                <h3>Favorite Win Rate by Bucket</h3>
-                <div class="analytics-data-list">
-                    <div class="analytics-data-row"
-                        *ngFor="let item of a.marketBehaviour.favoriteWinRateByImpliedProbabilityBucket">
-                        <span>{{ item.label }}</span>
-                        <strong>{{ item.value }}%</strong>
-                    </div>
-                </div>
+          <div class="analytics-chart-card">
+            <h3>Favorite Win Rate by Bucket</h3>
+      
+            <div class="analytics-chart-canvas analytics-chart-canvas--medium">
+              <canvas
+                baseChart
+                [data]="favoriteWinRateByBucketChartData"
+                [options]="percentBarOptions"
+                [type]="'bar'">
+              </canvas>
             </div>
-
-            <div class="analytics-chart-card">
-                <h3>Underdog Win Rate by Bucket</h3>
-                <div class="analytics-data-list">
-                    <div class="analytics-data-row"
-                        *ngFor="let item of a.marketBehaviour.underdogWinRateByImpliedProbabilityBucket">
-                        <span>{{ item.label }}</span>
-                        <strong>{{ item.value }}%</strong>
-                    </div>
-                </div>
+          </div>
+      
+          <div class="analytics-chart-card">
+            <h3>Underdog Win Rate by Bucket</h3>
+      
+            <div class="analytics-chart-canvas analytics-chart-canvas--medium">
+              <canvas
+                baseChart
+                [data]="underdogWinRateByBucketChartData"
+                [options]="percentBarOptions"
+                [type]="'bar'">
+              </canvas>
             </div>
-
-            <div class="analytics-chart-card">
-                <h3>Odds Coverage Over Time</h3>
-                <div class="analytics-data-list analytics-data-list--scroll">
-                    <div class="analytics-data-row" *ngFor="let item of a.marketBehaviour.oddsCoverageOverTime">
-                        <span>{{ item.label }}</span>
-                        <strong>{{ item.value | number }}</strong>
-                    </div>
-                </div>
+          </div>
+      
+          <div class="analytics-chart-card">
+            <h3>Odds Coverage Over Time</h3>
+      
+            <div class="analytics-chart-canvas analytics-chart-canvas--medium">
+              <canvas
+                baseChart
+                [data]="oddsCoverageOverTimeChartData"
+                [options]="lineOptions"
+                [type]="'line'">
+              </canvas>
             </div>
-
-            <div class="analytics-chart-card">
-                <h3>Average Bookies per Match by Year</h3>
-                <div class="analytics-data-list analytics-data-list--scroll">
-                    <div class="analytics-data-row" *ngFor="let item of a.marketBehaviour.averageBookiesPerMatchByYear">
-                        <span>{{ item.label }}</span>
-                        <strong>{{ item.value }}</strong>
-                    </div>
-                </div>
+          </div>
+      
+          <div class="analytics-chart-card">
+            <h3>Average Bookies per Match by Year</h3>
+      
+            <div class="analytics-chart-canvas analytics-chart-canvas--medium">
+              <canvas
+                baseChart
+                [data]="averageBookiesPerMatchByYearChartData"
+                [options]="lineOptions"
+                [type]="'line'">
+              </canvas>
             </div>
+          </div>
         </div>
-    </section>
+      </section>
 </div>
 
 <div class="analytics-loading" *ngIf="isLoading">
