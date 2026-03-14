@@ -13,39 +13,50 @@
     </div>
   
     <section class="analytics-section">
-      <h2>Overview</h2>
-  
-      <div class="analytics-cards">
-        <div class="analytics-card" *ngFor="let card of a.overview.cards">
-          <div class="analytics-card-label">{{ card.label }}</div>
-          <div class="analytics-card-value">{{ card.value }}</div>
+        <h2>Overview</h2>
+      
+        <div class="analytics-cards">
+          <div class="analytics-card" *ngFor="let card of a.overview.cards">
+            <div class="analytics-card-label">{{ card.label }}</div>
+            <div class="analytics-card-value">{{ card.value }}</div>
+          </div>
         </div>
-      </div>
-  
-      <div class="analytics-inline-stats">
-        <div class="analytics-inline-stat">
-          <span class="label">From:</span>
-          <span>{{ a.overview.dateRange.from }}</span>
+      
+        <div class="analytics-inline-stats">
+          <div class="analytics-inline-stat">
+            <span class="label">From:</span>
+            <span>{{ a.overview.dateRange.from }}</span>
+          </div>
+          <div class="analytics-inline-stat">
+            <span class="label">To:</span>
+            <span>{{ a.overview.dateRange.to }}</span>
+          </div>
         </div>
-        <div class="analytics-inline-stat">
-          <span class="label">To:</span>
-          <span>{{ a.overview.dateRange.to }}</span>
+      
+        <div class="analytics-chart-grid">
+          <div class="analytics-chart-card">
+            <h3>ATP vs WTA</h3>
+      
+            <div class="analytics-data-list">
+              <div class="analytics-data-row" *ngFor="let item of a.overview.tournamentTypeSplit">
+                <span>{{ item.label }}</span>
+                <strong>{{ item.value | number }}</strong>
+              </div>
+            </div>
+          </div>
+      
+          <div class="analytics-chart-card">
+            <h3>Finished vs Unfinished</h3>
+      
+            <div class="analytics-data-list">
+              <div class="analytics-data-row" *ngFor="let item of a.overview.matchStatusSplit">
+                <span>{{ item.label }}</span>
+                <strong>{{ item.value | number }}</strong>
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
-  
-      <!-- chart placeholders -->
-      <div class="analytics-chart-grid">
-        <div class="analytics-chart-card">
-          <h3>ATP vs WTA</h3>
-          <pre>{{ a.overview.tournamentTypeSplit | json }}</pre>
-        </div>
-  
-        <div class="analytics-chart-card">
-          <h3>Finished vs Unfinished</h3>
-          <pre>{{ a.overview.matchStatusSplit | json }}</pre>
-        </div>
-      </div>
-    </section>
+      </section>
   
     <section class="analytics-section">
       <h2>Match Landscape</h2>
