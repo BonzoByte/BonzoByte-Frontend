@@ -80,6 +80,10 @@ body {
         linear-gradient(135deg, #0b0b0b, #111, #0e0e0e);
 }
 
+body.no-datebar {
+    padding-top: var(--header-h);
+}
+
 app-root,
 app-layout,
 app-header,

@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { StaticArchivesService } from '../../core/services/static-archives.service';
 import { AnalyticsDashboard } from '../../core/models/analytics.model';
 
@@ -10,14 +10,15 @@ import { AnalyticsDashboard } from '../../core/models/analytics.model';
   templateUrl: './model-insights.component.html',
   styleUrls: ['./model-insights.component.scss']
 })
-export class ModelInsightsComponent implements OnInit {
+export class ModelInsightsComponent implements OnInit, OnDestroy {
   analytics: AnalyticsDashboard | null = null;
   isLoading = true;
   error: string | null = null;
 
-  constructor(private staticArchivesService: StaticArchivesService) {}
+  constructor(private staticArchivesService: StaticArchivesService) { }
 
   ngOnInit(): void {
+    document.body.classList.add('no-datebar');
     this.staticArchivesService.getAnalyticsDashboard().subscribe({
       next: (data) => {
         this.analytics = data;
@@ -29,6 +30,10 @@ export class ModelInsightsComponent implements OnInit {
         this.isLoading = false;
       }
     });
+  }
+
+  ngOnDestroy(): void {
+    document.body.classList.remove('no-datebar');
   }
 
   get modelInsights() {
