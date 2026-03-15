@@ -4,8 +4,9 @@
 
 .mi-page {
   width: min(1280px, calc(100% - 2rem));
-  margin: 0 auto;
-  padding: 0.5rem 0 2rem;
+  margin-top: 0;
+  margin-bottom: 1rem;
+  padding: 0 0 6rem;
   color: #f5f7fb;
 }
 
@@ -121,6 +122,10 @@
 
 .mi-section {
   margin-top: 1.15rem;
+}
+
+.mi-section:last-child {
+  margin-bottom: 3rem;
 }
 
 .mi-section__header {
