@@ -1,73 +1,148 @@
-<div class="analytics-page" *ngIf="!isLoading && modelInsights as m">
-    <div class="analytics-header">
-      <div>
-        <h1>{{ m.title }}</h1>
-        <p class="analytics-subtitle">{{ m.subtitle }}</p>
-      </div>
-  
-      <div class="analytics-meta" *ngIf="updatedAt">
-        Updated: {{ updatedAt | date:'dd.MM.yyyy HH:mm':'UTC' }} UTC
+<div class="mi-page" *ngIf="!isLoading && modelInsights as m">
+  <section class="mi-hero">
+    <div class="mi-hero__content">
+      <div class="mi-kicker">BonzoByte Research</div>
+      <h1 class="mi-title">{{ m.title }}</h1>
+      <p class="mi-subtitle">{{ m.subtitle }}</p>
+
+      <div class="mi-meta" *ngIf="updatedAt">
+        <span class="mi-meta__label">Updated</span>
+        <span>{{ updatedAt | date:'dd.MM.yyyy HH:mm':'UTC' }} UTC</span>
       </div>
     </div>
-  
-    <section class="analytics-section">
+
+    <div class="mi-hero__highlights">
+      <div class="mi-stat-card">
+        <div class="mi-stat-card__eyebrow">Finding 01</div>
+        <div class="mi-stat-card__title">NN beats Market</div>
+        <p>BonzoByte probabilities outperform market baseline on probabilistic quality.</p>
+      </div>
+
+      <div class="mi-stat-card">
+        <div class="mi-stat-card__eyebrow">Finding 02</div>
+        <div class="mi-stat-card__title">Blend performs best</div>
+        <p>Combined NN + market signal produces the strongest overall calibration.</p>
+      </div>
+
+      <div class="mi-stat-card">
+        <div class="mi-stat-card__eyebrow">Default Policy</div>
+        <div class="mi-stat-card__title">ATP 60/40</div>
+        <p>ATP segments generally benefit from a more balanced blend.</p>
+      </div>
+
+      <div class="mi-stat-card">
+        <div class="mi-stat-card__eyebrow">Default Policy</div>
+        <div class="mi-stat-card__title">WTA 80/20</div>
+        <p>WTA segments consistently reward a stronger NN contribution.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="mi-section">
+    <div class="mi-section__header">
+      <span class="mi-section__eyebrow">Research Summary</span>
       <h2>Executive Summary</h2>
-      <div class="analytics-chart-card">
-        <p>{{ m.executiveSummary }}</p>
-      </div>
-    </section>
-  
-    <section class="analytics-section">
+    </div>
+
+    <article class="mi-panel mi-panel--feature">
+      <p class="mi-lead">
+        {{ m.executiveSummary }}
+      </p>
+    </article>
+  </section>
+
+  <section class="mi-section" *ngIf="m.keyFindings.length">
+    <div class="mi-section__header">
+      <span class="mi-section__eyebrow">Core Takeaways</span>
       <h2>Key Findings</h2>
-      <div class="analytics-cards">
-        <div class="analytics-card" *ngFor="let card of m.keyFindings">
-          <div class="analytics-card-label">{{ card.label }}</div>
-          <div class="analytics-card-value">{{ card.value }}</div>
+    </div>
+
+    <div class="mi-findings-grid">
+      <article class="mi-finding-card" *ngFor="let card of m.keyFindings; let i = index">
+        <div class="mi-finding-card__eyebrow">
+          Finding {{ (i + 1).toString().padStart(2, '0') }}
         </div>
-      </div>
-    </section>
-  
-    <section class="analytics-section">
+        <h3>{{ card.label }}</h3>
+        <p>{{ card.value }}</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="mi-section" *ngIf="m.recommendedPolicies.length">
+    <div class="mi-section__header">
+      <span class="mi-section__eyebrow">Production Guidance</span>
       <h2>Recommended Blend Policy</h2>
-      <div class="analytics-chart-grid">
-        <div class="analytics-chart-card" *ngFor="let policy of m.recommendedPolicies">
-          <h3>{{ policy.label }}</h3>
-          <div class="analytics-card-value">
-            {{ (policy.nnWeight * 100).toFixed(0) }}% NN / {{ (policy.marketWeight * 100).toFixed(0) }}% Market
+    </div>
+
+    <div class="mi-policy-grid">
+      <article class="mi-policy-card" *ngFor="let policy of m.recommendedPolicies">
+        <div class="mi-policy-card__top">
+          <div>
+            <div class="mi-policy-card__scope">{{ policy.scope }}</div>
+            <h3>{{ policy.label }}</h3>
           </div>
-          <p>{{ policy.summary }}</p>
+
+          <div class="mi-policy-badge">
+            {{ (policy.nnWeight * 100).toFixed(0) }}/{{ (policy.marketWeight * 100).toFixed(0) }}
+          </div>
         </div>
-      </div>
-    </section>
-  
-    <section class="analytics-section">
+
+        <div class="mi-policy-bar">
+          <div class="mi-policy-bar__nn" [style.width.%]="policy.nnWeight * 100">
+          </div>
+          <div class="mi-policy-bar__market" [style.width.%]="policy.marketWeight * 100">
+          </div>
+        </div>
+
+        <div class="mi-policy-ratio">
+          <span><strong>{{ (policy.nnWeight * 100).toFixed(0) }}%</strong> NN</span>
+          <span><strong>{{ (policy.marketWeight * 100).toFixed(0) }}%</strong> Market</span>
+        </div>
+
+        <p class="mi-policy-summary">{{ policy.summary }}</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="mi-section" *ngIf="m.segmentHighlights.length">
+    <div class="mi-section__header">
+      <span class="mi-section__eyebrow">Segment Analysis</span>
       <h2>Segment Highlights</h2>
-      <div class="analytics-chart-grid">
-        <div class="analytics-chart-card" *ngFor="let section of m.segmentHighlights">
+    </div>
+
+    <div class="mi-segment-grid">
+      <article class="mi-segment-card" *ngFor="let section of m.segmentHighlights">
+        <div class="mi-segment-card__header">
           <h3>{{ section.title }}</h3>
-          <p>{{ section.summary }}</p>
-  
-          <ul class="analytics-bullet-list">
-            <li *ngFor="let bullet of section.bullets">{{ bullet }}</li>
-          </ul>
         </div>
-      </div>
-    </section>
-  
-    <section class="analytics-section">
-      <h2>Research Notes</h2>
-      <div class="analytics-chart-card">
-        <ul class="analytics-bullet-list">
-          <li *ngFor="let note of m.researchNotes">{{ note }}</li>
+
+        <p class="mi-segment-card__summary">{{ section.summary }}</p>
+
+        <ul class="mi-bullet-list" *ngIf="section.bullets.length">
+          <li *ngFor="let bullet of section.bullets">{{ bullet }}</li>
         </ul>
-      </div>
-    </section>
-  </div>
-  
-  <div class="analytics-loading" *ngIf="isLoading">
-    Loading model insights...
-  </div>
-  
-  <div class="analytics-error" *ngIf="!isLoading && error">
-    {{ error }}
-  </div>
+      </article>
+    </div>
+  </section>
+
+  <section class="mi-section" *ngIf="m.researchNotes.length">
+    <div class="mi-section__header">
+      <span class="mi-section__eyebrow">Methodology</span>
+      <h2>Research Notes</h2>
+    </div>
+
+    <article class="mi-panel mi-panel--subtle">
+      <ul class="mi-bullet-list mi-bullet-list--notes">
+        <li *ngFor="let note of m.researchNotes">{{ note }}</li>
+      </ul>
+    </article>
+  </section>
+</div>
+
+<div class="mi-state mi-state--loading" *ngIf="isLoading">
+  Loading model insights...
+</div>
+
+<div class="mi-state mi-state--error" *ngIf="!isLoading && error">
+  {{ error }}
+</div>
