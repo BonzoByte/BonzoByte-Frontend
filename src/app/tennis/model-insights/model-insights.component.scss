@@ -5,8 +5,7 @@
 .mi-page {
   width: min(1280px, calc(100% - 2rem));
   margin: 0 auto;
-  margin-bottom: 2rem;
-  padding: 1.25rem 0 0 6.25rem;
+  padding: 0.25rem 0 6.25rem;
   color: #f5f7fb;
   box-sizing: border-box;
 }
@@ -126,7 +125,7 @@
 }
 
 .mi-section:last-child {
-  margin-bottom: 1rem;
+  margin-bottom: 0rem;
 }
 
 .mi-section__header {
@@ -317,7 +316,7 @@
   .mi-page {
     width: min(100%, calc(100% - 1rem));
     margin: 0 auto;
-    padding: 0 0 0.25rem;
+    padding: 0.1rem 0 4.5rem;
   }
 
   .mi-hero {
