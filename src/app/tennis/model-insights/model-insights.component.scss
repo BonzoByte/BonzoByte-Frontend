@@ -4,10 +4,10 @@
 
 .mi-page {
   width: min(1280px, calc(100% - 2rem));
-  margin-top: 0;
-  margin-bottom: 1rem;
+  margin: 0 auto;
   padding: 0 0 6rem;
   color: #f5f7fb;
+  box-sizing: border-box;
 }
 
 .mi-hero {
@@ -15,7 +15,7 @@
   grid-template-columns: minmax(0, 1.15fr) minmax(320px, 0.85fr);
   gap: 1rem;
   align-items: stretch;
-  margin-bottom: 1.2rem;
+  margin: 0 0 1rem;
 }
 
 .mi-hero__content,
@@ -31,11 +31,11 @@
 }
 
 .mi-hero__content {
-  padding: 1.35rem 1.45rem;
+  padding: 1.15rem 1.35rem;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  min-height: 200px;
+  min-height: 185px;
 }
 
 .mi-kicker,
@@ -52,7 +52,7 @@
 }
 
 .mi-title {
-  margin: 0.55rem 0 0;
+  margin: 0.4rem 0 0;
   font-size: clamp(2.2rem, 4vw, 3.5rem);
   line-height: 0.95;
   font-weight: 800;
@@ -73,7 +73,7 @@
   align-items: center;
   gap: 0.55rem;
   align-self: flex-start;
-  margin-top: 1rem;
+  margin-top: 0.9rem;
   padding: 0.58rem 0.85rem;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.045);
@@ -159,12 +159,6 @@
 
 .mi-panel--feature {
   padding: 1.05rem 1.2rem;
-}
-
-.mi-finding-card,
-.mi-policy-card,
-.mi-segment-card {
-  padding: 1rem 1.05rem;
 }
 
 .mi-panel--subtle {
@@ -320,15 +314,13 @@
 @media (max-width: 820px) {
   .mi-page {
     width: min(100%, calc(100% - 1rem));
-    padding-top: 1.25rem;
+    margin: 0 auto;
+    padding: 0 0 5rem;
   }
 
   .mi-hero__content {
-    padding: 1.15rem 1.35rem;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    min-height: 185px;
+    padding: 1rem 1.1rem;
+    min-height: 170px;
   }
 
   .mi-hero__highlights {
