@@ -41,7 +41,7 @@ export const routes: Routes = [
             import('./tennis/analytics/analytics.component').then(m => m.AnalyticsComponent),
     },
     {
-        path: 'analytics',
+        path: 'model-insights',
         loadComponent: () =>
             import('./tennis/model-insights/model-insights.component').then(m => m.ModelInsightsComponent),
     },
