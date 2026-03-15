@@ -1,0 +1,73 @@
+<div class="analytics-page" *ngIf="!isLoading && modelInsights as m">
+    <div class="analytics-header">
+      <div>
+        <h1>{{ m.title }}</h1>
+        <p class="analytics-subtitle">{{ m.subtitle }}</p>
+      </div>
+  
+      <div class="analytics-meta" *ngIf="updatedAt">
+        Updated: {{ updatedAt | date:'dd.MM.yyyy HH:mm':'UTC' }} UTC
+      </div>
+    </div>
+  
+    <section class="analytics-section">
+      <h2>Executive Summary</h2>
+      <div class="analytics-chart-card">
+        <p>{{ m.executiveSummary }}</p>
+      </div>
+    </section>
+  
+    <section class="analytics-section">
+      <h2>Key Findings</h2>
+      <div class="analytics-cards">
+        <div class="analytics-card" *ngFor="let card of m.keyFindings">
+          <div class="analytics-card-label">{{ card.label }}</div>
+          <div class="analytics-card-value">{{ card.value }}</div>
+        </div>
+      </div>
+    </section>
+  
+    <section class="analytics-section">
+      <h2>Recommended Blend Policy</h2>
+      <div class="analytics-chart-grid">
+        <div class="analytics-chart-card" *ngFor="let policy of m.recommendedPolicies">
+          <h3>{{ policy.label }}</h3>
+          <div class="analytics-card-value">
+            {{ (policy.nnWeight * 100).toFixed(0) }}% NN / {{ (policy.marketWeight * 100).toFixed(0) }}% Market
+          </div>
+          <p>{{ policy.summary }}</p>
+        </div>
+      </div>
+    </section>
+  
+    <section class="analytics-section">
+      <h2>Segment Highlights</h2>
+      <div class="analytics-chart-grid">
+        <div class="analytics-chart-card" *ngFor="let section of m.segmentHighlights">
+          <h3>{{ section.title }}</h3>
+          <p>{{ section.summary }}</p>
+  
+          <ul class="analytics-bullet-list">
+            <li *ngFor="let bullet of section.bullets">{{ bullet }}</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+  
+    <section class="analytics-section">
+      <h2>Research Notes</h2>
+      <div class="analytics-chart-card">
+        <ul class="analytics-bullet-list">
+          <li *ngFor="let note of m.researchNotes">{{ note }}</li>
+        </ul>
+      </div>
+    </section>
+  </div>
+  
+  <div class="analytics-loading" *ngIf="isLoading">
+    Loading model insights...
+  </div>
+  
+  <div class="analytics-error" *ngIf="!isLoading && error">
+    {{ error }}
+  </div>

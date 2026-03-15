@@ -51,4 +51,29 @@ export interface ChartPoint {
     matchLandscape: MatchLandscapeAnalytics;
     tournamentInsights: TournamentInsightsAnalytics;
     marketBehaviour: MarketBehaviourAnalytics;
+    modelInsights: ModelInsights;
+  }
+
+  export interface BlendPolicy {
+    scope: string;
+    label: string;
+    nnWeight: number;
+    marketWeight: number;
+    summary: string;
+  }
+  
+  export interface InsightSection {
+    title: string;
+    summary: string;
+    bullets: string[];
+  }
+  
+  export interface ModelInsights {
+    title: string;
+    subtitle: string;
+    executiveSummary: string;
+    keyFindings: MetricCard[];
+    recommendedPolicies: BlendPolicy[];
+    segmentHighlights: InsightSection[];
+    researchNotes: string[];
   }
