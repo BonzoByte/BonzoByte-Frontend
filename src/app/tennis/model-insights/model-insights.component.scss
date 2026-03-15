@@ -5,7 +5,7 @@
 .mi-page {
   width: min(1280px, calc(100% - 2rem));
   margin: 0 auto;
-  padding: 0 0 4.25rem;
+  padding: 1.25rem 0 0 1.25rem;
   color: #f5f7fb;
   box-sizing: border-box;
 }
@@ -316,7 +316,7 @@
   .mi-page {
     width: min(100%, calc(100% - 1rem));
     margin: 0 auto;
-    padding: 0.25rem 0 0 0.25rem;
+    padding: 0 0 0.25rem;
   }
 
   .mi-hero {
