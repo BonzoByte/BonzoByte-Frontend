@@ -578,7 +578,12 @@
                                 <line *ngIf="cm.matchX !== null" [attr.x1]="cm.matchX" [attr.x2]="cm.matchX"
                                     [attr.y1]="chartPad" [attr.y2]="chartHeight-chartPad"
                                     stroke="rgba(255,255,255,0.22)" stroke-dasharray="4 4"></line>
-
+                                <g *ngIf="cm.matchX !== null">
+                                    <text [attr.x]="cm.matchX" [attr.y]="chartPad - 8" text-anchor="middle"
+                                        font-size="14" fill="rgba(255,255,255,0.75)">
+                                        Match date
+                                    </text>
+                                </g>
                                 <!-- Series paths -->
                                 <path [attr.d]="cm.wp1Path" fill="none" stroke="#ff4d4d" stroke-width="2.2"
                                     opacity="0.95"></path>
