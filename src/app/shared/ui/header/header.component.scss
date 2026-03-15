@@ -16,6 +16,16 @@
     min-width: 0;
 }
 
+.nav-separator {
+    width: 1px;
+    height: 22px;
+    margin: 0 0.35rem;
+    background: rgba(255, 255, 255, 0.18);
+    border-radius: 999px;
+    display: inline-block;
+    flex: 0 0 auto;
+  }
+
 .custom-header>div .navbar-nav {
     display: flex;
     align-items: center;
