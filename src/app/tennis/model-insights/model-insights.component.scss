@@ -5,16 +5,16 @@
 .mi-page {
   width: min(1280px, calc(100% - 2rem));
   margin: 0 auto;
-  padding: 2rem 0 3.5rem;
+  padding: 0.5rem 0 2rem;
   color: #f5f7fb;
 }
 
 .mi-hero {
   display: grid;
   grid-template-columns: minmax(0, 1.15fr) minmax(320px, 0.85fr);
-  gap: 1.5rem;
+  gap: 1rem;
   align-items: stretch;
-  margin-bottom: 2rem;
+  margin-bottom: 1.2rem;
 }
 
 .mi-hero__content,
@@ -30,11 +30,11 @@
 }
 
 .mi-hero__content {
-  padding: 2rem;
+  padding: 1.35rem 1.45rem;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  min-height: 320px;
+  min-height: 200px;
 }
 
 .mi-kicker,
@@ -60,37 +60,37 @@
 }
 
 .mi-subtitle {
-  margin: 1rem 0 0;
+  margin: 0.7rem 0 0;
   max-width: 760px;
-  font-size: 1.02rem;
-  line-height: 1.7;
+  font-size: 0.98rem;
+  line-height: 1.6;
   color: rgba(255, 255, 255, 0.82);
 }
 
 .mi-meta {
   display: inline-flex;
   align-items: center;
-  gap: 0.6rem;
+  gap: 0.55rem;
   align-self: flex-start;
-  margin-top: 1.4rem;
-  padding: 0.7rem 0.95rem;
+  margin-top: 1rem;
+  padding: 0.58rem 0.85rem;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.045);
   border: 1px solid rgba(255, 255, 255, 0.08);
   color: rgba(255, 255, 255, 0.82);
-  font-size: 0.9rem;
+  font-size: 0.84rem;
 }
 
 .mi-hero__highlights {
-  padding: 1rem;
+  padding: 0.75rem;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1rem;
+  gap: 0.75rem;
 }
 
 .mi-stat-card {
-  padding: 1rem;
-  border-radius: 18px;
+  padding: 0.85rem 0.95rem;
+  border-radius: 16px;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.07);
   transition:
@@ -106,31 +106,31 @@
 }
 
 .mi-stat-card__title {
-  margin-top: 0.45rem;
-  font-size: 1.15rem;
+  margin-top: 0.32rem;
+  font-size: 1.05rem;
   font-weight: 700;
   color: #ffffff;
 }
 
 .mi-stat-card p {
-  margin: 0.55rem 0 0;
-  font-size: 0.93rem;
-  line-height: 1.55;
+  margin: 0.4rem 0 0;
+  font-size: 0.88rem;
+  line-height: 1.45;
   color: rgba(255, 255, 255, 0.76);
 }
 
 .mi-section {
-  margin-top: 1.75rem;
+  margin-top: 1.15rem;
 }
 
 .mi-section__header {
-  margin-bottom: 0.95rem;
+  margin-bottom: 0.7rem;
 }
 
 .mi-section__header h2 {
-  margin: 0.35rem 0 0;
-  font-size: 1.8rem;
-  line-height: 1.1;
+  margin: 0.22rem 0 0;
+  font-size: 1.65rem;
+  line-height: 1.08;
   font-weight: 800;
   color: #ffffff;
 }
@@ -149,11 +149,17 @@
 }
 
 .mi-panel {
-  padding: 1.5rem;
+  padding: 1.2rem;
 }
 
 .mi-panel--feature {
-  padding: 1.75rem;
+  padding: 1.25rem 1.35rem;
+}
+
+.mi-finding-card,
+.mi-policy-card,
+.mi-segment-card {
+  padding: 1rem 1.05rem;
 }
 
 .mi-panel--subtle {
@@ -163,8 +169,8 @@
 
 .mi-lead {
   margin: 0;
-  font-size: 1.03rem;
-  line-height: 1.85;
+  font-size: 0.98rem;
+  line-height: 1.72;
   color: rgba(255, 255, 255, 0.9);
 }
 
@@ -263,14 +269,14 @@
 }
 
 .mi-bullet-list {
-  margin: 0.95rem 0 0;
-  padding-left: 1.1rem;
+  margin: 0.75rem 0 0;
+  padding-left: 1rem;
   color: rgba(255, 255, 255, 0.8);
 }
 
 .mi-bullet-list li {
-  margin-bottom: 0.5rem;
-  line-height: 1.55;
+  margin-bottom: 0.35rem;
+  line-height: 1.45;
 }
 
 .mi-bullet-list--notes li {
