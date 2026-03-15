@@ -12,7 +12,6 @@ import { StaticArchivesService } from '../../core/services/static-archives.servi
 import { AuthService } from 'src/app/core/services/auth.service';
 import { Subject, Subscription, Observable, takeUntil } from 'rxjs';
 import { catchError, debounceTime, distinctUntilChanged, map } from 'rxjs/operators';
-import { RouterLink, RouterLinkActive } from '@angular/router';
 
 interface BootstrapDatesResult {
     dates: string[];
@@ -27,8 +26,6 @@ interface BootstrapDatesResult {
     styleUrls: ['./matches.component.scss'],
     imports: [
         CommonModule,
-        RouterLink,
-        RouterLinkActive,        
         FormsModule,
         NgbDatepickerModule,
         MatchFilterModalComponent,
