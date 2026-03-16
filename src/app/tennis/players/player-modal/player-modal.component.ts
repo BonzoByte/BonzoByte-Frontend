@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { CommonModule } from '@angular/common';
+import { PlayerSummaryCardComponent } from '../player-summary-card/player-summary-card.component';
 import {
   Component,
   EventEmitter,
@@ -26,7 +27,7 @@ type PlayerDetailsRaw = Record<string, any>;
 @Component({
   selector: 'app-player-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule, BbModalShellComponent],
+  imports: [CommonModule, FormsModule, BbModalShellComponent, PlayerSummaryCardComponent],
   templateUrl: './player-modal.component.html',
   styleUrls: ['./player-modal.component.scss'],
   encapsulation: ViewEncapsulation.None
@@ -158,24 +159,13 @@ export class PlayerModalComponent implements OnChanges, OnDestroy {
 
   get tourLabel(): string {
     const id = this.numOrNull(this.raw?.['d015']);
-    if (id === 2) return 'ATP';
-    if (id === 4) return 'WTA';
+    if (id === 1) return 'ATP';
+    if (id === 2) return 'WTA';
     return '';
   }
 
   flagIso2OrEmpty(iso2: string): string {
     return (iso2 || '').trim().toLowerCase();
-  }
-
-  playerAvatarUrl(): string {
-    const genderHint = this.tourLabel === 'WTA' ? 'W' : 'M';
-    return this.staticArchives.getPlayerPhotoUrl(this.playerTPId, genderHint);
-  }
-
-  onAvatarError(ev: Event): void {
-    const img = ev.target as HTMLImageElement;
-    const genderHint = this.tourLabel === 'WTA' ? 'W' : 'M';
-    img.src = this.staticArchives.getDefaultPlayerPhotoUrl(genderHint);
   }
 
   // ------------------------------------------------------------------------------------------------
@@ -481,4 +471,17 @@ export class PlayerModalComponent implements OnChanges, OnDestroy {
     if (m < 0 || (m === 0 && now.getDate() < b.getDate())) age--;
     return age >= 0 && age < 120 ? age : null;
   }
+
+  get genderHint(): 'M' | 'W' {
+  return this.tourLabel === 'WTA' ? 'W' : 'M';
+}
+
+playerAvatarUrl(): string {
+  return this.staticArchives.getPlayerPhotoUrl(this.playerTPId, this.genderHint);
+}
+
+onAvatarError(ev: Event): void {
+  const img = ev.target as HTMLImageElement;
+  img.src = this.staticArchives.getDefaultPlayerPhotoUrl(this.genderHint);
+}
 }
