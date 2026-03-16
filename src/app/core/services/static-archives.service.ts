@@ -220,7 +220,7 @@ export class StaticArchivesService {
 
   getDetails(matchTPId: number | string): Observable<MatchDetailsRaw> {
     if (this.mode === 'api') {
-      return this.http.get<MatchDetailsRaw>(`${this.apiBase}/match-details/${matchTPId}.br`);
+      return this.http.get<MatchDetailsRaw>(`${this.apiBase}/match-details/${matchTPId}`);
     }
 
     return this.http
@@ -255,7 +255,7 @@ export class StaticArchivesService {
     }
 
     // unlocked -> allowed
-    return this.http.get<any>(`${this.apiUrl}/archives/match-details/${match.matchTPId}.br`).pipe(
+    return this.http.get<any>(`${this.apiUrl}/archives/match-details/${match.matchTPId}`).pipe(
       catchError((err: any) => {
         // ako backend vrati JSON error body, proslijedi baš taj body dalje
         if (err?.error) return throwError(() => err.error);
@@ -531,9 +531,7 @@ export class StaticArchivesService {
 
 getPlayerDetails(playerTPId: number | string): Observable<PlayerDetailsRaw | null> {
   if (this.mode === 'api') {
-    return this.http
-      .get(`${this.apiBase}/players/details/${playerTPId}.br`, { responseType: 'arraybuffer' as const })
-      .pipe(map(buf => this.decodeBrotliJson<PlayerDetailsRaw>(buf)));
+    return this.http.get<PlayerDetailsRaw>(`${this.apiBase}/players/details/${playerTPId}.br`);
   }
 
   return this.http
