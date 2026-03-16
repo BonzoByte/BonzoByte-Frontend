@@ -244,8 +244,12 @@
       </section>
 </div>
 
-<div class="analytics-loading" *ngIf="isLoading">
-    Loading analytics...
+
+<div class="bb-loading-overlay" [class.is-active]="isLoading" aria-live="polite">
+  <div class="bb-loading-card" role="status" aria-label="Loading">
+    <div class="bb-spinner"></div>
+    <div class="bb-loading-text">Loading…</div>
+  </div>
 </div>
 
 <div class="analytics-error" *ngIf="!isLoading && error">
