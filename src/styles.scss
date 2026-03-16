@@ -457,8 +457,8 @@ main {
 }
 
 .match-table thead th {
-    position: absolute;
-    top: var(--top + 3px);
+    position: sticky;
+    top: calc(var(--header-h) + var(--datebar-h));
     z-index: 5;
 
     background: #444;
