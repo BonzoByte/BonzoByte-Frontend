@@ -1,0 +1,351 @@
+<div class="home-page">
+    <section class="home-hero">
+        <div class="home-hero__content">
+            <div class="home-kicker">Research-Driven Tennis Analytics Platform</div>
+            <h1 class="home-title">BonzoByte</h1>
+            <p class="home-subtitle">
+                A full-stack tennis analytics platform built around large-scale historical data,
+                advanced rating systems, neural-network probabilities, and a high-performance
+                Brotli archive delivery pipeline.
+            </p>
+
+            <div class="home-hero__chips">
+                <span class="home-chip">.NET Analytics Engine</span>
+                <span class="home-chip">Granular TrueSkill</span>
+                <span class="home-chip">Neural Probabilities</span>
+                <span class="home-chip">Static Brotli Delivery</span>
+            </div>
+        </div>
+
+        <div class="home-hero__stats">
+            <article class="home-stat-card">
+                <div class="home-stat-card__eyebrow">Data + Modeling</div>
+                <div class="home-stat-card__title">250+ engineered variables</div>
+                <p>Feature-rich modeling foundation with a curated NN subset for production inference.</p>
+            </article>
+
+            <article class="home-stat-card">
+                <div class="home-stat-card__eyebrow">Rating Engine</div>
+                <div class="home-stat-card__title">Match / Set / Game TrueSkill</div>
+                <p>Separate strength signals across result granularities and surface-specific contexts.</p>
+            </article>
+
+            <article class="home-stat-card">
+                <div class="home-stat-card__eyebrow">Delivery Strategy</div>
+                <div class="home-stat-card__title">Archive-first frontend</div>
+                <p>Large historical datasets are delivered as compressed static archives for near-zero runtime chatter.</p>
+            </article>
+
+            <article class="home-stat-card">
+                <div class="home-stat-card__eyebrow">Product Layer</div>
+                <div class="home-stat-card__title">Analytics + Model Insights</div>
+                <p>Prediction is evaluated seriously through probabilistic metrics, segmentation, and research summaries.</p>
+            </article>
+        </div>
+    </section>
+
+    <section class="home-section">
+        <div class="home-section__header">
+            <span class="home-section__eyebrow">What It Is</span>
+            <h2>BonzoByte in one sentence</h2>
+        </div>
+
+        <article class="home-panel home-panel--feature">
+            <p class="home-lead">
+                BonzoByte is a research-driven tennis analytics platform that combines a local
+                ASP.NET Core / C# data engine, a normalized relational database, advanced statistical
+                modeling, neural-network inference, and an Angular frontend optimized for fast archive-based exploration.
+            </p>
+        </article>
+    </section>
+
+    <section class="home-section">
+        <div class="home-section__header">
+            <span class="home-section__eyebrow">System Architecture</span>
+            <h2>Heavy computation offline, fast delivery online</h2>
+        </div>
+
+        <div class="home-grid home-grid--two">
+            <article class="home-card">
+                <h3>.NET Core analytics engine</h3>
+                <p>
+                    The core of the project is a local ASP.NET Core / C# backend that scrapes, parses,
+                    validates, and enriches tennis data before writing it into a structured relational model.
+                </p>
+                <ul class="home-bullet-list">
+                    <li>Data ingestion and consolidation from multiple sources</li>
+                    <li>Parsing and validation of matches, players, tournaments, and odds</li>
+                    <li>Generation of derived statistics, rating histories, and model inputs</li>
+                    <li>Export of optimized JSON payloads and compressed Brotli archives</li>
+                </ul>
+            </article>
+
+            <article class="home-card">
+                <h3>Relational source of truth</h3>
+                <p>
+                    The backend uses a normalized relational database as the clean, maintainable source of truth.
+                    This keeps ingestion and feature generation strict, while archive payloads are intentionally
+                    denormalized later for fast client consumption.
+                </p>
+                <ul class="home-bullet-list">
+                    <li>Strict relationships and validation rules</li>
+                    <li>Normalized schema for consistency and maintainability</li>
+                    <li>Denormalized archive outputs for frontend speed</li>
+                    <li>Clear separation between operational modeling and presentation data</li>
+                </ul>
+            </article>
+        </div>
+    </section>
+
+    <section class="home-section">
+        <div class="home-section__header">
+            <span class="home-section__eyebrow">Statistical Engine</span>
+            <h2>Granular rating and performance modeling</h2>
+        </div>
+
+        <div class="home-grid home-grid--three">
+            <article class="home-card">
+                <h3>TrueSkill at multiple resolutions</h3>
+                <p>
+                    BonzoByte computes a deeply granular TrueSkill layer across match result,
+                    set result, and game result dimensions.
+                </p>
+            </article>
+
+            <article class="home-card">
+                <h3>Surface-aware strength</h3>
+                <p>
+                    Ratings are tracked not only globally, but also by surface, allowing player strength
+                    to be represented as context-sensitive rather than flat.
+                </p>
+            </article>
+
+            <article class="home-card">
+                <h3>Rolling performance scopes</h3>
+                <p>
+                    Historical metrics are aggregated across overall, weekly, monthly, and yearly scopes,
+                    creating a richer player and matchup representation.
+                </p>
+            </article>
+        </div>
+    </section>
+
+    <section class="home-section">
+        <div class="home-section__header">
+            <span class="home-section__eyebrow">Machine Learning</span>
+            <h2>Neural-network probabilities built on engineered features</h2>
+        </div>
+
+        <article class="home-panel">
+            <p>
+                The platform includes a trained neural-network model built on a curated subset of approximately
+                <strong>75 selected features</strong>, chosen from a wider pool of more than
+                <strong>250 engineered candidate variables</strong>.
+            </p>
+            <p>
+                The emphasis is not only on prediction, but also on disciplined feature selection,
+                signal quality, and evaluation against market baselines.
+            </p>
+        </article>
+    </section>
+
+    <section class="home-section">
+        <div class="home-section__header">
+            <span class="home-section__eyebrow">Archive Delivery</span>
+            <h2>Why the frontend is fast</h2>
+        </div>
+
+        <div class="home-grid home-grid--two">
+            <article class="home-card">
+                <h3>Static Brotli archives</h3>
+                <p>
+                    Because the overwhelming majority of the dataset is historical and effectively immutable,
+                    BonzoByte delivers most information as static Brotli-compressed archives rather than querying
+                    a live database on every interaction.
+                </p>
+                <ul class="home-bullet-list">
+                    <li>Daily match archives</li>
+                    <li>Detailed match archives with hundreds of attributes</li>
+                    <li>Player archives and tournament archives</li>
+                    <li>Index archives for fast search and filtering</li>
+                    <li>TrueSkill history archives for chart rendering</li>
+                    <li>Analytics and Model Insights payloads</li>
+                </ul>
+            </article>
+
+            <article class="home-card">
+                <h3>Bandwidth and latency advantages</h3>
+                <p>
+                    Raw JSON payloads can be dramatically larger than their Brotli-packed equivalents.
+                    That reduces transfer cost, avoids unnecessary roundtrips, and allows many interactions
+                    to happen entirely in client memory.
+                </p>
+                <ul class="home-bullet-list">
+                    <li>Archive-first, edge-friendly delivery model</li>
+                    <li>Near-zero runtime dependency on the historical data store</li>
+                    <li>Fast client-side filtering and exploration</li>
+                    <li>Custom Brotli viewer / decompression layer inside the frontend</li>
+                </ul>
+            </article>
+        </div>
+    </section>
+
+    <section class="home-section">
+        <div class="home-section__header">
+            <span class="home-section__eyebrow">Frontend Application</span>
+            <h2>Angular as a serious client application</h2>
+        </div>
+
+        <div class="home-grid home-grid--three">
+            <article class="home-card">
+                <h3>Archive consumption</h3>
+                <p>
+                    The Angular frontend fetches, decompresses, and presents archive content on demand,
+                    turning mostly static datasets into a responsive product experience.
+                </p>
+            </article>
+
+            <article class="home-card">
+                <h3>Interactive research UI</h3>
+                <p>
+                    Matches, players, tournaments, analytics dashboards, and model insight pages are presented
+                    through route-level pages, shared modal architecture, and rich detail views.
+                </p>
+            </article>
+
+            <article class="home-card">
+                <h3>High-speed in-memory UX</h3>
+                <p>
+                    Index archives can be loaded once and then searched or filtered instantly on the client,
+                    with no repeated backend roundtrips.
+                </p>
+            </article>
+        </div>
+    </section>
+
+    <section class="home-section">
+        <div class="home-section__header">
+            <span class="home-section__eyebrow">Research Layer</span>
+            <h2>Prediction is only part of the story</h2>
+        </div>
+
+        <article class="home-panel">
+            <p>
+                BonzoByte compares neural probabilities against market-implied probabilities and evaluates them
+                using probabilistic metrics such as <strong>Brier score</strong> and <strong>log loss</strong>.
+            </p>
+            <p>
+                It also studies blended strategies and segment-specific behavior across tours, surfaces,
+                tournament strength, and favorite / underdog structures — all surfaced through
+                <strong>Analytics</strong> and <strong>Model Insights</strong>.
+            </p>
+        </article>
+    </section>
+
+    <section class="home-section">
+        <div class="home-section__header">
+            <span class="home-section__eyebrow">Authentication</span>
+            <h2>User platform and security</h2>
+        </div>
+
+        <div class="home-grid home-grid--two">
+            <article class="home-card">
+                <h3>MongoDB for the user domain</h3>
+                <p>
+                    MongoDB is used for account concerns such as registration, login, verification,
+                    password reset, user state, and application-level identity workflows.
+                </p>
+            </article>
+
+            <article class="home-card">
+                <h3>Auth stack</h3>
+                <p>
+                    The platform supports classic credential-based authentication as well as OAuth providers,
+                    using JWT-based session handling in the application layer.
+                </p>
+            </article>
+        </div>
+    </section>
+
+    <section class="home-section">
+        <div class="home-section__header">
+            <span class="home-section__eyebrow">Engineering Principles</span>
+            <h2>How the project is built</h2>
+        </div>
+
+        <div class="home-grid home-grid--two">
+            <article class="home-card">
+                <ul class="home-bullet-list">
+                    <li>Separation between heavy offline computation and lightweight online delivery</li>
+                    <li>Strict dependency injection and service boundaries</li>
+                    <li>Normalized source data with intentional denormalized read models</li>
+                    <li>Archive-first strategy for mostly immutable datasets</li>
+                </ul>
+            </article>
+
+            <article class="home-card">
+                <ul class="home-bullet-list">
+                    <li>Reusable UI patterns and shared modal architecture</li>
+                    <li>Client-side performance through precomputed payloads</li>
+                    <li>Incremental research-to-product workflow</li>
+                    <li>Strong focus on maintainability, explainability, and scalability</li>
+                </ul>
+            </article>
+        </div>
+    </section>
+
+    <section class="home-section">
+        <div class="home-section__header">
+            <span class="home-section__eyebrow">Technology Stack</span>
+            <h2>Core technologies</h2>
+        </div>
+
+        <div class="home-tech-grid">
+            <span class="home-tech">ASP.NET Core</span>
+            <span class="home-tech">C#</span>
+            <span class="home-tech">SQL Server</span>
+            <span class="home-tech">Angular</span>
+            <span class="home-tech">Node.js</span>
+            <span class="home-tech">MongoDB</span>
+            <span class="home-tech">Brotli</span>
+            <span class="home-tech">Cloudflare</span>
+            <span class="home-tech">JWT</span>
+            <span class="home-tech">OAuth</span>
+            <span class="home-tech">Machine Learning</span>
+            <span class="home-tech">TrueSkill</span>
+        </div>
+    </section>
+
+    <section class="home-section">
+        <div class="home-section__header">
+            <span class="home-section__eyebrow">Roadmap</span>
+            <h2>What comes next</h2>
+        </div>
+
+        <div class="home-grid home-grid--three">
+            <article class="home-card">
+                <h3>Richer feature generation</h3>
+                <p>
+                    Future model iterations will incorporate additional statistical inputs such as aces,
+                    double faults, return winners, and other deeper performance signals.
+                </p>
+            </article>
+
+            <article class="home-card">
+                <h3>Live and probabilistic extensions</h3>
+                <p>
+                    Existing Markov-chain work can be connected to live match states to estimate win probability
+                    and final score paths before and during matches.
+                </p>
+            </article>
+
+            <article class="home-card">
+                <h3>Broader platform scope</h3>
+                <p>
+                    Planned work includes stronger fallback coverage, doubles support, more advanced explainability,
+                    and deeper model interpretation layers such as SHAP-style analysis.
+                </p>
+            </article>
+        </div>
+    </section>
+</div>

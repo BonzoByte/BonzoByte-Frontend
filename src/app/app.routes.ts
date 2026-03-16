@@ -3,8 +3,8 @@ export const routes: Routes = [
     {
         path: '',
         loadComponent: () =>
-            import('./landing/landing-page.component').then(m => m.LandingPageComponent),
-    },
+            import('./home/home.component').then(m => m.HomeComponent),
+    },   
     {
         path: 'oauth-success',
         loadComponent: () =>
