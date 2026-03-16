@@ -5,6 +5,7 @@ import { Observable, map, shareReplay, catchError, of, switchMap, throwError } f
 import { Match, TournamentIndex } from '../models/tennis.model';
 import brotliDecompress from 'brotli/decompress';
 import { MatchDetailsRaw } from '../models/match-details.model';
+import { PlayerDetailsRaw } from '../models/player-details.model';
 import { AuthService } from './auth.service';
 import { environment } from '../../../environments/environment';
 import { AnalyticsDashboard } from '../models/analytics.model';
@@ -54,6 +55,7 @@ export class StaticArchivesService {
   private detailsStaticBase = `${this.staticBase}/matches`;
   private tsStaticBase = `${this.staticBase}/players/ts`;
   private analyticsStaticBase = `${this.staticBase}/analytics`;
+  private playerDetailsStaticBase = `${this.staticBase}/players/details`;
 
   private readonly PHOTO_BASE = `${environment.apiBase}/players/photo`;
 
@@ -525,5 +527,15 @@ export class StaticArchivesService {
 
   getDefaultPlayerPhotoUrl(gender: 'M' | 'W'): string {
     return `${this.apiBase}/players/photo/photo${gender}.jpg`;
+  }
+
+  getPlayerDetails(playerTPId: number | string): Observable<PlayerDetailsRaw | null> {
+    if (this.mode === 'api') {
+      return this.http.get<PlayerDetailsRaw>(`${this.apiBase}/players/details/${playerTPId}`);
+    }
+  
+    return this.http
+      .get(`${this.playerDetailsStaticBase}/${playerTPId}.br`, { responseType: 'arraybuffer' as const })
+      .pipe(map(buf => this.decodeBrotliJson<PlayerDetailsRaw>(buf)));
   }
 }
