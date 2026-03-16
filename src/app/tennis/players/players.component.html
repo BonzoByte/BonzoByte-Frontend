@@ -138,8 +138,15 @@
               <td class="col-center">{{ formatWinPct(p.winPercentage) }}</td>
               <td class="col-last col-center">{{ formatDateMaybe(p.dateOfLastMatch) }}</td>
 
-              <td class="col-det col-center">
-                <small class="details-link" (click)="openPlayerModal(p.playerTPId)">Details</small>
+              <td class="col-det col-center details-cell">
+                <button
+                  type="button"
+                  class="details-icon-btn"
+                  (click)="openPlayerModal(p.playerTPId)"
+                  title="Open details"
+                  aria-label="Open player details">
+                  i
+                </button>
               </td>
             </tr>
           </tbody>

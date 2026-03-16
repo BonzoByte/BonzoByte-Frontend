@@ -202,8 +202,15 @@
               </td>
 
               <!-- Details -->
-              <td class="col-center">
-                <small class="details-link" (click)="openTournamentModal(t.tournamentEventTPId)">Details</small>
+              <td class="col-center details-cell">
+                <button
+                  type="button"
+                  class="details-icon-btn"
+                  (click)="openTournamentModal(t.tournamentEventTPId)"
+                  title="Open details"
+                  aria-label="Open tournament details">
+                  i
+                </button>
               </td>
             </tr>
           </tbody>

@@ -1,0 +1,58 @@
+.matches-page .details-cell {
+    text-align: center;
+    vertical-align: middle;
+}
+
+.matches-page .details-icon-btn {
+    width: 16px;
+    height: 16px;
+    padding: 0;
+    margin: 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    background: rgba(255, 255, 255, 0.06);
+    color: #fff;
+
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1;
+    cursor: pointer;
+
+    transition:
+        transform 0.15s ease,
+        background 0.15s ease,
+        border-color 0.15s ease,
+        opacity 0.15s ease;
+}
+
+.matches-page .details-icon-btn:hover {
+    transform: scale(1.08);
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.34);
+}
+
+.matches-page .details-icon-btn:focus {
+    outline: none;
+    transform: scale(1.08);
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.34);
+}
+
+.matches-page .table-wrapper {
+    padding-top: 0;
+    padding-right: 16px;
+    padding-bottom: 12px;
+    padding-left: 16px;
+}
+
+.matches-page .match-table {
+    margin-top: -1px;
+}
+
+.matches-page .match-table thead th {
+    top: calc(var(--header-h) + var(--datebar-h) - 2px);
+}
