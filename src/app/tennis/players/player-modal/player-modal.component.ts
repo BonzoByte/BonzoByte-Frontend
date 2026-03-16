@@ -34,9 +34,7 @@ type RoleAvgKey = 'avgWpWonFav' | 'avgWpWonDog' | 'avgWpLostFav' | 'avgWpLostDog
   imports: [CommonModule, BbModalShellComponent],
   templateUrl: './player-modal.component.html',
   styleUrls: [
-    '../../matches/match-details-modal/match-details-modal.component.scss',
-    './player-modal.component.scss'
-  ],
+    '../../matches/match-details-modal/match-details-modal.component.scss'],
   encapsulation: ViewEncapsulation.None
 })
 export class PlayerModalComponent implements OnChanges, OnDestroy {
