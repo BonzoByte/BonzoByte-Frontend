@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Output } from '@angular/core';
+import { Component, EventEmitter, Output, ViewEncapsulation } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import {
   AbstractControl,
@@ -14,9 +14,9 @@ import {
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { AuthService } from '../../core/services/auth.service';
 import { AccessibleClickDirective } from '../../shared/directives/accessible-click.directive';
-import { TrapFocusDirective } from '../../shared/directives/trap-focus.directive';
 import { finalize, timeout, catchError } from 'rxjs/operators';
 import { throwError } from 'rxjs';
+import { BbModalShellComponent } from '@app/shared/ui/bb-modal-shell.component/bb-modal-shell.component';
 
 @Component({
   selector: 'app-register',
@@ -26,14 +26,15 @@ import { throwError } from 'rxjs';
     ReactiveFormsModule,
     MatSnackBarModule,
     RouterModule,
-    TrapFocusDirective,
-    AccessibleClickDirective
+    AccessibleClickDirective,
+    BbModalShellComponent
   ],
-  templateUrl: './register.component.html'
+  templateUrl: './register.component.html',
+  encapsulation: ViewEncapsulation.None
 })
 export class RegisterComponent {
   @Output() closed = new EventEmitter<void>();
-  @Output() registered = new EventEmitter<string>(); // email
+  @Output() registered = new EventEmitter<string>();
 
   registerForm: FormGroup;
   submitting = false;
@@ -41,7 +42,6 @@ export class RegisterComponent {
   showPassword = false;
   showConfirmPassword = false;
 
-  // ✅ inline messages (u modalu)
   errorMessage = '';
   successMessage = '';
 
@@ -92,18 +92,13 @@ export class RegisterComponent {
         nickname: normalizedNickname ? normalizedNickname : undefined
       })
       .pipe(
-        // ✅ UX safety: ne čekamo beskonačno (SMTP na backendu može visiti)
         timeout(15000),
-
         catchError((err) => {
-          // Ako timeoutamo, vrlo je moguće da je user kreiran,
-          // ali backend čeka mail timeout.
           if (err?.name === 'TimeoutError') {
             const msg =
               'Registration was submitted, but the server is taking too long (email service). ' +
               'Please check your email in a minute. If nothing arrives, use "Resend verification".';
 
-            // tretiramo kao “soft success” za UX
             this.successMessage = msg;
 
             this.snackBar.open(msg, 'OK', {
@@ -112,28 +107,20 @@ export class RegisterComponent {
               verticalPosition: 'bottom'
             });
 
-            // možemo emitati email da parent odmah ponudi “Resend”
             this.registered.emit(normalizedEmail);
-
-            // reset UI state
             this.submitting = false;
 
-            // ✅ ne bacamo dalje error jer smo ga “handled”
             return throwError(() => ({ handled: true }));
           }
 
           return throwError(() => err);
         }),
-
         finalize(() => {
-          // ako smo već ručno setali submitting=false u timeout grani,
-          // ovaj finalize će to samo ponovno postaviti na false (OK)
           this.submitting = false;
         })
       )
       .subscribe({
         next: (res: any) => {
-          // ✅ auto-login (backend vraća token + user)
           if (res?.token && res?.user) {
             localStorage.setItem('token', res.token);
             this.authService.setAuthState(true);
@@ -149,15 +136,12 @@ export class RegisterComponent {
           this.registerForm.reset();
           this.registered.emit(normalizedEmail);
 
-          // ✅ zatvori modal
           this.close();
 
-          // ✅ opcionalno: refresh grid (ako ti treba odmah)
           window.dispatchEvent(new CustomEvent('authChanged'));
           this.router.navigate(['/']);
         },
         error: (err) => {
-          // timeout “handled”
           if (err?.handled) return;
 
           const code = err?.error?.code;
@@ -193,15 +177,25 @@ export class RegisterComponent {
     this.closed.emit();
   }
 
-  get email() { return this.registerForm.get('email'); }
-  get nickname() { return this.registerForm.get('nickname'); }
-  get password() { return this.registerForm.get('password'); }
-  get confirmPassword() { return this.registerForm.get('confirmPassword'); }
+  get email() {
+    return this.registerForm.get('email');
+  }
+
+  get nickname() {
+    return this.registerForm.get('nickname');
+  }
+
+  get password() {
+    return this.registerForm.get('password');
+  }
+
+  get confirmPassword() {
+    return this.registerForm.get('confirmPassword');
+  }
 }
 
 export const passwordsMatchValidator: ValidatorFn =
   (group: AbstractControl): ValidationErrors | null => {
-
     const password = group.get('password')?.value;
     const confirmPassword = group.get('confirmPassword')?.value;
 
