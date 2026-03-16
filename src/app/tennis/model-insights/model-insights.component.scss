@@ -3,6 +3,17 @@
 }
 
 .mi-page {
+  background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(0, 0, 0, 0.52)),
+      repeating-linear-gradient(90deg,
+          rgba(255, 255, 255, 0.02) 0px,
+          rgba(255, 255, 255, 0.02) 1px,
+          transparent 1px,
+          transparent 4px),
+      #0f0f0f;
+}
+
+.mi-page {
   width: min(1280px, calc(100% - 2rem));
   margin: 0 auto;
   padding: 0.5rem 0 6.25rem;
