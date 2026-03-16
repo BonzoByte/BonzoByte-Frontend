@@ -1,32 +1,37 @@
+/* eslint-disable @typescript-eslint/array-type */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { CommonModule } from '@angular/common';
 import {
   Component,
   EventEmitter,
   Input,
-  Output,
   OnChanges,
   OnDestroy,
+  Output,
+  SimpleChanges,
   ViewEncapsulation
 } from '@angular/core';
-import { FormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
+
 import { StaticArchivesService } from '@app/core/services/static-archives.service';
+import { PlayerDetailsRaw } from '@app/core/models/player-details.model';
 import { BbModalShellComponent } from '@app/shared/ui/bb-modal-shell.component/bb-modal-shell.component';
 
 type PlayerTab = 'overview' | 'ts' | 'performance' | 'form' | 'roleStats';
 type TsMode = 'M' | 'SM' | 'GSM';
+type SurfaceScope = 'ALL' | 'S1' | 'S2' | 'S3' | 'S4';
 type PerfUnit = 'MATCH' | 'SET' | 'GAME';
 type TimeScope = 'ALL' | 'YEAR' | 'MONTH' | 'WEEK';
-type SurfaceScope = 'ALL' | 'S1' | 'S2' | 'S3' | 'S4';
 type RoleTimeScope = 'ALL' | 'YEAR' | 'MONTH' | 'WEEK';
 
-type PlayerDetailsRaw = Record<string, any>;
+type RoleCountKey = 'winsFav' | 'winsDog' | 'lossesFav' | 'lossesDog';
+type RoleRatioKey = 'winsFavRatio' | 'lossesFavRatio' | 'winsDogRatio' | 'lossesDogRatio';
+type RoleAvgKey = 'avgWpWonFav' | 'avgWpWonDog' | 'avgWpLostFav' | 'avgWpLostDog';
 
 @Component({
   selector: 'app-player-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule, BbModalShellComponent],
+  imports: [CommonModule, BbModalShellComponent],
   templateUrl: './player-modal.component.html',
   styleUrls: [
     '../../matches/match-details-modal/match-details-modal.component.scss',
@@ -38,6 +43,10 @@ export class PlayerModalComponent implements OnChanges, OnDestroy {
   @Input() playerTPId!: number;
   @Output() closed = new EventEmitter<void>();
 
+  loading = false;
+  error: string | null = null;
+  raw: PlayerDetailsRaw | null = null;
+
   activeTab: PlayerTab = 'overview';
 
   activeTsMode: TsMode = 'M';
@@ -48,26 +57,23 @@ export class PlayerModalComponent implements OnChanges, OnDestroy {
   activePerfSurface: SurfaceScope = 'ALL';
 
   activeFormSurface: SurfaceScope = 'ALL';
-  activeRoleTime: RoleTimeScope = 'ALL';
 
-  loading = false;
-  error: string | null = null;
-  raw: PlayerDetailsRaw | null = null;
+  activeRoleTime: RoleTimeScope = 'ALL';
 
   private sub?: Subscription;
 
-  readonly surfaceOptions = [
-    { value: 'ALL' as SurfaceScope, label: 'All Surfaces' },
-    { value: 'S1' as SurfaceScope, label: 'Carpet' },
-    { value: 'S2' as SurfaceScope, label: 'Clay' },
-    { value: 'S3' as SurfaceScope, label: 'Grass' },
-    { value: 'S4' as SurfaceScope, label: 'Hard' }
+  readonly surfaceOptions: Array<{ value: SurfaceScope; label: string }> = [
+    { value: 'ALL', label: 'All Surfaces' },
+    { value: 'S1', label: 'Carpet' },
+    { value: 'S2', label: 'Clay' },
+    { value: 'S3', label: 'Grass' },
+    { value: 'S4', label: 'Hard' }
   ];
 
   constructor(public staticArchives: StaticArchivesService) { }
 
-  ngOnChanges(): void {
-    if (this.playerTPId) {
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['playerTPId']?.currentValue) {
       this.load();
     }
   }
@@ -77,6 +83,7 @@ export class PlayerModalComponent implements OnChanges, OnDestroy {
   }
 
   close(): void {
+    this.sub?.unsubscribe();
     this.closed.emit();
   }
 
@@ -86,12 +93,12 @@ export class PlayerModalComponent implements OnChanges, OnDestroy {
 
   load(): void {
     if (!this.playerTPId) return;
-  
+
     this.sub?.unsubscribe();
     this.loading = true;
     this.error = null;
     this.raw = null;
-  
+
     this.sub = this.staticArchives.getPlayerDetails(this.playerTPId).subscribe({
       next: (data: PlayerDetailsRaw | null) => {
         if (!data) {
@@ -99,7 +106,7 @@ export class PlayerModalComponent implements OnChanges, OnDestroy {
           this.loading = false;
           return;
         }
-  
+
         this.raw = data;
         this.loading = false;
       },
@@ -111,379 +118,454 @@ export class PlayerModalComponent implements OnChanges, OnDestroy {
     });
   }
 
-  // ------------------------------------------------------------------------------------------------
-  // Header / profile
-  // ------------------------------------------------------------------------------------------------
+  // =========================================================================================
+  // Basic helpers
+  // =========================================================================================
 
-  get playerName(): string {
-    return this.safeText(this.raw?.['d002']);
+  private numOrNull(value: unknown): number | null {
+    return typeof value === 'number' && Number.isFinite(value) ? value : null;
   }
 
-  get countryIso3(): string {
-    return this.safeText(this.raw?.['d004'], '');
+  private str(value: unknown): string {
+    return (value ?? '').toString().trim();
   }
 
-  get countryIso2(): string {
-    return this.safeText(this.raw?.['d005'], '');
+  private key(n: number): string {
+    return `d${String(n).padStart(3, '0')}`;
   }
 
-  get countryFull(): string {
-    return this.safeText(this.raw?.['d006'], '');
+  private getNum(n: number): number | null {
+    return this.numOrNull(this.raw?.[this.key(n)]);
   }
 
-  get continentName(): string {
-    return this.safeText(this.raw?.['d008'], '');
-  }
-
-  get bornText(): string {
-    return this.formatBornWithAge(this.raw?.['d009']);
-  }
-
-  get heightText(): string {
-    const n = this.numOrNull(this.raw?.['d010']);
-    return n != null ? `${n} cm` : '';
-  }
-
-  get weightText(): string {
-    const n = this.numOrNull(this.raw?.['d011']);
-    return n != null ? `${n} kg` : '';
-  }
-
-  get turnedProText(): string {
-    const n = this.numOrNull(this.raw?.['d012']);
-    return n != null ? String(n) : '';
-  }
-
-  get playsText(): string {
-    const s = this.safeText(this.raw?.['d014'], '');
-    return s && s.toLowerCase() !== 'unknown' ? s : '';
-  }
-
-  get tourLabel(): string {
-    const id = this.numOrNull(this.raw?.['d015']);
-    if (id === 1) return 'ATP';
-    if (id === 2) return 'WTA';
-    return '';
+  private getStr(n: number): string {
+    return this.str(this.raw?.[this.key(n)]);
   }
 
   flagIso2OrEmpty(iso2: string): string {
     return (iso2 || '').trim().toLowerCase();
   }
 
-  // ------------------------------------------------------------------------------------------------
-  // TS
-  // ------------------------------------------------------------------------------------------------
+  fmtNum(value: unknown, digits = 2): string {
+    const n = this.numOrNull(value);
+    return n == null ? '—' : n.toFixed(digits);
+  }
+
+  fmtDays(value: number | null): string {
+    return value == null || value <= 0 ? '—' : `${value}`;
+  }
+
+  fmtPct01(value: number | null): string {
+    return value == null ? '—' : `${(value * 100).toFixed(1)}%`;
+  }
+
+  // =========================================================================================
+  // Header / basic identity
+  // =========================================================================================
+
+  get playerName(): string {
+    return this.getStr(2);
+  }
+
+  get countryIso3(): string {
+    return this.getStr(4);
+  }
+
+  get countryIso2(): string {
+    return this.getStr(5);
+  }
+
+  get countryFull(): string {
+    return this.getStr(6);
+  }
+
+  get continentName(): string {
+    return this.getStr(8);
+  }
+
+  get playsText(): string {
+    return this.getStr(14);
+  }
+
+  get turnedProText(): string {
+    const year = this.getNum(12);
+    return year == null ? '' : String(year);
+  }
+
+  get tourLabel(): string {
+    const id = this.getNum(15);
+
+    if (id === 1) return 'ATP';
+    if (id === 2) return 'WTA';
+
+    return '';
+  }
+
+  get genderHint(): 'M' | 'W' {
+    return this.tourLabel === 'WTA' ? 'W' : 'M';
+  }
+
+  get bornText(): string {
+    const iso = this.raw?.[this.key(9)];
+    if (!iso) return '';
+
+    const d = new Date(String(iso));
+    if (isNaN(d.getTime())) return '';
+
+    const dd = String(d.getDate()).padStart(2, '0');
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const yyyy = d.getFullYear();
+
+    const age = this.ageNow(d);
+    return age == null ? `${dd}.${mm}.${yyyy}` : `${dd}.${mm}.${yyyy} (${age})`;
+  }
+
+  get heightText(): string {
+    const h = this.getNum(10);
+    return h == null ? '' : `${h} cm`;
+  }
+
+  get weightText(): string {
+    const w = this.getNum(11);
+    return w == null ? '' : `${w} kg`;
+  }
+
+  private ageNow(birthDate: Date): number | null {
+    const now = new Date();
+
+    let age = now.getFullYear() - birthDate.getFullYear();
+    const monthDiff = now.getMonth() - birthDate.getMonth();
+
+    if (monthDiff < 0 || (monthDiff === 0 && now.getDate() < birthDate.getDate())) {
+      age--;
+    }
+
+    return age >= 0 && age < 120 ? age : null;
+  }
+
+  playerAvatarUrl(): string {
+    return this.staticArchives.getPlayerPhotoUrl(this.playerTPId, this.genderHint);
+  }
+
+  onAvatarError(ev: Event): void {
+    const img = ev.target as HTMLImageElement;
+    img.src = this.staticArchives.getDefaultPlayerPhotoUrl(this.genderHint);
+  }
+
+  // =========================================================================================
+  // Overview helpers
+  // =========================================================================================
+
+  wlText(wKey: number, lKey: number): string {
+    const w = this.getNum(wKey);
+    const l = this.getNum(lKey);
+
+    if (w == null && l == null) return '—';
+    return `${w ?? 0} / ${l ?? 0}`;
+  }
+
+  streakText(value: unknown): string {
+    const n = this.numOrNull(value);
+    if (n == null || n === 0) return '—';
+
+    if (n > 0) return `W${n}`;
+    return `L${Math.abs(n)}`;
+  }
+
+  // =========================================================================================
+  // TrueSkill
+  // =========================================================================================
+
+  private readonly tsKeyMap: Record<TsMode, Record<SurfaceScope, { mean: number; sd: number }>> = {
+    M: {
+      ALL: { mean: 16, sd: 17 },
+      S1: { mean: 22, sd: 23 },
+      S2: { mean: 28, sd: 29 },
+      S3: { mean: 34, sd: 35 },
+      S4: { mean: 40, sd: 41 }
+    },
+    SM: {
+      ALL: { mean: 18, sd: 19 },
+      S1: { mean: 24, sd: 25 },
+      S2: { mean: 30, sd: 31 },
+      S3: { mean: 36, sd: 37 },
+      S4: { mean: 42, sd: 43 }
+    },
+    GSM: {
+      ALL: { mean: 20, sd: 21 },
+      S1: { mean: 26, sd: 27 },
+      S2: { mean: 32, sd: 33 },
+      S3: { mean: 38, sd: 39 },
+      S4: { mean: 44, sd: 45 }
+    }
+  };
 
   tsMean(): number | null {
-    return this.readTs(this.activeTsMode, this.activeTsSurface, 'mean');
+    const cfg = this.tsKeyMap[this.activeTsMode][this.activeTsSurface];
+    return this.getNum(cfg.mean);
   }
 
   tsSd(): number | null {
-    return this.readTs(this.activeTsMode, this.activeTsSurface, 'sd');
+    const cfg = this.tsKeyMap[this.activeTsMode][this.activeTsSurface];
+    return this.getNum(cfg.sd);
   }
 
-  private readTs(mode: TsMode, surface: SurfaceScope, metric: 'mean' | 'sd'): number | null {
-    const key = this.tsKey(mode, surface, metric);
-    return this.numOrNull(this.raw?.[key]);
-  }
-
-  private tsKey(mode: TsMode, surface: SurfaceScope, metric: 'mean' | 'sd'): string {
-    const allMap: Record<TsMode, [string, string]> = {
-      M: ['d016', 'd017'],
-      SM: ['d018', 'd019'],
-      GSM: ['d020', 'd021']
-    };
-
-    const s1Map: Record<TsMode, [string, string]> = {
-      M: ['d022', 'd023'],
-      SM: ['d024', 'd025'],
-      GSM: ['d026', 'd027']
-    };
-
-    const s2Map: Record<TsMode, [string, string]> = {
-      M: ['d028', 'd029'],
-      SM: ['d030', 'd031'],
-      GSM: ['d032', 'd033']
-    };
-
-    const s3Map: Record<TsMode, [string, string]> = {
-      M: ['d034', 'd035'],
-      SM: ['d036', 'd037'],
-      GSM: ['d038', 'd039']
-    };
-
-    const s4Map: Record<TsMode, [string, string]> = {
-      M: ['d040', 'd041'],
-      SM: ['d042', 'd043'],
-      GSM: ['d044', 'd045']
-    };
-
-    const mapBySurface: Record<SurfaceScope, Record<TsMode, [string, string]>> = {
-      ALL: allMap,
-      S1: s1Map,
-      S2: s2Map,
-      S3: s3Map,
-      S4: s4Map
-    };
-
-    const pair = mapBySurface[surface][mode];
-    return metric === 'mean' ? pair[0] : pair[1];
-  }
-
-  // ------------------------------------------------------------------------------------------------
+  // =========================================================================================
   // Performance
-  // ------------------------------------------------------------------------------------------------
+  // =========================================================================================
+
+  private readonly perfKeyMap: Record<PerfUnit, Record<SurfaceScope, Record<TimeScope, { w: number; l: number }>>> = {
+    MATCH: {
+      ALL: {
+        ALL: { w: 46, l: 47 },
+        YEAR: { w: 48, l: 49 },
+        MONTH: { w: 50, l: 51 },
+        WEEK: { w: 52, l: 53 }
+      },
+      S1: {
+        ALL: { w: 54, l: 55 },
+        YEAR: { w: 56, l: 57 },
+        MONTH: { w: 58, l: 59 },
+        WEEK: { w: 60, l: 61 }
+      },
+      S2: {
+        ALL: { w: 62, l: 63 },
+        YEAR: { w: 64, l: 65 },
+        MONTH: { w: 66, l: 67 },
+        WEEK: { w: 68, l: 69 }
+      },
+      S3: {
+        ALL: { w: 70, l: 71 },
+        YEAR: { w: 72, l: 73 },
+        MONTH: { w: 74, l: 75 },
+        WEEK: { w: 76, l: 77 }
+      },
+      S4: {
+        ALL: { w: 78, l: 79 },
+        YEAR: { w: 80, l: 81 },
+        MONTH: { w: 82, l: 83 },
+        WEEK: { w: 84, l: 85 }
+      }
+    },
+    SET: {
+      ALL: {
+        ALL: { w: 86, l: 87 },
+        YEAR: { w: 88, l: 89 },
+        MONTH: { w: 90, l: 91 },
+        WEEK: { w: 92, l: 93 }
+      },
+      S1: {
+        ALL: { w: 94, l: 95 },
+        YEAR: { w: 96, l: 97 },
+        MONTH: { w: 98, l: 99 },
+        WEEK: { w: 100, l: 101 }
+      },
+      S2: {
+        ALL: { w: 102, l: 103 },
+        YEAR: { w: 104, l: 105 },
+        MONTH: { w: 106, l: 107 },
+        WEEK: { w: 108, l: 109 }
+      },
+      S3: {
+        ALL: { w: 110, l: 111 },
+        YEAR: { w: 112, l: 113 },
+        MONTH: { w: 114, l: 115 },
+        WEEK: { w: 116, l: 117 }
+      },
+      S4: {
+        ALL: { w: 118, l: 119 },
+        YEAR: { w: 120, l: 121 },
+        MONTH: { w: 122, l: 123 },
+        WEEK: { w: 124, l: 125 }
+      }
+    },
+    GAME: {
+      ALL: {
+        ALL: { w: 126, l: 127 },
+        YEAR: { w: 128, l: 129 },
+        MONTH: { w: 130, l: 131 },
+        WEEK: { w: 132, l: 133 }
+      },
+      S1: {
+        ALL: { w: 134, l: 135 },
+        YEAR: { w: 136, l: 137 },
+        MONTH: { w: 138, l: 139 },
+        WEEK: { w: 140, l: 141 }
+      },
+      S2: {
+        ALL: { w: 142, l: 143 },
+        YEAR: { w: 144, l: 145 },
+        MONTH: { w: 146, l: 147 },
+        WEEK: { w: 148, l: 149 }
+      },
+      S3: {
+        ALL: { w: 150, l: 151 },
+        YEAR: { w: 152, l: 153 },
+        MONTH: { w: 154, l: 155 },
+        WEEK: { w: 156, l: 157 }
+      },
+      S4: {
+        ALL: { w: 158, l: 159 },
+        YEAR: { w: 160, l: 161 },
+        MONTH: { w: 162, l: 163 },
+        WEEK: { w: 164, l: 165 }
+      }
+    }
+  };
 
   perfWins(): number {
-    return this.perfValue('W');
+    const cfg = this.perfKeyMap[this.activePerfUnit][this.activePerfSurface][this.activePerfTime];
+    return this.getNum(cfg.w) ?? 0;
   }
 
   perfLosses(): number {
-    return this.perfValue('L');
+    const cfg = this.perfKeyMap[this.activePerfUnit][this.activePerfSurface][this.activePerfTime];
+    return this.getNum(cfg.l) ?? 0;
   }
 
   perfWinPct(): string {
     const w = this.perfWins();
     const l = this.perfLosses();
     const total = w + l;
-    return total > 0 ? `${((w / total) * 100).toFixed(1)}%` : '—';
+
+    if (total <= 0) return '—';
+    return `${((w / total) * 100).toFixed(1)}%`;
   }
 
-  private perfValue(metric: 'W' | 'L'): number {
-    const baseByUnit: Record<PerfUnit, number> = {
-      MATCH: 46,
-      SET: 86,
-      GAME: 126
-    };
-
-    const surfaceOffsetBySurface: Record<SurfaceScope, number> = {
-      ALL: 0,
-      S1: 8,
-      S2: 16,
-      S3: 24,
-      S4: 32
-    };
-
-    const timeOffsetByTime: Record<TimeScope, number> = {
-      ALL: 0,
-      YEAR: 2,
-      MONTH: 4,
-      WEEK: 6
-    };
-
-    const metricOffset = metric === 'W' ? 0 : 1;
-    const idx =
-      baseByUnit[this.activePerfUnit] +
-      surfaceOffsetBySurface[this.activePerfSurface] +
-      timeOffsetByTime[this.activePerfTime] +
-      metricOffset;
-
-    const key = `d${String(idx).padStart(3, '0')}`;
-    return this.numOrNull(this.raw?.[key]) ?? 0;
-  }
-
-  // ------------------------------------------------------------------------------------------------
+  // =========================================================================================
   // Form
-  // ------------------------------------------------------------------------------------------------
+  // =========================================================================================
 
-  daysSinceLastWin(): number {
-    const key = this.formKey('WIN', this.activeFormSurface);
-    return this.numOrNull(this.raw?.[key]) ?? 0;
+  private readonly formKeyMap: Record<SurfaceScope, { win: number; loss: number; streak: number }> = {
+    ALL: { win: 166, loss: 171, streak: 224 },
+    S1: { win: 167, loss: 172, streak: 225 },
+    S2: { win: 168, loss: 173, streak: 226 },
+    S3: { win: 169, loss: 174, streak: 227 },
+    S4: { win: 170, loss: 175, streak: 228 }
+  };
+
+  daysSinceLastWin(): number | null {
+    return this.getNum(this.formKeyMap[this.activeFormSurface].win);
   }
 
-  daysSinceLastLoss(): number {
-    const key = this.formKey('LOSS', this.activeFormSurface);
-    return this.numOrNull(this.raw?.[key]) ?? 0;
+  daysSinceLastLoss(): number | null {
+    return this.getNum(this.formKeyMap[this.activeFormSurface].loss);
   }
 
-  daysSinceLastMatch(): number {
+  daysSinceLastMatch(): number | null {
     const w = this.daysSinceLastWin();
     const l = this.daysSinceLastLoss();
 
-    if (!w && !l) return 0;
-    if (!w) return l;
-    if (!l) return w;
+    if (w == null && l == null) return null;
+    if (w == null) return l;
+    if (l == null) return w;
+
     return Math.min(w, l);
   }
 
-  moreRecentWas(): 'WIN' | 'LOSS' | 'N/A' {
+  moreRecentWas(): string {
     const w = this.daysSinceLastWin();
     const l = this.daysSinceLastLoss();
 
-    if (!w && !l) return 'N/A';
-    if (!w) return 'LOSS';
-    if (!l) return 'WIN';
+    if (w == null && l == null) return 'N/A';
+    if (w == null) return 'LOSS';
+    if (l == null) return 'WIN';
 
     return w <= l ? 'WIN' : 'LOSS';
   }
 
   formSurfaceStreak(): number | null {
-    const keyBySurface: Record<SurfaceScope, string> = {
-      ALL: 'd224',
-      S1: 'd225',
-      S2: 'd226',
-      S3: 'd227',
-      S4: 'd228'
-    };
-    return this.numOrNull(this.raw?.[keyBySurface[this.activeFormSurface]]);
+    return this.getNum(this.formKeyMap[this.activeFormSurface].streak);
   }
 
-  private formKey(kind: 'WIN' | 'LOSS', surface: SurfaceScope): string {
-    const winMap: Record<SurfaceScope, string> = {
-      ALL: 'd166',
-      S1: 'd167',
-      S2: 'd168',
-      S3: 'd169',
-      S4: 'd170'
-    };
+  // =========================================================================================
+  // Role Stats
+  // =========================================================================================
 
-    const lossMap: Record<SurfaceScope, string> = {
-      ALL: 'd171',
-      S1: 'd172',
-      S2: 'd173',
-      S3: 'd174',
-      S4: 'd175'
-    };
+  private readonly roleKeyMap: Record<RoleTimeScope, {
+    winsFav: number;
+    winsDog: number;
+    lossesFav: number;
+    lossesDog: number;
+    winsFavRatio: number;
+    lossesFavRatio: number;
+    winsDogRatio: number;
+    lossesDogRatio: number;
+    avgWpWonFav: number;
+    avgWpWonDog: number;
+    avgWpLostFav: number;
+    avgWpLostDog: number;
+  }> = {
+    ALL: {
+      winsFav: 176,
+      winsDog: 177,
+      lossesFav: 178,
+      lossesDog: 179,
+      winsFavRatio: 180,
+      lossesFavRatio: 181,
+      winsDogRatio: 182,
+      lossesDogRatio: 183,
+      avgWpWonFav: 184,
+      avgWpWonDog: 185,
+      avgWpLostFav: 186,
+      avgWpLostDog: 187
+    },
+    YEAR: {
+      winsFav: 188,
+      winsDog: 189,
+      lossesFav: 190,
+      lossesDog: 191,
+      winsFavRatio: 192,
+      lossesFavRatio: 193,
+      winsDogRatio: 194,
+      lossesDogRatio: 195,
+      avgWpWonFav: 196,
+      avgWpWonDog: 197,
+      avgWpLostFav: 198,
+      avgWpLostDog: 199
+    },
+    MONTH: {
+      winsFav: 200,
+      winsDog: 201,
+      lossesFav: 202,
+      lossesDog: 203,
+      winsFavRatio: 204,
+      lossesFavRatio: 205,
+      winsDogRatio: 206,
+      lossesDogRatio: 207,
+      avgWpWonFav: 208,
+      avgWpWonDog: 209,
+      avgWpLostFav: 210,
+      avgWpLostDog: 211
+    },
+    WEEK: {
+      winsFav: 212,
+      winsDog: 213,
+      lossesFav: 214,
+      lossesDog: 215,
+      winsFavRatio: 216,
+      lossesFavRatio: 217,
+      winsDogRatio: 218,
+      lossesDogRatio: 219,
+      avgWpWonFav: 220,
+      avgWpWonDog: 221,
+      avgWpLostFav: 222,
+      avgWpLostDog: 223
+    }
+  };
 
-    return kind === 'WIN' ? winMap[surface] : lossMap[surface];
+  roleCount(key: RoleCountKey): number {
+    const dtoKey = this.roleKeyMap[this.activeRoleTime][key];
+    return this.getNum(dtoKey) ?? 0;
   }
 
-  // ------------------------------------------------------------------------------------------------
-  // Role stats
-  // ------------------------------------------------------------------------------------------------
-
-  roleCount(kind: 'winsFav' | 'winsDog' | 'lossesFav' | 'lossesDog'): number {
-    const key = this.roleKey(kind);
-    return this.numOrNull(this.raw?.[key]) ?? 0;
+  roleRatio(key: RoleRatioKey): number | null {
+    const dtoKey = this.roleKeyMap[this.activeRoleTime][key];
+    return this.getNum(dtoKey);
   }
 
-  roleRatio(kind: 'winsFavRatio' | 'winsDogRatio' | 'lossesFavRatio' | 'lossesDogRatio'): number | null {
-    const key = this.roleKey(kind);
-    return this.numOrNull(this.raw?.[key]);
+  roleAvg(key: RoleAvgKey): number | null {
+    const dtoKey = this.roleKeyMap[this.activeRoleTime][key];
+    return this.getNum(dtoKey);
   }
-
-  roleAvg(kind: 'avgWpWonFav' | 'avgWpWonDog' | 'avgWpLostFav' | 'avgWpLostDog'): number | null {
-    const key = this.roleKey(kind);
-    return this.numOrNull(this.raw?.[key]);
-  }
-
-  private roleKey(
-    kind:
-      | 'winsFav'
-      | 'winsDog'
-      | 'lossesFav'
-      | 'lossesDog'
-      | 'winsFavRatio'
-      | 'lossesFavRatio'
-      | 'winsDogRatio'
-      | 'lossesDogRatio'
-      | 'avgWpWonFav'
-      | 'avgWpWonDog'
-      | 'avgWpLostFav'
-      | 'avgWpLostDog'
-  ): string {
-    const baseByTime: Record<RoleTimeScope, number> = {
-      ALL: 176,
-      YEAR: 188,
-      MONTH: 200,
-      WEEK: 212
-    };
-
-    const offsetByKind = {
-      winsFav: 0,
-      winsDog: 1,
-      lossesFav: 2,
-      lossesDog: 3,
-      winsFavRatio: 4,
-      lossesFavRatio: 5,
-      winsDogRatio: 6,
-      lossesDogRatio: 7,
-      avgWpWonFav: 8,
-      avgWpWonDog: 9,
-      avgWpLostFav: 10,
-      avgWpLostDog: 11
-    } as const;
-
-    const idx = baseByTime[this.activeRoleTime] + offsetByKind[kind];
-    return `d${String(idx).padStart(3, '0')}`;
-  }
-
-  // ------------------------------------------------------------------------------------------------
-  // Shared helpers
-  // ------------------------------------------------------------------------------------------------
-
-  wlText(wIndex: number, lIndex: number): string {
-    const wKey = `d${String(wIndex).padStart(3, '0')}`;
-    const lKey = `d${String(lIndex).padStart(3, '0')}`;
-    const w = this.numOrNull(this.raw?.[wKey]) ?? 0;
-    const l = this.numOrNull(this.raw?.[lKey]) ?? 0;
-    return `${w} / ${l}`;
-  }
-
-  streakText(v: number | null | undefined): string {
-    if (v == null || !Number.isFinite(v) || v === 0) return '—';
-    if (v > 0) return `W${v}`;
-    return `L${Math.abs(v)}`;
-  }
-
-  fmtDays(v: number | null | undefined): string {
-    if (v == null || !Number.isFinite(v) || v <= 0) return '—';
-    return `${v}`;
-  }
-
-  fmtPct01(v: number | null | undefined): string {
-    if (v == null || !Number.isFinite(v)) return '—';
-    return `${(v * 100).toFixed(1)}%`;
-  }
-
-  fmtNum(v: any, digits = 2): string {
-    const n = this.numOrNull(v);
-    return n == null ? '—' : n.toFixed(digits);
-  }
-
-  private numOrNull(v: any): number | null {
-    const n = Number(v);
-    return Number.isFinite(n) ? n : null;
-  }
-
-  private safeText(v: any, fallback = '—'): string {
-    const s = (v ?? '').toString().trim();
-    return s.length ? s : fallback;
-  }
-
-  private formatBornWithAge(birthIso: any): string {
-    if (!birthIso) return '';
-    const b = new Date(birthIso);
-    if (isNaN(b.getTime())) return '';
-
-    const dd = String(b.getDate()).padStart(2, '0');
-    const mm = String(b.getMonth() + 1).padStart(2, '0');
-    const yyyy = b.getFullYear();
-
-    const age = this.ageNow(b);
-    return age != null ? `${dd}.${mm}.${yyyy} (${age})` : `${dd}.${mm}.${yyyy}`;
-  }
-
-  private ageNow(b: Date): number | null {
-    const now = new Date();
-    if (isNaN(b.getTime())) return null;
-
-    let age = now.getFullYear() - b.getFullYear();
-    const m = now.getMonth() - b.getMonth();
-    if (m < 0 || (m === 0 && now.getDate() < b.getDate())) age--;
-    return age >= 0 && age < 120 ? age : null;
-  }
-
-  get genderHint(): 'M' | 'W' {
-  return this.tourLabel === 'WTA' ? 'W' : 'M';
-}
-
-playerAvatarUrl(): string {
-  return this.staticArchives.getPlayerPhotoUrl(this.playerTPId, this.genderHint);
-}
-
-onAvatarError(ev: Event): void {
-  const img = ev.target as HTMLImageElement;
-  img.src = this.staticArchives.getDefaultPlayerPhotoUrl(this.genderHint);
-}
 }

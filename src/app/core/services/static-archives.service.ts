@@ -220,7 +220,9 @@ export class StaticArchivesService {
 
   getDetails(matchTPId: number | string): Observable<MatchDetailsRaw> {
     if (this.mode === 'api') {
-      return this.http.get<MatchDetailsRaw>(`${this.apiBase}/match-details/${matchTPId}`);
+      return this.http
+        .get(`${this.apiBase}/match-details/${matchTPId}`, { responseType: 'arraybuffer' as const })
+        .pipe(map(buf => this.decodeBrotliJson<MatchDetailsRaw>(buf)));
     }
 
     return this.http
@@ -269,7 +271,7 @@ export class StaticArchivesService {
       this.mode === 'api'
         ? `${this.apiUrl}/archives/analytics/dashboard`
         : `${this.analyticsStaticBase}/analytics-dashboard.br`;
-  
+
     return this.http
       .get(url, { responseType: 'arraybuffer' as const })
       .pipe(
@@ -529,13 +531,15 @@ export class StaticArchivesService {
     return `${this.apiBase}/players/photo/photo${gender}.jpg`;
   }
 
-getPlayerDetails(playerTPId: number | string): Observable<PlayerDetailsRaw | null> {
-  if (this.mode === 'api') {
-    return this.http.get<PlayerDetailsRaw>(`${this.apiBase}/players/details/${playerTPId}.br`);
+  getPlayerDetails(playerTPId: number | string): Observable<PlayerDetailsRaw | null> {
+    if (this.mode === 'api') {
+      return this.http
+        .get(`${this.apiBase}/players/details/${playerTPId}`, { responseType: 'arraybuffer' as const })
+        .pipe(map(buf => this.decodeBrotliJson<PlayerDetailsRaw>(buf)));
+    }
+  
+    return this.http
+      .get(`${this.playerDetailsStaticBase}/${playerTPId}.br`, { responseType: 'arraybuffer' as const })
+      .pipe(map(buf => this.decodeBrotliJson<PlayerDetailsRaw>(buf)));
   }
-
-  return this.http
-    .get(`${this.playerDetailsStaticBase}/${playerTPId}.br`, { responseType: 'arraybuffer' as const })
-    .pipe(map(buf => this.decodeBrotliJson<PlayerDetailsRaw>(buf)));
-}
 }
