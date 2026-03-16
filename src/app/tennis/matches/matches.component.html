@@ -163,14 +163,27 @@
                                 {{ formatPL(match) }}
                             </td>
 
-                            <td class="col-center">
+                            <td class="col-center details-cell">
                                 <ng-container *ngIf="match.isFinished; else lockedTpl">
-                                    <small class="details-link logreg" (click)="openDetails(match)">Details</small>
+                                    <button
+                                        type="button"
+                                        class="details-icon-btn logreg"
+                                        (click)="openDetails(match)"
+                                        title="Open details"
+                                        aria-label="Open details">
+                                        i
+                                    </button>
                                 </ng-container>
-
+                            
                                 <ng-template #lockedTpl>
-                                    <span class="lock-icon logreg" (click)="openDetails(match)"
-                                        title="Details are locked">🔒</span>
+                                    <button
+                                        type="button"
+                                        class="details-icon-btn details-icon-btn--locked logreg"
+                                        (click)="openDetails(match)"
+                                        title="Details are locked"
+                                        aria-label="Locked details">
+                                        🔒
+                                    </button>
                                 </ng-template>
                             </td>
                         </tr>
