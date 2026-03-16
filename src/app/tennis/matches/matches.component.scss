@@ -67,3 +67,18 @@
     min-width: 50px !important;
     max-width: 50px !important;
 }
+
+.matches-page .table-wrapper {
+    padding-top: 0;
+    padding-right: 16px;
+    padding-bottom: 12px;
+    padding-left: 16px;
+}
+
+.matches-page .match-table {
+    margin-top: -1px;
+}
+
+.matches-page .match-table thead th {
+    top: calc(var(--header-h) + var(--datebar-h) - 1px);
+}
