@@ -600,7 +600,7 @@ main {
 .bb-modal.bb-modal--match-details .bb-pill--title {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
 }
 
 .bb-modal.bb-modal--match-details .bb-pill:hover {
@@ -618,8 +618,8 @@ main {
     flex-wrap: wrap;
     overflow: visible;
     justify-content: center;
-    row-gap: 8px;
-    padding-bottom: 12px;
+    row-gap: 6px;
+    padding-bottom: 6px;
 }
 
 .bb-modal.bb-modal--match-details .bb-tab {
@@ -1498,9 +1498,9 @@ body.modal-open {
 
 .bb-tabs {
     display: flex;
-    gap: 8px;
-    padding: 10px 0 12px;
-    margin-bottom: 12px;
+    gap: 6px;
+    padding: 6px 0 6px;
+    margin-bottom: 6px;
 
     overflow-x: auto;
     overflow-y: hidden;
@@ -1525,7 +1525,7 @@ body.modal-open {
 .bb-tab {
     white-space: nowrap;
     font-size: 12px;
-    padding: 8px 12px;
+    padding: 6px 6px;
     border-radius: 5px;
     cursor: pointer;
 
@@ -1544,7 +1544,7 @@ body.modal-open {
 }
 
 .bb-pill {
-    padding: 3px 8px;
+    padding: 6px 6px;
     border-radius: 5px;
     font-size: 12px;
     cursor: default;
