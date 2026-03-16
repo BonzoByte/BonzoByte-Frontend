@@ -719,11 +719,12 @@ main {
     font-weight: 700;
     letter-spacing: 0.08em;
     text-transform: uppercase;
+    text-decoration: none;
 }
 
 .custom-header .brand-title .main-title:hover {
-    transform: scale(1.06);
     cursor: pointer;
+    text-decoration: none;
 }
 
 .brand-link {
