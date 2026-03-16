@@ -280,6 +280,24 @@ main {
      Shared "link-like" triggers
   ---------------------------- */
 
+.bb-hint a,
+.bb-contact-email a,
+.bb-about-email a {
+    color: #fff;
+    text-decoration: none;
+    text-underline-offset: 2px;
+}
+
+.bb-hint a:hover,
+.bb-contact-email a:hover,
+.bb-about-email a:hover,
+.bb-hint a:focus,
+.bb-contact-email a:focus,
+.bb-about-email a:focus {
+    color: #fff;
+    opacity: 0.9;
+}
+
 .clickable-text,
 .details-link {
     cursor: pointer;
@@ -728,16 +746,16 @@ main {
 }
 
 .brand-link {
-    text-decoration: none;
+    text-decoration: none!important;
     color: inherit;
     display: inline-block;
-  }
-  
-  .brand-link:hover,
-  .brand-link:focus {
+}
+
+.brand-link:hover,
+.brand-link:focus {
     text-decoration: none;
     color: inherit;
-  }
+}
 
 /* Avoid scroll if you use body class toggles */
 body.bb-noscroll,
@@ -1136,19 +1154,19 @@ body.modal-open {
 .bb-contact-intro {
     margin-bottom: 0.35rem;
     line-height: 1.5;
-  }
-  
-  .bb-contact-email {
+}
+
+.bb-contact-email {
     margin-top: 0;
     margin-bottom: 1rem;
     line-height: 1.4;
-  }
-  
-  .bb-contact-email a {
+}
+
+.bb-contact-email a {
     color: inherit;
     text-decoration: underline;
     text-underline-offset: 2px;
-  }
+}
 
 /* ========== Value (edge) section: match Odds pills ========== */
 
@@ -1851,7 +1869,7 @@ body.modal-open {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
-    align-items: center; 
+    align-items: center;
 }
 
 .bb-ts-group-title {
