@@ -235,19 +235,18 @@ export class StaticArchivesService {
     if (match?.isFinished) {
       return this.getDetails(match.matchTPId);
     }
-
+  
     const user = this.auth.getUser();
     const ent: any = (user as any)?.entitlements;
     const privileged = !!(user?.isAdmin || ent?.isPremium || ent?.hasTrial);
-
+  
     if (privileged) {
       return this.getDetails(match.matchTPId);
     }
-
+  
     // Free user: enforce lock window (2h before expected start)
-    const unlocksAt = this.calcUnlocksAtIso(match, lockHours); // implement below
-
-    // If now < unlocksAt -> locked
+    const unlocksAt = this.calcUnlocksAtIso(match, lockHours);
+  
     if (unlocksAt && Date.now() < Date.parse(unlocksAt)) {
       return throwError(() => ({
         code: 'DETAILS_LOCKED',
@@ -255,11 +254,10 @@ export class StaticArchivesService {
         lockHours,
       } as DetailsLockedError));
     }
-
-    // unlocked -> allowed
-    return this.http.get<any>(`${this.apiUrl}/archives/match-details/${match.matchTPId}`).pipe(
+  
+    // unlocked -> same archive pipeline as everything else
+    return this.getDetails(match.matchTPId).pipe(
       catchError((err: any) => {
-        // ako backend vrati JSON error body, proslijedi baš taj body dalje
         if (err?.error) return throwError(() => err.error);
         return throwError(() => err);
       })
@@ -514,9 +512,11 @@ export class StaticArchivesService {
 
   getTsHistory(playerTPId: number | string): Observable<any> {
     if (this.mode === 'api') {
-      return this.http.get<any>(`${this.apiBase}/ts/${playerTPId}`);
+      return this.http
+        .get(`${this.apiBase}/ts/${playerTPId}`, { responseType: 'arraybuffer' as const })
+        .pipe(map(buf => this.decodeBrotliJson<any>(buf)));
     }
-
+  
     return this.http
       .get(`${this.tsStaticBase}/${playerTPId}.br`, { responseType: 'arraybuffer' as const })
       .pipe(map(buf => this.decodeBrotliJson<any>(buf)));
@@ -537,7 +537,7 @@ export class StaticArchivesService {
         .get(`${this.apiBase}/players/details/${playerTPId}`, { responseType: 'arraybuffer' as const })
         .pipe(map(buf => this.decodeBrotliJson<PlayerDetailsRaw>(buf)));
     }
-  
+
     return this.http
       .get(`${this.playerDetailsStaticBase}/${playerTPId}.br`, { responseType: 'arraybuffer' as const })
       .pipe(map(buf => this.decodeBrotliJson<PlayerDetailsRaw>(buf)));
