@@ -532,6 +532,14 @@ main {
         visibility: visible;
         pointer-events: all;
     }
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(0, 0, 0, 0.52)),
+        repeating-linear-gradient(90deg,
+            rgba(255, 255, 255, 0.02) 0px,
+            rgba(255, 255, 255, 0.02) 1px,
+            transparent 1px,
+            transparent 4px),
+        #0f0f0f;
 }
 
 .bb-loading-card {
