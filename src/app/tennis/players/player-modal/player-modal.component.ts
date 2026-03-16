@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { CommonModule } from '@angular/common';
-import { PlayerSummaryCardComponent } from '../player-summary-card/player-summary-card.component';
 import {
   Component,
   EventEmitter,
@@ -27,7 +26,7 @@ type PlayerDetailsRaw = Record<string, any>;
 @Component({
   selector: 'app-player-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule, BbModalShellComponent, PlayerSummaryCardComponent],
+  imports: [CommonModule, FormsModule, BbModalShellComponent],
   templateUrl: './player-modal.component.html',
   styleUrls: [
     '../../matches/match-details-modal/match-details-modal.component.scss',
