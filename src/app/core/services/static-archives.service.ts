@@ -531,7 +531,7 @@ export class StaticArchivesService {
 
   getPlayerDetails(playerTPId: number | string): Observable<PlayerDetailsRaw | null> {
     if (this.mode === 'api') {
-      return this.http.get<PlayerDetailsRaw>(`${this.apiBase}/players/details/${playerTPId}`);
+      return this.http.get<PlayerDetailsRaw>(`${this.apiBase}/players/details/${playerTPId}.br`);
     }
   
     return this.http
