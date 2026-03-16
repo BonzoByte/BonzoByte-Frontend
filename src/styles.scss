@@ -726,6 +726,18 @@ main {
     cursor: pointer;
 }
 
+.brand-link {
+    text-decoration: none;
+    color: inherit;
+    display: inline-block;
+  }
+  
+  .brand-link:hover,
+  .brand-link:focus {
+    text-decoration: none;
+    color: inherit;
+  }
+
 /* Avoid scroll if you use body class toggles */
 body.bb-noscroll,
 body.modal-open {
