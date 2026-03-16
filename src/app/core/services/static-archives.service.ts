@@ -220,7 +220,7 @@ export class StaticArchivesService {
 
   getDetails(matchTPId: number | string): Observable<MatchDetailsRaw> {
     if (this.mode === 'api') {
-      return this.http.get<MatchDetailsRaw>(`${this.apiBase}/match-details/${matchTPId}`);
+      return this.http.get<MatchDetailsRaw>(`${this.apiBase}/match-details/${matchTPId}.br`);
     }
 
     return this.http
