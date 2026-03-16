@@ -1133,6 +1133,23 @@ body.modal-open {
     margin: 0;
 }
 
+.bb-contact-intro {
+    margin-bottom: 0.35rem;
+    line-height: 1.5;
+  }
+  
+  .bb-contact-email {
+    margin-top: 0;
+    margin-bottom: 1rem;
+    line-height: 1.4;
+  }
+  
+  .bb-contact-email a {
+    color: inherit;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
 /* ========== Value (edge) section: match Odds pills ========== */
 
 .radio-row {

@@ -1,6 +1,6 @@
 ﻿import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { Component, EventEmitter, OnDestroy, OnInit, Output, ViewEncapsulation } from '@angular/core';
+import { Component, EventEmitter, Output, ViewEncapsulation } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { finalize } from 'rxjs/operators';
@@ -14,7 +14,7 @@ import { BbModalShellComponent } from "@app/shared/ui/bb-modal-shell.component/b
     templateUrl: './contact-modal.component.html',
     encapsulation: ViewEncapsulation.None
 })
-export class ContactModalComponent implements OnInit, OnDestroy {
+export class ContactModalComponent {
     @Output() closed = new EventEmitter<void>();
 
     form: FormGroup;
@@ -33,20 +33,11 @@ export class ContactModalComponent implements OnInit, OnDestroy {
         });
     }
 
-    ngOnInit(): void {
-        document.body.classList.add('modal-open');
-    }
-
-    ngOnDestroy(): void {
-        document.body.classList.remove('modal-open');
-    }
-
     get name() { return this.form.get('name'); }
     get email() { return this.form.get('email'); }
     get message() { return this.form.get('message'); }
 
     close(): void {
-        document.body.classList.remove('modal-open');
         this.closed.emit();
     }
 
@@ -64,13 +55,23 @@ export class ContactModalComponent implements OnInit, OnDestroy {
             .pipe(finalize(() => (this.submitting = false)))
             .subscribe({
                 next: () => {
-                    this.snack.open('Message sent. Thanks!', '', { duration: 3000, panelClass: 'success-snackbar' });
+                    this.snack.open('Message sent. Thanks!', '', {
+                        duration: 3000,
+                        panelClass: 'success-snackbar'
+                    });
                     this.form.reset();
                     this.submitted = false;
                     this.close();
                 },
                 error: (err) => {
-                    this.snack.open(err?.error?.message || 'Failed to send message.', '', { duration: 4000, panelClass: 'error-snackbar' });
+                    this.snack.open(
+                        err?.error?.message || 'Failed to send message.',
+                        '',
+                        {
+                            duration: 4000,
+                            panelClass: 'error-snackbar'
+                        }
+                    );
                 }
             });
     }
