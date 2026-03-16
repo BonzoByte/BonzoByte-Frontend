@@ -13,7 +13,7 @@
 
                 <input #dateInput type="text" class="custom-date-input date-dmy" inputmode="numeric" autocomplete="off"
                     placeholder="DD.MM.YYYY" [(ngModel)]="currentDateDMY" (input)="onDateDMYInput($event)"
-                    (blur)="commitDateInputDMY()" (keydown.enter)="commitDateInputDMY()"
+                    (focus)="onDateInputFocus()" (blur)="commitDateInputDMY()" (keydown.enter)="commitDateInputDMY()"
                     [disabled]="loading || !minDate || !maxDate" />
 
                 <button (click)="nextDay()" class="link-button" [disabled]="isNextDisabled || loading">

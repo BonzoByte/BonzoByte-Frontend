@@ -705,6 +705,12 @@ export class MatchesComponent implements OnInit, OnDestroy {
         this.loadMatchesForDate(rawDate);
     }
 
+    onDateInputFocus(): void {
+        requestAnimationFrame(() => {
+            this.dateInputRef?.nativeElement?.select();
+        });
+    }
+
     previousDay(): void {
         if (this.loading) return;
 
@@ -1620,23 +1626,47 @@ export class MatchesComponent implements OnInit, OnDestroy {
         this.loadMatchesForDate(corrected);
     }
     onDateDMYInput(event: Event): void {
-        const el = event.target as HTMLInputElement;
-        const digits = (el.value || '').replace(/\D/g, '').slice(0, 8);
-
-        let out = '';
+        const input = event.target as HTMLInputElement;
+    
+        const raw = input.value ?? '';
+        const caret = input.selectionStart ?? raw.length;
+    
+        // koliko znamenki je bilo lijevo od kursora PRIJE reformatiranja
+        const digitsBeforeCaret = raw.slice(0, caret).replace(/\D/g, '').length;
+    
+        // uzmi samo znamenke, max 8
+        const digits = raw.replace(/\D/g, '').slice(0, 8);
+    
+        // format DD.MM.YYYY
+        let formatted = '';
         if (digits.length <= 2) {
-            out = digits;
+            formatted = digits;
         } else if (digits.length <= 4) {
-            out = `${digits.slice(0, 2)}.${digits.slice(2)}`;
+            formatted = `${digits.slice(0, 2)}.${digits.slice(2)}`;
         } else {
-            out = `${digits.slice(0, 2)}.${digits.slice(2, 4)}.${digits.slice(4)}`;
+            formatted = `${digits.slice(0, 2)}.${digits.slice(2, 4)}.${digits.slice(4)}`;
         }
-
-        this.currentDateDMY = out;
-
-        // sync DOM value (bitno kad browser “kasni” s ngModel)
+    
+        this.currentDateDMY = formatted;
+    
         if (this.dateInputRef?.nativeElement) {
-            this.dateInputRef.nativeElement.value = out;
+            const el = this.dateInputRef.nativeElement;
+            el.value = formatted;
+    
+            // vrati caret na logično mjesto prema broju znamenki lijevo
+            let nextCaret = 0;
+            let seenDigits = 0;
+    
+            while (nextCaret < formatted.length && seenDigits < digitsBeforeCaret) {
+                if (/\d/.test(formatted[nextCaret])) {
+                    seenDigits++;
+                }
+                nextCaret++;
+            }
+    
+            requestAnimationFrame(() => {
+                el.setSelectionRange(nextCaret, nextCaret);
+            });
         }
     }
 
