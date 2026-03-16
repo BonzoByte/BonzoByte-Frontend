@@ -69,7 +69,7 @@
                         <col class="c-odds" />
                         <col class="c-prob" />
                         <col class="c-pl" />
-                        <col class="c-details" />
+                        <col class="c-details logreg" />
                     </colgroup>
                     <thead>
                         <tr>
@@ -165,11 +165,11 @@
 
                             <td class="col-center">
                                 <ng-container *ngIf="match.isFinished; else lockedTpl">
-                                    <small class="details-link" (click)="openDetails(match)">Details</small>
+                                    <small class="details-link logreg" (click)="openDetails(match)">Details</small>
                                 </ng-container>
 
                                 <ng-template #lockedTpl>
-                                    <span class="lock-icon" (click)="openDetails(match)"
+                                    <span class="lock-icon logreg" (click)="openDetails(match)"
                                         title="Details are locked">🔒</span>
                                 </ng-template>
                             </td>
