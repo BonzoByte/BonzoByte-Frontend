@@ -1,4 +1,12 @@
 <app-bb-modal-shell title="Contact Us" modalClass="bb-contact-modal" (closed)="close()">
+    <p class="bb-hint bb-contact-intro">
+        Have a project idea, collaboration request, or a custom software need? Send a message and BonzoByte will get back to you.
+    </p>
+
+    <p class="bb-hint bb-contact-email">
+        Contact email: <a href="mailto:bonzobyte@gmail.com">bonzobyte@gmail.com</a>
+    </p>
+
     <form [formGroup]="form" (ngSubmit)="submit()" autocomplete="off" novalidate>
         <div class="form-row">
             <label for="c-name">Name</label>
