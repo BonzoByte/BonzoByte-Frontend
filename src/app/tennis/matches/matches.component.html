@@ -42,8 +42,8 @@
 
             <div class="table-wrapper">
                 <!-- No matches (unfiltered) -->
-                <div *ngIf="!loading && matches.length === 0 && !isFiltered" class="text-center mt-3 p-3 rounded border"
-                    style="background-color:transparent;padding-top:10px;">
+                <div *ngIf="!loading && filteredMatches.length === 0 && !isFiltered"
+                    class="text-center mt-3 p-3 rounded border" style="background-color:transparent;padding-top:10px;">
                     No matches for this day.
                 </div>
 
@@ -165,22 +165,15 @@
 
                             <td class="col-center details-cell">
                                 <ng-container *ngIf="match.isFinished; else lockedTpl">
-                                    <button
-                                        type="button"
-                                        class="details-icon-btn logreg"
-                                        (click)="openDetails(match)"
-                                        title="Open details"
-                                        aria-label="Open details">
+                                    <button type="button" class="details-icon-btn logreg" (click)="openDetails(match)"
+                                        title="Open details" aria-label="Open details">
                                         i
                                     </button>
                                 </ng-container>
-                            
+
                                 <ng-template #lockedTpl>
-                                    <button
-                                        type="button"
-                                        class="details-icon-btn details-icon-btn--locked logreg"
-                                        (click)="openDetails(match)"
-                                        title="Details are locked"
+                                    <button type="button" class="details-icon-btn details-icon-btn--locked logreg"
+                                        (click)="openDetails(match)" title="Details are locked"
                                         aria-label="Locked details">
                                         🔒
                                     </button>

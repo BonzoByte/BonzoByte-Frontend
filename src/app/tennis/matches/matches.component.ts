@@ -452,9 +452,11 @@ export class MatchesComponent implements OnInit, OnDestroy {
             },
             error: (err) => {
                 console.error('❌ Error loading daily archive:', err);
+                this.daySourceMatches = [];
                 this.matches = [];
+                this.filteredMatches = [];
                 this.loading = false;
-
+            
                 this.checkAdjacentDaysAvailability(this.currentDate);
                 this.deferScrollToTop();
                 document.body.classList.remove('bb-noscroll');
@@ -1606,8 +1608,10 @@ export class MatchesComponent implements OnInit, OnDestroy {
         if (this.availableDates?.length && !this.availableDates.includes(correctedIso)) {
             this.daySourceMatches = [];
             this.matches = [];
+            this.filteredMatches = [];
             this.noMatchesForFilter = false; // nije filter problem
-            this.checkAdjacentDaysAvailability(corrected); // strelice i dalje imaju smisla
+        
+            this.checkAdjacentDaysAvailability(corrected);
             this.deferScrollToTop();
             return;
         }
