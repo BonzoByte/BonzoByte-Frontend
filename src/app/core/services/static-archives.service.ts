@@ -255,7 +255,7 @@ export class StaticArchivesService {
     }
 
     // unlocked -> allowed
-    return this.http.get<any>(`${this.apiUrl}/archives/match-details/${match.matchTPId}`).pipe(
+    return this.http.get<any>(`${this.apiUrl}/archives/match-details/${match.matchTPId}.br`).pipe(
       catchError((err: any) => {
         // ako backend vrati JSON error body, proslijedi baš taj body dalje
         if (err?.error) return throwError(() => err.error);
@@ -529,15 +529,15 @@ export class StaticArchivesService {
     return `${this.apiBase}/players/photo/photo${gender}.jpg`;
   }
 
-  getPlayerDetails(playerTPId: number | string): Observable<PlayerDetailsRaw | null> {
-    if (this.mode === 'api') {
-      return this.http
-        .get(`${this.apiBase}/players/details/${playerTPId}`, { responseType: 'arraybuffer' as const })
-        .pipe(map(buf => this.decodeBrotliJson<PlayerDetailsRaw>(buf)));
-    }
-  
+getPlayerDetails(playerTPId: number | string): Observable<PlayerDetailsRaw | null> {
+  if (this.mode === 'api') {
     return this.http
-      .get(`${this.playerDetailsStaticBase}/${playerTPId}.br`, { responseType: 'arraybuffer' as const })
+      .get(`${this.apiBase}/players/details/${playerTPId}.br`, { responseType: 'arraybuffer' as const })
       .pipe(map(buf => this.decodeBrotliJson<PlayerDetailsRaw>(buf)));
   }
+
+  return this.http
+    .get(`${this.playerDetailsStaticBase}/${playerTPId}.br`, { responseType: 'arraybuffer' as const })
+    .pipe(map(buf => this.decodeBrotliJson<PlayerDetailsRaw>(buf)));
+}
 }

@@ -29,7 +29,10 @@ type PlayerDetailsRaw = Record<string, any>;
   standalone: true,
   imports: [CommonModule, FormsModule, BbModalShellComponent, PlayerSummaryCardComponent],
   templateUrl: './player-modal.component.html',
-  styleUrls: ['./player-modal.component.scss'],
+  styleUrls: [
+    '../../matches/match-details-modal/match-details-modal.component.scss',
+    './player-modal.component.scss'
+  ],
   encapsulation: ViewEncapsulation.None
 })
 export class PlayerModalComponent implements OnChanges, OnDestroy {

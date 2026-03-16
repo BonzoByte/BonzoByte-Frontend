@@ -29,6 +29,78 @@
   --bb-md-tooltip-bg: var(--bb-tooltip-bg, rgba(20, 20, 20, 0.92));
   --bb-md-tooltip-border: var(--bb-tooltip-border, rgba(255, 255, 255, 0.10));
 
+  :host ::ng-deep .bb-modal--match-details {
+    .bb-player-summary {
+      display: grid;
+      grid-template-columns: 88px auto;
+      gap: 14px;
+      align-items: start;
+      justify-content: center;
+      margin-bottom: 10px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--bb-md-border);
+    }
+
+    .bb-player-summary__avatar {
+      width: 88px;
+      height: 88px;
+      border-radius: 14px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(255, 255, 255, 0.04);
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.18);
+    }
+
+    .bb-player-summary__avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .bb-player-summary__meta {
+      min-width: 280px;
+      max-width: 420px;
+    }
+
+    .bb-player-summary__meta .bb-kv-row {
+      display: grid;
+      grid-template-columns: 90px 1fr;
+      gap: 10px;
+      margin-top: 4px;
+      align-items: baseline;
+    }
+
+    .bb-player-name {
+      margin-bottom: 6px;
+    }
+
+    .bb-comp-left,
+    .bb-comp-right {
+      font-variant-numeric: tabular-nums;
+    }
+
+    @media (max-width: 700px) {
+      .bb-player-summary {
+        grid-template-columns: 1fr;
+        justify-items: center;
+        text-align: center;
+      }
+
+      .bb-player-summary__meta {
+        min-width: 0;
+        width: 100%;
+        max-width: 360px;
+      }
+
+      .bb-player-summary__meta .bb-kv-row {
+        grid-template-columns: 1fr;
+        gap: 2px;
+        text-align: center;
+      }
+    }
+  }
+
   /* ============================================================================================
      Header meta line (tournament line)
   ============================================================================================ */
@@ -701,11 +773,11 @@
     display: block;
 
     background: linear-gradient(to right,
-            transparent,
-            rgba(255, 255, 255, 0.55),
-            transparent);
+        transparent,
+        rgba(255, 255, 255, 0.55),
+        transparent);
     opacity: 0.9;
-}
+  }
 
   .nn-overview-meta {
     max-width: 720px;
@@ -814,7 +886,7 @@
     text-align: left;
     font-weight: 500;
   }
-  
+
   .nn-feature-label {
     vertical-align: middle;
   }
@@ -841,7 +913,7 @@
     opacity: 0.85;
     transition: opacity 120ms ease, border-color 120ms ease, transform 120ms ease;
   }
-  
+
   .nn-feature-help:hover,
   .nn-feature-help:focus {
     opacity: 1;

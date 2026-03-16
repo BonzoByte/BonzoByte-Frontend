@@ -1,4 +1,4 @@
-<app-bb-modal-shell title="Player Details" modalClass="bb-modal--player-details" (closed)="close()">
+<app-bb-modal-shell title="Player Details" modalClass="bb-modal--match-details" (closed)="close()">
   <div class="bb-body">
     <div class="bb-loading" *ngIf="loading">Loading…</div>
 
@@ -18,14 +18,10 @@
           <span class="bb-flag-wrap" *ngIf="flagIso2OrEmpty(countryIso2) as iso" [title]="countryFull || 'World'">
             <span class="fi fi-{{ iso }} bb-flag-sm"></span>
           </span>
-
-          {{ playerName }}
-          <span *ngIf="countryIso3">({{ countryIso3 }})</span>
+          {{ playerName }}<span *ngIf="countryIso3"> ({{ countryIso3 }})</span>
         </span>
 
         <span class="bb-pill" *ngIf="tourLabel">{{ tourLabel }}</span>
-        <span class="bb-pill" *ngIf="playsText">{{ playsText }}</span>
-        <span class="bb-pill" *ngIf="turnedProText">Turned pro: {{ turnedProText }}</span>
         <span class="bb-pill" *ngIf="continentName">{{ continentName }}</span>
       </div>
 
@@ -33,307 +29,301 @@
       <div class="bb-tabs">
         <button class="bb-tab" [class.active]="activeTab === 'overview'" (click)="setTab('overview')">Overview</button>
         <button class="bb-tab" [class.active]="activeTab === 'ts'" (click)="setTab('ts')">TS</button>
-        <button class="bb-tab" [class.active]="activeTab === 'performance'"
-          (click)="setTab('performance')">Performance</button>
+        <button class="bb-tab" [class.active]="activeTab === 'performance'" (click)="setTab('performance')">Performance</button>
         <button class="bb-tab" [class.active]="activeTab === 'form'" (click)="setTab('form')">Form</button>
-        <button class="bb-tab" [class.active]="activeTab === 'roleStats'" (click)="setTab('roleStats')">Role
-          Stats</button>
+        <button class="bb-tab" [class.active]="activeTab === 'roleStats'" (click)="setTab('roleStats')">Role Stats</button>
       </div>
+
+      <!-- reusable summary -->
+      <ng-template #playerSummary>
+        <div class="bb-player-summary">
+          <div class="bb-player-summary__avatar">
+            <img [src]="playerAvatarUrl()" (error)="onAvatarError($event)" alt="Player avatar" loading="lazy" />
+          </div>
+
+          <div class="bb-player-summary__meta">
+            <div class="bb-player-name">
+              <span class="bb-flag-wrap" *ngIf="flagIso2OrEmpty(countryIso2) as iso" [title]="countryFull || 'World'">
+                <span class="fi fi-{{ iso }} bb-flag-sm"></span>
+              </span>
+              <span class="bb-dot bb-dot-red bb-dot-inline" aria-hidden="true"></span>
+              {{ playerName }}<span *ngIf="countryIso3"> ({{ countryIso3 }})</span>
+            </div>
+
+            <div class="bb-kv-row" *ngIf="bornText">
+              <div class="bb-k">Born</div>
+              <div class="bb-v">{{ bornText }}</div>
+            </div>
+
+            <div class="bb-kv-row" *ngIf="countryFull">
+              <div class="bb-k">Country</div>
+              <div class="bb-v">{{ countryFull }}</div>
+            </div>
+
+            <div class="bb-kv-row" *ngIf="continentName">
+              <div class="bb-k">Continent</div>
+              <div class="bb-v">{{ continentName }}</div>
+            </div>
+
+            <div class="bb-kv-row" *ngIf="heightText">
+              <div class="bb-k">Height</div>
+              <div class="bb-v">{{ heightText }}</div>
+            </div>
+
+            <div class="bb-kv-row" *ngIf="weightText">
+              <div class="bb-k">Weight</div>
+              <div class="bb-v">{{ weightText }}</div>
+            </div>
+
+            <div class="bb-kv-row" *ngIf="playsText">
+              <div class="bb-k">Plays</div>
+              <div class="bb-v">{{ playsText }}</div>
+            </div>
+
+            <div class="bb-kv-row" *ngIf="turnedProText">
+              <div class="bb-k">Turned Pro</div>
+              <div class="bb-v">{{ turnedProText }}</div>
+            </div>
+          </div>
+        </div>
+      </ng-template>
 
       <!-- OVERVIEW -->
       <section *ngIf="activeTab === 'overview'" class="bb-panel">
-        <app-player-summary-card [playerName]="playerName" [countryIso2]="countryIso2" [countryIso3]="countryIso3"
-          [countryFull]="countryFull" [continentName]="continentName" [bornText]="bornText" [heightText]="heightText"
-          [weightText]="weightText" [playsText]="playsText" [turnedProText]="turnedProText"
-          [avatarUrl]="playerAvatarUrl()" [genderHint]="genderHint">
-        </app-player-summary-card>
+        <ng-container *ngTemplateOutlet="playerSummary"></ng-container>
 
-        <div class="bb-metric-grid">
-          <div class="bb-metric-card">
-            <div class="bb-metric-label">TS Match</div>
-            <div class="bb-metric-value">{{ fmtNum(raw['d016']) }}</div>
-            <div class="bb-metric-sub">SD {{ fmtNum(raw['d017']) }}</div>
+        <div class="bb-compare bb-compare-ts">
+          <div class="bb-comp-row">
+            <div class="bb-comp-left">{{ fmtNum(raw['d016']) }}</div>
+            <div class="bb-comp-mid">TS Match</div>
+            <div class="bb-comp-right">SD {{ fmtNum(raw['d017']) }}</div>
           </div>
 
-          <div class="bb-metric-card">
-            <div class="bb-metric-label">TS Set Match</div>
-            <div class="bb-metric-value">{{ fmtNum(raw['d018']) }}</div>
-            <div class="bb-metric-sub">SD {{ fmtNum(raw['d019']) }}</div>
+          <div class="bb-comp-row">
+            <div class="bb-comp-left">{{ fmtNum(raw['d018']) }}</div>
+            <div class="bb-comp-mid">TS Set Match</div>
+            <div class="bb-comp-right">SD {{ fmtNum(raw['d019']) }}</div>
           </div>
 
-          <div class="bb-metric-card">
-            <div class="bb-metric-label">TS Game Set Match</div>
-            <div class="bb-metric-value">{{ fmtNum(raw['d020']) }}</div>
-            <div class="bb-metric-sub">SD {{ fmtNum(raw['d021']) }}</div>
-          </div>
-        </div>
-
-        <div class="bb-split-grid">
-          <div class="bb-panel bb-panel--sub">
-            <div class="bb-panel-title">Match Record</div>
-            <div class="bb-data-rows">
-              <div class="bb-data-row">
-                <div class="bb-k">Total</div>
-                <div class="bb-v">{{ wlText(46, 47) }}</div>
-              </div>
-              <div class="bb-data-row">
-                <div class="bb-k">Last Year</div>
-                <div class="bb-v">{{ wlText(48, 49) }}</div>
-              </div>
-              <div class="bb-data-row">
-                <div class="bb-k">Last Month</div>
-                <div class="bb-v">{{ wlText(50, 51) }}</div>
-              </div>
-              <div class="bb-data-row">
-                <div class="bb-k">Last Week</div>
-                <div class="bb-v">{{ wlText(52, 53) }}</div>
-              </div>
-            </div>
+          <div class="bb-comp-row">
+            <div class="bb-comp-left">{{ fmtNum(raw['d020']) }}</div>
+            <div class="bb-comp-mid">TS Game Set Match</div>
+            <div class="bb-comp-right">SD {{ fmtNum(raw['d021']) }}</div>
           </div>
 
-          <div class="bb-panel bb-panel--sub">
-            <div class="bb-panel-title">Current Streaks</div>
-            <div class="bb-data-rows">
-              <div class="bb-data-row">
-                <div class="bb-k">All Surfaces</div>
-                <div class="bb-v">{{ streakText(raw['d224']) }}</div>
-              </div>
-              <div class="bb-data-row">
-                <div class="bb-k">Carpet</div>
-                <div class="bb-v">{{ streakText(raw['d225']) }}</div>
-              </div>
-              <div class="bb-data-row">
-                <div class="bb-k">Clay</div>
-                <div class="bb-v">{{ streakText(raw['d226']) }}</div>
-              </div>
-              <div class="bb-data-row">
-                <div class="bb-k">Grass</div>
-                <div class="bb-v">{{ streakText(raw['d227']) }}</div>
-              </div>
-              <div class="bb-data-row">
-                <div class="bb-k">Hard</div>
-                <div class="bb-v">{{ streakText(raw['d228']) }}</div>
-              </div>
-            </div>
+          <div class="bb-comp-row">
+            <div class="bb-comp-left">{{ wlText(46, 47) }}</div>
+            <div class="bb-comp-mid">Match Record Total</div>
+            <div class="bb-comp-right">{{ streakText(raw['d224']) }}</div>
+          </div>
+
+          <div class="bb-comp-row">
+            <div class="bb-comp-left">{{ wlText(48, 49) }}</div>
+            <div class="bb-comp-mid">Last Year</div>
+            <div class="bb-comp-right">{{ streakText(raw['d225']) }}</div>
+          </div>
+
+          <div class="bb-comp-row">
+            <div class="bb-comp-left">{{ wlText(50, 51) }}</div>
+            <div class="bb-comp-mid">Last Month</div>
+            <div class="bb-comp-right">{{ streakText(raw['d226']) }}</div>
+          </div>
+
+          <div class="bb-comp-row">
+            <div class="bb-comp-left">{{ wlText(52, 53) }}</div>
+            <div class="bb-comp-mid">Last Week</div>
+            <div class="bb-comp-right">{{ streakText(raw['d228']) }}</div>
           </div>
         </div>
       </section>
 
       <!-- TS -->
       <section *ngIf="activeTab === 'ts'" class="bb-panel">
-        <app-player-summary-card [playerName]="playerName" [countryIso2]="countryIso2" [countryIso3]="countryIso3"
-          [countryFull]="countryFull" [continentName]="continentName" [bornText]="bornText" [heightText]="heightText"
-          [weightText]="weightText" [playsText]="playsText" [turnedProText]="turnedProText"
-          [avatarUrl]="playerAvatarUrl()" [genderHint]="genderHint">
-        </app-player-summary-card>
-        <div class="bb-perf-controls">
-          <div class="bb-perf-group">
-            <span class="bb-perf-label">Mode</span>
+        <ng-container *ngTemplateOutlet="playerSummary"></ng-container>
 
-            <button type="button" class="bb-pill" [class.active]="activeTsMode === 'M'"
-              (click)="activeTsMode = 'M'">Match</button>
-            <button type="button" class="bb-pill" [class.active]="activeTsMode === 'SM'"
-              (click)="activeTsMode = 'SM'">Set Match</button>
-            <button type="button" class="bb-pill" [class.active]="activeTsMode === 'GSM'"
-              (click)="activeTsMode = 'GSM'">Game Set Match</button>
+        <div class="bb-ts-controls">
+          <div class="bb-ts-control-row">
+            <div class="bb-ts-label">Mode</div>
+            <div class="bb-ts-buttons">
+              <button type="button" class="bb-pill" [class.active]="activeTsMode === 'M'" (click)="activeTsMode = 'M'">Match</button>
+              <button type="button" class="bb-pill" [class.active]="activeTsMode === 'SM'" (click)="activeTsMode = 'SM'">Set Match</button>
+              <button type="button" class="bb-pill" [class.active]="activeTsMode === 'GSM'" (click)="activeTsMode = 'GSM'">Game Set Match</button>
+            </div>
           </div>
 
-          <div class="bb-perf-group">
-            <span class="bb-perf-label">Surface</span>
-
-            <button *ngFor="let opt of surfaceOptions" type="button" class="bb-pill"
-              [class.active]="activeTsSurface === opt.value" (click)="activeTsSurface = opt.value">
-              {{ opt.label }}
-            </button>
+          <div class="bb-ts-control-row">
+            <div class="bb-ts-label">Surface</div>
+            <div class="bb-ts-buttons">
+              <button *ngFor="let opt of surfaceOptions" type="button" class="bb-pill"
+                [class.active]="activeTsSurface === opt.value"
+                (click)="activeTsSurface = opt.value">
+                {{ opt.label }}
+              </button>
+            </div>
           </div>
         </div>
 
-        <div class="bb-metric-grid">
-          <div class="bb-metric-card">
-            <div class="bb-metric-label">Mean</div>
-            <div class="bb-metric-value">{{ fmtNum(tsMean()) }}</div>
-          </div>
-
-          <div class="bb-metric-card">
-            <div class="bb-metric-label">Standard Deviation</div>
-            <div class="bb-metric-value">{{ fmtNum(tsSd()) }}</div>
+        <div class="bb-compare bb-compare-ts">
+          <div class="bb-comp-row">
+            <div class="bb-comp-left">{{ fmtNum(tsMean()) }}</div>
+            <div class="bb-comp-mid">Mean</div>
+            <div class="bb-comp-right">{{ fmtNum(tsSd()) }}</div>
           </div>
         </div>
       </section>
 
       <!-- PERFORMANCE -->
       <section *ngIf="activeTab === 'performance'" class="bb-panel">
-        <app-player-summary-card [playerName]="playerName" [countryIso2]="countryIso2" [countryIso3]="countryIso3"
-          [countryFull]="countryFull" [continentName]="continentName" [bornText]="bornText" [heightText]="heightText"
-          [weightText]="weightText" [playsText]="playsText" [turnedProText]="turnedProText"
-          [avatarUrl]="playerAvatarUrl()" [genderHint]="genderHint">
-        </app-player-summary-card>
-        <div class="bb-perf-controls">
-          <div class="bb-perf-group">
-            <span class="bb-perf-label">Scope</span>
+        <ng-container *ngTemplateOutlet="playerSummary"></ng-container>
 
-            <button type="button" class="bb-pill" [class.active]="activePerfUnit === 'MATCH'"
-              (click)="activePerfUnit = 'MATCH'">Match</button>
-            <button type="button" class="bb-pill" [class.active]="activePerfUnit === 'SET'"
-              (click)="activePerfUnit = 'SET'">Set</button>
-            <button type="button" class="bb-pill" [class.active]="activePerfUnit === 'GAME'"
-              (click)="activePerfUnit = 'GAME'">Game</button>
+        <div class="bb-ts-controls">
+          <div class="bb-ts-control-row">
+            <div class="bb-ts-label">Scope</div>
+            <div class="bb-ts-buttons">
+              <button type="button" class="bb-pill" [class.active]="activePerfUnit === 'MATCH'" (click)="activePerfUnit = 'MATCH'">Match</button>
+              <button type="button" class="bb-pill" [class.active]="activePerfUnit === 'SET'" (click)="activePerfUnit = 'SET'">Set</button>
+              <button type="button" class="bb-pill" [class.active]="activePerfUnit === 'GAME'" (click)="activePerfUnit = 'GAME'">Game</button>
+            </div>
           </div>
 
-          <div class="bb-perf-group">
-            <span class="bb-perf-label">Period</span>
-
-            <button type="button" class="bb-pill" [class.active]="activePerfTime === 'ALL'"
-              (click)="activePerfTime = 'ALL'">All</button>
-            <button type="button" class="bb-pill" [class.active]="activePerfTime === 'YEAR'"
-              (click)="activePerfTime = 'YEAR'">Year</button>
-            <button type="button" class="bb-pill" [class.active]="activePerfTime === 'MONTH'"
-              (click)="activePerfTime = 'MONTH'">Month</button>
-            <button type="button" class="bb-pill" [class.active]="activePerfTime === 'WEEK'"
-              (click)="activePerfTime = 'WEEK'">Week</button>
+          <div class="bb-ts-control-row">
+            <div class="bb-ts-label">Period</div>
+            <div class="bb-ts-buttons">
+              <button type="button" class="bb-pill" [class.active]="activePerfTime === 'ALL'" (click)="activePerfTime = 'ALL'">All</button>
+              <button type="button" class="bb-pill" [class.active]="activePerfTime === 'YEAR'" (click)="activePerfTime = 'YEAR'">Year</button>
+              <button type="button" class="bb-pill" [class.active]="activePerfTime === 'MONTH'" (click)="activePerfTime = 'MONTH'">Month</button>
+              <button type="button" class="bb-pill" [class.active]="activePerfTime === 'WEEK'" (click)="activePerfTime = 'WEEK'">Week</button>
+            </div>
           </div>
 
-          <div class="bb-perf-group">
-            <span class="bb-perf-label">Surface</span>
-
-            <button *ngFor="let opt of surfaceOptions" type="button" class="bb-pill"
-              [class.active]="activePerfSurface === opt.value" (click)="activePerfSurface = opt.value">
-              {{ opt.label }}
-            </button>
+          <div class="bb-ts-control-row">
+            <div class="bb-ts-label">Surface</div>
+            <div class="bb-ts-buttons">
+              <button *ngFor="let opt of surfaceOptions" type="button" class="bb-pill"
+                [class.active]="activePerfSurface === opt.value"
+                (click)="activePerfSurface = opt.value">
+                {{ opt.label }}
+              </button>
+            </div>
           </div>
         </div>
 
-        <div class="bb-data-rows bb-data-rows--large">
-          <div class="bb-data-row">
-            <div class="bb-k">Wins</div>
-            <div class="bb-v">{{ perfWins() }}</div>
+        <div class="bb-compare bb-compare-ts">
+          <div class="bb-comp-row">
+            <div class="bb-comp-left">{{ perfWins() }}</div>
+            <div class="bb-comp-mid">Wins</div>
+            <div class="bb-comp-right"></div>
           </div>
-          <div class="bb-data-row">
-            <div class="bb-k">Losses</div>
-            <div class="bb-v">{{ perfLosses() }}</div>
+
+          <div class="bb-comp-row">
+            <div class="bb-comp-left">{{ perfLosses() }}</div>
+            <div class="bb-comp-mid">Losses</div>
+            <div class="bb-comp-right"></div>
           </div>
-          <div class="bb-data-row">
-            <div class="bb-k">Win %</div>
-            <div class="bb-v">{{ perfWinPct() }}</div>
+
+          <div class="bb-comp-row">
+            <div class="bb-comp-left">{{ perfWinPct() }}</div>
+            <div class="bb-comp-mid">Win %</div>
+            <div class="bb-comp-right"></div>
           </div>
         </div>
       </section>
 
       <!-- FORM -->
       <section *ngIf="activeTab === 'form'" class="bb-panel">
-        <app-player-summary-card [playerName]="playerName" [countryIso2]="countryIso2" [countryIso3]="countryIso3"
-          [countryFull]="countryFull" [continentName]="continentName" [bornText]="bornText" [heightText]="heightText"
-          [weightText]="weightText" [playsText]="playsText" [turnedProText]="turnedProText"
-          [avatarUrl]="playerAvatarUrl()" [genderHint]="genderHint">
-        </app-player-summary-card>
-        <div class="bb-perf-controls">
-          <div class="bb-perf-group">
-            <span class="bb-perf-label">Surface</span>
+        <ng-container *ngTemplateOutlet="playerSummary"></ng-container>
 
-            <button *ngFor="let opt of surfaceOptions" type="button" class="bb-pill"
-              [class.active]="activeFormSurface === opt.value" (click)="activeFormSurface = opt.value">
-              {{ opt.label }}
-            </button>
+        <div class="bb-ts-controls">
+          <div class="bb-ts-control-row">
+            <div class="bb-ts-label">Surface</div>
+            <div class="bb-ts-buttons">
+              <button *ngFor="let opt of surfaceOptions" type="button" class="bb-pill"
+                [class.active]="activeFormSurface === opt.value"
+                (click)="activeFormSurface = opt.value">
+                {{ opt.label }}
+              </button>
+            </div>
           </div>
         </div>
 
-        <div class="bb-data-rows bb-data-rows--large">
-          <div class="bb-data-row">
-            <div class="bb-k">Days since last match</div>
-            <div class="bb-v">{{ fmtDays(daysSinceLastMatch()) }}</div>
+        <div class="bb-compare bb-compare-ts">
+          <div class="bb-comp-row">
+            <div class="bb-comp-left">{{ fmtDays(daysSinceLastMatch()) }}</div>
+            <div class="bb-comp-mid">Days since last match</div>
+            <div class="bb-comp-right"></div>
           </div>
-          <div class="bb-data-row">
-            <div class="bb-k">Days since win</div>
-            <div class="bb-v">{{ fmtDays(daysSinceLastWin()) }}</div>
+
+          <div class="bb-comp-row">
+            <div class="bb-comp-left">{{ fmtDays(daysSinceLastWin()) }}</div>
+            <div class="bb-comp-mid">Days since win</div>
+            <div class="bb-comp-right"></div>
           </div>
-          <div class="bb-data-row">
-            <div class="bb-k">Days since loss</div>
-            <div class="bb-v">{{ fmtDays(daysSinceLastLoss()) }}</div>
+
+          <div class="bb-comp-row">
+            <div class="bb-comp-left">{{ fmtDays(daysSinceLastLoss()) }}</div>
+            <div class="bb-comp-mid">Days since loss</div>
+            <div class="bb-comp-right"></div>
           </div>
-          <div class="bb-data-row">
-            <div class="bb-k">More recent result</div>
-            <div class="bb-v">{{ moreRecentWas() }}</div>
+
+          <div class="bb-comp-row">
+            <div class="bb-comp-left">{{ moreRecentWas() }}</div>
+            <div class="bb-comp-mid">More recent result</div>
+            <div class="bb-comp-right"></div>
           </div>
-          <div class="bb-data-row">
-            <div class="bb-k">Streak</div>
-            <div class="bb-v">{{ streakText(formSurfaceStreak()) }}</div>
+
+          <div class="bb-comp-row">
+            <div class="bb-comp-left">{{ streakText(formSurfaceStreak()) }}</div>
+            <div class="bb-comp-mid">Streak</div>
+            <div class="bb-comp-right"></div>
           </div>
         </div>
       </section>
 
       <!-- ROLE STATS -->
       <section *ngIf="activeTab === 'roleStats'" class="bb-panel">
-        <app-player-summary-card [playerName]="playerName" [countryIso2]="countryIso2" [countryIso3]="countryIso3"
-          [countryFull]="countryFull" [continentName]="continentName" [bornText]="bornText" [heightText]="heightText"
-          [weightText]="weightText" [playsText]="playsText" [turnedProText]="turnedProText"
-          [avatarUrl]="playerAvatarUrl()" [genderHint]="genderHint">
-        </app-player-summary-card>
-        <div class="bb-perf-controls">
-          <div class="bb-perf-group">
-            <span class="bb-perf-label">Period</span>
+        <ng-container *ngTemplateOutlet="playerSummary"></ng-container>
 
-            <button type="button" class="bb-pill" [class.active]="activeRoleTime === 'ALL'"
-              (click)="activeRoleTime = 'ALL'">All</button>
-            <button type="button" class="bb-pill" [class.active]="activeRoleTime === 'YEAR'"
-              (click)="activeRoleTime = 'YEAR'">Year</button>
-            <button type="button" class="bb-pill" [class.active]="activeRoleTime === 'MONTH'"
-              (click)="activeRoleTime = 'MONTH'">Month</button>
-            <button type="button" class="bb-pill" [class.active]="activeRoleTime === 'WEEK'"
-              (click)="activeRoleTime = 'WEEK'">Week</button>
+        <div class="bb-ts-controls">
+          <div class="bb-ts-control-row">
+            <div class="bb-ts-label">Period</div>
+            <div class="bb-ts-buttons">
+              <button type="button" class="bb-pill" [class.active]="activeRoleTime === 'ALL'" (click)="activeRoleTime = 'ALL'">All</button>
+              <button type="button" class="bb-pill" [class.active]="activeRoleTime === 'YEAR'" (click)="activeRoleTime = 'YEAR'">Year</button>
+              <button type="button" class="bb-pill" [class.active]="activeRoleTime === 'MONTH'" (click)="activeRoleTime = 'MONTH'">Month</button>
+              <button type="button" class="bb-pill" [class.active]="activeRoleTime === 'WEEK'" (click)="activeRoleTime = 'WEEK'">Week</button>
+            </div>
           </div>
         </div>
 
-        <div class="bb-split-grid">
-          <div class="bb-panel bb-panel--sub">
-            <div class="bb-panel-title">As Favourite</div>
-            <div class="bb-data-rows">
-              <div class="bb-data-row">
-                <div class="bb-k">Wins</div>
-                <div class="bb-v">{{ roleCount('winsFav') }}</div>
-              </div>
-              <div class="bb-data-row">
-                <div class="bb-k">Losses</div>
-                <div class="bb-v">{{ roleCount('lossesFav') }}</div>
-              </div>
-              <div class="bb-data-row">
-                <div class="bb-k">Win ratio</div>
-                <div class="bb-v">{{ fmtPct01(roleRatio('winsFavRatio')) }}</div>
-              </div>
-              <div class="bb-data-row">
-                <div class="bb-k">Avg WP when won</div>
-                <div class="bb-v">{{ fmtPct01(roleAvg('avgWpWonFav')) }}</div>
-              </div>
-              <div class="bb-data-row">
-                <div class="bb-k">Avg WP when lost</div>
-                <div class="bb-v">{{ fmtPct01(roleAvg('avgWpLostFav')) }}</div>
-              </div>
-            </div>
+        <div class="bb-compare bb-compare-ts">
+          <div class="bb-comp-row">
+            <div class="bb-comp-left">{{ roleCount('winsFav') }}</div>
+            <div class="bb-comp-mid">Wins as favourite</div>
+            <div class="bb-comp-right">{{ roleCount('winsDog') }}</div>
           </div>
 
-          <div class="bb-panel bb-panel--sub">
-            <div class="bb-panel-title">As Underdog</div>
-            <div class="bb-data-rows">
-              <div class="bb-data-row">
-                <div class="bb-k">Wins</div>
-                <div class="bb-v">{{ roleCount('winsDog') }}</div>
-              </div>
-              <div class="bb-data-row">
-                <div class="bb-k">Losses</div>
-                <div class="bb-v">{{ roleCount('lossesDog') }}</div>
-              </div>
-              <div class="bb-data-row">
-                <div class="bb-k">Win ratio</div>
-                <div class="bb-v">{{ fmtPct01(roleRatio('winsDogRatio')) }}</div>
-              </div>
-              <div class="bb-data-row">
-                <div class="bb-k">Avg WP when won</div>
-                <div class="bb-v">{{ fmtPct01(roleAvg('avgWpWonDog')) }}</div>
-              </div>
-              <div class="bb-data-row">
-                <div class="bb-k">Avg WP when lost</div>
-                <div class="bb-v">{{ fmtPct01(roleAvg('avgWpLostDog')) }}</div>
-              </div>
-            </div>
+          <div class="bb-comp-row">
+            <div class="bb-comp-left">{{ roleCount('lossesFav') }}</div>
+            <div class="bb-comp-mid">Losses as favourite</div>
+            <div class="bb-comp-right">{{ roleCount('lossesDog') }}</div>
+          </div>
+
+          <div class="bb-comp-row">
+            <div class="bb-comp-left">{{ fmtPct01(roleRatio('winsFavRatio')) }}</div>
+            <div class="bb-comp-mid">Fav win ratio</div>
+            <div class="bb-comp-right">{{ fmtPct01(roleRatio('winsDogRatio')) }}</div>
+          </div>
+
+          <div class="bb-comp-row">
+            <div class="bb-comp-left">{{ fmtPct01(roleAvg('avgWpWonFav')) }}</div>
+            <div class="bb-comp-mid">Avg WP when won</div>
+            <div class="bb-comp-right">{{ fmtPct01(roleAvg('avgWpWonDog')) }}</div>
+          </div>
+
+          <div class="bb-comp-row">
+            <div class="bb-comp-left">{{ fmtPct01(roleAvg('avgWpLostFav')) }}</div>
+            <div class="bb-comp-mid">Avg WP when lost</div>
+            <div class="bb-comp-right">{{ fmtPct01(roleAvg('avgWpLostDog')) }}</div>
           </div>
         </div>
       </section>
