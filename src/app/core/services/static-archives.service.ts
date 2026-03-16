@@ -224,7 +224,7 @@ export class StaticArchivesService {
         .get(`${this.apiBase}/match-details/${matchTPId}`, { responseType: 'arraybuffer' as const })
         .pipe(map(buf => this.decodeBrotliJson<MatchDetailsRaw>(buf)));
     }
-
+  
     return this.http
       .get(`${this.detailsStaticBase}/${matchTPId}.br`, { responseType: 'arraybuffer' as const })
       .pipe(map(buf => this.decodeBrotliJson<MatchDetailsRaw>(buf)));
