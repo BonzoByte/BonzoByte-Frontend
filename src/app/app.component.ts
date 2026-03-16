@@ -25,6 +25,7 @@ declare const gtag: undefined | ((...args: any[]) => void);
         FooterComponent,
         UserModalComponent
     ],
+    
     templateUrl: './app.component.html'
 })
 export class AppComponent implements OnInit, OnDestroy {
