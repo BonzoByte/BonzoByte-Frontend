@@ -1,12 +1,12 @@
 ﻿.matches-page {
     background:
-        linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(0, 0, 0, 0.35)),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(0, 0, 0, 0.52)),
         repeating-linear-gradient(90deg,
-            rgba(255, 255, 255, 0.025) 0px,
-            rgba(255, 255, 255, 0.025) 1px,
+            rgba(255, 255, 255, 0.02) 0px,
+            rgba(255, 255, 255, 0.02) 1px,
             transparent 1px,
             transparent 4px),
-        var(--bb-header-bg, #111);
+        #0f0f0f;
 }
 
 .matches-page .match-table th:nth-child(1),
