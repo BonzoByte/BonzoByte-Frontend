@@ -257,7 +257,7 @@ export class MatchesComponent implements OnInit, OnDestroy {
         // ✅ Search debounce pipeline
         this.search$
             .pipe(
-                debounceTime(200),
+                debounceTime(0),
                 distinctUntilChanged(),
                 takeUntil(this.destroy$)
             )

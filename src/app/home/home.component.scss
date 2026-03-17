@@ -55,6 +55,7 @@
     font-weight: 850;
     letter-spacing: -0.04em;
     color: #ffffff;
+    font-family: var(--bb-brand-font, 'Orbitron', system-ui, sans-serif);
   }
   
   .home-subtitle {
@@ -229,6 +230,7 @@
     }
   
     .home-title {
+      font-family: var(--bb-brand-font, 'Orbitron', system-ui, sans-serif);
       font-size: 2.5rem;
     }
   

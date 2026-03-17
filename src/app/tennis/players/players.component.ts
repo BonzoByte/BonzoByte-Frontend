@@ -272,7 +272,7 @@ export class PlayersComponent implements OnInit, OnDestroy {
 
   formatWinPct(v?: number | null): string {
     if (v == null || !Number.isFinite(v)) return '';
-    return `${(v * 100).toFixed(1)}%`;
+    return `${(v * 100).toFixed(2)} %`;
   }
 
   formatNum(v?: number | null, digits = 2): string {

@@ -13,6 +13,19 @@
     vertical-align: middle;
 }
 
+.players-page .match-table th:nth-child(1),
+.players-page .match-table td:nth-child(1) {
+    min-width: 294px !important;
+    max-width: 294px !important;
+}
+
+.players-page .match-table th:nth-child(7),
+.players-page .match-table td:nth-child(7) {
+    min-width: 55px !important;
+    max-width: 55px !important;
+    text-align: right;
+}
+
 .players-page .details-icon-btn {
     width: 16px;
     height: 16px;

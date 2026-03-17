@@ -522,9 +522,13 @@ export class StaticArchivesService {
       .pipe(map(buf => this.decodeBrotliJson<any>(buf)));
   }
 
+  // getPlayerPhotoUrl(playerTPId: number, gender?: 'M' | 'W'): string {
+  //   const g = gender ? `?g=${gender}` : '';
+  //   return `${this.apiBase}/players/photo/${playerTPId}${g}`;
+  // }
+
   getPlayerPhotoUrl(playerTPId: number, gender?: 'M' | 'W'): string {
-    const g = gender ? `?g=${gender}` : '';
-    return `${this.apiBase}/players/photo/${playerTPId}${g}`;
+    return `https://bonzobyte-backend.onrender.com/api/archives/players/photo/483767`;
   }
 
   getDefaultPlayerPhotoUrl(gender: 'M' | 'W'): string {
