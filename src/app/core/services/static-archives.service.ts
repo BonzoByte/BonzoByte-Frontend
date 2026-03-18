@@ -594,7 +594,28 @@ export class StaticArchivesService {
     return search(lo0, hi0, null);
   }
 
-  getTournamentsIndex(): Observable<{
+  getTournamentsIndex(forceRefresh = false): Observable<{
+    items: TournamentIndex[];
+    strength: { min: number | null; median: number | null; max: number | null } | null;
+  }> {
+    const now = Date.now();
+  
+    if (
+      !forceRefresh &&
+      this.tournamentsIndex$ &&
+      (now - this.tournamentsIndexFetchedAtMs) < this.TOURNAMENTS_INDEX_SOFT_TTL_MS
+    ) {
+      return this.tournamentsIndex$;
+    }
+  
+    this.tournamentsIndex$ = this.fetchTournamentsIndex().pipe(
+      shareReplay(1)
+    );
+  
+    return this.tournamentsIndex$;
+  }
+
+  private fetchTournamentsIndex(): Observable<{
     items: TournamentIndex[];
     strength: { min: number | null; median: number | null; max: number | null } | null;
   }> {
@@ -603,34 +624,61 @@ export class StaticArchivesService {
         switchMap(m => {
           const url = m.tournaments?.url;
           if (!url) return throwError(() => new Error('tournaments manifest missing tournaments.url'));
-
+  
+          const version = m.tournaments?.version ?? null;
+          const now = Date.now();
+  
+          if (
+            this.tournamentsIndex$ &&
+            this.tournamentsIndexVersion === version &&
+            (now - this.tournamentsIndexFetchedAtMs) < this.TOURNAMENTS_INDEX_HARD_TTL_MS
+          ) {
+            return this.tournamentsIndex$;
+          }
+  
           return this.http.get(`${this.apiBase}/tournaments/index/${url}`, { responseType: 'arraybuffer' }).pipe(
             map(buf => {
               const items = this.decodeBrotliJson<TournamentIndex[]>(buf) ?? [];
               const strength = m.tournamentStrength ?? null;
+  
+              this.tournamentsIndexVersion = version;
+              this.tournamentsIndexFetchedAtMs = now;
+  
               return { items, strength };
             })
           );
-        }),
-        shareReplay(1)
+        })
       );
     }
-
-    // static mode (CDN)
+  
     return this.dailyManifestTournaments$.pipe(
       switchMap(m => {
         const url = m.tournaments?.url;
         if (!url) return throwError(() => new Error('manifest.tournaments.json missing tournaments.url'));
-
+  
+        const version = m.tournaments?.version ?? null;
+        const now = Date.now();
+  
+        if (
+          this.tournamentsIndex$ &&
+          this.tournamentsIndexVersion === version &&
+          (now - this.tournamentsIndexFetchedAtMs) < this.TOURNAMENTS_INDEX_HARD_TTL_MS
+        ) {
+          return this.tournamentsIndex$;
+        }
+  
         return this.http.get(`${this.dailyStaticBase}/${url}`, { responseType: 'arraybuffer' }).pipe(
           map(buf => {
             const items = this.decodeBrotliJson<TournamentIndex[]>(buf) ?? [];
             const strength = m.tournamentStrength ?? null;
+  
+            this.tournamentsIndexVersion = version;
+            this.tournamentsIndexFetchedAtMs = now;
+  
             return { items, strength };
           })
         );
-      }),
-      shareReplay(1)
+      })
     );
   }
 
