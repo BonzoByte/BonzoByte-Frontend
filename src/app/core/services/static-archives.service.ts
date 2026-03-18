@@ -155,17 +155,17 @@ export class StaticArchivesService {
         .get<string[]>(`${this.apiBase}/available-dates`)
         .pipe(shareReplay(1));
     }
-  
+
     return this.availableDatesCached$;
   }
-  
+
   getLatestDaily(): Observable<{ date: string; iso: string }> {
     if (!this.latestDailyCached$) {
       this.latestDailyCached$ = this.http
         .get<{ date: string; iso: string }>(`${this.apiBase}/latest-daily`)
         .pipe(shareReplay(1));
     }
-  
+
     return this.latestDailyCached$;
   }
 
@@ -294,18 +294,24 @@ export class StaticArchivesService {
     );
   }
 
-  getAnalyticsDashboard(): Observable<AnalyticsDashboard> {
-    const url =
-      this.mode === 'api'
-        ? `${this.apiUrl}/archives/analytics/dashboard`
-        : `${this.analyticsStaticBase}/analytics-dashboard.br`;
+  private analyticsDashboard$?: Observable<AnalyticsDashboard>;
 
-    return this.http
-      .get(url, { responseType: 'arraybuffer' as const })
-      .pipe(
-        map(buf => this.decodeBrotliJson<AnalyticsDashboard>(buf)),
-        shareReplay(1)
-      );
+  getAnalyticsDashboard(): Observable<AnalyticsDashboard> {
+    if (!this.analyticsDashboard$) {
+      const url =
+        this.mode === 'api'
+          ? `${this.apiUrl}/archives/analytics/dashboard`
+          : `${this.analyticsStaticBase}/analytics-dashboard.br`;
+
+      this.analyticsDashboard$ = this.http
+        .get(url, { responseType: 'arraybuffer' as const })
+        .pipe(
+          map(buf => this.decodeBrotliJson<AnalyticsDashboard>(buf)),
+          shareReplay(1)
+        );
+    }
+
+    return this.analyticsDashboard$;
   }
 
   private calcUnlocksAtIso(match: Match, lockHours: number): string | null {
@@ -409,6 +415,7 @@ export class StaticArchivesService {
     );
   }
 
+
   warmUpDailyWindow(): void {
     const todayIso = this.todayISO();
 
@@ -439,10 +446,11 @@ export class StaticArchivesService {
   }
 
   warmUpReferenceIndexes(): void {
-    this.getPlayersIndex().subscribe({ error: () => {} });
-    this.getTournamentsIndex().subscribe({ error: () => {} });
-    this.getAvailableDates().subscribe({ error: () => {} });
+    this.getPlayersIndex().subscribe({ error: () => { } });
+    this.getTournamentsIndex().subscribe({ error: () => { } });
+    this.getAvailableDates().subscribe({ error: () => { } });
     this.warmUpDailyWindow();
+    this.getAnalyticsDashboard().subscribe({ error: () => {} });
   }
 
   getPlayerIndexById(playerTPId: number, forceRefresh = false): Observable<PlayerIndex | null> {
