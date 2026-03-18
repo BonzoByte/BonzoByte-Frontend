@@ -160,34 +160,44 @@ export class StaticArchivesService {
     return Math.floor(ms / 86400000);
   }
 
+  private dailyCache = new Map<string, Observable<Match[]>>();
+
   getDailyIndex(): Observable<DailyArchiveIndex> {
     return this.dailyIndex$;
   }
 
   getDaily(yyyymmdd: string): Observable<Match[]> {
+    const cached = this.dailyCache.get(yyyymmdd);
+    if (cached) return cached;
+  
+    let request$: Observable<Match[]>;
+  
     if (this.mode === 'api') {
-      return this.http
+      request$ = this.http
         .get<any>(`${this.apiBase}/daily/${yyyymmdd}`)
         .pipe(
-          // backend može vratiti {matches: [...] } ili direktno [...]
           map(r => (Array.isArray(r) ? r : (r?.matches ?? []))),
-          map(arr => (arr || []).map((m: any) => this.normalizeApiMatch(m)))
+          map(arr => (arr || []).map((m: any) => this.normalizeApiMatch(m))),
+          shareReplay(1)
+        );
+    } else {
+      request$ = this.http
+        .get(`${this.dailyStaticBase}/${yyyymmdd}.br`, { responseType: 'arraybuffer' })
+        .pipe(
+          map(buf => this.decodeBrotliJson<any[]>(buf)),
+          map(rows => (rows || []).map(r => this.mapLiteRowToMatch(r))),
+          catchError((err: any) => {
+            if (err instanceof HttpErrorResponse && err.status === 404) return of([]);
+            const msg = String(err?.message ?? '');
+            if (msg.includes('Got HTML instead of data')) return of([]);
+            return throwError(() => err);
+          }),
+          shareReplay(1)
         );
     }
-
-    // static mode (CDN .br)
-    return this.http
-      .get(`${this.dailyStaticBase}/${yyyymmdd}.br`, { responseType: 'arraybuffer' })
-      .pipe(
-        map(buf => this.decodeBrotliJson<any[]>(buf)),
-        map(rows => (rows || []).map(r => this.mapLiteRowToMatch(r))),
-        catchError((err: any) => {
-          if (err instanceof HttpErrorResponse && err.status === 404) return of([]);
-          const msg = String(err?.message ?? '');
-          if (msg.includes('Got HTML instead of data')) return of([]);
-          return throwError(() => err);
-        })
-      );
+  
+    this.dailyCache.set(yyyymmdd, request$);
+    return request$;
   }
 
   private normalizeApiMatch(m: any): Match {
@@ -381,9 +391,39 @@ export class StaticArchivesService {
     );
   }
 
+  warmUpDailyWindow(): void {
+    const today = this.todayISO();
+  
+    this.normalizeToAvailableDate(today).subscribe({
+      next: (centerIso) => {
+        this.getDaily(centerIso).subscribe({ error: () => {} });
+  
+        this.getPrevAvailableDate(centerIso).subscribe({
+          next: (prevIso) => {
+            if (prevIso) {
+              this.getDaily(prevIso).subscribe({ error: () => {} });
+            }
+          },
+          error: () => {}
+        });
+  
+        this.getNextAvailableDate(centerIso).subscribe({
+          next: (nextIso) => {
+            if (nextIso) {
+              this.getDaily(nextIso).subscribe({ error: () => {} });
+            }
+          },
+          error: () => {}
+        });
+      },
+      error: () => {}
+    });
+  }
+
   warmUpReferenceIndexes(): void {
     this.getPlayersIndex().subscribe({ error: () => {} });
     this.getTournamentsIndex().subscribe({ error: () => {} });
+    this.warmUpDailyWindow();
   }
   
   getPlayerIndexById(playerTPId: number, forceRefresh = false): Observable<PlayerIndex | null> {
