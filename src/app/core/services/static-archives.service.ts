@@ -146,6 +146,28 @@ export class StaticArchivesService {
   }
 
   // --- postojeće metode getDaily/getDetails/decoder/mapLiteRowToMatch ostaju iste ---
+  private availableDatesCached$?: Observable<string[]>;
+  private latestDailyCached$?: Observable<{ date: string; iso: string }>;
+
+  getAvailableDates(): Observable<string[]> {
+    if (!this.availableDatesCached$) {
+      this.availableDatesCached$ = this.http
+        .get<string[]>(`${this.apiBase}/available-dates`)
+        .pipe(shareReplay(1));
+    }
+  
+    return this.availableDatesCached$;
+  }
+  
+  getLatestDaily(): Observable<{ date: string; iso: string }> {
+    if (!this.latestDailyCached$) {
+      this.latestDailyCached$ = this.http
+        .get<{ date: string; iso: string }>(`${this.apiBase}/latest-daily`)
+        .pipe(shareReplay(1));
+    }
+  
+    return this.latestDailyCached$;
+  }
 
   private toDayNumber(iso: string): number | null {
     // očekujemo "YYYY-MM-DD"
@@ -168,14 +190,14 @@ export class StaticArchivesService {
 
   getDaily(dateKey: string): Observable<Match[]> {
     const yyyymmdd = dateKey.includes('-') ? this.isoToCompact(dateKey) : dateKey;
-  
+
     const cached = this.dailyCache.get(yyyymmdd);
     if (cached) return cached;
-  
+
     let request$: Observable<Match[]>;
-  
+
     console.log('getDaily requested:', dateKey, 'normalized:', yyyymmdd);
-    
+
     if (this.mode === 'api') {
       request$ = this.http
         .get<any>(`${this.apiBase}/daily/${yyyymmdd}`)
@@ -199,7 +221,7 @@ export class StaticArchivesService {
           shareReplay(1)
         );
     }
-  
+
     this.dailyCache.set(yyyymmdd, request$);
     return request$;
   }
@@ -222,16 +244,8 @@ export class StaticArchivesService {
     } as Match;
   }
 
-  getLatestDaily(): Observable<{ date: string; iso: string }> {
-    return this.http.get<{ date: string; iso: string }>(`${this.apiBase}/latest-daily`);
-  }
-
   getDateRange(): Observable<{ minDate: string; maxDate: string }> {
     return this.http.get<{ minDate: string; maxDate: string }>(`${this.apiBase}/daterange`);
-  }
-
-  getAvailableDates(): Observable<string[]> {
-    return this.http.get<string[]>(`${this.apiBase}/available-dates`);
   }
 
   getDetails(matchTPId: number | string): Observable<MatchDetailsRaw> {
@@ -323,15 +337,15 @@ export class StaticArchivesService {
 
   getPlayersIndex(forceRefresh = false): Observable<PlayerIndex[]> {
     const now = Date.now();
-  
+
     if (!forceRefresh && this.playersIndexRows$ && (now - this.playersIndexFetchedAtMs) < this.PLAYERS_INDEX_SOFT_TTL_MS) {
       return this.playersIndexRows$;
     }
-  
+
     this.playersIndexRows$ = this.fetchPlayersIndex().pipe(
       shareReplay(1)
     );
-  
+
     return this.playersIndexRows$;
   }
 
@@ -341,10 +355,10 @@ export class StaticArchivesService {
         switchMap(m => {
           const url = m.players?.url;
           if (!url) return throwError(() => new Error('players manifest missing players.url'));
-  
+
           const version = m.players?.version ?? null;
           const now = Date.now();
-  
+
           if (
             this.playersIndexRows$ &&
             this.playersIndexVersion === version &&
@@ -352,7 +366,7 @@ export class StaticArchivesService {
           ) {
             return this.playersIndexRows$;
           }
-  
+
           return this.http.get(`${this.apiBase}/players/index/${url}`, { responseType: 'arraybuffer' }).pipe(
             map(buf => this.decodeBrotliJson<PlayerIndex[]>(buf)),
             map(rows => {
@@ -365,15 +379,15 @@ export class StaticArchivesService {
         })
       );
     }
-  
+
     return this.dailyManifest$.pipe(
       switchMap(m => {
         const url = m.players?.url;
         if (!url) return throwError(() => new Error('manifest.json missing players.url'));
-  
+
         const version = m.players?.version ?? null;
         const now = Date.now();
-  
+
         if (
           this.playersIndexRows$ &&
           this.playersIndexVersion === version &&
@@ -381,7 +395,7 @@ export class StaticArchivesService {
         ) {
           return this.playersIndexRows$;
         }
-  
+
         return this.http.get(`${this.dailyStaticBase}/${url}`, { responseType: 'arraybuffer' }).pipe(
           map(buf => this.decodeBrotliJson<PlayerIndex[]>(buf)),
           map(rows => {
@@ -397,44 +411,45 @@ export class StaticArchivesService {
 
   warmUpDailyWindow(): void {
     const todayIso = this.todayISO();
-  
+
     this.normalizeToAvailableDate(todayIso).subscribe({
       next: (centerIso) => {
-        this.getDaily(this.isoToCompact(centerIso)).subscribe({ error: () => {} });
-  
+        this.getDaily(this.isoToCompact(centerIso)).subscribe({ error: () => { } });
+
         this.getPrevAvailableDate(centerIso).subscribe({
           next: (prevIso) => {
             if (prevIso) {
-              this.getDaily(this.isoToCompact(prevIso)).subscribe({ error: () => {} });
+              this.getDaily(this.isoToCompact(prevIso)).subscribe({ error: () => { } });
             }
           },
-          error: () => {}
+          error: () => { }
         });
-  
+
         this.getNextAvailableDate(centerIso).subscribe({
           next: (nextIso) => {
             if (nextIso) {
-              this.getDaily(this.isoToCompact(nextIso)).subscribe({ error: () => {} });
+              this.getDaily(this.isoToCompact(nextIso)).subscribe({ error: () => { } });
             }
           },
-          error: () => {}
+          error: () => { }
         });
       },
-      error: () => {}
+      error: () => { }
     });
   }
 
   warmUpReferenceIndexes(): void {
     this.getPlayersIndex().subscribe({ error: () => {} });
     this.getTournamentsIndex().subscribe({ error: () => {} });
+    this.getAvailableDates().subscribe({ error: () => {} });
     this.warmUpDailyWindow();
   }
-  
+
   getPlayerIndexById(playerTPId: number, forceRefresh = false): Observable<PlayerIndex | null> {
     if (!forceRefresh && this.playersIndexById?.has(playerTPId)) {
       return of(this.playersIndexById.get(playerTPId) ?? null);
     }
-  
+
     return this.getPlayersIndex(forceRefresh).pipe(
       map(() => this.playersIndexById?.get(playerTPId) ?? null)
     );
@@ -603,7 +618,7 @@ export class StaticArchivesService {
     strength: { min: number | null; median: number | null; max: number | null } | null;
   }> {
     const now = Date.now();
-  
+
     if (
       !forceRefresh &&
       this.tournamentsIndex$ &&
@@ -611,11 +626,11 @@ export class StaticArchivesService {
     ) {
       return this.tournamentsIndex$;
     }
-  
+
     this.tournamentsIndex$ = this.fetchTournamentsIndex().pipe(
       shareReplay(1)
     );
-  
+
     return this.tournamentsIndex$;
   }
 
@@ -628,10 +643,10 @@ export class StaticArchivesService {
         switchMap(m => {
           const url = m.tournaments?.url;
           if (!url) return throwError(() => new Error('tournaments manifest missing tournaments.url'));
-  
+
           const version = m.tournaments?.version ?? null;
           const now = Date.now();
-  
+
           if (
             this.tournamentsIndex$ &&
             this.tournamentsIndexVersion === version &&
@@ -639,30 +654,30 @@ export class StaticArchivesService {
           ) {
             return this.tournamentsIndex$;
           }
-  
+
           return this.http.get(`${this.apiBase}/tournaments/index/${url}`, { responseType: 'arraybuffer' }).pipe(
             map(buf => {
               const items = this.decodeBrotliJson<TournamentIndex[]>(buf) ?? [];
               const strength = m.tournamentStrength ?? null;
-  
+
               this.tournamentsIndexVersion = version;
               this.tournamentsIndexFetchedAtMs = now;
-  
+
               return { items, strength };
             })
           );
         })
       );
     }
-  
+
     return this.dailyManifestTournaments$.pipe(
       switchMap(m => {
         const url = m.tournaments?.url;
         if (!url) return throwError(() => new Error('manifest.tournaments.json missing tournaments.url'));
-  
+
         const version = m.tournaments?.version ?? null;
         const now = Date.now();
-  
+
         if (
           this.tournamentsIndex$ &&
           this.tournamentsIndexVersion === version &&
@@ -670,15 +685,15 @@ export class StaticArchivesService {
         ) {
           return this.tournamentsIndex$;
         }
-  
+
         return this.http.get(`${this.dailyStaticBase}/${url}`, { responseType: 'arraybuffer' }).pipe(
           map(buf => {
             const items = this.decodeBrotliJson<TournamentIndex[]>(buf) ?? [];
             const strength = m.tournamentStrength ?? null;
-  
+
             this.tournamentsIndexVersion = version;
             this.tournamentsIndexFetchedAtMs = now;
-  
+
             return { items, strength };
           })
         );
