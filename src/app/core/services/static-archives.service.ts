@@ -174,6 +174,8 @@ export class StaticArchivesService {
   
     let request$: Observable<Match[]>;
   
+    console.log('getDaily requested:', dateKey, 'normalized:', yyyymmdd);
+    
     if (this.mode === 'api') {
       request$ = this.http
         .get<any>(`${this.apiBase}/daily/${yyyymmdd}`)
