@@ -390,43 +390,42 @@ export class MatchesComponent implements OnInit, OnDestroy {
     loadMatchesForDate(date: Date): void {
         this.loading = true;
         document.body.classList.add('bb-noscroll');
-
+    
         const correctedDate = this.correctDateIfOutOfBounds(date);
         const correctedChanged = correctedDate.getTime() !== date.getTime();
-
+    
         this.currentDate = correctedDate;
         this.syncDateStringsFromCurrentDate();
         this.currentDateString = this.ymdLocal(correctedDate);
-
+    
         if (correctedChanged) this.showDateOutOfRangeModal();
-
+    
         const formattedDate = this.formatDate(correctedDate); // YYYYMMDD
-
+    
         this.staticArchives.getDaily(formattedDate).subscribe({
             next: (data) => {
                 const rows = (data || []).map((m, i) => ({ ...(m as any), __idx: i }));
-
+    
                 this.daySourceMatches = rows;
-
+    
                 console.log('[LOAD] isFiltered=', this.isFiltered, 'activeStatus=', this.activeStatus);
-
+    
                 console.log('📦 daySourceMatches loaded:', {
                     date: this.currentDateISO,
                     rows: this.daySourceMatches.length,
                     sample: this.daySourceMatches[0],
                 });
-
+    
                 if (this.isFiltered) {
                     const filtered = this.filterMatchesByActiveFilters(this.daySourceMatches);
-
-                    // quick stat: koliko ih pada zbog null id-eva
+    
                     let nullSurface = 0, nullType = 0, nullLevel = 0;
                     for (const m of this.daySourceMatches as any[]) {
                         if (this.normalizeSurfaceId(m) == null) nullSurface++;
                         if (this.normalizeTypeId(m) == null) nullType++;
                         if (this.normalizeLevelId(m) == null) nullLevel++;
                     }
-
+    
                     console.log('[LOAD] isFiltered=', this.isFiltered, 'activeStatus=', this.activeStatus);
                     console.log('🧪 filter result:', {
                         filtered: filtered.length,
@@ -435,20 +434,23 @@ export class MatchesComponent implements OnInit, OnDestroy {
                         nullLevel,
                     });
                 }
-
+    
                 this.matches = this.isFiltered
                     ? this.filterMatchesByActiveFilters(this.daySourceMatches)
                     : this.daySourceMatches;
-
+    
                 this.applyActiveFiltersToCurrentDay();
                 this.sortMatches();
                 this.checkAdjacentDaysAvailability(correctedDate);
-
+    
                 this.noMatchesForFilter = this.isFiltered && this.matches.length === 0;
-
+    
                 this.loading = false;
                 this.deferScrollToTop();
                 document.body.classList.remove('bb-noscroll');
+    
+                // background prefetch AFTER UI is ready
+                this.staticArchives.prefetchPreviousDaily(this.currentDateISO);
             },
             error: (err) => {
                 console.error('❌ Error loading daily archive:', err);

@@ -145,6 +145,44 @@ export class StaticArchivesService {
     );
   }
 
+  prefetchDaily(dateKey: string): void {
+    this.getDaily(dateKey).subscribe({ error: () => {} });
+  }
+
+  prefetchAdjacentDailyWindow(centerIso: string): void {
+    const centerCompact = this.isoToCompact(centerIso);
+  
+    this.prefetchDaily(centerCompact);
+  
+    this.getPrevAvailableDate(centerIso).subscribe({
+      next: prevIso => {
+        if (prevIso) {
+          this.prefetchDaily(this.isoToCompact(prevIso));
+        }
+      },
+      error: () => {}
+    });
+  
+    this.getNextAvailableDate(centerIso).subscribe({
+      next: nextIso => {
+        if (nextIso) {
+          this.prefetchDaily(this.isoToCompact(nextIso));
+        }
+      },
+      error: () => {}
+    });
+  }
+
+  prefetchPreviousDaily(centerIso: string): void {
+    this.getPrevAvailableDate(centerIso).subscribe({
+      next: (prevIso) => {
+        if (!prevIso) return;
+        this.getDaily(prevIso).subscribe({ error: () => {} });
+      },
+      error: () => {}
+    });
+  }
+  
   // --- postojeće metode getDaily/getDetails/decoder/mapLiteRowToMatch ostaju iste ---
   private availableDatesCached$?: Observable<string[]>;
   private latestDailyCached$?: Observable<{ date: string; iso: string }>;
