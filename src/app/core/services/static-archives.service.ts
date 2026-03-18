@@ -166,7 +166,9 @@ export class StaticArchivesService {
     return this.dailyIndex$;
   }
 
-  getDaily(yyyymmdd: string): Observable<Match[]> {
+  getDaily(dateKey: string): Observable<Match[]> {
+    const yyyymmdd = dateKey.includes('-') ? this.isoToCompact(dateKey) : dateKey;
+  
     const cached = this.dailyCache.get(yyyymmdd);
     if (cached) return cached;
   
@@ -392,16 +394,16 @@ export class StaticArchivesService {
   }
 
   warmUpDailyWindow(): void {
-    const today = this.todayISO();
+    const todayIso = this.todayISO();
   
-    this.normalizeToAvailableDate(today).subscribe({
+    this.normalizeToAvailableDate(todayIso).subscribe({
       next: (centerIso) => {
-        this.getDaily(centerIso).subscribe({ error: () => {} });
+        this.getDaily(this.isoToCompact(centerIso)).subscribe({ error: () => {} });
   
         this.getPrevAvailableDate(centerIso).subscribe({
           next: (prevIso) => {
             if (prevIso) {
-              this.getDaily(prevIso).subscribe({ error: () => {} });
+              this.getDaily(this.isoToCompact(prevIso)).subscribe({ error: () => {} });
             }
           },
           error: () => {}
@@ -410,7 +412,7 @@ export class StaticArchivesService {
         this.getNextAvailableDate(centerIso).subscribe({
           next: (nextIso) => {
             if (nextIso) {
-              this.getDaily(nextIso).subscribe({ error: () => {} });
+              this.getDaily(this.isoToCompact(nextIso)).subscribe({ error: () => {} });
             }
           },
           error: () => {}
