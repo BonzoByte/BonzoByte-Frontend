@@ -1,8 +1,10 @@
+/* eslint-disable @typescript-eslint/no-empty-function */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, map, shareReplay, catchError, of, switchMap, throwError } from 'rxjs';
-import { Match, TournamentIndex } from '../models/tennis.model';
+import { Match, PlayerIndex, TournamentIndex } from '../models/tennis.model';
 import brotliDecompress from 'brotli/decompress';
 import { MatchDetailsRaw } from '../models/match-details.model';
 import { PlayerDetailsRaw } from '../models/player-details.model';
@@ -224,7 +226,7 @@ export class StaticArchivesService {
         .get(`${this.apiBase}/match-details/${matchTPId}`, { responseType: 'arraybuffer' as const })
         .pipe(map(buf => this.decodeBrotliJson<MatchDetailsRaw>(buf)));
     }
-  
+
     return this.http
       .get(`${this.detailsStaticBase}/${matchTPId}.br`, { responseType: 'arraybuffer' as const })
       .pipe(map(buf => this.decodeBrotliJson<MatchDetailsRaw>(buf)));
@@ -235,18 +237,18 @@ export class StaticArchivesService {
     if (match?.isFinished) {
       return this.getDetails(match.matchTPId);
     }
-  
+
     const user = this.auth.getUser();
     const ent: any = (user as any)?.entitlements;
     const privileged = !!(user?.isAdmin || ent?.isPremium || ent?.hasTrial);
-  
+
     if (privileged) {
       return this.getDetails(match.matchTPId);
     }
-  
+
     // Free user: enforce lock window (2h before expected start)
     const unlocksAt = this.calcUnlocksAtIso(match, lockHours);
-  
+
     if (unlocksAt && Date.now() < Date.parse(unlocksAt)) {
       return throwError(() => ({
         code: 'DETAILS_LOCKED',
@@ -254,7 +256,7 @@ export class StaticArchivesService {
         lockHours,
       } as DetailsLockedError));
     }
-  
+
     // unlocked -> same archive pipeline as everything else
     return this.getDetails(match.matchTPId).pipe(
       catchError((err: any) => {
@@ -286,29 +288,111 @@ export class StaticArchivesService {
     return new Date(unlockMs).toISOString();
   }
 
-  getPlayersIndex(): Observable<any[]> {
+  private playersIndexRows$?: Observable<PlayerIndex[]>;
+  private tournamentsIndex$?: Observable<{
+    items: TournamentIndex[];
+    strength: { min: number | null; median: number | null; max: number | null } | null;
+  }>;
+
+  private playersIndexById: Map<number, PlayerIndex> | null = null;
+  private playersIndexVersion: string | null = null;
+  private playersIndexFetchedAtMs = 0;
+
+  private tournamentsIndexVersion: string | null = null;
+  private tournamentsIndexFetchedAtMs = 0;
+
+  private readonly PLAYERS_INDEX_SOFT_TTL_MS = 60 * 60 * 1000; // 1h
+  private readonly PLAYERS_INDEX_HARD_TTL_MS = 6 * 60 * 60 * 1000; // 6h
+
+  private readonly TOURNAMENTS_INDEX_SOFT_TTL_MS = 60 * 60 * 1000;
+  private readonly TOURNAMENTS_INDEX_HARD_TTL_MS = 6 * 60 * 60 * 1000;
+
+  getPlayersIndex(forceRefresh = false): Observable<PlayerIndex[]> {
+    const now = Date.now();
+  
+    if (!forceRefresh && this.playersIndexRows$ && (now - this.playersIndexFetchedAtMs) < this.PLAYERS_INDEX_SOFT_TTL_MS) {
+      return this.playersIndexRows$;
+    }
+  
+    this.playersIndexRows$ = this.fetchPlayersIndex().pipe(
+      shareReplay(1)
+    );
+  
+    return this.playersIndexRows$;
+  }
+
+  private fetchPlayersIndex(): Observable<PlayerIndex[]> {
     if (this.mode === 'api') {
       return this.http.get<DailyManifest>(`${this.apiBase}/players/manifest`).pipe(
         switchMap(m => {
           const url = m.players?.url;
           if (!url) return throwError(() => new Error('players manifest missing players.url'));
-          // url je npr: "players.index.v2026-02-06T12-30Z.br"
-          return this.http.get(`${this.apiBase}/players/index/${url}`, { responseType: 'arraybuffer' });
-        }),
-        map(buf => this.decodeBrotliJson<any[]>(buf)),
-        shareReplay(1)
+  
+          const version = m.players?.version ?? null;
+          const now = Date.now();
+  
+          if (
+            this.playersIndexRows$ &&
+            this.playersIndexVersion === version &&
+            (now - this.playersIndexFetchedAtMs) < this.PLAYERS_INDEX_HARD_TTL_MS
+          ) {
+            return this.playersIndexRows$;
+          }
+  
+          return this.http.get(`${this.apiBase}/players/index/${url}`, { responseType: 'arraybuffer' }).pipe(
+            map(buf => this.decodeBrotliJson<PlayerIndex[]>(buf)),
+            map(rows => {
+              this.playersIndexVersion = version;
+              this.playersIndexFetchedAtMs = now;
+              this.playersIndexById = new Map((rows ?? []).map(p => [p.playerTPId, p]));
+              return rows ?? [];
+            })
+          );
+        })
       );
     }
-
-    // static mode (CDN)
+  
     return this.dailyManifest$.pipe(
       switchMap(m => {
         const url = m.players?.url;
         if (!url) return throwError(() => new Error('manifest.json missing players.url'));
-        return this.http.get(`${this.dailyStaticBase}/${url}`, { responseType: 'arraybuffer' });
-      }),
-      map(buf => this.decodeBrotliJson<any[]>(buf)),
-      shareReplay(1)
+  
+        const version = m.players?.version ?? null;
+        const now = Date.now();
+  
+        if (
+          this.playersIndexRows$ &&
+          this.playersIndexVersion === version &&
+          (now - this.playersIndexFetchedAtMs) < this.PLAYERS_INDEX_HARD_TTL_MS
+        ) {
+          return this.playersIndexRows$;
+        }
+  
+        return this.http.get(`${this.dailyStaticBase}/${url}`, { responseType: 'arraybuffer' }).pipe(
+          map(buf => this.decodeBrotliJson<PlayerIndex[]>(buf)),
+          map(rows => {
+            this.playersIndexVersion = version;
+            this.playersIndexFetchedAtMs = now;
+            this.playersIndexById = new Map((rows ?? []).map(p => [p.playerTPId, p]));
+            return rows ?? [];
+          })
+        );
+      })
+    );
+  }
+
+  warmUpReferenceIndexes(): void {
+    this.getPlayersIndex().subscribe({ error: () => {} });
+    this.getTournamentsIndex().subscribe({ error: () => {} });
+  }
+  
+  getPlayerIndexById(playerTPId: number, forceRefresh = false): Observable<PlayerIndex | null> {
+    if (!forceRefresh && this.playersIndexById?.has(playerTPId)) {
+      return of(this.playersIndexById.get(playerTPId) ?? null);
+    }
+  
+    return this.getPlayersIndex(forceRefresh).pipe(
+      map(() => this.playersIndexById?.get(playerTPId) ?? null)
     );
   }
 
@@ -516,7 +600,7 @@ export class StaticArchivesService {
         .get(`${this.apiBase}/ts/${playerTPId}`, { responseType: 'arraybuffer' as const })
         .pipe(map(buf => this.decodeBrotliJson<any>(buf)));
     }
-  
+
     return this.http
       .get(`${this.tsStaticBase}/${playerTPId}.br`, { responseType: 'arraybuffer' as const })
       .pipe(map(buf => this.decodeBrotliJson<any>(buf)));

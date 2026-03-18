@@ -1,569 +1,371 @@
-/* eslint-disable @typescript-eslint/array-type */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { CommonModule } from '@angular/common';
 import {
   Component,
   EventEmitter,
   Input,
-  OnChanges,
-  OnDestroy,
   Output,
-  SimpleChanges,
-  ViewEncapsulation
+  OnChanges,
+  OnDestroy
 } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { BbModalShellComponent } from '@app/shared/ui/bb-modal-shell.component/bb-modal-shell.component';
 import { Subscription } from 'rxjs';
 
-import { StaticArchivesService } from '@app/core/services/static-archives.service';
-import { PlayerDetailsRaw } from '@app/core/models/player-details.model';
-import { BbModalShellComponent } from '@app/shared/ui/bb-modal-shell.component/bb-modal-shell.component';
-
-type PlayerTab = 'overview' | 'ts' | 'performance' | 'form' | 'roleStats';
-type TsMode = 'M' | 'SM' | 'GSM';
-type SurfaceScope = 'ALL' | 'S1' | 'S2' | 'S3' | 'S4';
-type PerfUnit = 'MATCH' | 'SET' | 'GAME';
-type TimeScope = 'ALL' | 'YEAR' | 'MONTH' | 'WEEK';
-type RoleTimeScope = 'ALL' | 'YEAR' | 'MONTH' | 'WEEK';
-
-type RoleCountKey = 'winsFav' | 'winsDog' | 'lossesFav' | 'lossesDog';
-type RoleRatioKey = 'winsFavRatio' | 'lossesFavRatio' | 'winsDogRatio' | 'lossesDogRatio';
-type RoleAvgKey = 'avgWpWonFav' | 'avgWpWonDog' | 'avgWpLostFav' | 'avgWpLostDog';
+import {
+  PlayerDetailsRaw,
+  PlayerDetailsVm,
+  PlayerDetailsTab,
+  RatingMode,
+  SurfaceScope,
+  WinLossStatVm
+} from 'src/app/core/models/player-details.model';
+import { PlayerIndex } from '@app/core/models/tennis.model';
 
 @Component({
   selector: 'app-player-modal',
   standalone: true,
   imports: [CommonModule, BbModalShellComponent],
   templateUrl: './player-modal.component.html',
-  styleUrls: [
-    '../../matches/match-details-modal/match-details-modal.component.scss'],
-  encapsulation: ViewEncapsulation.None
+  styleUrls: ['./player-modal.component.scss']
 })
 export class PlayerModalComponent implements OnChanges, OnDestroy {
+  @Input() isOpen = false;
   @Input() playerTPId!: number;
+  @Input() genderHint: 'M' | 'W' = 'M';
+
   @Output() closed = new EventEmitter<void>();
+
+  activeTab: PlayerDetailsTab = 'overview';
 
   loading = false;
   error: string | null = null;
+
   raw: PlayerDetailsRaw | null = null;
+  vm: PlayerDetailsVm | null = null;
 
-  activeTab: PlayerTab = 'overview';
+  ratingMode: RatingMode = 'M';
+  surfaceScope: SurfaceScope = 'ALL';
 
-  activeTsMode: TsMode = 'M';
-  activeTsSurface: SurfaceScope = 'ALL';
+  private detailsSub?: Subscription;
+  staticArchives: any;
 
-  activePerfUnit: PerfUnit = 'MATCH';
-  activePerfTime: TimeScope = 'ALL';
-  activePerfSurface: SurfaceScope = 'ALL';
+  playerIndex: PlayerIndex | null = null;
 
-  activeFormSurface: SurfaceScope = 'ALL';
-
-  activeRoleTime: RoleTimeScope = 'ALL';
-
-  private sub?: Subscription;
-
-  readonly surfaceOptions: Array<{ value: SurfaceScope; label: string }> = [
-    { value: 'ALL', label: 'All Surfaces' },
-    { value: 'S1', label: 'Carpet' },
-    { value: 'S2', label: 'Clay' },
-    { value: 'S3', label: 'Grass' },
-    { value: 'S4', label: 'Hard' }
-  ];
-
-  constructor(public staticArchives: StaticArchivesService) { }
-
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes['playerTPId']?.currentValue) {
+  ngOnChanges(): void {
+    if (this.isOpen && this.playerTPId) {
       this.load();
     }
   }
 
   ngOnDestroy(): void {
-    this.sub?.unsubscribe();
+    this.detailsSub?.unsubscribe();
   }
 
   close(): void {
-    this.sub?.unsubscribe();
+    this.isOpen = false;
+    this.loading = false;
+    this.error = null;
+    this.raw = null;
+    this.vm = null;
+    this.activeTab = 'overview';
+    this.detailsSub?.unsubscribe();
+    this.detailsSub = undefined;
     this.closed.emit();
   }
 
-  setTab(tab: PlayerTab): void {
+  setTab(tab: PlayerDetailsTab): void {
     this.activeTab = tab;
   }
 
-  load(): void {
-    if (!this.playerTPId) return;
+  private load(): void {
+    if (!this.isOpen || !this.playerTPId) return;
 
-    this.sub?.unsubscribe();
     this.loading = true;
     this.error = null;
     this.raw = null;
+    this.vm = null;
 
-    this.sub = this.staticArchives.getPlayerDetails(this.playerTPId).subscribe({
-      next: (data: PlayerDetailsRaw | null) => {
-        if (!data) {
-          this.error = 'Player details archive is empty.';
-          this.loading = false;
-          return;
-        }
+    // TEMP:
+    // ovdje kasnije ide pravi service call
+    // this.detailsSub = this.staticArchives.getPlayerDetails(this.playerTPId).subscribe(...)
 
-        this.raw = data;
-        this.loading = false;
-      },
-      error: (err: any) => {
-        console.error(err);
-        this.error = 'Could not load player details.';
-        this.loading = false;
-      }
-    });
+    try {
+      // placeholder dok ne spojimo service
+      this.loading = false;
+      this.raw = null;
+      this.vm = null;
+      this.error = null;
+    } catch {
+      this.loading = false;
+      this.error = 'Could not load player details.';
+    }
   }
 
-  // =========================================================================================
-  // Basic helpers
-  // =========================================================================================
-
-  private numOrNull(value: unknown): number | null {
-    return typeof value === 'number' && Number.isFinite(value) ? value : null;
-  }
-
-  private str(value: unknown): string {
-    return (value ?? '').toString().trim();
-  }
-
-  private key(n: number): string {
-    return `d${String(n).padStart(3, '0')}`;
-  }
-
-  private getNum(n: number): number | null {
-    return this.numOrNull(this.raw?.[this.key(n)]);
-  }
-
-  private getStr(n: number): string {
-    return this.str(this.raw?.[this.key(n)]);
-  }
-
-  flagIso2OrEmpty(iso2: string): string {
+  flagIso2OrEmpty(iso2?: string): string {
     return (iso2 || '').trim().toLowerCase();
   }
 
-  fmtNum(value: unknown, digits = 2): string {
-    const n = this.numOrNull(value);
-    return n == null ? '—' : n.toFixed(digits);
-  }
-
-  fmtDays(value: number | null): string {
-    return value == null || value <= 0 ? '—' : `${value}`;
-  }
-
-  fmtPct01(value: number | null): string {
-    return value == null ? '—' : `${(value * 100).toFixed(1)}%`;
-  }
-
-  // =========================================================================================
-  // Header / basic identity
-  // =========================================================================================
-
-  get playerName(): string {
-    return this.getStr(2);
-  }
-
-  get countryIso3(): string {
-    return this.getStr(4);
-  }
-
-  get countryIso2(): string {
-    return this.getStr(5);
-  }
-
-  get countryFull(): string {
-    return this.getStr(6);
-  }
-
-  get continentName(): string {
-    return this.getStr(8);
-  }
-
-  get playsText(): string {
-    return this.getStr(14);
-  }
-
-  get turnedProText(): string {
-    const year = this.getNum(12);
-    return year == null ? '' : String(year);
-  }
-
-  get tourLabel(): string {
-    const id = this.getNum(15);
-
-    if (id === 1) return 'ATP';
-    if (id === 2) return 'WTA';
-
-    return '';
-  }
-
-  get genderHint(): 'M' | 'W' {
-    return this.tourLabel === 'WTA' ? 'W' : 'M';
-  }
-
-  get bornText(): string {
-    const iso = this.raw?.[this.key(9)];
-    if (!iso) return '';
-
-    const d = new Date(String(iso));
-    if (isNaN(d.getTime())) return '';
-
-    const dd = String(d.getDate()).padStart(2, '0');
-    const mm = String(d.getMonth() + 1).padStart(2, '0');
-    const yyyy = d.getFullYear();
-
-    const age = this.ageNow(d);
-    return age == null ? `${dd}.${mm}.${yyyy}` : `${dd}.${mm}.${yyyy} (${age})`;
-  }
-
-  get heightText(): string {
-    const h = this.getNum(10);
-    return h == null ? '' : `${h} cm`;
-  }
-
-  get weightText(): string {
-    const w = this.getNum(11);
-    return w == null ? '' : `${w} kg`;
-  }
-
-  private ageNow(birthDate: Date): number | null {
-    const now = new Date();
-
-    let age = now.getFullYear() - birthDate.getFullYear();
-    const monthDiff = now.getMonth() - birthDate.getMonth();
-
-    if (monthDiff < 0 || (monthDiff === 0 && now.getDate() < birthDate.getDate())) {
-      age--;
-    }
-
-    return age >= 0 && age < 120 ? age : null;
-  }
-
-  playerAvatarUrl(): string {
-    return this.staticArchives.getPlayerPhotoUrl(this.playerTPId, this.genderHint);
+  playerAvatarUrlById(tpId?: number): string {
+    if (!tpId) return this.staticArchives.getDefaultPlayerPhotoUrl(this.genderHint);
+    // šaljemo gender hint kao query param da backend zna koji default vratiti kad nema slike
+    return 'https://bonzobyte-backend.onrender.com/api/archives/players/photo/483767';
   }
 
   onAvatarError(ev: Event): void {
     const img = ev.target as HTMLImageElement;
-    img.src = this.staticArchives.getDefaultPlayerPhotoUrl(this.genderHint);
+    img.src = this.staticArchives.getDefaultPlayerPhotoUrl(this.genderHint === 'W' ? 'W' : 'M');
   }
 
-  // =========================================================================================
-  // Overview helpers
-  // =========================================================================================
-
-  wlText(wKey: number, lKey: number): string {
-    const w = this.getNum(wKey);
-    const l = this.getNum(lKey);
-
-    if (w == null && l == null) return '—';
-    return `${w ?? 0} / ${l ?? 0}`;
+  get countryText(): string {
+    return this.vm?.overview?.countryName
+      || this.playerIndex?.countryFull
+      || '';
+  }
+  
+  get bornText(): string {
+    return this.vm?.overview?.birthDateText
+      || this.formatDateMaybe(this.playerIndex?.playerBirthDate)
+      || '';
+  }
+  
+  get playsText(): string {
+    return this.vm?.overview?.playsText
+      || this.playerIndex?.playsName
+      || '';
+  }
+  
+  get heightText(): string {
+    if (this.vm?.overview?.heightText) return this.vm.overview.heightText;
+    const h = this.playerIndex?.playerHeight;
+    return (typeof h === 'number' && Number.isFinite(h)) ? `${h} cm` : '';
+  }
+  
+  get weightText(): string {
+    if (this.vm?.overview?.weightText) return this.vm.overview.weightText;
+    const w = this.playerIndex?.playerWeight;
+    return (typeof w === 'number' && Number.isFinite(w)) ? `${w} kg` : '';
+  }
+  
+  get turnedProText(): string {
+    if (this.vm?.overview?.turnedProText) return this.vm.overview.turnedProText;
+    const y = this.playerIndex?.playerTurnedPro;
+    return (typeof y === 'number' && Number.isFinite(y)) ? `${y}` : '';
   }
 
-  streakText(value: unknown): string {
-    const n = this.numOrNull(value);
-    if (n == null || n === 0) return '—';
-
-    if (n > 0) return `W${n}`;
-    return `L${Math.abs(n)}`;
+  formatDateMaybe(value?: string | null): string {
+    if (!value) return '';
+    const d = new Date(value);
+    if (isNaN(d.getTime())) return '';
+    const pad = (n: number) => String(n).padStart(2, '0');
+    return `${pad(d.getDate())}.${pad(d.getMonth() + 1)}.${d.getFullYear()}`;
   }
 
-  // =========================================================================================
-  // TrueSkill
-  // =========================================================================================
+}
 
-  private readonly tsKeyMap: Record<TsMode, Record<SurfaceScope, { mean: number; sd: number }>> = {
-    M: {
-      ALL: { mean: 16, sd: 17 },
-      S1: { mean: 22, sd: 23 },
-      S2: { mean: 28, sd: 29 },
-      S3: { mean: 34, sd: 35 },
-      S4: { mean: 40, sd: 41 }
+export function buildPlayerDetailsVm(raw: PlayerDetailsRaw): PlayerDetailsVm {
+  return {
+    overview: {
+      playerTPId: raw.d001,
+      playerTEId: raw.d229,
+      name: raw.d002 || '',
+      iso2: raw.d005 || '',
+      iso3: raw.d004 || '',
+      countryName: raw.d006 || '',
+      continentName: raw.d008 || '',
+      birthDateText: formatDate(raw.d009),
+      ageText: formatAge(raw.d009),
+      heightText: raw.d010 ? `${raw.d010} cm` : '',
+      weightText: raw.d011 ? `${raw.d011} kg` : '',
+      turnedProText: raw.d012 ? String(raw.d012) : '',
+      playsText: raw.d014 || '',
+      tourTypeText: mapTourType(raw.d015)
     },
-    SM: {
-      ALL: { mean: 18, sd: 19 },
-      S1: { mean: 24, sd: 25 },
-      S2: { mean: 30, sd: 31 },
-      S3: { mean: 36, sd: 37 },
-      S4: { mean: 42, sd: 43 }
-    },
-    GSM: {
-      ALL: { mean: 20, sd: 21 },
-      S1: { mean: 26, sd: 27 },
-      S2: { mean: 32, sd: 33 },
-      S3: { mean: 38, sd: 39 },
-      S4: { mean: 44, sd: 45 }
-    }
-  };
 
-  tsMean(): number | null {
-    const cfg = this.tsKeyMap[this.activeTsMode][this.activeTsSurface];
-    return this.getNum(cfg.mean);
-  }
-
-  tsSd(): number | null {
-    const cfg = this.tsKeyMap[this.activeTsMode][this.activeTsSurface];
-    return this.getNum(cfg.sd);
-  }
-
-  // =========================================================================================
-  // Performance
-  // =========================================================================================
-
-  private readonly perfKeyMap: Record<PerfUnit, Record<SurfaceScope, Record<TimeScope, { w: number; l: number }>>> = {
-    MATCH: {
-      ALL: {
-        ALL: { w: 46, l: 47 },
-        YEAR: { w: 48, l: 49 },
-        MONTH: { w: 50, l: 51 },
-        WEEK: { w: 52, l: 53 }
+    ts: {
+      all: {
+        M: { mode: 'M', scope: 'ALL', mean: raw.d016, sd: raw.d017 },
+        SM: { mode: 'SM', scope: 'ALL', mean: raw.d018, sd: raw.d019 },
+        GSM: { mode: 'GSM', scope: 'ALL', mean: raw.d020, sd: raw.d021 }
       },
-      S1: {
-        ALL: { w: 54, l: 55 },
-        YEAR: { w: 56, l: 57 },
-        MONTH: { w: 58, l: 59 },
-        WEEK: { w: 60, l: 61 }
-      },
-      S2: {
-        ALL: { w: 62, l: 63 },
-        YEAR: { w: 64, l: 65 },
-        MONTH: { w: 66, l: 67 },
-        WEEK: { w: 68, l: 69 }
-      },
-      S3: {
-        ALL: { w: 70, l: 71 },
-        YEAR: { w: 72, l: 73 },
-        MONTH: { w: 74, l: 75 },
-        WEEK: { w: 76, l: 77 }
-      },
-      S4: {
-        ALL: { w: 78, l: 79 },
-        YEAR: { w: 80, l: 81 },
-        MONTH: { w: 82, l: 83 },
-        WEEK: { w: 84, l: 85 }
+      surfaces: {
+        S1: {
+          M: { mode: 'M', scope: 'S1', mean: raw.d022, sd: raw.d023 },
+          SM: { mode: 'SM', scope: 'S1', mean: raw.d024, sd: raw.d025 },
+          GSM: { mode: 'GSM', scope: 'S1', mean: raw.d026, sd: raw.d027 }
+        },
+        S2: {
+          M: { mode: 'M', scope: 'S2', mean: raw.d028, sd: raw.d029 },
+          SM: { mode: 'SM', scope: 'S2', mean: raw.d030, sd: raw.d031 },
+          GSM: { mode: 'GSM', scope: 'S2', mean: raw.d032, sd: raw.d033 }
+        },
+        S3: {
+          M: { mode: 'M', scope: 'S3', mean: raw.d034, sd: raw.d035 },
+          SM: { mode: 'SM', scope: 'S3', mean: raw.d036, sd: raw.d037 },
+          GSM: { mode: 'GSM', scope: 'S3', mean: raw.d038, sd: raw.d039 }
+        },
+        S4: {
+          M: { mode: 'M', scope: 'S4', mean: raw.d040, sd: raw.d041 },
+          SM: { mode: 'SM', scope: 'S4', mean: raw.d042, sd: raw.d043 },
+          GSM: { mode: 'GSM', scope: 'S4', mean: raw.d044, sd: raw.d045 }
+        }
       }
     },
-    SET: {
+
+    performance: {
       ALL: {
-        ALL: { w: 86, l: 87 },
-        YEAR: { w: 88, l: 89 },
-        MONTH: { w: 90, l: 91 },
-        WEEK: { w: 92, l: 93 }
+        match: stat(raw.d046, raw.d047),
+        set: stat(raw.d086, raw.d087),
+        game: stat(raw.d126, raw.d127)
       },
+      YEAR: {
+        match: stat(raw.d048, raw.d049),
+        set: stat(raw.d088, raw.d089),
+        game: stat(raw.d128, raw.d129)
+      },
+      MONTH: {
+        match: stat(raw.d050, raw.d051),
+        set: stat(raw.d090, raw.d091),
+        game: stat(raw.d130, raw.d131)
+      },
+      WEEK: {
+        match: stat(raw.d052, raw.d053),
+        set: stat(raw.d092, raw.d093),
+        game: stat(raw.d132, raw.d133)
+      },
+
       S1: {
-        ALL: { w: 94, l: 95 },
-        YEAR: { w: 96, l: 97 },
-        MONTH: { w: 98, l: 99 },
-        WEEK: { w: 100, l: 101 }
+        ALL: { match: stat(raw.d054, raw.d055), set: stat(raw.d094, raw.d095), game: stat(raw.d134, raw.d135) },
+        YEAR: { match: stat(raw.d056, raw.d057), set: stat(raw.d096, raw.d097), game: stat(raw.d136, raw.d137) },
+        MONTH: { match: stat(raw.d058, raw.d059), set: stat(raw.d098, raw.d099), game: stat(raw.d138, raw.d139) },
+        WEEK: { match: stat(raw.d060, raw.d061), set: stat(raw.d100, raw.d101), game: stat(raw.d140, raw.d141) }
       },
+
       S2: {
-        ALL: { w: 102, l: 103 },
-        YEAR: { w: 104, l: 105 },
-        MONTH: { w: 106, l: 107 },
-        WEEK: { w: 108, l: 109 }
+        ALL: { match: stat(raw.d062, raw.d063), set: stat(raw.d102, raw.d103), game: stat(raw.d142, raw.d143) },
+        YEAR: { match: stat(raw.d064, raw.d065), set: stat(raw.d104, raw.d105), game: stat(raw.d144, raw.d145) },
+        MONTH: { match: stat(raw.d066, raw.d067), set: stat(raw.d106, raw.d107), game: stat(raw.d146, raw.d147) },
+        WEEK: { match: stat(raw.d068, raw.d069), set: stat(raw.d108, raw.d109), game: stat(raw.d148, raw.d149) }
       },
+
       S3: {
-        ALL: { w: 110, l: 111 },
-        YEAR: { w: 112, l: 113 },
-        MONTH: { w: 114, l: 115 },
-        WEEK: { w: 116, l: 117 }
+        ALL: { match: stat(raw.d070, raw.d071), set: stat(raw.d110, raw.d111), game: stat(raw.d150, raw.d151) },
+        YEAR: { match: stat(raw.d072, raw.d073), set: stat(raw.d112, raw.d113), game: stat(raw.d152, raw.d153) },
+        MONTH: { match: stat(raw.d074, raw.d075), set: stat(raw.d114, raw.d115), game: stat(raw.d154, raw.d155) },
+        WEEK: { match: stat(raw.d076, raw.d077), set: stat(raw.d116, raw.d117), game: stat(raw.d156, raw.d157) }
       },
+
       S4: {
-        ALL: { w: 118, l: 119 },
-        YEAR: { w: 120, l: 121 },
-        MONTH: { w: 122, l: 123 },
-        WEEK: { w: 124, l: 125 }
+        ALL: { match: stat(raw.d078, raw.d079), set: stat(raw.d118, raw.d119), game: stat(raw.d158, raw.d159) },
+        YEAR: { match: stat(raw.d080, raw.d081), set: stat(raw.d120, raw.d121), game: stat(raw.d160, raw.d161) },
+        MONTH: { match: stat(raw.d082, raw.d083), set: stat(raw.d122, raw.d123), game: stat(raw.d162, raw.d163) },
+        WEEK: { match: stat(raw.d084, raw.d085), set: stat(raw.d124, raw.d125), game: stat(raw.d164, raw.d165) }
       }
     },
-    GAME: {
+
+    form: {
+      ALL: { streak: raw.d224, lastWinDateText: formatDate(raw.d166), lastLossDateText: formatDate(raw.d171) },
+      S1: { streak: raw.d225, lastWinDateText: formatDate(raw.d167), lastLossDateText: formatDate(raw.d172) },
+      S2: { streak: raw.d226, lastWinDateText: formatDate(raw.d168), lastLossDateText: formatDate(raw.d173) },
+      S3: { streak: raw.d227, lastWinDateText: formatDate(raw.d169), lastLossDateText: formatDate(raw.d174) },
+      S4: { streak: raw.d228, lastWinDateText: formatDate(raw.d170), lastLossDateText: formatDate(raw.d175) }
+    },
+
+    roleStats: {
       ALL: {
-        ALL: { w: 126, l: 127 },
-        YEAR: { w: 128, l: 129 },
-        MONTH: { w: 130, l: 131 },
-        WEEK: { w: 132, l: 133 }
+        winsAsFavourite: raw.d176,
+        winsAsUnderdog: raw.d177,
+        lossesAsFavourite: raw.d178,
+        lossesAsUnderdog: raw.d179,
+        winsAsFavouriteRatio: raw.d180,
+        lossesAsFavouriteRatio: raw.d181,
+        winsAsUnderdogRatio: raw.d182,
+        lossesAsUnderdogRatio: raw.d183,
+        avgWpWonFav: raw.d184,
+        avgWpWonDog: raw.d185,
+        avgWpLostFav: raw.d186,
+        avgWpLostDog: raw.d187
       },
-      S1: {
-        ALL: { w: 134, l: 135 },
-        YEAR: { w: 136, l: 137 },
-        MONTH: { w: 138, l: 139 },
-        WEEK: { w: 140, l: 141 }
+      YEAR: {
+        winsAsFavourite: raw.d188,
+        winsAsUnderdog: raw.d189,
+        lossesAsFavourite: raw.d190,
+        lossesAsUnderdog: raw.d191,
+        winsAsFavouriteRatio: raw.d192,
+        lossesAsFavouriteRatio: raw.d193,
+        winsAsUnderdogRatio: raw.d194,
+        lossesAsUnderdogRatio: raw.d195,
+        avgWpWonFav: raw.d196,
+        avgWpWonDog: raw.d197,
+        avgWpLostFav: raw.d198,
+        avgWpLostDog: raw.d199
       },
-      S2: {
-        ALL: { w: 142, l: 143 },
-        YEAR: { w: 144, l: 145 },
-        MONTH: { w: 146, l: 147 },
-        WEEK: { w: 148, l: 149 }
+      MONTH: {
+        winsAsFavourite: raw.d200,
+        winsAsUnderdog: raw.d201,
+        lossesAsFavourite: raw.d202,
+        lossesAsUnderdog: raw.d203,
+        winsAsFavouriteRatio: raw.d204,
+        lossesAsFavouriteRatio: raw.d205,
+        winsAsUnderdogRatio: raw.d206,
+        lossesAsUnderdogRatio: raw.d207,
+        avgWpWonFav: raw.d208,
+        avgWpWonDog: raw.d209,
+        avgWpLostFav: raw.d210,
+        avgWpLostDog: raw.d211
       },
-      S3: {
-        ALL: { w: 150, l: 151 },
-        YEAR: { w: 152, l: 153 },
-        MONTH: { w: 154, l: 155 },
-        WEEK: { w: 156, l: 157 }
-      },
-      S4: {
-        ALL: { w: 158, l: 159 },
-        YEAR: { w: 160, l: 161 },
-        MONTH: { w: 162, l: 163 },
-        WEEK: { w: 164, l: 165 }
+      WEEK: {
+        winsAsFavourite: raw.d212,
+        winsAsUnderdog: raw.d213,
+        lossesAsFavourite: raw.d214,
+        lossesAsUnderdog: raw.d215,
+        winsAsFavouriteRatio: raw.d216,
+        lossesAsFavouriteRatio: raw.d217,
+        winsAsUnderdogRatio: raw.d218,
+        lossesAsUnderdogRatio: raw.d219,
+        avgWpWonFav: raw.d220,
+        avgWpWonDog: raw.d221,
+        avgWpLostFav: raw.d222,
+        avgWpLostDog: raw.d223
       }
     }
   };
+}
 
-  perfWins(): number {
-    const cfg = this.perfKeyMap[this.activePerfUnit][this.activePerfSurface][this.activePerfTime];
-    return this.getNum(cfg.w) ?? 0;
-  }
-
-  perfLosses(): number {
-    const cfg = this.perfKeyMap[this.activePerfUnit][this.activePerfSurface][this.activePerfTime];
-    return this.getNum(cfg.l) ?? 0;
-  }
-
-  perfWinPct(): string {
-    const w = this.perfWins();
-    const l = this.perfLosses();
-    const total = w + l;
-
-    if (total <= 0) return '—';
-    return `${((w / total) * 100).toFixed(1)}%`;
-  }
-
-  // =========================================================================================
-  // Form
-  // =========================================================================================
-
-  private readonly formKeyMap: Record<SurfaceScope, { win: number; loss: number; streak: number }> = {
-    ALL: { win: 166, loss: 171, streak: 224 },
-    S1: { win: 167, loss: 172, streak: 225 },
-    S2: { win: 168, loss: 173, streak: 226 },
-    S3: { win: 169, loss: 174, streak: 227 },
-    S4: { win: 170, loss: 175, streak: 228 }
+function stat(wins: number, losses: number): WinLossStatVm {
+  const total = wins + losses;
+  return {
+    wins,
+    losses,
+    total,
+    winPct: total > 0 ? (wins / total) * 100 : 0
   };
+}
 
-  daysSinceLastWin(): number | null {
-    return this.getNum(this.formKeyMap[this.activeFormSurface].win);
+function formatDate(value?: string): string {
+  if (!value) return '';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '';
+  return date.toLocaleDateString();
+}
+
+function formatAge(value?: string): string {
+  if (!value) return '';
+  const birthDate = new Date(value);
+  if (Number.isNaN(birthDate.getTime())) return '';
+
+  const now = new Date();
+  let age = now.getFullYear() - birthDate.getFullYear();
+  const month = now.getMonth() - birthDate.getMonth();
+
+  if (month < 0 || (month === 0 && now.getDate() < birthDate.getDate())) {
+    age--;
   }
 
-  daysSinceLastLoss(): number | null {
-    return this.getNum(this.formKeyMap[this.activeFormSurface].loss);
-  }
+  return `${age}`;
+}
 
-  daysSinceLastMatch(): number | null {
-    const w = this.daysSinceLastWin();
-    const l = this.daysSinceLastLoss();
-
-    if (w == null && l == null) return null;
-    if (w == null) return l;
-    if (l == null) return w;
-
-    return Math.min(w, l);
-  }
-
-  moreRecentWas(): string {
-    const w = this.daysSinceLastWin();
-    const l = this.daysSinceLastLoss();
-
-    if (w == null && l == null) return 'N/A';
-    if (w == null) return 'LOSS';
-    if (l == null) return 'WIN';
-
-    return w <= l ? 'WIN' : 'LOSS';
-  }
-
-  formSurfaceStreak(): number | null {
-    return this.getNum(this.formKeyMap[this.activeFormSurface].streak);
-  }
-
-  // =========================================================================================
-  // Role Stats
-  // =========================================================================================
-
-  private readonly roleKeyMap: Record<RoleTimeScope, {
-    winsFav: number;
-    winsDog: number;
-    lossesFav: number;
-    lossesDog: number;
-    winsFavRatio: number;
-    lossesFavRatio: number;
-    winsDogRatio: number;
-    lossesDogRatio: number;
-    avgWpWonFav: number;
-    avgWpWonDog: number;
-    avgWpLostFav: number;
-    avgWpLostDog: number;
-  }> = {
-    ALL: {
-      winsFav: 176,
-      winsDog: 177,
-      lossesFav: 178,
-      lossesDog: 179,
-      winsFavRatio: 180,
-      lossesFavRatio: 181,
-      winsDogRatio: 182,
-      lossesDogRatio: 183,
-      avgWpWonFav: 184,
-      avgWpWonDog: 185,
-      avgWpLostFav: 186,
-      avgWpLostDog: 187
-    },
-    YEAR: {
-      winsFav: 188,
-      winsDog: 189,
-      lossesFav: 190,
-      lossesDog: 191,
-      winsFavRatio: 192,
-      lossesFavRatio: 193,
-      winsDogRatio: 194,
-      lossesDogRatio: 195,
-      avgWpWonFav: 196,
-      avgWpWonDog: 197,
-      avgWpLostFav: 198,
-      avgWpLostDog: 199
-    },
-    MONTH: {
-      winsFav: 200,
-      winsDog: 201,
-      lossesFav: 202,
-      lossesDog: 203,
-      winsFavRatio: 204,
-      lossesFavRatio: 205,
-      winsDogRatio: 206,
-      lossesDogRatio: 207,
-      avgWpWonFav: 208,
-      avgWpWonDog: 209,
-      avgWpLostFav: 210,
-      avgWpLostDog: 211
-    },
-    WEEK: {
-      winsFav: 212,
-      winsDog: 213,
-      lossesFav: 214,
-      lossesDog: 215,
-      winsFavRatio: 216,
-      lossesFavRatio: 217,
-      winsDogRatio: 218,
-      lossesDogRatio: 219,
-      avgWpWonFav: 220,
-      avgWpWonDog: 221,
-      avgWpLostFav: 222,
-      avgWpLostDog: 223
-    }
-  };
-
-  roleCount(key: RoleCountKey): number {
-    const dtoKey = this.roleKeyMap[this.activeRoleTime][key];
-    return this.getNum(dtoKey) ?? 0;
-  }
-
-  roleRatio(key: RoleRatioKey): number | null {
-    const dtoKey = this.roleKeyMap[this.activeRoleTime][key];
-    return this.getNum(dtoKey);
-  }
-
-  roleAvg(key: RoleAvgKey): number | null {
-    const dtoKey = this.roleKeyMap[this.activeRoleTime][key];
-    return this.getNum(dtoKey);
-  }
+function mapTourType(v: number): string {
+  if (v === 1) return 'ATP';
+  if (v === 2) return 'WTA';
+  return '';
 }

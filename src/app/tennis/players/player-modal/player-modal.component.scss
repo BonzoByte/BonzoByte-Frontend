@@ -1,274 +1,86 @@
-:host {
-    display: contents;
-  }
-  
-  .bb-modal--player-details {
-    width: min(980px, calc(100vw - 2rem));
-  }
-  
-  .bb-body {
-    display: flex;
-    flex-direction: column;
-    gap: 0.7rem;
-  }
-  
-  .bb-loading,
-  .bb-error {
-    padding: 1rem 1.1rem;
-    border-radius: 16px;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    background: rgba(255, 255, 255, 0.03);
-  }
-  
-  .bb-error-title {
-    font-weight: 800;
-    margin-bottom: 0.35rem;
-  }
-  
-  .bb-error-msg {
-    opacity: 0.85;
-  }
-  
-  .bb-actions {
-    display: flex;
-    gap: 0.6rem;
-    margin-top: 0.9rem;
-  }
-  
-  .bb-btn {
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    color: #fff;
-    border-radius: 10px;
-    padding: 0.55rem 0.85rem;
-    cursor: pointer;
-  }
-  
-  .bb-btn:hover {
-    background: rgba(255, 255, 255, 0.11);
-  }
-  
-  .bb-header-line {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.45rem;
-    align-items: center;
-  }
-  
-  .bb-pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.45rem;
-    padding: 0.45rem 0.75rem;
-    border-radius: 999px;
-    background: rgba(255, 255, 255, 0.045);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-  }
-  
-  .bb-pill.active {
-    background: rgba(255, 255, 255, 0.12);
-    border-color: rgba(255, 255, 255, 0.18);
-  }
-  
-  .bb-pill--title {
-    font-weight: 750;
-  }
-  
-  .bb-flag-sm {
-    font-size: 0.95rem;
-  }
-  
-  .bb-tabs {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.45rem;
-  }
-  
-  .bb-tab {
-    background: rgba(255, 255, 255, 0.045);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    color: #fff;
-    border-radius: 999px;
-    padding: 0.55rem 0.9rem;
-    cursor: pointer;
-  }
-  
-  .bb-tab.active {
-    background: rgba(255, 255, 255, 0.12);
-    border-color: rgba(255, 255, 255, 0.18);
-  }
-  
-  .bb-panel {
-    background:
-      linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.018));
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 22px;
-    box-shadow:
-      0 16px 40px rgba(0, 0, 0, 0.2),
-      inset 0 1px 0 rgba(255, 255, 255, 0.035);
-      padding: 0.8rem 0.9rem;
-  }
-  
-  .bb-panel--sub {
-    padding: 0.95rem 1rem;
-  }
-  
-  .bb-panel-title {
-    font-weight: 800;
-    margin-bottom: 0.75rem;
-  }
-  
-  .bb-player-single {
-    margin-bottom: 1rem;
-  }
-  
-  .bb-player-head {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    margin-bottom: 0.75rem;
-  }
-  
-  .bb-player-name {
-    font-size: 1.1rem;
-    font-weight: 800;
-    color: #fff;
-  }
-  
-  .bb-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    display: inline-block;
-  }
-  
-  .bb-dot-inline {
-    margin-right: 0.4rem;
-    vertical-align: middle;
-  }
-  
-  .bb-dot-red {
-    background: #ff5b5b;
-  }
-  
-  .bb-player-body {
-    display: grid;
-    grid-template-columns: 96px minmax(0, 1fr);
-    gap: 1rem;
-    align-items: start;
-  }
-  
-  .bb-avatar {
-    width: 96px;
-    height: 96px;
-    border-radius: 18px;
-    overflow: hidden;
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-  }
-  
-  .bb-avatar img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-  
-  .bb-kv,
-  .bb-data-rows {
-    display: flex;
-    flex-direction: column;
-    gap: 0.45rem;
-  }
-  
-  .bb-kv-row,
-  .bb-data-row {
-    display: grid;
-    grid-template-columns: 140px minmax(0, 1fr);
-    gap: 0.75rem;
-    align-items: start;
-  }
-  
-  .bb-k {
-    color: rgba(255, 255, 255, 0.68);
-  }
-  
-  .bb-v {
-    color: #fff;
-  }
-  
-  .bb-metric-grid {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 1rem;
-    margin-bottom: 1rem;
-  }
-  
-  .bb-metric-card {
-    padding: 0.95rem 1rem;
-    border-radius: 18px;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.07);
-  }
-  
-  .bb-metric-label {
-    color: rgba(255, 255, 255, 0.68);
-    margin-bottom: 0.3rem;
-  }
-  
-  .bb-metric-value {
-    font-size: 1.35rem;
-    font-weight: 800;
-    color: #fff;
-  }
-  
-  .bb-metric-sub {
-    margin-top: 0.25rem;
-    color: rgba(255, 255, 255, 0.75);
-  }
-  
-  .bb-split-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 1rem;
-  }
-  
-  .bb-perf-controls {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1rem;
-    margin-bottom: 1rem;
-  }
-  
-  .bb-perf-group {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.55rem;
-  }
-  
-  .bb-perf-label {
-    color: rgba(255, 255, 255, 0.68);
-    font-weight: 700;
-  }
-  
-  .bb-data-rows--large .bb-data-row {
-    grid-template-columns: 200px minmax(0, 1fr);
-  }
-  
-  @media (max-width: 900px) {
-    .bb-player-body {
-      grid-template-columns: 1fr;
-    }
-  
-    .bb-metric-grid,
-    .bb-split-grid {
-      grid-template-columns: 1fr;
-    }
-  
-    .bb-kv-row,
-    .bb-data-row,
-    .bb-data-rows--large .bb-data-row {
-      grid-template-columns: 1fr;
-      gap: 0.2rem;
-    }
-  }
+.bb-player-overview {
+  display: flex;
+  justify-content: center;
+}
+
+.bb-player-hero {
+  width: 100%;
+  max-width: 420px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.bb-player-identity {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin: 4px auto 16px;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.2;
+  text-align: center;
+}
+
+.bb-player-flag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+}
+
+.bb-player-title {
+  font-weight: 700;
+}
+
+.bb-player-iso {
+  opacity: 0.9;
+}
+
+.bb-player-avatar {
+  width: 160px;
+  height: 160px;
+  margin: 0 auto 20px;
+  border-radius: 20px;
+  overflow: hidden;
+}
+
+.bb-player-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.bb-player-meta {
+  display: grid;
+  gap: 10px;
+  text-align: left;
+  max-width: 320px;
+  margin: 0 auto;
+}
+
+.bb-kv-row {
+  display: grid;
+  grid-template-columns: 110px 1fr;
+  gap: 12px;
+  align-items: center;
+}
+
+.bb-k {
+  opacity: 0.8;
+}
+
+.bb-v {
+  font-weight: 600;
+}
+
+.bb-player-meta {
+  display: grid;
+  grid-template-columns: max-content max-content;
+  column-gap: 18px;
+  row-gap: 10px;
+  width: fit-content;
+  margin: 0 auto;
+  text-align: left;
+}

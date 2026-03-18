@@ -158,8 +158,12 @@
         (filterApplied)="isFiltered = true; closeFilterModal()" (resetFilter)="isFiltered = false; closeFilterModal()">
       </app-player-filter-modal>
 
-      <app-player-modal *ngIf="selectedPlayer" [playerTPId]="selectedPlayer" (closed)="closePlayerModal()">
-      </app-player-modal>
+      <app-player-modal
+      *ngIf="selectedPlayer"
+      [isOpen]="!!selectedPlayer"
+      [playerTPId]="selectedPlayer"
+      (closed)="closePlayerModal()">
+    </app-player-modal>
 
     </div>
 

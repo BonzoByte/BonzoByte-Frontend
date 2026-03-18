@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, OnInit } from '@angular/core';
+import { StaticArchivesService } from '../core/services/static-archives.service';
 
 @Component({
   selector: 'app-home',
@@ -9,8 +10,14 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
   styleUrls: ['./home.component.scss']
 })
 export class HomeComponent implements OnInit, OnDestroy {
+  constructor(private archives: StaticArchivesService) {}
+
   ngOnInit(): void {
     document.body.classList.add('no-datebar');
+
+    setTimeout(() => {
+      this.archives.warmUpReferenceIndexes();
+    }, 0);
   }
 
   ngOnDestroy(): void {

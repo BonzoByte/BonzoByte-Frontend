@@ -630,7 +630,8 @@ main {
 }
 
 .bb-modal.bb-modal--match-details .bb-pill:hover {
-    transform: scale(1.03);
+    transform: scale(1.00);
+    cursor: default;
 }
 
 /* Flag spacing inside pill */
@@ -1604,7 +1605,7 @@ body.modal-open {
     border-radius: 5px;
     font-size: 12px;
     cursor: default;
-
+    min-width: 78px;
     background: rgba(255, 255, 255, 0.08);
     border: 1px solid rgba(255, 255, 255, 0.10);
     color: rgba(255, 255, 255, 0.82);
@@ -1615,10 +1616,6 @@ body.modal-open {
         color: rgba(255, 255, 255, 0.92);
         box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.06) inset;
     }
-}
-
-.bb-pill:hover {
-    transform: scale(1.03);
 }
 
 .bb-players-2col {
@@ -1808,7 +1805,7 @@ body.modal-open {
     margin: 10px 0 12px;
     text-align: center;
     white-space: nowrap;
-
+    cursor: default;
     font-size: 28px;
     font-weight: 900;
     letter-spacing: 1.6px;
