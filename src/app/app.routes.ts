@@ -26,6 +26,11 @@ export const routes: Routes = [
             import('./tennis/matches/matches.component').then(m => m.MatchesComponent),
     },
     {
+        path: 'players/matches/:playerTPId',
+        loadComponent: () =>
+            import('./tennis/matches/matches.component').then(m => m.MatchesComponent),
+    },    
+    {
         path: 'players',
         loadComponent: () =>
             import('./tennis/players/players.component').then(m => m.PlayersComponent),
@@ -35,6 +40,11 @@ export const routes: Routes = [
         loadComponent: () =>
             import('./tennis/tournaments/tournaments.component').then(m => m.TournamentsComponent),
     },
+    {
+        path: 'tournaments/matches/:tournamentEventTPId',
+        loadComponent: () =>
+          import('./tennis/matches/matches.component').then(m => m.MatchesComponent)
+      },   
     {
         path: 'analytics',
         loadComponent: () =>

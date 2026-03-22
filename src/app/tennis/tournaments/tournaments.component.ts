@@ -5,6 +5,8 @@ import { FormsModule } from '@angular/forms';
 import { NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
 import { StaticArchivesService } from '../../core/services/static-archives.service';
 import { TournamentIndex } from '../../core/models/tennis.model';
+import { TournamentModalComponent } from './tournament-modal/tournament-modal.component';
+import { Router } from '@angular/router';
 // kasnije: TournamentModalComponent, TournamentFilterModalComponent
 
 type SortField =
@@ -30,7 +32,7 @@ type SortField =
     CommonModule,
     FormsModule,
     NgbDatepickerModule,
-    // TournamentModalComponent,
+    TournamentModalComponent,
     // TournamentFilterModalComponent
   ],
   encapsulation: ViewEncapsulation.None
@@ -55,14 +57,12 @@ export class TournamentsComponent implements OnInit, OnDestroy {
   searchTerm = '';
 
   // sorting
-  sortField: SortField = 'tournamentEventName';
-  sortDirection: 'asc' | 'desc' = 'asc';
+  sortField: SortField = 'averageMatchStrength';
+  sortDirection: 'asc' | 'desc' = 'desc';
 
-  // modal (kasnije)
-  selectedTournament: number | null = null;
+  selectedTournament: TournamentIndex | null = null;
 
   // strength stats for stars (from manifest)
-  // fallbackovi su sigurni (da UI ne pukne ako stats izostanu)
   private strengthMin: number | null = null;
   private strengthMedian: number | null = null;
   private strengthMax: number | null = null;
@@ -77,7 +77,7 @@ export class TournamentsComponent implements OnInit, OnDestroy {
 
   @ViewChild('pageInput') pageInputRef!: ElementRef<HTMLInputElement>;
 
-  constructor(private archives: StaticArchivesService) { }
+  constructor(private archives: StaticArchivesService, private router: Router) { }
 
   ngOnInit(): void {
     document.addEventListener('keydown', this.escHandler);
@@ -191,11 +191,14 @@ export class TournamentsComponent implements OnInit, OnDestroy {
     this.showFilterModal = false;
   }
 
-  openTournamentModal(tournamentEventTPId: number): void {
-    this.selectedTournament = tournamentEventTPId;
+  openTournamentModal(tournament: TournamentIndex): void {
+    console.log('🟢 openTournamentModal called', tournament);
+    this.selectedTournament = tournament;
+    console.log('🟢 selectedTournament set to', this.selectedTournament);
   }
 
   closeTournamentModal(): void {
+    console.log('🔴 closeTournamentModal called');
     this.selectedTournament = null;
   }
 
@@ -386,13 +389,50 @@ export class TournamentsComponent implements OnInit, OnDestroy {
     return Math.round(stars * 2) / 2; // half-star granularity
   }
 
-  formatTournamentLabel(name?: string | null, iso3?: string | null): string {
+  formatTournamentLabel(
+    name?: string | null,
+    iso3?: string | null,
+    countryFull?: string | null
+  ): string {
     const n = (name ?? '').trim();
+    const country = (countryFull ?? '').trim();
     const iso = (iso3 ?? '').trim().toUpperCase();
+  
+    const base = n || country || iso || '';
+  
+    if (!base) return '';
+    if (!iso || iso === '0' || base === iso) return base;
+  
+    return `${base} (${iso})`;
+  }
 
-    if (!n) return '';
-    if (!iso || iso === '0') return n;
+  openTournamentMatches(tournamentEventTPId: number): void {
+    console.log('🧭 openTournamentMatches called', { tournamentEventTPId });
+  
+    this.selectedTournament = null;
+  
+    this.router.navigate(['/tournaments/matches', tournamentEventTPId])
+      .then(ok => {
+        console.log('✅ tournament matches navigate resolved:', ok, 'new url:', this.router.url);
+        if (!ok) {
+          console.warn('⚠️ tournament matches navigate returned false');
+        }
+      })
+      .catch(err => {
+        console.error('❌ tournament matches navigate failed:', err);
+      });
+  }
 
-    return `${n} (${iso})`;
+  formatPrize(v?: number | null): string {
+    if (v == null || !Number.isFinite(v)) return '';
+  
+    return `${Math.round(v).toLocaleString('de-DE')} $`;
+  }
+
+  formatSurface(value?: string | null): string {
+    const v = (value ?? '').trim();
+    if (!v) return '';
+  
+    return v.toLowerCase() === 'unknown' ? '' : v;
   }
 }

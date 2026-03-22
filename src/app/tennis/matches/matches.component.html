@@ -3,22 +3,72 @@
 
         <!-- Top sticky bar -->
         <div class="date-nav-sticky">
-            <div class="date-left">
-            </div>
+            <div class="date-left"></div>
 
             <div class="pagination-center-wrapper">
-                <button (click)="previousDay()" class="link-button" [disabled]="isPrevDisabled || loading">
-                    <img src="assets/icons/left.svg" alt="Previous" class="arrow-icon logreg" />
-                </button>
+                <!-- DAILY MODE -->
+                <ng-container *ngIf="viewMode === 'daily'">
+                    <button (click)="previousDay()" class="link-button" [disabled]="isPrevDisabled || loading">
+                        <img src="assets/icons/left.svg" alt="Previous" class="arrow-icon logreg" />
+                    </button>
 
-                <input #dateInput type="text" class="custom-date-input date-dmy" inputmode="numeric" autocomplete="off"
-                    placeholder="DD.MM.YYYY" [(ngModel)]="currentDateDMY" (input)="onDateDMYInput($event)"
-                    (focus)="onDateInputFocus()" (blur)="commitDateInputDMY()" (keydown.enter)="commitDateInputDMY()"
-                    [disabled]="loading || !minDate || !maxDate" />
+                    <input #dateInput type="text" class="custom-date-input date-dmy" inputmode="numeric"
+                        autocomplete="off" placeholder="DD.MM.YYYY" [(ngModel)]="currentDateDMY"
+                        (input)="onDateDMYInput($event)" (focus)="onDateInputFocus()" (blur)="commitDateInputDMY()"
+                        (keydown.enter)="commitDateInputDMY()" [disabled]="loading || !minDate || !maxDate" />
 
-                <button (click)="nextDay()" class="link-button" [disabled]="isNextDisabled || loading">
-                    <img src="assets/icons/right.svg" alt="Next" class="arrow-icon logreg" />
-                </button>
+                    <button (click)="nextDay()" class="link-button" [disabled]="isNextDisabled || loading">
+                        <img src="assets/icons/right.svg" alt="Next" class="arrow-icon logreg" />
+                    </button>
+                </ng-container>
+
+                <!-- PLAYER MODE -->
+                <ng-container *ngIf="viewMode === 'player'">
+                    <div class="bb-mode-subheader bb-mode-subheader--player">
+                        <span *ngIf="playerHeaderTypeSafe">{{ playerHeaderTypeSafe }}</span>
+                        <span class="nav-separator" aria-hidden="true"></span>
+                        <span class="bb-flag-wrap" *ngIf="playerHeaderCountryISO2"
+                            [title]="playerHeaderCountryFull || 'Country'">
+                            <span class="fi fi-{{ flagIso2OrEmpty(playerHeaderCountryISO2) }} bb-flag-sm"></span>
+                        </span>
+
+                        <span class="bb-mode-subheader-text">
+                            <span *ngIf="playerHeaderTypeSafe && playerHeaderDisplayName">&nbsp;</span>
+                            {{ playerHeaderDisplayName }}
+                        </span>
+                    </div>
+                </ng-container>
+
+                <!-- TOURNAMENT MODE -->
+                <ng-container *ngIf="viewMode === 'tournament'">
+                    <div class="bb-mode-subheader bb-mode-subheader--tournament">
+                        <span *ngIf="tournamentHeaderType">{{ tournamentHeaderType }}</span>
+                        <span class="nav-separator" aria-hidden="true"></span>
+                        <span class="bb-flag-wrap" *ngIf="tournamentHeaderCountryISO2"
+                            [title]="tournamentHeaderCountryFull || 'Country'">
+                            <span class="fi fi-{{ flagIso2OrEmpty(tournamentHeaderCountryISO2) }} bb-flag-sm"></span>
+                        </span>
+
+                        <span class="bb-mode-subheader-text">
+                            <span *ngIf="tournamentHeaderType && tournamentHeaderDisplayName">&nbsp;</span>
+                            {{ tournamentHeaderDisplayName }}
+                        </span>
+
+                        <span class="bb-mode-subheader-sep" *ngIf="tournamentHeaderSurfaceSafe">•</span>
+
+                        <span class="bb-mode-subheader-meta" *ngIf="tournamentHeaderSurfaceSafe">
+                            {{ tournamentHeaderSurfaceSafe }}
+                        </span>
+
+                        <span class="bb-mode-subheader-strength" *ngIf="tournamentHeaderStrength"
+                            [title]="tournamentHeaderStrengthTitle">
+                            <span class="stars">
+                                <span *ngFor="let s of stars" class="star"
+                                    [ngClass]="starClass(s, tournamentHeaderStrengthStars)"></span>
+                            </span>
+                        </span>
+                    </div>
+                </ng-container>
             </div>
 
             <div class="date-right">
@@ -30,7 +80,8 @@
                     Clear
                 </button>
 
-                <button (click)="openFilterModal()" class="link-button logreg" [disabled]="loading">
+                <button *ngIf="showFilterButton" (click)="openFilterModal()" class="link-button logreg"
+                    [disabled]="loading">
                     <img src="assets/icons/filter.svg" alt="Filter" class="icon icon-filter" />
                     Filter <span *ngIf="isFiltered" class="badge-on">●</span>
                 </button>
@@ -57,11 +108,11 @@
                 <table class="match-table" *ngIf="filteredMatches.length > 0">
                     <colgroup>
                         <col class="c-date" />
-                        <col class="c-type" />
-                        <col class="c-tournament" />
-                        <col class="c-strength" />
+                        <col class="c-type" *ngIf="showTypeColumn" />
+                        <col class="c-tournament" *ngIf="viewMode !== 'tournament'" />
+                        <col class="c-strength" *ngIf="viewMode !== 'tournament'" />
                         <col class="c-round" />
-                        <col class="c-surface" />
+                        <col class="c-surface" *ngIf="viewMode !== 'tournament'" />
                         <col class="c-p1" />
                         <col class="c-p2" />
                         <col class="c-result" />
@@ -77,17 +128,17 @@
                                 Date
                                 <span *ngIf="sortField === 'date'">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
                             </th>
-                            <th class="col-center">Type</th>
-                            <th class="col-center" (click)="toggleSort('tournament')">
+                            <th class="col-center" *ngIf="showTypeColumn">Type</th>
+                            <th class="col-center" *ngIf="viewMode !== 'tournament'" (click)="toggleSort('tournament')">
                                 Tournament
                                 <span *ngIf="sortField === 'tournament'">{{ sortDirection === 'asc' ? '↑' : '↓'}}</span>
                             </th>
-                            <th class="col-center" (click)="toggleSort('strength')">
+                            <th class="col-center" *ngIf="viewMode !== 'tournament'" (click)="toggleSort('strength')">
                                 Tour strength
                                 <span *ngIf="sortField === 'strength'">{{ sortDirection === 'desc' ? '↑' : '↓'}}</span>
                             </th>
                             <th class="col-center">Round</th>
-                            <th class="col-center">Surface</th>
+                            <th class="col-center" *ngIf="viewMode !== 'tournament'">Surface</th>
                             <th class="col-center">Player 1</th>
                             <th class="col-center">Player 2</th>
                             <th class="col-center">Result</th>
@@ -103,17 +154,17 @@
                         <!-- OSTAVI SVOJ POSTOJEĆI *ngFor sadržaj -->
                         <tr *ngFor="let match of filteredMatches">
                             <td>{{ getLocalizedDateMaybeTime(match.dateTime) }}</td>
-                            <td>{{ match.tournamentTypeName }}</td>
+                            <td *ngIf="showTypeColumn">{{ match.tournamentTypeName }}</td>
 
-                            <td class="col-center">
+                            <td *ngIf="viewMode !== 'tournament'" class="col-center">
                                 <span class="fi fi-{{ flagCode(match.tournamentEventCountryISO2).toLowerCase() }}"
                                     [title]="match.tournamentEventCountryFull || 'World'"></span>
                                 <span class="clickable-text" (click)="openTournamentModal(match.tournamentEventTPId)">
-                                    {{ cleanTournamentNameFront(decodeHtmlEntities(match.tournamentEventName || '')) }}
+                                    {{ formatTournamentDisplayLabel(match) }}
                                 </span>
                             </td>
 
-                            <td class="col-center strength-cell"
+                            <td *ngIf="viewMode !== 'tournament'" class="col-center strength-cell"
                                 [title]="'TS: ' + (match.tournamentStrengthMeanTS ?? '-')">
                                 <span class="stars">
                                     <span *ngFor="let s of stars" class="star"
@@ -125,7 +176,7 @@
                                 {{ formatRoundShort(match.roundName) }}
                             </td>
 
-                            <td>{{ match.surface }}</td>
+                            <td *ngIf="viewMode !== 'tournament'">{{ formatSurface(match.surface) }}</td>
 
                             <td class="col-center">
                                 <span class="fi fi-{{ flagCode(match.player1CountryISO2).toLowerCase() }}"
@@ -184,7 +235,7 @@
                 </table>
             </div>
 
-            <app-match-filter-modal *ngIf="showFilterModal" [activeDateFilter]="activeDateFilter"
+            <app-match-filter-modal *ngIf="showFilterModalSafe" [activeDateFilter]="activeDateFilter"
                 [activeFromDate]="activeFromDate" [activeToDate]="activeToDate" (closed)="closeFilterModal()"
                 [minDate]="minDate" [maxDate]="maxDate" [activeSurfaceIds]="activeSurfaceIds"
                 [activeTournamentTypeIds]="activeTournamentTypeIds" [activeStrengthStars]="activeStrengthStars"

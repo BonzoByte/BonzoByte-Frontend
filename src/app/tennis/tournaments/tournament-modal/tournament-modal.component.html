@@ -1,10 +1,45 @@
-<div class="modal-backdrop show"></div>
-<div class="modal show">
-  <div class="modal-header justify-content-between align-items-center">
-    <h5 class="modal-title">Coming soon</h5>
-    <button class="btn btn-sm btn-secondary" (click)="closed.emit()">×</button>
+<div class="bb-backdrop" (click)="close()"></div>
+
+<div class="bb-modal bb-modal--tournament-details" role="dialog" aria-modal="true">
+  <button class="close-button" type="button" (click)="close()">×</button>
+
+  <div class="bb-modal-header">
+    <h2 class="bb-modal-title">Tournament Details</h2>
   </div>
-  <div class="modal-body">
-    Placeholder modal content.
+
+  <div class="bb-modal-body">
+    <div class="bb-tournament-overview-wrap">
+
+      <div class="bb-tournament-head">
+        <span
+          class="bb-flag-wrap"
+          *ngIf="tournamentIso2"
+          [title]="tournament?.countryFull || 'Country'">
+          <span class="fi fi-{{ flagIso2OrEmpty(tournamentIso2) }} bb-flag-sm"></span>
+        </span>
+
+        <div class="bb-tournament-name">
+          {{ tournamentName }}
+          <span *ngIf="tournamentIso3">({{ tournamentIso3 }})</span>
+        </div>
+      </div>
+
+      <div class="bb-tournament-info" *ngIf="overviewRows.length">
+        <div class="bb-tournament-info-row" *ngFor="let row of overviewRows">
+          <div class="bb-tournament-info-label">{{ row.label }}:</div>
+          <div class="bb-tournament-info-value">{{ row.value }}</div>
+        </div>
+      </div>
+
+      <div class="bb-tournament-actions">
+        <button
+          type="button"
+          class="bb-tab"
+          (click)="showAllMatches()">
+          Show all matches
+        </button>
+      </div>
+
+    </div>
   </div>
 </div>

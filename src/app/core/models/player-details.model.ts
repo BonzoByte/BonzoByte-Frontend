@@ -1,6 +1,5 @@
 export type PlayerDetailsTab =
   | 'overview'
-  | 'matches'
   | 'ts'
   | 'performance';
 

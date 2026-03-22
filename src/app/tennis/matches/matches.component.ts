@@ -12,6 +12,7 @@ import { StaticArchivesService } from '../../core/services/static-archives.servi
 import { AuthService } from 'src/app/core/services/auth.service';
 import { Subject, Subscription, Observable, takeUntil } from 'rxjs';
 import { catchError, debounceTime, distinctUntilChanged, map } from 'rxjs/operators';
+import { ActivatedRoute } from '@angular/router';
 
 interface BootstrapDatesResult {
     dates: string[];
@@ -63,12 +64,32 @@ export class MatchesComponent implements OnInit, OnDestroy {
     activeStrengthStars: number[] = [0, 1, 2, 3, 4, 5];
     activeStatus: 'all' | 'finished' | 'unfinished' = 'all';
     activeOdds: 'all' | 'with' | 'without' = 'all';
+    tournamentHeaderLevel = '';
     filteredAvailableDates: string[] = [];
     showDateWarning = false;
     currentDateString = '';
     noMatchesForFilter = false;
     showOutOfRangeModal = false;
     valueFilter: 'all' | 'valueOnly' = 'all';
+
+    viewMode: 'daily' | 'player' | 'tournament' = 'daily';
+
+    playerMatchesTPId: number | null = null;
+    playerHeaderName = '';
+    playerHeaderCountryISO2 = '';
+    playerHeaderCountryISO3 = '';
+    playerHeaderCountryFull = '';
+    playerHeaderType = '';
+
+    tournamentMatchesTPId: number | null = null;
+    tournamentHeaderName = '';
+    tournamentHeaderCountryISO2 = '';
+    tournamentHeaderCountryISO3 = '';
+    tournamentHeaderCountryFull = '';
+    tournamentHeaderSurface = '';
+    tournamentHeaderType = '';
+    tournamentHeaderDateTime = '';
+    tournamentHeaderStrength = '';
 
     // search
     searchTerm = '';
@@ -157,6 +178,7 @@ export class MatchesComponent implements OnInit, OnDestroy {
     }
     constructor(private staticArchives: StaticArchivesService,
         public auth: AuthService,
+        private route: ActivatedRoute,
         private translate: TranslateService,
         private appComponent: AppComponent) { }
 
@@ -250,11 +272,15 @@ export class MatchesComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit(): void {
-        console.log('ngOnInit start');
-
+        console.log('🔍 MatchesComponent ngOnInit');
+        console.log('🔍 Current URL playerTPId param:', this.route.snapshot.paramMap.get('playerTPId'));
+        console.log('🧭 route snapshot params keys:', this.route.snapshot.paramMap.keys);
+        console.log('🧭 param playerTPId:', this.route.snapshot.paramMap.get('playerTPId'));
+        console.log('🧭 param tournamentEventTPId:', this.route.snapshot.paramMap.get('tournamentEventTPId'));
+        console.log('🧭 param tournamentsEventTPId:', this.route.snapshot.paramMap.get('tournamentsEventTPId'));
+        console.log('🧭 all keys:', this.route.snapshot.paramMap.keys);
         document.addEventListener('keydown', this.escHandler);
 
-        // ✅ Search debounce pipeline
         this.search$
             .pipe(
                 debounceTime(0),
@@ -263,44 +289,85 @@ export class MatchesComponent implements OnInit, OnDestroy {
             )
             .subscribe(() => this.applyActiveFiltersToCurrentDay());
 
-        this.loading = true;
 
-        this.loadDatesAndBootstrap()
-            .pipe(takeUntil(this.destroy$))
-            .subscribe({
-                next: ({ dates, min, max }) => {
-                    this.availableDates = dates;
-                    this.minDate = min;
-                    this.maxDate = max;
+        const playerTPIdParam = this.route.snapshot.paramMap.get('playerTPId');
+        const playerTPId = playerTPIdParam ? Number(playerTPIdParam) : null;
 
-                    // startaj na zadnjem dostupnom danu
-                    this.currentDate = new Date(this.maxDate);
-                    this.currentDateString = this.ymdLocal(this.currentDate);
-                    this.syncDateStringsFromCurrentDate();
+        const tournamentEventTPIdParam = this.route.snapshot.paramMap.get('tournamentEventTPId');
+        const tournamentEventTPId = tournamentEventTPIdParam ? Number(tournamentEventTPIdParam) : null;
 
-                    console.log('✅ availableDates loaded:', {
-                        count: this.availableDates.length,
-                        min: dates[0],
-                        max: dates[dates.length - 1],
-                    });
+        console.log('🧭 route snapshot params keys:', this.route.snapshot.paramMap.keys);
+        console.log('🧭 current url:', this.route.url);
+        console.log('🧭 param playerTPId:', playerTPIdParam);
+        console.log('🧭 param tournamentEventTPId:', tournamentEventTPIdParam);
+        console.log('🧭 all keys:', this.route.snapshot.paramMap.keys);
 
-                    // loadMatchesForDate sam upravlja loading state-om
-                    this.loadMatchesForDate(this.currentDate);
-                },
-                error: (err) => {
-                    console.error('❌ Failed to bootstrap dates:', err);
-                    this.loading = false;
-                    document.body.classList.remove('bb-noscroll');
-                }
-            });
+        console.log('🧭 Route params parsed', {
+            playerRaw: playerTPIdParam,
+            playerParsed: playerTPId,
+            tournamentRaw: tournamentEventTPIdParam,
+            tournamentParsed: tournamentEventTPId
+        });
 
+        if (playerTPId && Number.isFinite(playerTPId)) {
+            this.viewMode = 'player';
+            this.playerMatchesTPId = playerTPId;
+
+            console.log('✅ Entering PLAYER mode', { playerTPId });
+            this.loadPlayerMatches(playerTPId);
+
+        } else if (tournamentEventTPId && Number.isFinite(tournamentEventTPId)) {
+            this.viewMode = 'tournament';
+            this.tournamentMatchesTPId = tournamentEventTPId;
+
+            console.log('✅ Entering TOURNAMENT mode', { tournamentEventTPId });
+            this.loadTournamentMatches(tournamentEventTPId);
+
+        } else {
+            this.viewMode = 'daily';
+            this.loading = true;
+
+            this.loadDatesAndBootstrap()
+                .pipe(takeUntil(this.destroy$))
+                .subscribe({
+                    next: ({ dates, min, max }) => {
+                        this.availableDates = dates;
+                        this.minDate = min;
+                        this.maxDate = max;
+
+                        this.currentDate = new Date(this.maxDate);
+                        this.currentDateString = this.ymdLocal(this.currentDate);
+                        this.syncDateStringsFromCurrentDate();
+
+                        console.log('✅ availableDates loaded:', {
+                            count: this.availableDates.length,
+                            min: dates[0],
+                            max: dates[dates.length - 1],
+                        });
+
+                        this.loadMatchesForDate(this.currentDate);
+                    },
+                    error: (err) => {
+                        console.error('❌ Failed to bootstrap dates:', err);
+                        this.loading = false;
+                        document.body.classList.remove('bb-noscroll');
+                    }
+                });
+        }
         this.auth.authChanged$
             .pipe(takeUntil(this.destroy$))
             .subscribe(() => {
-                // refresh grid i lock state
+                if (this.viewMode === 'player' && this.playerMatchesTPId) {
+                    this.loadPlayerMatches(this.playerMatchesTPId);
+                    return;
+                }
+
+                if (this.viewMode === 'tournament' && this.tournamentMatchesTPId) {
+                    this.loadTournamentMatches(this.tournamentMatchesTPId);
+                    return;
+                }
+
                 this.loadMatchesForDate(this.currentDate);
-                // ako imaš i available-dates / entitlements, refresh i to:
-                // this.loadAvailableDates();
             });
     }
 
@@ -390,42 +457,42 @@ export class MatchesComponent implements OnInit, OnDestroy {
     loadMatchesForDate(date: Date): void {
         this.loading = true;
         document.body.classList.add('bb-noscroll');
-    
+
         const correctedDate = this.correctDateIfOutOfBounds(date);
         const correctedChanged = correctedDate.getTime() !== date.getTime();
-    
+
         this.currentDate = correctedDate;
         this.syncDateStringsFromCurrentDate();
         this.currentDateString = this.ymdLocal(correctedDate);
-    
+
         if (correctedChanged) this.showDateOutOfRangeModal();
-    
+
         const formattedDate = this.formatDate(correctedDate); // YYYYMMDD
-    
+
         this.staticArchives.getDaily(formattedDate).subscribe({
             next: (data) => {
                 const rows = (data || []).map((m, i) => ({ ...(m as any), __idx: i }));
-    
+
                 this.daySourceMatches = rows;
-    
+
                 console.log('[LOAD] isFiltered=', this.isFiltered, 'activeStatus=', this.activeStatus);
-    
+
                 console.log('📦 daySourceMatches loaded:', {
                     date: this.currentDateISO,
                     rows: this.daySourceMatches.length,
                     sample: this.daySourceMatches[0],
                 });
-    
+
                 if (this.isFiltered) {
                     const filtered = this.filterMatchesByActiveFilters(this.daySourceMatches);
-    
+
                     let nullSurface = 0, nullType = 0, nullLevel = 0;
                     for (const m of this.daySourceMatches as any[]) {
                         if (this.normalizeSurfaceId(m) == null) nullSurface++;
                         if (this.normalizeTypeId(m) == null) nullType++;
                         if (this.normalizeLevelId(m) == null) nullLevel++;
                     }
-    
+
                     console.log('[LOAD] isFiltered=', this.isFiltered, 'activeStatus=', this.activeStatus);
                     console.log('🧪 filter result:', {
                         filtered: filtered.length,
@@ -434,21 +501,21 @@ export class MatchesComponent implements OnInit, OnDestroy {
                         nullLevel,
                     });
                 }
-    
+
                 this.matches = this.isFiltered
                     ? this.filterMatchesByActiveFilters(this.daySourceMatches)
                     : this.daySourceMatches;
-    
+
                 this.applyActiveFiltersToCurrentDay();
                 this.sortMatches();
                 this.checkAdjacentDaysAvailability(correctedDate);
-    
+
                 this.noMatchesForFilter = this.isFiltered && this.matches.length === 0;
-    
+
                 this.loading = false;
                 this.deferScrollToTop();
                 document.body.classList.remove('bb-noscroll');
-    
+
                 // background prefetch AFTER UI is ready
                 this.staticArchives.prefetchPreviousDaily(this.currentDateISO);
             },
@@ -458,12 +525,204 @@ export class MatchesComponent implements OnInit, OnDestroy {
                 this.matches = [];
                 this.filteredMatches = [];
                 this.loading = false;
-            
+
                 this.checkAdjacentDaysAvailability(this.currentDate);
                 this.deferScrollToTop();
                 document.body.classList.remove('bb-noscroll');
             }
         });
+    }
+
+    loadPlayerMatches(playerTPId: number): void {
+        console.log('📦 loadPlayerMatches called', { playerTPId });
+        this.loading = true;
+        document.body.classList.add('bb-noscroll');
+
+        this.staticArchives.getPlayerMatches(playerTPId).subscribe({
+            next: (data) => {
+                console.log('✅ Player matches loaded', {
+                    playerTPId,
+                    count: data.length,
+                    first: data[0]
+                });
+                const rows = (data || []).map((m, i) => ({ ...(m as any), __idx: i }));
+
+                // preporuka: najnoviji mečevi prvi
+                rows.sort((a: any, b: any) => {
+                    const ta = Date.parse(a?.dateTime ?? '') || 0;
+                    const tb = Date.parse(b?.dateTime ?? '') || 0;
+                    return tb - ta;
+                });
+
+                this.daySourceMatches = rows;
+
+                this.matches = this.isFiltered
+                    ? this.filterMatchesByActiveFilters(this.daySourceMatches)
+                    : this.daySourceMatches;
+
+                this.applyActiveFiltersToCurrentDay();
+                this.syncPlayerHeaderFromRows(rows, playerTPId);
+
+                this.loading = false;
+                document.body.classList.remove('bb-noscroll');
+            },
+            error: (err) => {
+                console.error('❌ Failed to load player matches:', err);
+                this.daySourceMatches = [];
+                this.matches = [];
+                this.filteredMatches = [];
+                this.loading = false;
+                document.body.classList.remove('bb-noscroll');
+            }
+        });
+    }
+
+    loadTournamentMatches(tournamentsEventTPId: number): void {
+        console.log('📦 loadTournamentMatches called', { tournamentsEventTPId });
+
+        this.loading = true;
+        document.body.classList.add('bb-noscroll');
+
+        this.staticArchives.getTournamentMatches(tournamentsEventTPId).subscribe({
+            next: (data: any) => {
+                const rows = (data || []).map((m: any, i: any) => ({ ...(m as any), __idx: i }));
+                const sortedRows = this.sortTournamentMatches(rows);
+                
+                this.daySourceMatches = sortedRows;
+                
+                this.matches = this.isFiltered
+                  ? this.filterMatchesByActiveFilters(this.daySourceMatches)
+                  : this.daySourceMatches;
+                
+                this.applyActiveFiltersToCurrentDay();
+                this.syncTournamentHeaderFromRows(sortedRows, tournamentsEventTPId);
+                
+                console.log(
+                  '🧭 tournament sorted sample:',
+                  sortedRows.slice(0, 12).map((m: any) => ({
+                    dt: m?.dateTime,
+                    round: m?.roundName,
+                    short: this.formatRoundShort(m?.roundName),
+                    p1: m?.player1Name,
+                    p2: m?.player2Name
+                  }))
+                );
+
+                this.daySourceMatches = rows;
+
+                this.matches = this.isFiltered
+                    ? this.filterMatchesByActiveFilters(this.daySourceMatches)
+                    : this.daySourceMatches;
+
+                this.applyActiveFiltersToCurrentDay();
+                this.syncTournamentHeaderFromRows(rows, tournamentsEventTPId);
+
+                console.log('✅ Tournament matches loaded', {
+                    tournamentsEventTPId,
+                    count: rows.length,
+                    first: rows[0]
+                });
+
+                this.loading = false;
+                document.body.classList.remove('bb-noscroll');
+            },
+            error: (err: any) => {
+                console.error('❌ Failed to load tournament matches:', err);
+                this.daySourceMatches = [];
+                this.matches = [];
+                this.filteredMatches = [];
+                this.loading = false;
+                document.body.classList.remove('bb-noscroll');
+            }
+        });
+    }
+
+    private syncTournamentHeaderFromRows(rows: any[], tournamentEventTPId: number): void {
+        const first =
+            rows?.find(r => Number(r?.tournamentEventTPId) === tournamentEventTPId) ??
+            rows?.[0];
+
+        if (!first) {
+            this.tournamentHeaderName = '';
+            this.tournamentHeaderCountryISO2 = '';
+            this.tournamentHeaderCountryISO3 = '';
+            this.tournamentHeaderCountryFull = '';
+            this.tournamentHeaderSurface = '';
+            this.tournamentHeaderType = '';
+            this.tournamentHeaderDateTime = '';
+            this.tournamentHeaderStrength = '';
+            this.tournamentHeaderLevel = '';
+            return;
+        }
+
+        this.tournamentHeaderName = first?.tournamentEventName ?? '';
+        this.tournamentHeaderCountryISO2 = first?.tournamentEventCountryISO2 ?? '';
+        this.tournamentHeaderCountryISO3 = first?.tournamentEventCountryISO3 ?? '';
+        this.tournamentHeaderCountryFull = first?.tournamentEventCountryFull ?? '';
+        this.tournamentHeaderSurface = first?.surface ?? '';
+        this.tournamentHeaderType = first?.tournamentTypeName ?? '';
+        this.tournamentHeaderLevel =
+            first?.tournamentLevelName ??
+            first?.tournamentLevel ??
+            first?.l09 ??
+            '';
+
+        const strengthRaw =
+            first?.tournamentStrengthMeanTS ??
+            first?.strengthMeanTS ??
+            first?.l11 ??
+            null;
+
+        this.tournamentHeaderStrength =
+            strengthRaw != null && Number.isFinite(Number(strengthRaw))
+                ? Number(strengthRaw).toFixed(2)
+                : '';
+
+        console.log('🏆 tournament header synced', {
+            tournamentEventTPId,
+            name: this.tournamentHeaderName,
+            iso2: this.tournamentHeaderCountryISO2,
+            iso3: this.tournamentHeaderCountryISO3,
+            surface: this.tournamentHeaderSurface,
+            type: this.tournamentHeaderType,
+            strengthRaw,
+            strengthFinal: this.tournamentHeaderStrength,
+            first
+        });
+    }
+
+    getTournamentHeaderStrengthStars(): number {
+        const v = Number(this.tournamentHeaderStrength);
+        if (!Number.isFinite(v)) return 0;
+        return this.getTSStars(v);
+    }
+
+    get tournamentHeaderStrengthTitle(): string {
+        return this.tournamentHeaderStrength
+            ? `Tournament strength mean: ${this.tournamentHeaderStrength}`
+            : '';
+    }
+
+    private readonly TS_MIN = 18; // “low”
+    private readonly TS_MAX = 32; // “high”
+
+    getTSStars(ts: number | null | undefined): number {
+        if (ts == null || !Number.isFinite(ts)) return 0;
+
+        const t = (ts - this.TS_MIN) / (this.TS_MAX - this.TS_MIN);
+        const clamped = Math.min(1, Math.max(0, t));
+        const stars = clamped * 5;
+
+        // pola zvjezdice
+        return Math.round(stars * 2) / 2;
+    }
+
+    private formatDateMaybe(value?: string | null): string {
+        if (!value) return '';
+        const d = new Date(value);
+        if (isNaN(d.getTime())) return '';
+        const pad = (n: number) => String(n).padStart(2, '0');
+        return `${pad(d.getDate())}.${pad(d.getMonth() + 1)}.${d.getFullYear()}`;
     }
 
     private getRoundSortKey(roundName?: string | null): number {
@@ -1204,6 +1463,9 @@ export class MatchesComponent implements OnInit, OnDestroy {
 
         this.filteredMatches = rows;
 
+        if (this.viewMode === 'tournament') {
+            this.filteredMatches = this.sortTournamentMatches(this.filteredMatches as any[]);
+          }
         // UX: no results i za filter i za search
         this.noMatchesForFilter =
             (this.isFiltered || !!this.searchTerm.trim()) && this.filteredMatches.length === 0;
@@ -1618,7 +1880,7 @@ export class MatchesComponent implements OnInit, OnDestroy {
             this.matches = [];
             this.filteredMatches = [];
             this.noMatchesForFilter = false; // nije filter problem
-        
+
             this.checkAdjacentDaysAvailability(corrected);
             this.deferScrollToTop();
             return;
@@ -1629,16 +1891,16 @@ export class MatchesComponent implements OnInit, OnDestroy {
     }
     onDateDMYInput(event: Event): void {
         const input = event.target as HTMLInputElement;
-    
+
         const raw = input.value ?? '';
         const caret = input.selectionStart ?? raw.length;
-    
+
         // koliko znamenki je bilo lijevo od kursora PRIJE reformatiranja
         const digitsBeforeCaret = raw.slice(0, caret).replace(/\D/g, '').length;
-    
+
         // uzmi samo znamenke, max 8
         const digits = raw.replace(/\D/g, '').slice(0, 8);
-    
+
         // format DD.MM.YYYY
         let formatted = '';
         if (digits.length <= 2) {
@@ -1648,24 +1910,24 @@ export class MatchesComponent implements OnInit, OnDestroy {
         } else {
             formatted = `${digits.slice(0, 2)}.${digits.slice(2, 4)}.${digits.slice(4)}`;
         }
-    
+
         this.currentDateDMY = formatted;
-    
+
         if (this.dateInputRef?.nativeElement) {
             const el = this.dateInputRef.nativeElement;
             el.value = formatted;
-    
+
             // vrati caret na logično mjesto prema broju znamenki lijevo
             let nextCaret = 0;
             let seenDigits = 0;
-    
+
             while (nextCaret < formatted.length && seenDigits < digitsBeforeCaret) {
                 if (/\d/.test(formatted[nextCaret])) {
                     seenDigits++;
                 }
                 nextCaret++;
             }
-    
+
             requestAnimationFrame(() => {
                 el.setSelectionRange(nextCaret, nextCaret);
             });
@@ -1697,20 +1959,20 @@ export class MatchesComponent implements OnInit, OnDestroy {
 
     onDetailsClosed(): void {
         console.log('[PARENT] details closed', this.pendingAfterDetailsClose);
-      
+
         this.isDetailsOpen = false;
         this.selectedMatchTPId = null;
         this.selectedMatch = null;
-      
+
         const action = this.pendingAfterDetailsClose;
         this.pendingAfterDetailsClose = null;
-      
+
         if (!action) return;
-      
+
         if (action === 'upgrade') {
-          setTimeout(() => this.openBillingModal(), 0);
+            setTimeout(() => this.openBillingModal(), 0);
         }
-      }      
+    }
 
     // Bet simulation PL
     private parseDualNumbers(text?: string | null): [number | null, number | null] {
@@ -1927,4 +2189,197 @@ export class MatchesComponent implements OnInit, OnDestroy {
         const unlockMs = dt.getTime() - 2 * 60 * 60 * 1000;
         return Date.now() < unlockMs;
     }
+
+    get tournamentHeaderStrengthStars(): number {
+        const v = Number(this.tournamentHeaderStrength);
+        if (!Number.isFinite(v)) return 0;
+        return this.getTSStars(v);
+    }
+
+    flagIso2OrEmpty(iso2?: string | null): string {
+        return (iso2 || '').trim().toLowerCase();
+    }
+
+    get tournamentHeaderSurfaceSafe(): string {
+        const v = (this.tournamentHeaderSurface || '').trim();
+        if (!v) return '';
+
+        const lower = v.toLowerCase();
+        if (lower === 'unknown') return '';
+
+        return v;
+    }
+
+    get tournamentHeaderDisplayName(): string {
+        const name = (this.tournamentHeaderName || '').trim();
+        const countryFull = (this.tournamentHeaderCountryFull || '').trim();
+        const iso3 = (this.tournamentHeaderCountryISO3 || '').trim().toUpperCase();
+      
+        const baseName = name || countryFull || iso3 || '';
+        const base = iso3 && baseName !== iso3 ? `${baseName} (${iso3})` : baseName;
+      
+        return this.appendQualificationSuffix(base, this.tournamentHeaderLevel);
+      }
+
+    private getTournamentRoundSortRank(roundName?: string | null): number {
+        const s = (roundName || '').trim().toLowerCase();
+        if (!s || s === 'unknown') return 0;
+
+        if (s === 'finals' || s === 'final') return 100;
+        if (s === 'semi finals' || s === 'semifinals' || s === 'semi-final') return 90;
+        if (s === 'quarter finals' || s === 'quarterfinals' || s === 'quarter-final') return 80;
+
+        const roundOf = s.match(/^round\s+of\s+(\d+)$/);
+        if (roundOf) {
+            const n = Number(roundOf[1]);
+            if (Number.isFinite(n)) return 70 + Math.min(n, 32) / 100;
+        }
+
+        const nthRound = s.match(/^(\d+)(st|nd|rd|th)\s+round$/);
+        if (nthRound) {
+            const n = Number(nthRound[1]);
+            if (Number.isFinite(n)) return 10 + n;
+        }
+
+        if (s === 'qualifications' || s === 'qualification' || s === 'qualifying') return 1;
+
+        return 0;
+    }
+
+    private sortTournamentMatches(rows: any[]): any[] {
+        return [...rows].sort((a: any, b: any) => {
+          const roundA = this.getTournamentRoundSortRank(a?.roundName);
+          const roundB = this.getTournamentRoundSortRank(b?.roundName);
+      
+          if (roundA !== roundB) return roundB - roundA;
+      
+          const ta = Date.parse(a?.dateTime ?? '') || 0;
+          const tb = Date.parse(b?.dateTime ?? '') || 0;
+      
+          if (ta !== tb) return tb - ta;
+      
+          return (a?.__idx ?? 0) - (b?.__idx ?? 0);
+        });
+      }
+
+      get playerHeaderDisplayName(): string {
+        const name = (this.playerHeaderName || '').trim();
+        const iso3 = (this.playerHeaderCountryISO3 || '').trim().toUpperCase();
+      
+        if (!name) return '';
+        if (!iso3 || iso3 === '0') return name;
+      
+        return `${name} (${iso3})`;
+      }
+
+      private syncPlayerHeaderFromRows(rows: any[], playerTPId: number): void {
+        const first = rows?.find(r =>
+          Number(r?.player1TPId) === playerTPId || Number(r?.player2TPId) === playerTPId
+        );
+      
+        if (!first) {
+          this.playerHeaderName = '';
+          this.playerHeaderCountryISO2 = '';
+          this.playerHeaderCountryISO3 = '';
+          this.playerHeaderCountryFull = '';
+          this.playerHeaderType = '';
+          return;
+        }
+      
+        const isP1 = Number(first?.player1TPId) === playerTPId;
+      
+        this.playerHeaderName = isP1
+          ? (first?.player1Name ?? '')
+          : (first?.player2Name ?? '');
+      
+        this.playerHeaderCountryISO2 = isP1
+          ? (first?.player1CountryISO2 ?? '')
+          : (first?.player2CountryISO2 ?? '');
+      
+        this.playerHeaderCountryISO3 = isP1
+          ? (first?.player1CountryISO3 ?? '')
+          : (first?.player2CountryISO3 ?? '');
+      
+        this.playerHeaderCountryFull = isP1
+          ? (first?.player1CountryFull ?? '')
+          : (first?.player2CountryFull ?? '');
+      
+        this.playerHeaderType =
+          (first?.tournamentTypeName ?? first?.type ?? '').trim();
+      
+        console.log('🎾 player header synced', {
+          playerTPId,
+          name: this.playerHeaderName,
+          iso2: this.playerHeaderCountryISO2,
+          iso3: this.playerHeaderCountryISO3,
+          country: this.playerHeaderCountryFull,
+          type: this.playerHeaderType,
+          first
+        });
+      }
+
+      get showTypeColumn(): boolean {
+        return this.viewMode === 'daily';
+      }
+      
+      get playerHeaderTypeSafe(): string {
+        return (this.playerHeaderType || '').trim();
+      }
+
+      private isQualificationLevel(level?: string | null): boolean {
+        const v = (level || '').trim().toLowerCase();
+        if (!v) return false;
+      
+        return v === 'q'
+          || v === 'qualifications'
+          || v === 'qualification'
+          || v === 'qualifying';
+      }
+      
+      private appendQualificationSuffix(baseLabel: string, level?: string | null): string {
+        const base = (baseLabel || '').trim();
+        if (!base) return '';
+      
+        return this.isQualificationLevel(level) ? `${base} Q` : base;
+      }
+      
+      private extractTournamentLevel(match: any): string {
+        return (
+          match?.tournamentLevelName ??
+          match?.tournamentLevel ??
+          match?.levelName ??
+          match?.level ??
+          match?.l09 ??
+          ''
+        );
+      }
+      
+      formatTournamentDisplayLabel(match: any): string {
+        const rawName = this.decodeHtmlEntities(match?.tournamentEventName || '');
+        const cleanName = this.cleanTournamentNameFront(rawName);
+        const countryFull = (match?.tournamentEventCountryFull || '').trim();
+        const iso3 = (match?.tournamentEventCountryISO3 || '').trim().toUpperCase();
+      
+        const baseName = cleanName || countryFull || iso3 || '';
+        const base = iso3 && baseName !== iso3 ? `${baseName} (${iso3})` : baseName;
+      
+        const level = this.extractTournamentLevel(match);
+      
+        return this.appendQualificationSuffix(base, level);
+      }
+
+      formatSurface(value?: string | null): string {
+        const v = (value ?? '').trim();
+        if (!v) return '';
+      
+        return v.toLowerCase() === 'unknown' ? '' : v;
+      }
+
+      get showFilterButton(): boolean {
+        return this.viewMode !== 'tournament';
+      }
+
+      get showFilterModalSafe(): boolean {
+        return this.showFilterModal && this.viewMode !== 'tournament';
+      }
 }

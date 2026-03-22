@@ -7,6 +7,8 @@
             <span class="nav-separator" aria-hidden="true"></span>
             <a routerLink="/analytics" class="logreg">Analytics</a>
             <a routerLink="/model-insights" class="logreg">Model Insights</a>
+            <span class="nav-separator" aria-hidden="true"></span>
+            <a routerLink="/simulation" class="logreg">Simulation</a>
         </div>
 
         <div class="brand-title">
@@ -16,19 +18,36 @@
         </div>
 
         <div class="navbar-nav">
+            <a class="logreg" (click)="openBillingModal()">Pricing</a>
+            <span class="nav-separator" aria-hidden="true"></span>
+
             <ng-container *ngIf="!isLoggedIn; else loggedIn">
-                <button type="button" class="logreg" (click)="openLoginModal()">{{ 'login' | translate }}</button>
-                <button type="button" class="logreg" (click)="openRegisterModal()">{{ 'register' | translate }}</button>
+                <a class="logreg" (click)="openLoginModal()">{{ 'login' | translate }}</a>
+                <a class="logreg" (click)="openRegisterModal()">{{ 'register' | translate }}</a>
             </ng-container>
 
             <ng-template #loggedIn>
                 <div class="user-block">
-                    <span>Welcome {{ userDisplayName }}</span>
-
-                    <img class="user-avatar" [src]="user?.avatarUrl || 'assets/images/defaultUser.png'" alt="Avatar"
+                    <img
+                        class="user-avatar"
+                        [src]="user?.avatarUrl || 'assets/images/defaultUser.png'"
+                        alt="Avatar"
                         (click)="openUserModal()" />
-
-                    <button type="button" class="logreg" (click)="logout()">{{ 'logout' | translate }}</button>
+            
+                    <div class="user-meta" (click)="openUserModal()">
+                        <div class="user-name">
+                            {{ userDisplayName || 'User' }}
+                        </div>
+            
+                        <div class="user-tier">
+                            <span>VIP User</span>
+                            <span class="user-tier-icon" aria-hidden="true">🏅</span>
+                        </div>
+                    </div>
+            
+                    <span class="nav-separator" aria-hidden="true"></span>
+            
+                    <a class="logreg" (click)="logout()">{{ 'logout' | translate }}</a>
                 </div>
             </ng-template>
         </div>

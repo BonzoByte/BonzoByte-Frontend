@@ -67,3 +67,69 @@
 .matches-page .match-table thead th {
     top: calc(var(--header-h) + var(--datebar-h) - 2px);
 }
+
+.bb-mode-subheader {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 34px;
+    text-align: center;
+    white-space: nowrap;
+    max-width: 100%;
+  }
+  
+  .bb-mode-subheader .bb-flag-wrap {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .bb-mode-subheader .bb-flag-sm {
+    line-height: 1;
+  }
+  
+  .bb-mode-subheader-text,
+  .bb-mode-subheader-meta,
+  .bb-mode-subheader-date {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  .bb-mode-subheader-sep {
+    opacity: 0.7;
+  }
+  
+  .bb-mode-subheader-strength {
+    display: inline-flex;
+    align-items: center;
+  }
+  
+  .bb-mode-subheader .stars {
+    display: inline-flex;
+    align-items: center;
+  }
+  
+  .bb-mode-subheader--tournament {
+    gap: 10px;
+  }
+
+  .nav-separator {
+    width: 1px;
+    height: 22px;
+    margin: 0 0.35rem;
+    background: rgba(255, 255, 255, 0.18);
+    border-radius: 999px;
+    display: inline-block;
+    flex: 0 0 auto;
+  }
+
+  .col-right 
+  {
+    text-align: right;
+  }
+
+  .col-center 
+  {
+    text-align: center;
+  }

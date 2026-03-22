@@ -31,11 +31,6 @@
           <button (click)="clearSearch()" class="link-button topbar-clear" [disabled]="loading || !searchTerm">
             Clear
           </button>
-
-          <button (click)="openFilterModal()" class="link-button" [disabled]="loading">
-            <img src="assets/icons/filter.svg" alt="Filter" class="icon icon-filter" />
-            Filter <span *ngIf="isFiltered" class="badge-on">●</span>
-          </button>
         </div>
       </div>
     </div>
@@ -53,23 +48,9 @@
         <table class="match-table" *ngIf="tournaments.length > 0">
           <thead>
             <tr>
-              <th class="col-center" (click)="toggleSort('tournamentEventName')">
-                Tournament
-                <span *ngIf="sortField === 'tournamentEventName'">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
-              </th>
-
               <th class="col-center" (click)="toggleSort('tournamentEventDate')">
                 Start
                 <span *ngIf="sortField === 'tournamentEventDate'">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
-              </th>
-
-              <th class="col-center">
-                Continent
-              </th>
-
-              <th class="col-center" (click)="toggleSort('tournamentLevelName')">
-                Level
-                <span *ngIf="sortField === 'tournamentLevelName'">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
               </th>
 
               <th class="col-center" (click)="toggleSort('tournamentTypeName')">
@@ -77,12 +58,21 @@
                 <span *ngIf="sortField === 'tournamentTypeName'">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
               </th>
 
+              <th class="col-center" (click)="toggleSort('tournamentEventName')">
+                Tournament
+                <span *ngIf="sortField === 'tournamentEventName'">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
+              </th>
+
+              <th class="col-center">
+                Continent
+              </th>
+
               <th class="col-center" (click)="toggleSort('surfaceName')">
                 Surface
                 <span *ngIf="sortField === 'surfaceName'">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
               </th>
 
-              <th class="col-center" (click)="toggleSort('prize')">
+              <th class="col-right" (click)="toggleSort('prize')">
                 Prize
                 <span *ngIf="sortField === 'prize'">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
               </th>
@@ -123,43 +113,37 @@
 
           <tbody>
             <tr *ngFor="let t of tournaments">
-              <!-- Tournament (with country flag) -->
-              <td class="col-center" style="text-align:left;">
-                <span class="fi fi-{{ flagCode(t.countryISO2).toLowerCase() }}"
-                  [title]="t.countryFull || 'World'"></span>
-
-                <span class="clickable-text" (click)="openTournamentModal(t.tournamentEventTPId)"
-                  style="margin-left:6px;">
-                  {{ formatTournamentLabel(t.tournamentEventName, t.countryISO3) }}
-                </span>
-              </td>
-
               <!-- Start date -->
               <td class="col-center">{{ formatDateMaybe(t.tournamentEventDate) }}</td>
-
-              <!-- Continent -->
-              <td class="col-center" [title]="t.continentName || ''">
-                {{ t.continentName ?? '' }}
-              </td>
-
-              <!-- Level -->
-              <td class="col-center" [title]="t.tournamentLevelName || ''">
-                {{ t.tournamentLevelName ?? '' }}
-              </td>
 
               <!-- Type -->
               <td class="col-center" [title]="t.tournamentTypeName || ''">
                 {{ t.tournamentTypeName ?? '' }}
               </td>
 
+              <!-- Tournament (with country flag) -->
+              <td class="col-center" style="text-align:left;">
+                <span class="fi fi-{{ flagCode(t.countryISO2).toLowerCase() }}"
+                  [title]="t.countryFull || 'World'"></span>
+
+                <span class="clickable-text" (click)="openTournamentModal(t)" style="margin-left:6px;">
+                  {{ formatTournamentLabel(t.tournamentEventName, t.countryISO3, t.countryFull) }}
+                </span>
+              </td>
+
+              <!-- Continent -->
+              <td class="col-center" [title]="t.continentName || ''">
+                {{ t.continentName ?? '' }}
+              </td>
+
               <!-- Surface -->
-              <td class="col-center" [title]="t.surfaceName || ''">
-                {{ t.surfaceName ?? '' }}
+              <td class="col-center" [title]="formatSurface(t.surfaceName)">
+                {{ formatSurface(t.surfaceName) }}
               </td>
 
               <!-- Prize -->
-              <td class="col-center" [title]="t.prize != null ? ('Prize: ' + formatNum(t.prize, 0)) : ''">
-                {{ t.prize != null ? formatNum(t.prize, 0) : '' }}
+              <td class="col-right" [title]="t.prize != null ? ('Prize: ' + formatNum(t.prize, 0)) : ''">
+                {{ formatPrize(t.prize) }}
               </td>
 
               <!-- StrengthMeanTS stars -->
@@ -203,11 +187,7 @@
 
               <!-- Details -->
               <td class="col-center details-cell">
-                <button
-                  type="button"
-                  class="details-icon-btn"
-                  (click)="openTournamentModal(t.tournamentEventTPId)"
-                  title="Open details"
+                <button type="button" class="details-icon-btn" (click)="openTournamentModal(t)" title="Open details"
                   aria-label="Open tournament details">
                   i
                 </button>
@@ -217,21 +197,23 @@
         </table>
       </div>
 
-      <!-- modals (optional / later) -->
-      <!--
-      <app-tournament-filter-modal
+      <div style="padding:8px; color:white; background:#222; margin:8px 16px;">
+        selectedTournament:
+        {{ selectedTournament?.tournamentEventTPId || 'NULL' }}
+        -
+        {{ selectedTournament?.tournamentEventName || 'NULL' }}
+      </div>
+
+      <!-- <app-tournament-filter-modal
         *ngIf="showFilterModal"
         (closed)="closeFilterModal()"
         (filterApplied)="isFiltered = true; closeFilterModal()"
         (resetFilter)="isFiltered = false; closeFilterModal()">
-      </app-tournament-filter-modal>
+      </app-tournament-filter-modal> -->
 
-      <app-tournament-modal
-        *ngIf="selectedTournament"
-        [tournamentEventTPId]="selectedTournament"
-        (closed)="closeTournamentModal()">
+      <app-tournament-modal *ngIf="selectedTournament" [tournament]="selectedTournament"
+        (closed)="closeTournamentModal()" (showMatches)="openTournamentMatches($event)">
       </app-tournament-modal>
-      -->
 
     </div>
 

@@ -50,12 +50,12 @@ export class PlayersComponent implements OnInit, OnDestroy {
     | 'numberOfMatches'
     | 'winPercentage'
     | 'dateOfLastMatch'
-    = 'playerName';
+    = 'averageTSMean';
 
-  sortDirection: 'asc' | 'desc' = 'asc';
+  sortDirection: 'asc' | 'desc' = 'desc';
 
   // modal
-  selectedPlayer: number | null = null;
+  selectedPlayer: PlayerIndex | null = null;
 
   // ESC close
   private escHandler = (e: KeyboardEvent) => {
@@ -169,8 +169,8 @@ export class PlayersComponent implements OnInit, OnDestroy {
     this.showFilterModal = false;
   }
 
-  openPlayerModal(playerTPId: number): void {
-    this.selectedPlayer = playerTPId;
+  openPlayerModal(player: PlayerIndex): void {
+    this.selectedPlayer = player;
   }
 
   closePlayerModal(): void {

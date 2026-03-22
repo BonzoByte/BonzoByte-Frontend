@@ -34,10 +34,10 @@
             Clear
           </button>
 
-          <button (click)="openFilterModal()" class="link-button" [disabled]="loading">
+          <!-- <button (click)="openFilterModal()" class="link-button" [disabled]="loading">
             <img src="assets/icons/filter.svg" alt="Filter" class="icon icon-filter" />
             Filter <span *ngIf="isFiltered" class="badge-on">●</span>
-          </button>
+          </button> -->
         </div>
       </div>
     </div>
@@ -106,7 +106,7 @@
                 <span class="fi fi-{{ flagCode(p.countryISO2).toLowerCase() }}"
                   [title]="p.countryFull || 'World'"></span>
 
-                <span class="clickable-text" (click)="openPlayerModal(p.playerTPId)" style="margin-left:6px;">
+                <span class="clickable-text" (click)="openPlayerModal(p)" style="margin-left:6px;">
                   {{ formatPlayerLabel(p.playerName, p.countryISO3) }}
                 </span>
               </td>
@@ -139,12 +139,8 @@
               <td class="col-last col-center">{{ formatDateMaybe(p.dateOfLastMatch) }}</td>
 
               <td class="col-det col-center details-cell">
-                <button
-                  type="button"
-                  class="details-icon-btn"
-                  (click)="openPlayerModal(p.playerTPId)"
-                  title="Open details"
-                  aria-label="Open player details">
+                <button type="button" class="details-icon-btn" (click)="openPlayerModal(p)"
+                  title="Open details" aria-label="Open player details">
                   i
                 </button>
               </td>
@@ -161,7 +157,8 @@
       <app-player-modal
       *ngIf="selectedPlayer"
       [isOpen]="!!selectedPlayer"
-      [playerTPId]="selectedPlayer"
+      [playerTPId]="selectedPlayer.playerTPId"
+      [playerIndex]="selectedPlayer"
       (closed)="closePlayerModal()">
     </app-player-modal>
 

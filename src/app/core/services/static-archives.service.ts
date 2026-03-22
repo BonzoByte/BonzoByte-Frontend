@@ -58,6 +58,8 @@ export class StaticArchivesService {
   private tsStaticBase = `${this.staticBase}/players/ts`;
   private analyticsStaticBase = `${this.staticBase}/analytics`;
   private playerDetailsStaticBase = `${this.staticBase}/players/details`;
+  private playerMatchesStaticBase = `${this.staticBase}/players/matches`;
+  private tournamentsMatchesStaticBase = `${this.staticBase}/tournaments/matches`;
 
   private readonly PHOTO_BASE = `${environment.apiBase}/players/photo`;
 
@@ -146,30 +148,30 @@ export class StaticArchivesService {
   }
 
   prefetchDaily(dateKey: string): void {
-    this.getDaily(dateKey).subscribe({ error: () => {} });
+    this.getDaily(dateKey).subscribe({ error: () => { } });
   }
 
   prefetchAdjacentDailyWindow(centerIso: string): void {
     const centerCompact = this.isoToCompact(centerIso);
-  
+
     this.prefetchDaily(centerCompact);
-  
+
     this.getPrevAvailableDate(centerIso).subscribe({
       next: prevIso => {
         if (prevIso) {
           this.prefetchDaily(this.isoToCompact(prevIso));
         }
       },
-      error: () => {}
+      error: () => { }
     });
-  
+
     this.getNextAvailableDate(centerIso).subscribe({
       next: nextIso => {
         if (nextIso) {
           this.prefetchDaily(this.isoToCompact(nextIso));
         }
       },
-      error: () => {}
+      error: () => { }
     });
   }
 
@@ -177,12 +179,12 @@ export class StaticArchivesService {
     this.getPrevAvailableDate(centerIso).subscribe({
       next: (prevIso) => {
         if (!prevIso) return;
-        this.getDaily(prevIso).subscribe({ error: () => {} });
+        this.getDaily(prevIso).subscribe({ error: () => { } });
       },
-      error: () => {}
+      error: () => { }
     });
   }
-  
+
   // --- postojeće metode getDaily/getDetails/decoder/mapLiteRowToMatch ostaju iste ---
   private availableDatesCached$?: Observable<string[]>;
   private latestDailyCached$?: Observable<{ date: string; iso: string }>;
@@ -488,7 +490,7 @@ export class StaticArchivesService {
     this.getTournamentsIndex().subscribe({ error: () => { } });
     this.getAvailableDates().subscribe({ error: () => { } });
     this.warmUpDailyWindow();
-    this.getAnalyticsDashboard().subscribe({ error: () => {} });
+    this.getAnalyticsDashboard().subscribe({ error: () => { } });
   }
 
   getPlayerIndexById(playerTPId: number, forceRefresh = false): Observable<PlayerIndex | null> {
@@ -782,5 +784,153 @@ export class StaticArchivesService {
     return this.http
       .get(`${this.playerDetailsStaticBase}/${playerTPId}.br`, { responseType: 'arraybuffer' as const })
       .pipe(map(buf => this.decodeBrotliJson<PlayerDetailsRaw>(buf)));
+  }
+
+  private playerMatchesCache = new Map<number, Observable<Match[]>>();
+
+  getPlayerMatches(playerTPId: number): Observable<Match[]> {
+    const cached = this.playerMatchesCache.get(playerTPId);
+    if (cached) return cached;
+  
+    let request$: Observable<Match[]>;
+  
+    if (this.mode === 'api') {
+      const url = `${this.apiBase}/players/matches/${playerTPId}`;
+      console.log('🌐 getPlayerMatches API URL:', url);
+  
+      request$ = this.http
+        .get(url, { responseType: 'arraybuffer' })
+        .pipe(
+          map(buf => {
+            console.log('📦 raw player matches buffer length:', buf?.byteLength ?? 0);
+            return this.decodeBrotliJson<any[]>(buf);
+          }),
+          map(rows => {
+            console.log('📄 decoded player matches rows:', rows?.length ?? 0, rows?.[0]);
+            return (rows || []).map(r => this.mapLiteRowToMatch(r));
+          }),
+          catchError((err: any) => {
+            console.error('❌ getPlayerMatches API failed', {
+              playerTPId,
+              url,
+              status: err?.status,
+              message: err?.message,
+              err
+            });
+  
+            if (err instanceof HttpErrorResponse && err.status === 404) return of([]);
+            return throwError(() => err);
+          }),
+          shareReplay(1)
+        );
+    } else {
+      const url = `${this.playerMatchesStaticBase}/${playerTPId}.br`;
+      console.log('🌐 getPlayerMatches static URL:', url);
+  
+      request$ = this.http
+        .get(url, { responseType: 'arraybuffer' })
+        .pipe(
+          map(buf => {
+            console.log('📦 raw player matches buffer length:', buf?.byteLength ?? 0);
+            return this.decodeBrotliJson<any[]>(buf);
+          }),
+          map(rows => {
+            console.log('📄 decoded player matches rows:', rows?.length ?? 0, rows?.[0]);
+            return (rows || []).map(r => this.mapLiteRowToMatch(r));
+          }),
+          catchError((err: any) => {
+            console.error('❌ getPlayerMatches static failed', {
+              playerTPId,
+              url,
+              status: err?.status,
+              message: err?.message,
+              err
+            });
+  
+            if (err instanceof HttpErrorResponse && err.status === 404) return of([]);
+            const msg = String(err?.message ?? '');
+            if (msg.includes('Got HTML instead of data')) return of([]);
+            return throwError(() => err);
+          }),
+          shareReplay(1)
+        );
+    }
+  
+    this.playerMatchesCache.set(playerTPId, request$);
+    return request$;
+  }
+
+  private tournamentMatchesCache = new Map<number, Observable<Match[]>>();
+
+  getTournamentMatches(tournamentEventTPId: number): Observable<Match[]> {
+    const cached = this.tournamentMatchesCache.get(tournamentEventTPId);
+    if (cached) return cached;
+  
+    let request$: Observable<Match[]>;
+  
+    if (this.mode === 'api') {
+      const url = `${this.apiBase}/tournaments/matches/${tournamentEventTPId}`;
+      console.log('🌐 getTournamentMatches API URL:', url);
+  
+      request$ = this.http
+        .get(url, { responseType: 'arraybuffer' })
+        .pipe(
+          map(buf => {
+            console.log('📦 raw tournament matches buffer length:', buf?.byteLength ?? 0);
+            return this.decodeBrotliJson<any[]>(buf);
+          }),
+          map(rows => {
+            console.log('📄 decoded tournament matches rows:', rows?.length ?? 0, rows?.[0]);
+            return (rows || []).map(r => this.mapLiteRowToMatch(r));
+          }),
+          catchError((err: any) => {
+            console.error('❌ getTournamentMatches API failed', {
+              tournamentEventTPId,
+              url,
+              status: err?.status,
+              message: err?.message,
+              err
+            });
+  
+            if (err instanceof HttpErrorResponse && err.status === 404) return of([]);
+            return throwError(() => err);
+          }),
+          shareReplay(1)
+        );
+    } else {
+      const url = `${this.tournamentsMatchesStaticBase}/${tournamentEventTPId}.br`;
+      console.log('🌐 getTournamentMatches static URL:', url);
+  
+      request$ = this.http
+        .get(url, { responseType: 'arraybuffer' })
+        .pipe(
+          map(buf => {
+            console.log('📦 raw tournament matches buffer length:', buf?.byteLength ?? 0);
+            return this.decodeBrotliJson<any[]>(buf);
+          }),
+          map(rows => {
+            console.log('📄 decoded tournament matches rows:', rows?.length ?? 0, rows?.[0]);
+            return (rows || []).map(r => this.mapLiteRowToMatch(r));
+          }),
+          catchError((err: any) => {
+            console.error('❌ getTournamentMatches static failed', {
+              tournamentEventTPId,
+              url,
+              status: err?.status,
+              message: err?.message,
+              err
+            });
+  
+            if (err instanceof HttpErrorResponse && err.status === 404) return of([]);
+            const msg = String(err?.message ?? '');
+            if (msg.includes('Got HTML instead of data')) return of([]);
+            return throwError(() => err);
+          }),
+          shareReplay(1)
+        );
+    }
+  
+    this.tournamentMatchesCache.set(tournamentEventTPId, request$);
+    return request$;
   }
 }

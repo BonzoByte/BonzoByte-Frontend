@@ -1,0 +1,83 @@
+.bb-modal--tournament-details {
+    width: min(560px, calc(100vw - 32px));
+  }
+  
+  .bb-tournament-overview-wrap {
+    width: 100%;
+    max-width: 360px;
+    margin: 0 auto;
+    text-align: center;
+  }
+  
+  .bb-tournament-head {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin: 0 auto 16px;
+    text-align: center;
+  }
+  
+  .bb-tournament-name {
+    line-height: 1.2;
+  }
+  
+  .bb-tournament-info {
+    display: grid;
+    grid-template-columns: max-content max-content;
+    column-gap: 16px;
+    row-gap: 8px;
+    width: fit-content;
+    margin: 0 auto;
+    align-items: baseline;
+  }
+  
+  .bb-tournament-info-row {
+    display: contents;
+  }
+  
+  .bb-tournament-info-label {
+    text-align: left;
+    opacity: 0.85;
+    font-size: inherit;
+    font-weight: inherit;
+    line-height: inherit;
+    white-space: nowrap;
+  }
+  
+  .bb-tournament-info-value {
+    text-align: right;
+    font-size: inherit;
+    font-weight: inherit;
+    line-height: inherit;
+    white-space: nowrap;
+  }
+  
+  .bb-tournament-actions {
+    margin-top: 16px;
+    text-align: center;
+  }
+
+  .bb-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal-backdrop, 1000);
+}
+
+.bb-modal--tournament-details {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: var(--z-modal, 100002);
+}
+
+.nav-separator {
+  width: 1px;
+  height: 22px;
+  margin: 0 0.35rem;
+  background: rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  display: inline-block;
+  flex: 0 0 auto;
+}

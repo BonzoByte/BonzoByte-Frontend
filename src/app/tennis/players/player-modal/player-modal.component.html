@@ -1,97 +1,133 @@
-<app-bb-modal-shell
-  title="Player Details"
-  modalClass="bb-modal--player-details"
-  (closed)="close()"
->
-  <div class="bb-tabs">
-    <button
-      type="button"
-      class="bb-tab"
-      [class.active]="activeTab === 'overview'"
-      (click)="setTab('overview')">
+<app-bb-modal-shell title="Player Details" modalClass="bb-modal--player-details" (closed)="close()">
+  <div class="bb-tabs bb-tabs--centered">
+    <button type="button" class="bb-tab" [class.active]="activeTab === 'overview'" (click)="setTab('overview')">
       Overview
     </button>
 
-    <button
-      type="button"
-      class="bb-tab"
-      [class.active]="activeTab === 'matches'"
-      (click)="setTab('matches')">
-      Matches
-    </button>
-
-    <button
-      type="button"
-      class="bb-tab"
-      [class.active]="activeTab === 'ts'"
-      (click)="setTab('ts')">
+    <button type="button" class="bb-tab" [class.active]="activeTab === 'ts'" (click)="setTab('ts')">
       TS
     </button>
 
-    <button
-      type="button"
-      class="bb-tab"
-      [class.active]="activeTab === 'performance'"
-      (click)="setTab('performance')">
+    <button type="button" class="bb-tab" [class.active]="activeTab === 'performance'" (click)="setTab('performance')">
       Performance
     </button>
   </div>
 
   <div class="bb-body">
-    <section *ngIf="activeTab === 'overview'" class="bb-panel bb-player-overview">
-      <div class="bb-player-hero">
-    
-        <div class="bb-player-identity">
-          <span class="bb-player-flag">
-            <span class="fi fi-hr"></span>
-          </span>
-    
-          <div class="bb-player-title">
-            Player Name <span class="bb-player-iso">(CRO)</span>
+    <div class="bb-loading" *ngIf="loading">Loading…</div>
+    <div class="bb-error" *ngIf="!loading && error">{{ error }}</div>
+
+    <ng-container *ngIf="!loading && !error">
+      <section *ngIf="activeTab === 'overview'" class="bb-panel bb-player-overview">
+        <div class="bb-player-overview-wrap">
+
+          <div class="bb-player-head bb-player-head--stacked">
+            <span class="bb-flag-wrap" *ngIf="overviewIso2" [title]="countryText || 'Country'">
+              <span class="fi fi-{{ flagIso2OrEmpty(overviewIso2) }} bb-flag-sm"></span>
+            </span>
+
+            <div class="bb-player-name">
+              {{ overviewName }}
+              <span *ngIf="overviewIso3">({{ overviewIso3 }})</span>
+            </div>
+          </div>
+
+          <div class="bb-avatar bb-avatar--player-details">
+            <img [src]="playerAvatarUrlById(vm?.overview?.playerTPId || playerTPId)" (error)="onAvatarError($event)"
+              alt="Player avatar" loading="lazy" />
+          </div>
+
+          <div class="bb-player-info" *ngIf="overviewRows.length">
+            <div class="bb-player-info-row" *ngFor="let row of overviewRows">
+              <div class="bb-player-info-label">{{ row.label }}:</div>
+              <div class="bb-player-info-value">{{ row.value }}</div>
+            </div>
+          </div>
+          <div class="bb-player-actions">
+            <button type="button" class="bb-btn bb-btn--secondary" (click)="showAllMatches()">
+              Show all matches
+            </button>
           </div>
         </div>
-    
-        <div class="bb-player-avatar">
-          <img
-          src="https://bonzobyte-backend.onrender.com/api/archives/players/photo/483767"
-            alt="Player avatar" />
-        </div>
-    
-        <div class="bb-player-meta">
-          <ng-container *ngIf="countryText">
-            <div class="bb-k">Country</div>
-            <div class="bb-v">{{ countryText }}</div>
-          </ng-container>
-        
-          <ng-container *ngIf="bornText">
-            <div class="bb-k">Born</div>
-            <div class="bb-v">{{ bornText }}</div>
-          </ng-container>
-        
-          <ng-container *ngIf="playsText">
-            <div class="bb-k">Plays</div>
-            <div class="bb-v">{{ playsText }}</div>
-          </ng-container>
-        
-          <ng-container *ngIf="heightText">
-            <div class="bb-k">Height</div>
-            <div class="bb-v">{{ heightText }}</div>
-          </ng-container>
-        </div>
-    
-      </div>
-    </section>
+      </section>
 
-    <section *ngIf="activeTab === 'matches'" class="bb-panel">
-      <div class="bb-placeholder">Matches layout dolazi kasnije.</div>
-    </section>
+      <section *ngIf="activeTab === 'ts'" class="bb-panel bb-player-ts">
+        <ng-container *ngIf="vm; else noTsData">
+      
+          <div class="bb-section">
+            <div class="bb-section-title">Rating Mode</div>
+            <div class="bb-chip-row">
+              <button
+                *ngFor="let mode of tsModes"
+                type="button"
+                class="bb-chip"
+                [class.active]="ratingMode === mode"
+                (click)="setRatingMode(mode)">
+                {{ ratingModeLabel(mode) }}
+              </button>
+            </div>
+          </div>
+      
+          <div class="bb-section">
+            <div class="bb-section-title">Surface Scope</div>
+            <div class="bb-chip-row">
+              <button
+                *ngFor="let scope of tsSurfaceScopes"
+                type="button"
+                class="bb-chip"
+                [class.active]="surfaceScope === scope"
+                (click)="setSurfaceScope(scope)">
+                {{ surfaceScopeLabel(scope) }}
+              </button>
+            </div>
+          </div>
+      
+          <div class="bb-section" *ngIf="tsCurrentSnapshot as snapshot">
+            <div class="bb-section-title">
+              {{ ratingModeLabel(ratingMode) }} · {{ surfaceScopeLabel(surfaceScope) }}
+            </div>
+      
+            <div class="bb-player-info" *ngIf="tsRows.length">
+              <div class="bb-player-info-row" *ngFor="let row of tsRows">
+                <div class="bb-player-info-label">{{ row.label }}:</div>
+                <div class="bb-player-info-value">{{ row.value }}</div>
+              </div>
+            </div>
+          </div>
+      
+          <div class="bb-section">
+            <div class="bb-section-title">Snapshot Comparison</div>
+      
+            <div class="bb-stats-table-wrap">
+              <table class="bb-stats-table">
+                <thead>
+                  <tr>
+                    <th>Scope</th>
+                    <th>Mean</th>
+                    <th>SD</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let row of tsComparisonRows">
+                    <td>{{ surfaceScopeLabel(row.scope) }}</td>
+                    <td>{{ row.mean }}</td>
+                    <td>{{ row.sd }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+      
+        </ng-container>
+      
+        <ng-template #noTsData>
+          <div class="bb-placeholder">TS data is not available.</div>
+        </ng-template>
+      </section>
 
-    <section *ngIf="activeTab === 'ts'" class="bb-panel">
-      <div class="bb-placeholder">TS layout dolazi kasnije.</div>
-    </section>
-
-    <section *ngIf="activeTab === 'performance'" class="bb-panel">
-      <div class="bb-placeholder">Performance layout dolazi kasnije.</div>
-    </section>
+      <section *ngIf="activeTab === 'performance'" class="bb-panel">
+        <div class="bb-placeholder">Performance layout dolazi kasnije.</div>
+      </section>
+    </ng-container>
   </div>
 </app-bb-modal-shell>

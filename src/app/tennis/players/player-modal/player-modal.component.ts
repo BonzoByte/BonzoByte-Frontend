@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+  /* eslint-disable @typescript-eslint/array-type */
 import {
   Component,
   EventEmitter,
@@ -8,8 +8,12 @@ import {
   OnDestroy
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
+
 import { BbModalShellComponent } from '@app/shared/ui/bb-modal-shell.component/bb-modal-shell.component';
-import { Subscription } from 'rxjs';
+import { StaticArchivesService } from '@app/core/services/static-archives.service';
+import { Router } from '@angular/router';
+import { Subscription, forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 
 import {
   PlayerDetailsRaw,
@@ -20,6 +24,11 @@ import {
   WinLossStatVm
 } from 'src/app/core/models/player-details.model';
 import { PlayerIndex } from '@app/core/models/tennis.model';
+
+interface PlayerOverviewStatItem {
+  label: string;
+  value: string;
+}
 
 @Component({
   selector: 'app-player-modal',
@@ -32,6 +41,7 @@ export class PlayerModalComponent implements OnChanges, OnDestroy {
   @Input() isOpen = false;
   @Input() playerTPId!: number;
   @Input() genderHint: 'M' | 'W' = 'M';
+  @Input() playerIndex: PlayerIndex | null = null;
 
   @Output() closed = new EventEmitter<void>();
 
@@ -47,9 +57,8 @@ export class PlayerModalComponent implements OnChanges, OnDestroy {
   surfaceScope: SurfaceScope = 'ALL';
 
   private detailsSub?: Subscription;
-  staticArchives: any;
 
-  playerIndex: PlayerIndex | null = null;
+  constructor(public staticArchives: StaticArchivesService, private router: Router) {}
 
   ngOnChanges(): void {
     if (this.isOpen && this.playerTPId) {
@@ -79,26 +88,54 @@ export class PlayerModalComponent implements OnChanges, OnDestroy {
 
   private load(): void {
     if (!this.isOpen || !this.playerTPId) return;
-
+  
     this.loading = true;
     this.error = null;
     this.raw = null;
     this.vm = null;
-
-    // TEMP:
-    // ovdje kasnije ide pravi service call
-    // this.detailsSub = this.staticArchives.getPlayerDetails(this.playerTPId).subscribe(...)
-
-    try {
-      // placeholder dok ne spojimo service
-      this.loading = false;
-      this.raw = null;
-      this.vm = null;
-      this.error = null;
-    } catch {
-      this.loading = false;
-      this.error = 'Could not load player details.';
-    }
+    this.activeTab = 'overview';
+    this.ratingMode = 'M';
+    this.surfaceScope = 'ALL';    
+  
+    this.detailsSub?.unsubscribe();
+    this.detailsSub = undefined;
+  
+    this.detailsSub = forkJoin({
+      raw: this.staticArchives.getPlayerDetails(this.playerTPId).pipe(
+        catchError(err => {
+          console.warn('Player details archive not available, falling back to index only.', err);
+          return of(null);
+        })
+      ),
+      index: this.staticArchives.getPlayerIndexById(this.playerTPId).pipe(
+        catchError(err => {
+          console.warn('Player index row not available.', err);
+          return of(null);
+        })
+      )
+    }).subscribe({
+      next: ({ raw, index }) => {
+        this.raw = raw;
+        this.playerIndex = index ?? this.playerIndex ?? null;
+  
+        if (raw) {
+          this.vm = buildPlayerDetailsVm(raw);
+        } else {
+          this.vm = null;
+        }
+  
+        if (!raw && !this.playerIndex) {
+          this.error = 'Player details are not available.';
+        }
+  
+        this.loading = false;
+      },
+      error: (err) => {
+        console.error('Failed to load player details:', err);
+        this.error = 'Failed to load player details.';
+        this.loading = false;
+      }
+    });
   }
 
   flagIso2OrEmpty(iso2?: string): string {
@@ -106,9 +143,11 @@ export class PlayerModalComponent implements OnChanges, OnDestroy {
   }
 
   playerAvatarUrlById(tpId?: number): string {
-    if (!tpId) return this.staticArchives.getDefaultPlayerPhotoUrl(this.genderHint);
-    // šaljemo gender hint kao query param da backend zna koji default vratiti kad nema slike
-    return 'https://bonzobyte-backend.onrender.com/api/archives/players/photo/483767';
+    if (!tpId) {
+      return this.staticArchives.getDefaultPlayerPhotoUrl(this.genderHint);
+    }
+
+    return this.staticArchives.getPlayerPhotoUrl(tpId, this.genderHint);
   }
 
   onAvatarError(ev: Event): void {
@@ -116,50 +155,255 @@ export class PlayerModalComponent implements OnChanges, OnDestroy {
     img.src = this.staticArchives.getDefaultPlayerPhotoUrl(this.genderHint === 'W' ? 'W' : 'M');
   }
 
-  get countryText(): string {
-    return this.vm?.overview?.countryName
-      || this.playerIndex?.countryFull
-      || '';
-  }
-  
-  get bornText(): string {
-    return this.vm?.overview?.birthDateText
-      || this.formatDateMaybe(this.playerIndex?.playerBirthDate)
-      || '';
-  }
-  
-  get playsText(): string {
-    return this.vm?.overview?.playsText
-      || this.playerIndex?.playsName
-      || '';
-  }
-  
-  get heightText(): string {
-    if (this.vm?.overview?.heightText) return this.vm.overview.heightText;
-    const h = this.playerIndex?.playerHeight;
-    return (typeof h === 'number' && Number.isFinite(h)) ? `${h} cm` : '';
-  }
-  
-  get weightText(): string {
-    if (this.vm?.overview?.weightText) return this.vm.overview.weightText;
-    const w = this.playerIndex?.playerWeight;
-    return (typeof w === 'number' && Number.isFinite(w)) ? `${w} kg` : '';
-  }
-  
-  get turnedProText(): string {
-    if (this.vm?.overview?.turnedProText) return this.vm.overview.turnedProText;
-    const y = this.playerIndex?.playerTurnedPro;
-    return (typeof y === 'number' && Number.isFinite(y)) ? `${y}` : '';
+  get overviewName(): string {
+    return this.vm?.overview?.name || this.playerIndex?.playerName || 'Player';
   }
 
-  formatDateMaybe(value?: string | null): string {
+  get overviewIso2(): string {
+    return this.vm?.overview?.iso2 || this.playerIndex?.countryISO2 || '';
+  }
+
+  get overviewIso3(): string {
+    return this.vm?.overview?.iso3 || this.playerIndex?.countryISO3 || '';
+  }
+
+  get countryText(): string {
+    return this.vm?.overview?.countryName || this.playerIndex?.countryFull || '';
+  }
+
+  get bornText(): string {
+    return this.vm?.overview?.birthDateText || this.formatDateMaybe(this.playerIndex?.playerBirthDate) || '';
+  }
+
+  get ageText(): string {
+    return this.vm?.overview?.ageText || '';
+  }
+
+  get playsText(): string {
+    return this.vm?.overview?.playsText || this.playerIndex?.playsName || '';
+  }
+
+  get heightText(): string {
+    if (this.vm?.overview?.heightText) return this.vm.overview.heightText;
+
+    const h = this.playerIndex?.playerHeight;
+    return typeof h === 'number' && Number.isFinite(h) ? `${h} cm` : '';
+  }
+
+  get weightText(): string {
+    if (this.vm?.overview?.weightText) return this.vm.overview.weightText;
+
+    const w = this.playerIndex?.playerWeight;
+    return typeof w === 'number' && Number.isFinite(w) ? `${w} kg` : '';
+  }
+
+  get turnedProText(): string {
+    if (this.vm?.overview?.turnedProText) return this.vm.overview.turnedProText;
+
+    const y = this.playerIndex?.playerTurnedPro;
+    return typeof y === 'number' && Number.isFinite(y) ? `${y}` : '';
+  }
+
+  get metaRows(): Array<{ label: string; value: string }> {
+    return [
+      { label: 'Country', value: this.countryText },
+      {
+        label: 'Born',
+        value: this.bornText
+          ? (this.ageText ? `${this.bornText} (${this.ageText})` : this.bornText)
+          : ''
+      },
+      { label: 'Plays', value: this.playsText },
+      { label: 'Height', value: this.heightText },
+      { label: 'Weight', value: this.weightText },
+      { label: 'Turned Pro', value: this.turnedProText }
+    ].filter(x => !!x.value);
+  }
+
+  get averageTsMeanText(): string {
+    const mean = this.vm?.ts?.all?.M?.mean ?? this.playerIndex?.averageTSMean;
+    return this.formatNumberMaybe(mean, 2);
+  }
+
+  get currentTsMeanText(): string {
+    const mean = this.playerIndex?.currentTsMean ?? this.vm?.ts?.all?.M?.mean;
+    return this.formatNumberMaybe(mean, 2);
+  }
+
+  get peakTsMeanText(): string {
+    return this.formatNumberMaybe(this.playerIndex?.peakTsMean, 2);
+  }
+
+  get matchesCountText(): string {
+    return this.formatIntegerMaybe(this.playerIndex?.numberOfMatches);
+  }
+
+  get winPctText(): string {
+    const pct = this.playerIndex?.winPercentage;
+    if (typeof pct !== 'number' || !Number.isFinite(pct)) return '';
+
+    return `${(pct * 100).toFixed(1)}%`;
+  }
+
+  get lastMatchDateText(): string {
+    return this.formatDateMaybe(this.playerIndex?.dateOfLastMatch);
+  }
+
+  get overviewStats(): PlayerOverviewStatItem[] {
+    return [
+      { label: 'Average TS Mean', value: this.averageTsMeanText },
+      { label: 'Peak TS Mean', value: this.peakTsMeanText },
+      { label: 'Current TS Mean', value: this.currentTsMeanText },
+      { label: 'Number of Matches', value: this.matchesCountText },
+      { label: 'Win %', value: this.winPctText },
+      { label: 'Date of Last Match', value: this.lastMatchDateText }
+    ].filter(x => !!x.value);
+  }
+
+  get overviewRows(): Array<{ label: string; value: string }> {
+    return [
+      ...this.metaRows,
+      ...this.overviewStats
+    ].filter(x => !!x.value);
+  }
+
+  get tsModes(): RatingMode[] {
+    return ['M', 'SM', 'GSM'];
+  }
+  
+  get tsSurfaceScopes(): SurfaceScope[] {
+    return ['ALL', 'S1', 'S2', 'S3', 'S4'];
+  }
+  
+  setRatingMode(mode: RatingMode): void {
+    this.ratingMode = mode;
+  }
+  
+  setSurfaceScope(scope: SurfaceScope): void {
+    this.surfaceScope = scope;
+  }
+  
+  get tsCurrentSnapshot() {
+    if (!this.vm) return null;
+  
+    if (this.surfaceScope === 'ALL') {
+      return this.vm.ts.all[this.ratingMode];
+    }
+  
+    return this.vm.ts.surfaces[this.surfaceScope][this.ratingMode];
+  }
+  
+  get tsRows(): Array<{ label: string; value: string }> {
+    const snapshot = this.tsCurrentSnapshot;
+    if (!snapshot) return [];
+  
+    return [
+      { label: 'Mean', value: this.formatNumberMaybe(snapshot.mean, 2) },
+      { label: 'Standard Deviation', value: this.formatNumberMaybe(snapshot.sd, 2) }
+    ].filter(x => !!x.value);
+  }
+  
+  get tsComparisonRows(): Array<{ scope: SurfaceScope; mean: string; sd: string }> {
+    if (!this.vm) return [];
+  
+    const scopes: SurfaceScope[] = ['ALL', 'S1', 'S2', 'S3', 'S4'];
+  
+    return scopes.map(scope => {
+      const snapshot =
+        scope === 'ALL'
+          ? this.vm!.ts.all[this.ratingMode]
+          : this.vm!.ts.surfaces[scope][this.ratingMode];
+  
+      return {
+        scope,
+        mean: this.formatNumberMaybe(snapshot.mean, 2),
+        sd: this.formatNumberMaybe(snapshot.sd, 2)
+      };
+    });
+  }
+  
+  surfaceScopeLabel(scope: SurfaceScope): string {
+    switch (scope) {
+      case 'ALL':
+        return 'All Surfaces';
+      case 'S1':
+        return 'S1';
+      case 'S2':
+        return 'S2';
+      case 'S3':
+        return 'S3';
+      case 'S4':
+        return 'S4';
+      default:
+        return scope;
+    }
+  }
+  
+  ratingModeLabel(mode: RatingMode): string {
+    switch (mode) {
+      case 'M':
+        return 'Match';
+      case 'SM':
+        return 'Set-Match';
+      case 'GSM':
+        return 'Game-Set-Match';
+      default:
+        return mode;
+    }
+  }
+
+  formatDateMaybe(value?: string | Date | null): string {
     if (!value) return '';
-    const d = new Date(value);
+
+    const d = value instanceof Date ? value : new Date(value);
     if (isNaN(d.getTime())) return '';
+
     const pad = (n: number) => String(n).padStart(2, '0');
     return `${pad(d.getDate())}.${pad(d.getMonth() + 1)}.${d.getFullYear()}`;
   }
 
+  private formatNumberMaybe(value: unknown, decimals = 2): string {
+    if (typeof value !== 'number' || !Number.isFinite(value)) return '';
+    return value.toFixed(decimals);
+  }
+
+  private formatIntegerMaybe(value: unknown): string {
+    if (typeof value !== 'number' || !Number.isFinite(value)) return '';
+    return `${Math.round(value)}`;
+  }
+
+  showAllMatches(): void {
+    const tpId = this.vm?.overview?.playerTPId || this.playerTPId;
+  
+    if (!tpId) {
+      console.error('❌ showAllMatches: missing playerTPId', {
+        playerTPId: this.playerTPId,
+        vm: this.vm
+      });
+      return;
+    }
+  
+    console.log('➡️ Navigating to player matches route', {
+      tpId,
+      name: this.overviewName
+    });
+  
+    console.log('🧭 Current router url before navigate:', this.router.url);
+  
+    this.router.navigate(['/players/matches', tpId])
+      .then(ok => {
+        console.log('✅ navigate resolved:', ok, 'new url:', this.router.url);
+  
+        if (ok) {
+          this.close();
+        } else {
+          console.warn('⚠️ navigate returned false');
+        }
+      })
+      .catch(err => {
+        console.error('❌ Navigation to player matches failed:', err);
+      });
+  }
 }
 
 export function buildPlayerDetailsVm(raw: PlayerDetailsRaw): PlayerDetailsVm {
