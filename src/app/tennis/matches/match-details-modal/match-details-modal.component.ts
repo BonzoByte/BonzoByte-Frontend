@@ -3597,3 +3597,27 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
     }
     
 }
+
+export interface PlayerTsHistoryPointRaw {
+    m: number; // MatchTPId
+    d: string; // DateTime
+    t: number; // Mean
+    s: number; // SD
+  }
+  
+  export type PlayerTsHistorySeriesKey =
+    | 'M_ALL' | 'M_S1' | 'M_S2' | 'M_S3' | 'M_S4'
+    | 'SM_ALL' | 'SM_S1' | 'SM_S2' | 'SM_S3' | 'SM_S4'
+    | 'GSM_ALL' | 'GSM_S1' | 'GSM_S2' | 'GSM_S3' | 'GSM_S4';
+  
+  export interface PlayerTsHistoryRaw {
+    p: number;
+    s: Partial<Record<PlayerTsHistorySeriesKey, PlayerTsHistoryPointRaw[]>>;
+  }
+  
+  export interface PlayerTsChartPointVm {
+    matchTPId: number;
+    date: string;
+    mean: number;
+    sd: number;
+  }

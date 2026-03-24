@@ -1,4 +1,4 @@
-  /* eslint-disable @typescript-eslint/array-type */
+/* eslint-disable @typescript-eslint/array-type */
 import {
   Component,
   EventEmitter,
@@ -14,6 +14,7 @@ import { StaticArchivesService } from '@app/core/services/static-archives.servic
 import { Router } from '@angular/router';
 import { Subscription, forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
+import { FormsModule } from '@angular/forms';
 
 import {
   PlayerDetailsRaw,
@@ -21,7 +22,15 @@ import {
   PlayerDetailsTab,
   RatingMode,
   SurfaceScope,
-  WinLossStatVm
+  PlayerTsSnapshotVm,
+  WinLossStatVm,
+  PlayerTsHistoryRaw,
+  PlayerTsHistorySeriesKey,
+  PlayerTsChartPointVm,
+  TimeScope,
+  PlayerFormVm,
+  PlayerRoleStatsVm,
+  PlayerPerformanceBlockVm
 } from 'src/app/core/models/player-details.model';
 import { PlayerIndex } from '@app/core/models/tennis.model';
 
@@ -33,7 +42,7 @@ interface PlayerOverviewStatItem {
 @Component({
   selector: 'app-player-modal',
   standalone: true,
-  imports: [CommonModule, BbModalShellComponent],
+  imports: [CommonModule, BbModalShellComponent, FormsModule],
   templateUrl: './player-modal.component.html',
   styleUrls: ['./player-modal.component.scss']
 })
@@ -56,9 +65,19 @@ export class PlayerModalComponent implements OnChanges, OnDestroy {
   ratingMode: RatingMode = 'M';
   surfaceScope: SurfaceScope = 'ALL';
 
+  tsHistoryRaw: PlayerTsHistoryRaw | null = null;
+  tsHistoryLoading = false;
+  tsHistoryError: string | null = null;
+
+  hoveredTsPoint: PlayerTsChartPointVm | null = null;
+  hoveredTsIndex: number | null = null;
+
+  performanceTimeScope: TimeScope = 'ALL';
+  performanceSurfaceScope: SurfaceScope = 'ALL';
+
   private detailsSub?: Subscription;
 
-  constructor(public staticArchives: StaticArchivesService, private router: Router) {}
+  constructor(public staticArchives: StaticArchivesService, private router: Router) { }
 
   ngOnChanges(): void {
     if (this.isOpen && this.playerTPId) {
@@ -88,46 +107,60 @@ export class PlayerModalComponent implements OnChanges, OnDestroy {
 
   private load(): void {
     if (!this.isOpen || !this.playerTPId) return;
-  
+
     this.loading = true;
     this.error = null;
     this.raw = null;
     this.vm = null;
     this.activeTab = 'overview';
     this.ratingMode = 'M';
-    this.surfaceScope = 'ALL';    
-  
+    this.surfaceScope = 'ALL';
+    this.tsHistoryRaw = null;
+    this.tsHistoryError = null;
+    this.tsHistoryLoading = false;
+
     this.detailsSub?.unsubscribe();
     this.detailsSub = undefined;
-  
+
     this.detailsSub = forkJoin({
       raw: this.staticArchives.getPlayerDetails(this.playerTPId).pipe(
-        catchError(err => {
-          console.warn('Player details archive not available, falling back to index only.', err);
-          return of(null);
-        })
+        catchError(() => of(null))
       ),
       index: this.staticArchives.getPlayerIndexById(this.playerTPId).pipe(
-        catchError(err => {
-          console.warn('Player index row not available.', err);
+        catchError(() => of(null))
+      ),
+      tsHistory: this.staticArchives.getPlayerTsHistory(this.playerTPId).pipe(
+        catchError((err) => {
+          console.error('[PLAYER TS HISTORY LOAD FAILED]', {
+            playerTPId: this.playerTPId,
+            err
+          });
           return of(null);
         })
       )
     }).subscribe({
-      next: ({ raw, index }) => {
+      next: ({ raw, index, tsHistory }) => {
         this.raw = raw;
         this.playerIndex = index ?? this.playerIndex ?? null;
-  
+        this.tsHistoryRaw = tsHistory;
+
+        console.log('[PLAYER TS HISTORY]', {
+          playerTPId: this.playerTPId,
+          tsHistory,
+          hasHistory: !!tsHistory,
+          keys: Object.keys(tsHistory?.s ?? {})
+        });
+
         if (raw) {
           this.vm = buildPlayerDetailsVm(raw);
         } else {
           this.vm = null;
         }
-  
+
         if (!raw && !this.playerIndex) {
           this.error = 'Player details are not available.';
         }
-  
+
         this.loading = false;
       },
       error: (err) => {
@@ -220,6 +253,274 @@ export class PlayerModalComponent implements OnChanges, OnDestroy {
     ].filter(x => !!x.value);
   }
 
+  get tsSnapshot(): PlayerTsSnapshotVm | null {
+    if (!this.vm) return null;
+
+    if (this.surfaceScope === 'ALL') {
+      return this.vm.ts.all[this.ratingMode];
+    }
+
+    return this.vm.ts.surfaces[this.surfaceScope][this.ratingMode];
+  }
+
+  get currentTsSeriesKey(): PlayerTsHistorySeriesKey {
+    return `${this.ratingMode}_${this.surfaceScope}` as PlayerTsHistorySeriesKey;
+  }
+
+  get currentTsSeries(): PlayerTsChartPointVm[] {
+    const points = this.tsHistoryRaw?.s?.[this.currentTsSeriesKey] ?? [];
+
+    return points.map((p) => ({
+      matchTPId: p.m,
+      date: p.d,
+      mean: p.t,
+      sd: p.s
+    }));
+  }
+
+  get hasTsSeries(): boolean {
+    return this.currentTsSeries.length > 1;
+  }
+
+  get tsSeriesMin(): number {
+    if (!this.currentTsSeries.length) return 0;
+    return Math.min(...this.currentTsSeries.map(p => p.mean));
+  }
+
+  get tsSeriesMax(): number {
+    if (!this.currentTsSeries.length) return 0;
+    return Math.max(...this.currentTsSeries.map(p => p.mean));
+  }
+
+  get tsSeriesRange(): number {
+    const range = this.tsSeriesMax - this.tsSeriesMin;
+    return range <= 0 ? 1 : range;
+  }
+
+  get tsSeriesPoints(): string {
+    const series = this.currentTsSeries;
+    if (series.length < 2) return '';
+
+    const min = this.tsSeriesMin;
+    const max = this.tsSeriesMax;
+    const range = max - min || 1;
+    const width = 760;
+    const height = 220;
+
+    return series
+      .map((p, i) => {
+        const x = (i / (series.length - 1)) * width;
+        const y = height - ((p.mean - min) / range) * height;
+        return `${x},${y}`;
+      })
+      .join(' ');
+  }
+
+  get tsSeriesFirstDateText(): string {
+    const first = this.currentTsSeries[0];
+    return first ? this.formatDate(first.date) : '';
+  }
+
+  get tsSeriesLastDateText(): string {
+    const last = this.currentTsSeries[this.currentTsSeries.length - 1];
+    return last ? this.formatDate(last.date) : '';
+  }
+
+  get tsHistoryKeysText(): string {
+    const keys = Object.keys(this.tsHistoryRaw?.s ?? {});
+    return keys.length ? keys.join(', ') : 'none';
+  }
+
+  get tsSeriesPointsPreview(): string {
+    return this.tsSeriesPoints.slice(0, 120);
+  }
+
+  get activeTsPoint(): PlayerTsChartPointVm | null {
+    if (this.hoveredTsPoint) return this.hoveredTsPoint;
+
+    const series = this.currentTsSeries;
+    return series.length ? series[series.length - 1] : null;
+  }
+
+  get activeTsMeanText(): string {
+    const point = this.activeTsPoint;
+    if (point) return this.formatNumberMaybe(point.mean, 2);
+
+    return this.formatNumberMaybe(this.tsSnapshot?.mean, 2);
+  }
+
+  get activeTsSdText(): string {
+    const point = this.activeTsPoint;
+    if (point) return this.formatNumberMaybe(point.sd, 2);
+
+    return this.formatNumberMaybe(this.tsSnapshot?.sd, 2);
+  }
+
+  get activeTsSnapshotTitle(): string {
+    const point = this.activeTsPoint;
+    if (this.hoveredTsPoint && point) {
+      return `Snapshot at ${this.formatDate(point.date)}`;
+    }
+
+    return 'Current Snapshot';
+  }
+
+  get activePerformanceBlock(): PlayerPerformanceBlockVm | null {
+    if (!this.vm) return null;
+
+    if (this.performanceSurfaceScope === 'ALL') {
+      return this.vm.performance[this.performanceTimeScope];
+    }
+
+    return this.vm.performance[this.performanceSurfaceScope][this.performanceTimeScope];
+  }
+
+  get performanceRows(): Array<{
+    label: string;
+    wins: number;
+    losses: number;
+    total: number;
+    winPct: string;
+  }> {
+    const block = this.activePerformanceBlock;
+    if (!block) return [];
+
+    return [
+      {
+        label: 'Matches',
+        wins: block.match.wins,
+        losses: block.match.losses,
+        total: block.match.total,
+        winPct: this.formatPercent(block.match.winPct)
+      },
+      {
+        label: 'Sets',
+        wins: block.set.wins,
+        losses: block.set.losses,
+        total: block.set.total,
+        winPct: this.formatPercent(block.set.winPct)
+      },
+      {
+        label: 'Games',
+        wins: block.game.wins,
+        losses: block.game.losses,
+        total: block.game.total,
+        winPct: this.formatPercent(block.game.winPct)
+      }
+    ];
+  }
+
+  get activeForm(): PlayerFormVm | null {
+    if (!this.vm) return null;
+
+    return this.performanceSurfaceScope === 'ALL'
+      ? this.vm.form.ALL
+      : this.vm.form[this.performanceSurfaceScope];
+  }
+
+  get activeRoleStats(): PlayerRoleStatsVm | null {
+    if (!this.vm) return null;
+
+    return this.vm.roleStats[this.performanceTimeScope];
+  }
+
+  get activeStreakText(): string {
+    const streak = this.activeForm?.streak;
+  
+    if (streak == null || streak === 0) return '—';
+    if (streak > 0) return `Won ${streak}`;
+  
+    return `Lost ${Math.abs(streak)}`;
+  }
+
+  timeScopeLabel(scope: TimeScope): string {
+    switch (scope) {
+      case 'ALL':
+        return 'All';
+      case 'YEAR':
+        return 'Last Year';
+      case 'MONTH':
+        return 'Last Month';
+      case 'WEEK':
+        return 'Last Week';
+      default:
+        return scope;
+    }
+  }
+
+  private formatPercent(value: number | null | undefined): string {
+    if (value == null || Number.isNaN(value)) return '—';
+    return `${value.toFixed(1)}%`;
+  }
+
+  private formatDate(value: string | null | undefined): string {
+    if (!value) return '';
+
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return '';
+
+    return date.toLocaleDateString();
+  }
+
+  onTsSelectorsChanged(): void {
+    // trenutno ne moramo ništa posebno raditi,
+    // ali ostavljamo isti hook pattern kao u Match Details
+  }
+
+  onTsChartMouseMove(event: MouseEvent): void {
+    const svg = event.currentTarget as SVGSVGElement | null;
+    const series = this.currentTsSeries;
+
+    if (!svg || series.length === 0) {
+      this.hoveredTsPoint = null;
+      this.hoveredTsIndex = null;
+      return;
+    }
+
+    const rect = svg.getBoundingClientRect();
+    const relativeX = event.clientX - rect.left;
+    const width = rect.width || 1;
+
+    const clampedX = Math.max(0, Math.min(relativeX, width));
+    const ratio = clampedX / width;
+
+    const index = Math.round(ratio * (series.length - 1));
+    const safeIndex = Math.max(0, Math.min(index, series.length - 1));
+
+    this.hoveredTsIndex = safeIndex;
+    this.hoveredTsPoint = series[safeIndex];
+  }
+
+  onTsChartMouseLeave(): void {
+    this.hoveredTsPoint = null;
+    this.hoveredTsIndex = null;
+  }
+
+  ratingModeLabel(mode: RatingMode): string {
+    switch (mode) {
+      case 'M':
+        return 'Match';
+      case 'SM':
+        return 'Set Match';
+      case 'GSM':
+        return 'Game Set Match';
+      default:
+        return mode;
+    }
+  }
+
+  isCurrentSurface(_scope: SurfaceScope): boolean {
+    return false;
+  }
+
+  tsMeanText(): string {
+    return this.formatNumberMaybe(this.tsSnapshot?.mean, 2);
+  }
+
+  tsSdText(): string {
+    return this.formatNumberMaybe(this.tsSnapshot?.sd, 2);
+  }
+
   get averageTsMeanText(): string {
     const mean = this.vm?.ts?.all?.M?.mean ?? this.playerIndex?.averageTSMean;
     return this.formatNumberMaybe(mean, 2);
@@ -267,91 +568,6 @@ export class PlayerModalComponent implements OnChanges, OnDestroy {
     ].filter(x => !!x.value);
   }
 
-  get tsModes(): RatingMode[] {
-    return ['M', 'SM', 'GSM'];
-  }
-  
-  get tsSurfaceScopes(): SurfaceScope[] {
-    return ['ALL', 'S1', 'S2', 'S3', 'S4'];
-  }
-  
-  setRatingMode(mode: RatingMode): void {
-    this.ratingMode = mode;
-  }
-  
-  setSurfaceScope(scope: SurfaceScope): void {
-    this.surfaceScope = scope;
-  }
-  
-  get tsCurrentSnapshot() {
-    if (!this.vm) return null;
-  
-    if (this.surfaceScope === 'ALL') {
-      return this.vm.ts.all[this.ratingMode];
-    }
-  
-    return this.vm.ts.surfaces[this.surfaceScope][this.ratingMode];
-  }
-  
-  get tsRows(): Array<{ label: string; value: string }> {
-    const snapshot = this.tsCurrentSnapshot;
-    if (!snapshot) return [];
-  
-    return [
-      { label: 'Mean', value: this.formatNumberMaybe(snapshot.mean, 2) },
-      { label: 'Standard Deviation', value: this.formatNumberMaybe(snapshot.sd, 2) }
-    ].filter(x => !!x.value);
-  }
-  
-  get tsComparisonRows(): Array<{ scope: SurfaceScope; mean: string; sd: string }> {
-    if (!this.vm) return [];
-  
-    const scopes: SurfaceScope[] = ['ALL', 'S1', 'S2', 'S3', 'S4'];
-  
-    return scopes.map(scope => {
-      const snapshot =
-        scope === 'ALL'
-          ? this.vm!.ts.all[this.ratingMode]
-          : this.vm!.ts.surfaces[scope][this.ratingMode];
-  
-      return {
-        scope,
-        mean: this.formatNumberMaybe(snapshot.mean, 2),
-        sd: this.formatNumberMaybe(snapshot.sd, 2)
-      };
-    });
-  }
-  
-  surfaceScopeLabel(scope: SurfaceScope): string {
-    switch (scope) {
-      case 'ALL':
-        return 'All Surfaces';
-      case 'S1':
-        return 'S1';
-      case 'S2':
-        return 'S2';
-      case 'S3':
-        return 'S3';
-      case 'S4':
-        return 'S4';
-      default:
-        return scope;
-    }
-  }
-  
-  ratingModeLabel(mode: RatingMode): string {
-    switch (mode) {
-      case 'M':
-        return 'Match';
-      case 'SM':
-        return 'Set-Match';
-      case 'GSM':
-        return 'Game-Set-Match';
-      default:
-        return mode;
-    }
-  }
-
   formatDateMaybe(value?: string | Date | null): string {
     if (!value) return '';
 
@@ -374,7 +590,7 @@ export class PlayerModalComponent implements OnChanges, OnDestroy {
 
   showAllMatches(): void {
     const tpId = this.vm?.overview?.playerTPId || this.playerTPId;
-  
+
     if (!tpId) {
       console.error('❌ showAllMatches: missing playerTPId', {
         playerTPId: this.playerTPId,
@@ -382,18 +598,18 @@ export class PlayerModalComponent implements OnChanges, OnDestroy {
       });
       return;
     }
-  
+
     console.log('➡️ Navigating to player matches route', {
       tpId,
       name: this.overviewName
     });
-  
+
     console.log('🧭 Current router url before navigate:', this.router.url);
-  
+
     this.router.navigate(['/players/matches', tpId])
       .then(ok => {
         console.log('✅ navigate resolved:', ok, 'new url:', this.router.url);
-  
+
         if (ok) {
           this.close();
         } else {
@@ -403,6 +619,43 @@ export class PlayerModalComponent implements OnChanges, OnDestroy {
       .catch(err => {
         console.error('❌ Navigation to player matches failed:', err);
       });
+  }
+
+  surfaceButtonLabel(scope: SurfaceScope): string {
+    switch (scope) {
+      case 'ALL':
+        return 'All Surfaces';
+      case 'S1':
+        return 'Carpet';
+      case 'S2':
+        return 'Clay';
+      case 'S3':
+        return 'Grass';
+      case 'S4':
+        return 'Hard';
+      default:
+        return scope;
+    }
+  }
+
+  get hasHoveredTsPoint(): boolean {
+    return this.hoveredTsIndex !== null && !!this.hoveredTsPoint;
+  }
+
+  get hoveredTsPointX(): number {
+    const series = this.currentTsSeries;
+    if (this.hoveredTsIndex === null || series.length < 2) return 0;
+
+    const width = 760;
+    return (this.hoveredTsIndex / (series.length - 1)) * width;
+  }
+
+  get hoveredTsPointY(): number {
+    const point = this.hoveredTsPoint;
+    if (!point) return 0;
+
+    const height = 220;
+    return height - ((point.mean - this.tsSeriesMin) / this.tsSeriesRange) * height;
   }
 }
 

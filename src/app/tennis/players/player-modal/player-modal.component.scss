@@ -80,3 +80,352 @@
   margin-top: 16px;
   text-align: center;
 }
+
+.bb-ts-chart-wrap {
+  width: 100%;
+  height: 220px;
+  margin-top: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  padding: 0.5rem;
+}
+
+.bb-ts-chart {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.bb-chart-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+  opacity: 0.85;
+}
+
+.bb-ts-chart-wrap {
+  width: 100%;
+  height: 240px;
+}
+
+.bb-ts-chart {
+  width: 100%;
+  height: 220px;
+  display: block;
+}
+
+.bb-ts-snapshot-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(240px, 0.8fr);
+  gap: 1.25rem;
+  align-items: center;
+  padding: 1rem 1.25rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.03);
+  margin-top: 0.75rem;
+}
+
+.bb-ts-mean-block {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.bb-ts-mean-value {
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: 0.02em;
+}
+
+.bb-ts-mean-label {
+  margin-top: 0.35rem;
+  font-size: 0.95rem;
+  opacity: 0.82;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.bb-ts-snapshot-meta {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.bb-ts-meta-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: 0.95rem;
+}
+
+.bb-ts-meta-label {
+  opacity: 0.75;
+}
+
+.bb-ts-meta-value {
+  font-weight: 600;
+  text-align: right;
+}
+
+@media (max-width: 720px) {
+  .bb-ts-snapshot-card {
+    grid-template-columns: 1fr;
+  }
+
+  .bb-ts-mean-block {
+    align-items: center;
+    text-align: center;
+  }
+}
+
+.bb-ts-snapshot-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(240px, 0.9fr);
+  gap: 1.1rem;
+  align-items: center;
+  padding: 0.9rem 1.15rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.03);
+  margin-top: 0.75rem;
+}
+
+.bb-ts-mean-block {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.bb-ts-mean-value {
+  font-size: clamp(1.65rem, 3vw, 2.35rem);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: 0.01em;
+}
+
+.bb-ts-mean-label {
+  margin-top: 0.45rem;
+  font-size: 0.82rem;
+  opacity: 0.72;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.bb-ts-snapshot-meta {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.bb-ts-meta-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: 0.95rem;
+}
+
+.bb-ts-meta-label {
+  opacity: 0.75;
+}
+
+.bb-ts-meta-value {
+  font-weight: 600;
+  text-align: right;
+}
+
+.bb-ts-chart-wrap {
+  height: 200px;
+}
+
+.bb-player-performance .bb-player-info {
+  overflow-x: hidden;
+}
+
+  .bb-section-title {
+    margin-bottom: 0.55rem;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+  }
+
+  .bb-stats-table-wrap {
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.03);
+    padding: 0.85rem 1rem;
+    overflow-x: auto;
+  }
+
+  .bb-stats-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95rem;
+  }
+
+  .bb-stats-table thead th {
+    text-align: left;
+    font-weight: 700;
+    padding: 0 0 0.55rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    white-space: nowrap;
+  }
+
+  .bb-stats-table tbody td {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    white-space: nowrap;
+  }
+
+  .bb-stats-table tbody tr:last-child td {
+    border-bottom: none;
+  }
+
+  .bb-stats-table tbody td:first-child {
+    font-weight: 600;
+  }
+
+  .bb-player-info {
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.03);
+    padding: 0.85rem 1rem;
+    display: grid;
+    gap: 0.55rem;
+  }
+
+  .bb-player-info-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.75rem;
+    align-items: center;
+  }
+  
+  .bb-player-info-label,
+  .bb-player-info-value {
+    min-width: 0;
+  }
+  
+  .bb-player-info-label {
+    overflow-wrap: anywhere;
+  }
+  
+  .bb-player-info-value {
+    font-weight: 600;
+    text-align: right;
+    overflow-wrap: anywhere;
+  }
+
+@media (max-width: 640px) {
+  .bb-player-performance {
+    .bb-stats-table {
+      font-size: 0.88rem;
+    }
+
+    .bb-player-info-row {
+      grid-template-columns: 1fr;
+      gap: 0.2rem;
+    }
+
+    .bb-player-info-value {
+      text-align: left;
+    }
+  }
+}
+
+.bb-player-performance-meta-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+@media (max-width: 640px) {
+  .bb-player-performance-meta-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.bb-player-form .bb-player-info {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.bb-player-form .bb-player-info-row {
+  display: grid;
+  grid-template-columns: minmax(110px, 140px) 1fr;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.bb-player-form .bb-player-info-label {
+  opacity: 0.78;
+}
+
+.bb-player-form .bb-player-info-value {
+  text-align: left;
+  font-weight: 600;
+}
+
+.bb-player-performance .bb-player-info--stacked {
+  overflow-x: hidden;
+}
+
+.bb-player-performance .bb-player-info--stacked .bb-player-info-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.bb-player-performance .bb-player-info--stacked .bb-player-info-label,
+.bb-player-performance .bb-player-info--stacked .bb-player-info-value {
+  min-width: 0;
+}
+
+.bb-player-performance .bb-player-info--stacked .bb-player-info-label {
+  opacity: 0.78;
+  overflow-wrap: anywhere;
+}
+
+.bb-player-performance .bb-player-info--stacked .bb-player-info-value {
+  text-align: right;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.bb-modal.bb-modal--player-details .bb-body {
+  overflow-x: hidden;
+}
+
+.bb-player-form .bb-form-card {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 0.85rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  overflow-x: hidden;
+}
+
+.bb-player-form .bb-form-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.bb-player-form .bb-form-label {
+  opacity: 0.78;
+}
+
+.bb-player-form .bb-form-value {
+  font-weight: 600;
+  text-align: right;
+}
+
+.bb-modal.bb-modal--player-details .bb-body {
+  overflow-x: hidden;
+}

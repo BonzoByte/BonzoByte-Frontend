@@ -53,80 +53,296 @@
 
       <section *ngIf="activeTab === 'ts'" class="bb-panel bb-player-ts">
         <ng-container *ngIf="vm; else noTsData">
-      
-          <div class="bb-section">
-            <div class="bb-section-title">Rating Mode</div>
-            <div class="bb-chip-row">
-              <button
-                *ngFor="let mode of tsModes"
-                type="button"
-                class="bb-chip"
-                [class.active]="ratingMode === mode"
-                (click)="setRatingMode(mode)">
-                {{ ratingModeLabel(mode) }}
-              </button>
+          <div class="bb-player-head bb-player-head--stacked">
+            <span class="bb-flag-wrap" *ngIf="overviewIso2" [title]="countryText || 'Country'">
+              <span class="fi fi-{{ flagIso2OrEmpty(overviewIso2) }} bb-flag-sm"></span>
+            </span>
+
+            <div class="bb-player-name">
+              {{ overviewName }}
+              <span *ngIf="overviewIso3">({{ overviewIso3 }})</span>
             </div>
           </div>
-      
-          <div class="bb-section">
-            <div class="bb-section-title">Surface Scope</div>
-            <div class="bb-chip-row">
-              <button
-                *ngFor="let scope of tsSurfaceScopes"
-                type="button"
-                class="bb-chip"
-                [class.active]="surfaceScope === scope"
-                (click)="setSurfaceScope(scope)">
-                {{ surfaceScopeLabel(scope) }}
-              </button>
+
+          <div class="bb-avatar bb-avatar--player-details">
+            <img [src]="playerAvatarUrlById(vm.overview.playerTPId || playerTPId)" (error)="onAvatarError($event)"
+              alt="Player avatar" loading="lazy" />
+          </div>
+          <div class="bb-ts-controls">
+            <div class="bb-ts-group">
+              <div class="bb-ts-group-title">Granularity</div>
+
+              <label class="bb-radio-pill">
+                <input type="radio" [name]="'PlayerRatingMode-' + playerTPId" value="M" [(ngModel)]="ratingMode"
+                  (ngModelChange)="onTsSelectorsChanged()" />
+                <span>Match</span>
+              </label>
+
+              <label class="bb-radio-pill">
+                <input type="radio" [name]="'PlayerRatingMode-' + playerTPId" value="SM" [(ngModel)]="ratingMode"
+                  (ngModelChange)="onTsSelectorsChanged()" />
+                <span>Set Match</span>
+              </label>
+
+              <label class="bb-radio-pill">
+                <input type="radio" [name]="'PlayerRatingMode-' + playerTPId" value="GSM" [(ngModel)]="ratingMode"
+                  (ngModelChange)="onTsSelectorsChanged()" />
+                <span>Game Set Match</span>
+              </label>
+            </div>
+
+            <div class="bb-ts-group">
+              <div class="bb-ts-group-title">Surface</div>
+
+              <label class="bb-radio-pill">
+                <input type="radio" [name]="'PlayerSurfaceScope-' + playerTPId" value="ALL" [(ngModel)]="surfaceScope"
+                  (ngModelChange)="onTsSelectorsChanged()" />
+                <span>All Surfaces</span>
+              </label>
+
+              <label class="bb-radio-pill">
+                <input type="radio" [name]="'PlayerSurfaceScope-' + playerTPId" value="S1" [(ngModel)]="surfaceScope"
+                  (ngModelChange)="onTsSelectorsChanged()" />
+                <span>Carpet<span class="bb-hint" *ngIf="isCurrentSurface('S1')">(current)</span></span>
+              </label>
+
+              <label class="bb-radio-pill">
+                <input type="radio" [name]="'PlayerSurfaceScope-' + playerTPId" value="S2" [(ngModel)]="surfaceScope"
+                  (ngModelChange)="onTsSelectorsChanged()" />
+                <span>Clay<span class="bb-hint" *ngIf="isCurrentSurface('S2')">(current)</span></span>
+              </label>
+
+              <label class="bb-radio-pill">
+                <input type="radio" [name]="'PlayerSurfaceScope-' + playerTPId" value="S3" [(ngModel)]="surfaceScope"
+                  (ngModelChange)="onTsSelectorsChanged()" />
+                <span>Grass<span class="bb-hint" *ngIf="isCurrentSurface('S3')">(current)</span></span>
+              </label>
+
+              <label class="bb-radio-pill">
+                <input type="radio" [name]="'PlayerSurfaceScope-' + playerTPId" value="S4" [(ngModel)]="surfaceScope"
+                  (ngModelChange)="onTsSelectorsChanged()" />
+                <span>Hard<span class="bb-hint" *ngIf="isCurrentSurface('S4')">(current)</span></span>
+              </label>
             </div>
           </div>
-      
-          <div class="bb-section" *ngIf="tsCurrentSnapshot as snapshot">
-            <div class="bb-section-title">
-              {{ ratingModeLabel(ratingMode) }} · {{ surfaceScopeLabel(surfaceScope) }}
-            </div>
-      
-            <div class="bb-player-info" *ngIf="tsRows.length">
-              <div class="bb-player-info-row" *ngFor="let row of tsRows">
-                <div class="bb-player-info-label">{{ row.label }}:</div>
-                <div class="bb-player-info-value">{{ row.value }}</div>
+
+          <div class="bb-section" *ngIf="tsSnapshot as ts">
+            <div class="bb-section-title">{{ activeTsSnapshotTitle }}</div>
+
+            <div class="bb-ts-snapshot-card">
+              <div class="bb-ts-mean-block">
+                <div class="bb-ts-mean-value">{{ activeTsMeanText }}</div>
+                <div class="bb-ts-mean-label">TS Mean</div>
+              </div>
+
+              <div class="bb-ts-snapshot-meta">
+                <div class="bb-ts-meta-row">
+                  <span class="bb-ts-meta-label">TS SD</span>
+                  <span class="bb-ts-meta-value">{{ activeTsSdText }}</span>
+                </div>
+
+                <div class="bb-ts-meta-row">
+                  <span class="bb-ts-meta-label">Granularity</span>
+                  <span class="bb-ts-meta-value">{{ ratingModeLabel(ratingMode) }}</span>
+                </div>
+
+                <div class="bb-ts-meta-row">
+                  <span class="bb-ts-meta-label">Surface</span>
+                  <span class="bb-ts-meta-value">{{ surfaceButtonLabel(surfaceScope) }}</span>
+                </div>
               </div>
             </div>
           </div>
-      
+
+          <div class="bb-section" *ngIf="hasTsSeries; else noTsSeries">
+            <div class="bb-section-title">TS Mean History</div>
+
+            <div class="bb-ts-chart-wrap">
+              <svg viewBox="0 0 760 220" class="bb-ts-chart" preserveAspectRatio="none"
+                (mousemove)="onTsChartMouseMove($event)" (mouseleave)="onTsChartMouseLeave()">
+                <polyline [attr.points]="tsSeriesPoints" fill="none" stroke="#4da3ff" stroke-width="2">
+                </polyline>
+                <line *ngIf="hasHoveredTsPoint" [attr.x1]="hoveredTsPointX" [attr.x2]="hoveredTsPointX" y1="0" y2="220"
+                  stroke="rgba(255,255,255,0.18)" stroke-width="1">
+                </line>
+
+                <circle *ngIf="hasHoveredTsPoint" [attr.cx]="hoveredTsPointX" [attr.cy]="hoveredTsPointY" r="4"
+                  fill="#4da3ff">
+                </circle>
+              </svg>
+            </div>
+
+            <div class="bb-chart-footer">
+              <span>{{ tsSeriesFirstDateText }}</span>
+              <span>{{ currentTsSeries.length }} points</span>
+              <span>{{ tsSeriesLastDateText }}</span>
+            </div>
+          </div>
+
+          <ng-template #noTsSeries>
+            <div class="bb-placeholder">TS history is not available.</div>
+          </ng-template>
+
+        </ng-container>
+
+        <ng-template #noTsData>
+          <div class="bb-placeholder">
+            {{ tsSeriesPointsPreview }}
+          </div>
+        </ng-template>
+      </section>
+
+      <section *ngIf="activeTab === 'performance'" class="bb-panel bb-player-performance">
+        <ng-container *ngIf="vm; else noPerformanceData">
+          <div class="bb-player-head bb-player-head--stacked">
+            <span class="bb-flag-wrap" *ngIf="overviewIso2" [title]="countryText || 'Country'">
+              <span class="fi fi-{{ flagIso2OrEmpty(overviewIso2) }} bb-flag-sm"></span>
+            </span>
+
+            <div class="bb-player-name">
+              {{ overviewName }}
+              <span *ngIf="overviewIso3">({{ overviewIso3 }})</span>
+            </div>
+          </div>
+
+          <div class="bb-avatar bb-avatar--player-details">
+            <img [src]="playerAvatarUrlById(vm.overview.playerTPId || playerTPId)" (error)="onAvatarError($event)"
+              alt="Player avatar" loading="lazy" />
+          </div>
+          <div class="bb-ts-controls">
+            <div class="bb-ts-group">
+              <div class="bb-ts-group-title">Time Range</div>
+
+              <label class="bb-radio-pill">
+                <input type="radio" name="PerformanceTimeScope" value="ALL" [(ngModel)]="performanceTimeScope" />
+                <span>All</span>
+              </label>
+
+              <label class="bb-radio-pill">
+                <input type="radio" name="PerformanceTimeScope" value="YEAR" [(ngModel)]="performanceTimeScope" />
+                <span>Last Year</span>
+              </label>
+
+              <label class="bb-radio-pill">
+                <input type="radio" name="PerformanceTimeScope" value="MONTH" [(ngModel)]="performanceTimeScope" />
+                <span>Last Month</span>
+              </label>
+
+              <label class="bb-radio-pill">
+                <input type="radio" name="PerformanceTimeScope" value="WEEK" [(ngModel)]="performanceTimeScope" />
+                <span>Last Week</span>
+              </label>
+            </div>
+
+            <div class="bb-ts-group">
+              <div class="bb-ts-group-title">Surface</div>
+
+              <label class="bb-radio-pill">
+                <input type="radio" name="PerformanceSurfaceScope" value="ALL" [(ngModel)]="performanceSurfaceScope" />
+                <span>All Surfaces</span>
+              </label>
+
+              <label class="bb-radio-pill">
+                <input type="radio" name="PerformanceSurfaceScope" value="S1" [(ngModel)]="performanceSurfaceScope" />
+                <span>Carpet</span>
+              </label>
+
+              <label class="bb-radio-pill">
+                <input type="radio" name="PerformanceSurfaceScope" value="S2" [(ngModel)]="performanceSurfaceScope" />
+                <span>Clay</span>
+              </label>
+
+              <label class="bb-radio-pill">
+                <input type="radio" name="PerformanceSurfaceScope" value="S3" [(ngModel)]="performanceSurfaceScope" />
+                <span>Grass</span>
+              </label>
+
+              <label class="bb-radio-pill">
+                <input type="radio" name="PerformanceSurfaceScope" value="S4" [(ngModel)]="performanceSurfaceScope" />
+                <span>Hard</span>
+              </label>
+            </div>
+          </div>
+
           <div class="bb-section">
-            <div class="bb-section-title">Snapshot Comparison</div>
-      
+            <div class="bb-section-title">Performance Snapshot</div>
+
             <div class="bb-stats-table-wrap">
               <table class="bb-stats-table">
                 <thead>
                   <tr>
-                    <th>Scope</th>
-                    <th>Mean</th>
-                    <th>SD</th>
+                    <th>Category</th>
+                    <th>Wins</th>
+                    <th>Losses</th>
+                    <th>Total</th>
+                    <th>Win %</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr *ngFor="let row of tsComparisonRows">
-                    <td>{{ surfaceScopeLabel(row.scope) }}</td>
-                    <td>{{ row.mean }}</td>
-                    <td>{{ row.sd }}</td>
+                  <tr *ngFor="let row of performanceRows">
+                    <td>{{ row.label }}</td>
+                    <td>{{ row.wins }}</td>
+                    <td>{{ row.losses }}</td>
+                    <td>{{ row.total }}</td>
+                    <td>{{ row.winPct }}</td>
                   </tr>
                 </tbody>
               </table>
             </div>
           </div>
-      
-        </ng-container>
-      
-        <ng-template #noTsData>
-          <div class="bb-placeholder">TS data is not available.</div>
-        </ng-template>
-      </section>
 
-      <section *ngIf="activeTab === 'performance'" class="bb-panel">
-        <div class="bb-placeholder">Performance layout dolazi kasnije.</div>
+          <div class="bb-section bb-player-form" *ngIf="activeForm as form">
+            <div class="bb-section-title">Form</div>
+
+            <div class="bb-form-card">
+              <div class="bb-form-line">
+                <span class="bb-form-label">Streak:</span>
+                <span class="bb-form-value">{{ activeStreakText }}</span>
+              </div>
+
+              <div class="bb-form-line">
+                <span class="bb-form-label">Last Win:</span>
+                <span class="bb-form-value">{{ form.lastWinDateText || '—' }}</span>
+              </div>
+
+              <div class="bb-form-line">
+                <span class="bb-form-label">Last Loss:</span>
+                <span class="bb-form-value">{{ form.lastLossDateText || '—' }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="bb-section bb-player-role-stats" *ngIf="activeRoleStats as role">
+            <div class="bb-section-title">Role Stats</div>
+
+            <div class="bb-player-info bb-player-info--stacked">
+              <div class="bb-player-info-row">
+                <div class="bb-player-info-label">Wins as Favourite:</div>
+                <div class="bb-player-info-value">{{ role.winsAsFavourite }}</div>
+              </div>
+
+              <div class="bb-player-info-row">
+                <div class="bb-player-info-label">Wins as Underdog:</div>
+                <div class="bb-player-info-value">{{ role.winsAsUnderdog }}</div>
+              </div>
+
+              <div class="bb-player-info-row">
+                <div class="bb-player-info-label">Losses as Favourite:</div>
+                <div class="bb-player-info-value">{{ role.lossesAsFavourite }}</div>
+              </div>
+
+              <div class="bb-player-info-row">
+                <div class="bb-player-info-label">Losses as Underdog:</div>
+                <div class="bb-player-info-value">{{ role.lossesAsUnderdog }}</div>
+              </div>
+            </div>
+          </div>
+
+        </ng-container>
+
+        <ng-template #noPerformanceData>
+          <div class="bb-placeholder">Performance data is not available.</div>
+        </ng-template>
       </section>
     </ng-container>
   </div>

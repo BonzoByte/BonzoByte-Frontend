@@ -1894,3 +1894,75 @@ body.modal-open {
             transparent 4px),
         #0f0f0f;
   }
+
+  .bb-modal.bb-modal--player-details {
+    width: min(920px, 96vw);
+    max-height: 92vh;
+    max-width: 471px;
+  }
+  
+  .bb-modal.bb-modal--player-details .bb-body {
+    max-height: calc(92vh - 150px);
+    max-width: 500px;
+    overflow-y: hidden;
+  }
+  
+  .bb-modal.bb-modal--player-details .bb-player-ts .bb-ts-chart-wrap {
+    height: 190px;
+  }
+
+  .bb-ts-chart {
+    cursor: crosshair;
+  }
+
+  .bb-player-form .bb-player-info {
+    display: grid;
+    gap: 0.55rem;
+  }
+  
+  .bb-player-form .bb-player-info-row {
+    display: grid;
+    grid-template-columns: minmax(110px, 140px) 1fr;
+    gap: 0.75rem;
+    align-items: center;
+  }
+  
+  .bb-player-form .bb-player-info-label {
+    opacity: 0.78;
+  }
+  
+  .bb-player-form .bb-player-info-value {
+    text-align: left;
+    font-weight: 600;
+  }
+
+  .bb-player-performance .bb-player-info--stacked {
+    overflow-x: hidden;
+  }
+  
+  .bb-player-performance .bb-player-info--stacked .bb-player-info-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.75rem;
+    align-items: center;
+  }
+  
+  .bb-player-performance .bb-player-info--stacked .bb-player-info-label,
+  .bb-player-performance .bb-player-info--stacked .bb-player-info-value {
+    min-width: 0;
+  }
+  
+  .bb-player-performance .bb-player-info--stacked .bb-player-info-label {
+    opacity: 0.78;
+    overflow-wrap: anywhere;
+  }
+  
+  .bb-player-performance .bb-player-info--stacked .bb-player-info-value {
+    text-align: right;
+    font-weight: 600;
+    overflow-wrap: anywhere;
+  }
+  
+  .bb-modal.bb-modal--player-details .bb-body {
+    overflow-x: hidden;
+  }

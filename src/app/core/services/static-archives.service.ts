@@ -11,6 +11,7 @@ import { PlayerDetailsRaw } from '../models/player-details.model';
 import { AuthService } from './auth.service';
 import { environment } from '../../../environments/environment';
 import { AnalyticsDashboard } from '../models/analytics.model';
+import { PlayerTsHistoryRaw } from 'src/app/core/models/player-details.model';
 
 export interface DailyArchiveIndex {
   minDate: string;
@@ -60,6 +61,7 @@ export class StaticArchivesService {
   private playerDetailsStaticBase = `${this.staticBase}/players/details`;
   private playerMatchesStaticBase = `${this.staticBase}/players/matches`;
   private tournamentsMatchesStaticBase = `${this.staticBase}/tournaments/matches`;
+  private readonly playersTsStaticBase = `${this.apiBase}/players/ts`;
 
   private readonly PHOTO_BASE = `${environment.apiBase}/players/photo`;
 
@@ -455,6 +457,38 @@ export class StaticArchivesService {
     );
   }
 
+  getPlayerTsHistory(playerTPId: number): Observable<PlayerTsHistoryRaw | null> {
+    const url = `${this.playersTsStaticBase}/${playerTPId}`;
+    console.log('🌐 getPlayerTsHistory URL:', url);
+  
+    return this.http
+      .get(url, { responseType: 'arraybuffer' })
+      .pipe(
+        map(buf => {
+          console.log('📦 raw player TS history buffer length:', buf?.byteLength ?? 0);
+          return this.decodeBrotliJson<PlayerTsHistoryRaw>(buf);
+        }),
+        map(history => {
+          console.log('📄 decoded player TS history:', {
+            playerTPId,
+            keys: Object.keys(history?.s ?? {})
+          });
+          return history;
+        }),
+        catchError((err: any) => {
+          console.error('❌ getPlayerTsHistory failed', {
+            playerTPId,
+            url,
+            status: err?.status,
+            message: err?.message,
+            err
+          });
+  
+          return of(null);
+        }),
+        shareReplay(1)
+      );
+  }
 
   warmUpDailyWindow(): void {
     const todayIso = this.todayISO();
