@@ -6,13 +6,24 @@ import { tap, catchError, map } from 'rxjs/operators';
 import { Router } from '@angular/router';
 import { environment } from '@env/environment';
 import { User } from '../../core/models/user.model';
+import {
+    clearAuthStorage as clearStoredAuth,
+    getAccessToken as readStoredAccessToken,
+    setAccessToken as writeStoredAccessToken
+} from '../auth-token-storage';
 
 interface LoginResponse {
     token: string;
     user: User;
 }
 
-// Helper: normaliziraj payload iz API-ja u naš stroži User model
+interface RegisterResponse {
+    message: string;
+    token?: string;
+    user?: User;
+}
+
+// Normalize API payloads into the stricter frontend User model.
 function normalizeUser(u: any): User {
     return {
         _id: u?._id ?? u?.id ?? '',
@@ -51,7 +62,7 @@ export class AuthService {
     constructor(private http: HttpClient, private router: Router) { console.log('API URL:', environment.apiUrl); }
 
     initAuth(force = false): void {
-        const token = localStorage.getItem('token');
+        const token = this.getAccessToken();
         if (!token) {
             this.setUser(null);
             this.setAuthState(false);
@@ -68,34 +79,24 @@ export class AuthService {
     }
 
     login(payload: { identifier: string; password: string }): Observable<LoginResponse> {
-        return this.http.post<LoginResponse>(`${environment.apiUrl}/auth/login`, payload).pipe(
-            tap((res) => {
-                localStorage.setItem('token', res.token);
-                this.setUser(normalizeUser(res.user));
-                this.setAuthState(true);
-            })
-        );
+        return this.http.post<LoginResponse>(`${environment.apiUrl}/auth/login`, payload);
     }
 
     logout(silent = false): void {
         this.http.post(`${environment.apiUrl}/auth/logout`, {}).pipe(catchError(() => of(null))).subscribe();
-        localStorage.removeItem('token');
+        this.clearAuthStorage();
         this.setUser(null);
         this.setAuthState(false);
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
         this.emitAuthChanged();
         if (!silent) this.router.navigateByUrl('/');
     }
 
-    // nakon uspješnog login-a
+    // Legacy entry point; keep it routed through the centralized login path.
     handleLoginSuccess(token: string, user: any) {
-        localStorage.setItem('token', token);
-        localStorage.setItem('user', JSON.stringify(user));
-        this.emitAuthChanged();
+        this.applyLogin(token, user);
     }
 
-    // nakon uspješnog register-a (ako ti register NE logira usera, svejedno emit)
+    // Emit auth changes for flows that do not return a token.
     handleRegisterSuccess() {
         this.emitAuthChanged();
     }
@@ -104,17 +105,17 @@ export class AuthService {
         return this.http.post(`${environment.apiUrl}/auth/resend-verification`, { email });
     }
 
-    // Backend kod tebe izlaže /auth/forgotPassword (camelCase)
+    // Backend currently exposes /auth/forgotPassword (camelCase).
     sendResetPasswordEmail(email: string): Observable<any> {
         return this.http.post(`${environment.apiUrl}/auth/forgotPassword`, { email });
     }
 
-    // Provjera zauzetosti nicka (ostavi kako već imaš backend rutu)
+    // Check nickname availability against the existing backend route.
     checkNicknameExists(nickname: string): Observable<boolean> {
         return this.http.get<boolean>(`${environment.apiUrl}/auth/nickname-exists/${encodeURIComponent(nickname)}`);
     }
 
-    // 💡 KLJUČNO: PATCH na /users/updateUserProfile (multipart), vrati čisti User i emitiraj u user$
+    // Update profile data and normalize either wrapped or direct user payloads.
     updateUser(formData: FormData): Observable<User> {
         return this.http
             .patch<{ user: User } | User>(`${environment.apiUrl}/users/updateUserProfile`, formData)
@@ -127,9 +128,12 @@ export class AuthService {
     setAuthState(v: boolean) { this._auth$.next(v); }
     setUser(u: User | null) { this._user$.next(u); }
     getUser(): User | null { return this._user$.value; }
+    getAccessToken(): string | null { return readStoredAccessToken(); }
+    setAccessToken(token: string): void { writeStoredAccessToken(token); }
+    clearAuthStorage(): void { clearStoredAuth(); }
 
     isLoggedIn(): boolean {
-        return this._auth$.value === true && !!localStorage.getItem('token');
+        return this._auth$.value === true && !!this.getAccessToken();
     }
 
     getEntitlements() {
@@ -143,17 +147,17 @@ export class AuthService {
         email: string;
         password: string;
         nickname?: string;
-    }): Observable<{ message: string }> {
-        return this.http.post<{ message: string }>(
+    }): Observable<RegisterResponse> {
+        return this.http.post<RegisterResponse>(
             `${environment.apiUrl}/auth/register`,
             payload
         );
     }
 
     applyLogin(token: string, user: any): void {
-        localStorage.setItem('token', token);
+        this.setAccessToken(token);
         this.setAuthState(true);
-        this.setUser(user);
+        this.setUser(normalizeUser(user));
 
         this.emitAuthChanged();
     }

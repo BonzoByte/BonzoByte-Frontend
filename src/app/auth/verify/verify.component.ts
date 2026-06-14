@@ -6,6 +6,7 @@ import { HttpClient } from '@angular/common/http';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { environment } from '@env/environment';
 import { BbModalShellComponent } from '../../shared/ui/bb-modal-shell.component/bb-modal-shell.component';
+import { AuthService } from '../../core/services/auth.service';
 
 @Component({
   selector: 'app-verify',
@@ -79,12 +80,13 @@ export class VerifyComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private http: HttpClient,
     private snack: MatSnackBar,
-    private router: Router
+    private router: Router,
+    private auth: AuthService
   ) {}
 
   ngOnInit(): void {
 
-    this.isLoggedIn = !!localStorage.getItem('token');
+    this.isLoggedIn = !!this.auth.getAccessToken();
 
     const token =
       this.route.snapshot.queryParamMap.get('token') ||

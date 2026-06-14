@@ -24,7 +24,7 @@ export class OauthSuccessComponent implements OnInit {
         const token = takeOauthToken();
         if (!token) { this.router.navigateByUrl('/'); return; }
 
-        localStorage.setItem('token', token);
+        this.auth.setAccessToken(token);
         this.auth.initAuth(true);
         this.snack.open('Signed in!', '', { duration: 2000 });
         this.router.navigateByUrl('/');

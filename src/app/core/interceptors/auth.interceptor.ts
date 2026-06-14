@@ -3,13 +3,14 @@ import { HttpEvent, HttpHandler, HttpInterceptor, HttpRequest, HttpErrorResponse
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { environment } from '@env/environment';
+import { getAccessToken } from '../auth-token-storage';
 
 @Injectable()
 export class AuthInterceptor implements HttpInterceptor {
     intercept(req: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
-        const token = localStorage.getItem('token');
+        const token = getAccessToken();
 
-        // Dodaj Authorization samo za na�e API pozive
+        // Attach Authorization only to first-party API calls.
         const isApiCall = req.url.startsWith(environment.apiUrl);
 
         let authReq = req;
@@ -21,7 +22,6 @@ export class AuthInterceptor implements HttpInterceptor {
 
         return next.handle(authReq).pipe(
             catchError((err: HttpErrorResponse) => {
-                // po �elji: globalno hvatanje 401 itd.
                 return throwError(() => err);
             })
         );

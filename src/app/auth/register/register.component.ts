@@ -120,11 +120,9 @@ export class RegisterComponent {
         })
       )
       .subscribe({
-        next: (res: any) => {
+        next: (res) => {
           if (res?.token && res?.user) {
-            localStorage.setItem('token', res.token);
-            this.authService.setAuthState(true);
-            this.authService.setUser(res.user);
+            this.authService.applyLogin(res.token, res.user);
           }
 
           this.snackBar.open('Registration successful. Logged in.', 'OK', {
