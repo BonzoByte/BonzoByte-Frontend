@@ -11,7 +11,7 @@ import { HeaderComponent } from './shared/ui/header/header.component';
 import { FooterComponent } from './shared/ui/footer/footer.component';
 import { UserModalComponent } from './user/user-modal/user-modal.component';
 
-// GA typings – fallback safe
+// GA typings; keep the app safe when analytics is unavailable.
 declare const gtag: undefined | ((...args: any[]) => void);
 
 @Component({
@@ -47,30 +47,14 @@ export class AppComponent implements OnInit, OnDestroy {
     ) { }
 
     ngOnInit(): void {
-        // 1) OAuth callback: prihvati token iz URL-a, hidrira usera i očisti URL
-        try {
-            const url = new URL(window.location.href);
-            const token = url.searchParams.get('token');
-            if (token) {
-                localStorage.setItem('token', token);
-                this.authService.initAuth(true); // svježi /me
-                url.searchParams.delete('token');
-                const cleaned = url.pathname + (url.searchParams.toString() ? `?${url.searchParams.toString()}` : '');
-                history.replaceState({}, '', cleaned);
-            } else {
-                this.authService.initAuth(); // cold start
-            }
-        } catch {
-            // ako iz nekog razloga URL parsing pukne, nastavi bez toga
-            this.authService.initAuth();
-        }
+        this.authService.initAuth();
 
-        // 2) SPA Pageview za GA (s guardom)
+        // Send SPA pageviews without URL fragments so one-time tokens never reach analytics.
         this.routerSub = this.router.events
             .pipe(filter((e): e is NavigationEnd => e instanceof NavigationEnd))
             .subscribe(e => {
                 if (typeof gtag === 'function') {
-                    gtag('config', 'G-Z7VMGXTFFP', { page_path: e.urlAfterRedirects });
+                    gtag('config', 'G-Z7VMGXTFFP', { page_path: stripUrlFragment(e.urlAfterRedirects) });
                 }
             });
     }
@@ -79,7 +63,7 @@ export class AppComponent implements OnInit, OnDestroy {
         this.routerSub?.unsubscribe();
     }
 
-    // === Header hooks ===
+    // Header modal hooks
     onOpenUserModal(): void {
         this.showUserModal = true;
     }
@@ -90,7 +74,7 @@ export class AppComponent implements OnInit, OnDestroy {
         this.showUserModal = false;
     }
 
-    // === (opcionalno) Match filter modal kontrola ===
+    // Match filter modal hooks
     openMatchFilterModal(): void {
         this.showMatchFilterModal = true;
     }
@@ -98,7 +82,7 @@ export class AppComponent implements OnInit, OnDestroy {
         this.showMatchFilterModal = false;
     }
 
-    // === About / Contact (NgbModal templati) ===
+    // Template-backed NgbModal hooks
     openAboutModal(): void {
         if (this.aboutUsModal) this.modalService.open(this.aboutUsModal, { centered: true });
     }
@@ -109,4 +93,8 @@ export class AppComponent implements OnInit, OnDestroy {
     openRegister() { this.showRegister = true; }
     openLogin() { this.showLogin = true; }
 
+}
+
+function stripUrlFragment(url: string): string {
+    return url.split('#', 1)[0];
 }

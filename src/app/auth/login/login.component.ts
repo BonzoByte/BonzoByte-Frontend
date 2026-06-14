@@ -131,7 +131,7 @@ export class LoginComponent implements OnInit {
     }
 
     loginWithGoogle() {
-        // otvori u istom tabu; backend će redirectati na FRONTEND_URL/oauth-success?token=...
+        // Open in the current tab; the backend redirects to FRONTEND_URL/oauth-success#token=...
         window.location.href = `${environment.apiUrl}/auth/google`;
     }
 

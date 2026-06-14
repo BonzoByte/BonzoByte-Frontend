@@ -6,7 +6,7 @@
     <script>
         (function () {
             try {
-                // UHVAĆAJ TOKEN IZ QUERY STRINGA PRIJE ANGULARA
+                // Capture email verification tokens before Angular boots.
                 var m = /[?&]token=([^&]+)/.exec(window.location.search);
                 if (m && m[1]) {
                     sessionStorage.setItem('verifyToken', decodeURIComponent(m[1]));
@@ -14,6 +14,25 @@
             } catch (e) {
                 console.warn('[verify preboot] failed to capture token', e);
             }
+        })();
+    </script>
+
+    <script>
+        (function () {
+            try {
+                var path = window.location.pathname.replace(/\/+$/, '');
+                if (path !== '/oauth-success') return;
+
+                var hash = (window.location.hash || '').replace(/^#/, '');
+                if (!hash) return;
+
+                var token = new URLSearchParams(hash).get('token');
+                if (!token) return;
+
+                // Hand the token to Angular and remove it before analytics scripts load.
+                sessionStorage.setItem('BB_oauth_token', token);
+                history.replaceState(null, document.title, window.location.pathname + window.location.search);
+            } catch (_) { }
         })();
     </script>
 
