@@ -73,7 +73,7 @@ export class AuthService {
         this.http.get<User>(`${environment.apiUrl}/auth/me`)
             .pipe(
                 tap((u) => { this.setUser(normalizeUser(u)); this.setAuthState(true); }),
-                catchError(() => { this.logout(true); return of(null); })
+                catchError(() => { this.forceClearSession(); return of(null); })
             )
             .subscribe();
     }
@@ -84,11 +84,15 @@ export class AuthService {
 
     logout(silent = false): void {
         this.http.post(`${environment.apiUrl}/auth/logout`, {}).pipe(catchError(() => of(null))).subscribe();
+        this.forceClearSession();
+        if (!silent) this.router.navigateByUrl('/');
+    }
+
+    forceClearSession(): void {
         this.clearAuthStorage();
         this.setUser(null);
         this.setAuthState(false);
         this.emitAuthChanged();
-        if (!silent) this.router.navigateByUrl('/');
     }
 
     // Legacy entry point; keep it routed through the centralized login path.
