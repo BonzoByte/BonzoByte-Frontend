@@ -17,32 +17,6 @@
         })();
     </script>
 
-    <script>
-        (function () {
-            try {
-                var href = window.location.href;
-                var u = new URL(href);
-
-                // 1) iz query stringa
-                var token = u.searchParams.get('token');
-                var email = u.searchParams.get('email');
-
-                // 2) ako nema, probaj iz hash-a (neki klijenti to rade)
-                if (!token || !email) {
-                    var hash = (u.hash || '').replace(/^#/, '');
-                    if (hash) {
-                        var qp = new URLSearchParams(hash.includes('?') ? hash.slice(hash.indexOf('?') + 1) : hash);
-                        token = token || qp.get('token');
-                        email = email || qp.get('email');
-                    }
-                }
-
-                if (token) sessionStorage.setItem('BB_reset_token', token);
-                if (email) sessionStorage.setItem('BB_reset_email', email);
-            } catch (_) { }
-        })();
-    </script>
-
     <meta charset="utf-8">
     <title>BonzoByte | Full-Stack Tennis Analytics Platform</title>
     <base href="/">

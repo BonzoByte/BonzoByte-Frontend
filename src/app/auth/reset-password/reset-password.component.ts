@@ -40,7 +40,6 @@ export class ResetPasswordComponent implements OnInit, OnDestroy {
     submitted = false;
 
     token: string | null = null;
-    email: string | null = null;
 
     successMessage = '';
     errorMessage = '';
@@ -67,15 +66,11 @@ export class ResetPasswordComponent implements OnInit, OnDestroy {
     ngOnInit(): void {
         document.body.classList.add('modal-open');
 
-        const qp = this.route.snapshot.queryParamMap;
-        this.token = qp.get('token');
-        this.email = qp.get('email');
+        this.token = resetTokenFromFragment(this.route.snapshot.fragment);
 
-        // fallbackovi (hash / sessionStorage)
-        if (!this.token) this.token = sessionStorage.getItem('BB_reset_token');
-        if (!this.email) this.email = sessionStorage.getItem('BB_reset_email');
-
-        if (!this.token || !this.email) {
+        if (this.token) {
+            window.history.replaceState(null, document.title, `${window.location.pathname}${window.location.search}`);
+        } else {
             this.errorMessage = 'Invalid or missing reset link.';
         }
     }
@@ -87,7 +82,7 @@ export class ResetPasswordComponent implements OnInit, OnDestroy {
     onSubmit(): void {
         this.submitted = true;
 
-        if (this.loading || this.form.invalid || !this.token || !this.email) {
+        if (this.loading || this.form.invalid || !this.token) {
             return;
         }
 
@@ -101,7 +96,6 @@ export class ResetPasswordComponent implements OnInit, OnDestroy {
             `${environment.apiUrl}/auth/reset-password`,
             {
                 token: this.token,
-                email: this.email,
                 password
             }
         ).pipe(
@@ -142,4 +136,11 @@ function passwordsMatchValidator(group: AbstractControl): ValidationErrors | nul
     const p = group.get('password')?.value;
     const c = group.get('confirm')?.value;
     return p && c && p === c ? null : { passwordsMismatch: true };
+}
+
+function resetTokenFromFragment(fragment: string | null): string | null {
+    if (!fragment) return null;
+
+    const params = new URLSearchParams(fragment.startsWith('?') ? fragment.slice(1) : fragment);
+    return params.get('token');
 }
