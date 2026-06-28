@@ -3,6 +3,6 @@ export const environment = {
   apiUrl: '/api',
 
   archivesMode: 'api',
-  apiBase: 'http://localhost:5000/api/archives',
+  apiBase: '/api/archives',
   dailyStaticBase: '',
 };
