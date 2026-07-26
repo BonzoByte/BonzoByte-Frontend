@@ -47,6 +47,12 @@ export interface DetailsLockedError {
   lockHours: number;
 }
 
+interface AnalyticsManifest {
+  analytics?: {
+    url?: string;
+  };
+}
+
 @Injectable({ providedIn: 'root' })
 export class StaticArchivesService {
   private mode = environment.archivesMode;
@@ -340,19 +346,39 @@ export class StaticArchivesService {
 
   getAnalyticsDashboard(): Observable<AnalyticsDashboard> {
     if (!this.analyticsDashboard$) {
-      const url =
-        this.mode === 'api'
-          ? `${this.apiUrl}/archives/analytics/dashboard`
-          : `${this.analyticsStaticBase}/analytics-dashboard.br`;
+      const archive$ = this.mode === 'api'
+        ? this.http.get(
+            `${this.apiUrl}/archives/analytics/dashboard`,
+            { responseType: 'arraybuffer' as const }
+          )
+        : this.http
+            .get<AnalyticsManifest>(
+              `${this.analyticsStaticBase}/manifest.analytics.json?cb=${Date.now()}`
+            )
+            .pipe(
+              switchMap(manifest => {
+                const fileName = String(manifest?.analytics?.url ?? '').trim();
+                if (
+                  !/^analytics\.dashboard\.v\d{4}-\d{2}-\d{2}T\d{2}-\d{2}Z\.br$/i.test(fileName)
+                ) {
+                  return throwError(
+                    () => new Error('Analytics manifest contains an invalid archive name.')
+                  );
+                }
 
-      this.analyticsDashboard$ = this.http
-        .get(url, { responseType: 'arraybuffer' as const })
-        .pipe(
-          map(buf => this.normalizeAnalyticsDashboard(
-            this.decodeBrotliJson<unknown>(buf)
-          )),
-          shareReplay(1)
-        );
+                return this.http.get(
+                  `${this.analyticsStaticBase}/${fileName}`,
+                  { responseType: 'arraybuffer' as const }
+                );
+              })
+            );
+
+      this.analyticsDashboard$ = archive$.pipe(
+        map(buf => this.normalizeAnalyticsDashboard(
+          this.decodeBrotliJson<unknown>(buf)
+        )),
+        shareReplay(1)
+      );
     }
 
     return this.analyticsDashboard$;
