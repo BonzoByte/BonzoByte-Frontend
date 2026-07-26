@@ -348,7 +348,9 @@ export class StaticArchivesService {
       this.analyticsDashboard$ = this.http
         .get(url, { responseType: 'arraybuffer' as const })
         .pipe(
-          map(buf => this.decodeBrotliJson<AnalyticsDashboard>(buf)),
+          map(buf => this.normalizeAnalyticsDashboard(
+            this.decodeBrotliJson<unknown>(buf)
+          )),
           shareReplay(1)
         );
     }
@@ -556,6 +558,48 @@ export class StaticArchivesService {
     // brotli
     const dec = brotliDecompress(u8);
     return JSON.parse(this.utf8.decode(dec)) as T;
+  }
+
+  private normalizeAnalyticsDashboard(value: unknown): AnalyticsDashboard {
+    const normalized = this.camelizeArchiveKeys(value) as Partial<AnalyticsDashboard> | null;
+
+    if (
+      !normalized ||
+      !normalized.overview ||
+      !normalized.matchLandscape ||
+      !normalized.tournamentInsights ||
+      !normalized.marketBehaviour ||
+      !normalized.modelInsights
+    ) {
+      throw new Error('Analytics archive has an unsupported schema.');
+    }
+
+    return {
+      ...normalized,
+      schemaVersion:
+        typeof normalized.schemaVersion === 'number'
+          ? normalized.schemaVersion
+          : 1,
+    } as AnalyticsDashboard;
+  }
+
+  private camelizeArchiveKeys(value: unknown): unknown {
+    if (Array.isArray(value)) {
+      return value.map(item => this.camelizeArchiveKeys(item));
+    }
+
+    if (value == null || typeof value !== 'object') {
+      return value;
+    }
+
+    return Object.fromEntries(
+      Object.entries(value as Record<string, unknown>).map(([key, nestedValue]) => [
+        key.length > 0
+          ? `${key[0].toLowerCase()}${key.slice(1)}`
+          : key,
+        this.camelizeArchiveKeys(nestedValue),
+      ])
+    );
   }
 
   private mapLiteRowToMatch(r: any): Match {
