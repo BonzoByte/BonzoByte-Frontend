@@ -4,6 +4,41 @@
         {{ errorMessage }}
     </div>
 
+    <!-- MODEL CONFIDENCE -->
+    <div class="bb-section">
+        <div class="bb-section-head">
+            <span class="bb-section-title">Model confidence</span>
+        </div>
+
+        <div class="bb-chip-row">
+            <label class="bb-chip">
+                <input type="radio" name="confidence" value="all" [(ngModel)]="selectedConfidence" />
+                <span>All</span>
+            </label>
+
+            <label class="bb-chip">
+                <input type="radio" name="confidence" value="60" [(ngModel)]="selectedConfidence" />
+                <span>60%+</span>
+            </label>
+
+            <label class="bb-chip">
+                <input type="radio" name="confidence" value="70" [(ngModel)]="selectedConfidence" />
+                <span>70%+</span>
+            </label>
+
+            <label class="bb-chip">
+                <input type="radio" name="confidence" value="80" [(ngModel)]="selectedConfidence" />
+                <span>80%+</span>
+            </label>
+        </div>
+
+        <div class="bb-hint">
+            Filters by the selected player's BonzoByte model estimate. Confidence is not a guarantee.
+        </div>
+    </div>
+
+    <div class="bb-hr"></div>
+
     <!-- ODDS -->
     <div class="bb-section">
         <div class="bb-section-head">

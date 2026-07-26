@@ -17,6 +17,7 @@ import { BbModalShellComponent } from '../../../shared/ui/bb-modal-shell.compone
 export type MatchStatus = 'all' | 'finished' | 'unfinished';
 export type OddsFilter = 'all' | 'with' | 'without';
 export type ValueFilter = 'all' | 'valueOnly';
+export type ConfidenceFilter = 'all' | '60' | '70' | '80';
 export type FilterPayload = {
     startDate: string | null;
     endDate: string | null;
@@ -27,6 +28,7 @@ export type FilterPayload = {
     status: MatchStatus;
     odds: 'all' | 'with' | 'without';
     valueFilter: 'all' | 'valueOnly';
+    confidence: ConfidenceFilter;
 };
 
 @Component({
@@ -66,13 +68,16 @@ export class MatchFilterModalComponent implements OnChanges, OnInit, OnDestroy {
     @Input() activeOdds: 'all' | 'with' | 'without' = 'all';
     @Input() selectedOdds: 'all' | 'with' | 'without' = 'all';
     @Input() activeValueFilter: ValueFilter = 'all';
+    @Input() activeConfidence: ConfidenceFilter = 'all';
 
     selectedStatus: MatchStatus = 'all';
     private readonly DEFAULT_STATUS: MatchStatus = 'all';
     private readonly DEFAULT_ODDS: 'all' | 'with' | 'without' = 'all';
     private readonly DEFAULT_VALUE: ValueFilter = 'all';
+    private readonly DEFAULT_CONFIDENCE: ConfidenceFilter = 'all';
 
     selectedValueFilter: ValueFilter = 'all';
+    selectedConfidence: ConfidenceFilter = 'all';
 
     dateOptions = [
         { label: 'All matches', value: 'all' },
@@ -141,6 +146,7 @@ export class MatchFilterModalComponent implements OnChanges, OnInit, OnDestroy {
         if (changes['activeStatus']) { this.selectedStatus = this.activeStatus || this.DEFAULT_STATUS; }
         if (changes['activeOdds']) { this.selectedOdds = this.activeOdds || this.DEFAULT_ODDS; }
         if (changes['activeValueFilter']) {this.selectedValueFilter = this.activeValueFilter || this.DEFAULT_VALUE;}
+        if (changes['activeConfidence']) { this.selectedConfidence = this.activeConfidence || this.DEFAULT_CONFIDENCE; }
 
         this.errorMessage = '';
     }
@@ -174,6 +180,7 @@ export class MatchFilterModalComponent implements OnChanges, OnInit, OnDestroy {
             status: this.selectedStatus,
             odds: this.selectedOdds,
             valueFilter: this.selectedValueFilter,
+            confidence: this.selectedConfidence,
         };
 
         console.groupCollapsed('%c[Filter] Emitting', 'color:#0b5; font-weight:600;');
@@ -194,6 +201,7 @@ export class MatchFilterModalComponent implements OnChanges, OnInit, OnDestroy {
         this.selectedStatus = this.DEFAULT_STATUS;
         this.selectedOdds = this.DEFAULT_ODDS;
         this.selectedValueFilter = this.DEFAULT_VALUE;
+        this.selectedConfidence = this.DEFAULT_CONFIDENCE;
         this.resetFilter.emit();
     }
 

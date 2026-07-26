@@ -79,6 +79,7 @@ export class MatchesComponent implements OnInit, OnDestroy {
     noMatchesForFilter = false;
     showOutOfRangeModal = false;
     valueFilter: 'all' | 'valueOnly' = 'all';
+    activeConfidence: 'all' | '60' | '70' | '80' = 'all';
 
     viewMode: 'daily' | 'player' | 'tournament' = 'daily';
 
@@ -1230,6 +1231,7 @@ export class MatchesComponent implements OnInit, OnDestroy {
         status: 'all' | 'finished' | 'unfinished' | undefined;
         odds: 'all' | 'with' | 'without';
         valueFilter: 'all' | 'valueOnly';
+        confidence: 'all' | '60' | '70' | '80';
     }): void {
         console.log('🧪 onFilterApplied (incoming):', filter);
         console.log('[PARENT RECEIVED] status =', filter.status);
@@ -1244,6 +1246,7 @@ export class MatchesComponent implements OnInit, OnDestroy {
         this.activeStatus = filter.status ?? 'all';
         this.activeOdds = filter.odds ?? 'all';
         this.valueFilter = filter.valueFilter ?? 'all';
+        this.activeConfidence = filter.confidence ?? 'all';
         this.applyActiveFiltersToCurrentDay();
 
         console.log('[PARENT STORED] activeStatus =', this.activeStatus);
@@ -1271,8 +1274,19 @@ export class MatchesComponent implements OnInit, OnDestroy {
         const isDefaultStatus = this.activeStatus === 'all';
 
         const isDefaultOdds = this.activeOdds === 'all';
+        const isDefaultValue = this.valueFilter === 'all';
+        const isDefaultConfidence = this.activeConfidence === 'all';
 
-        this.isFiltered = !(isDefaultDate && isAllSurfaces && isAllTypes && isAllStrength && isDefaultStatus && isDefaultOdds);
+        this.isFiltered = !(
+            isDefaultDate &&
+            isAllSurfaces &&
+            isAllTypes &&
+            isAllStrength &&
+            isDefaultStatus &&
+            isDefaultOdds &&
+            isDefaultValue &&
+            isDefaultConfidence
+        );
         this.filterApplied = this.isFiltered;
 
         // 3) izračunaj filteredAvailableDates (samo date range dio filtera)
@@ -1408,29 +1422,37 @@ export class MatchesComponent implements OnInit, OnDestroy {
         // ako nema filtera, vrati izvor
         // ✅ ali: valueFilter je isto filter -> uključimo ga u gate
         const hasAnyFilter =
-            this.isFiltered || this.valueFilter === 'valueOnly';
+            this.isFiltered ||
+            this.valueFilter === 'valueOnly' ||
+            this.activeConfidence !== 'all';
 
         if (!hasAnyFilter) return source || [];
 
         const sSet = new Set((this.activeSurfaceIds || []).map(Number));
         const tSet = new Set((this.activeTournamentTypeIds || []).map(Number));
         const strengthSet = new Set((this.activeStrengthStars || []).map(Number));
+        const restrictSurface =
+            ![1, 2, 3, 4].every(surfaceId => sSet.has(surfaceId));
+        const restrictType =
+            ![2, 4].every(typeId => tSet.has(typeId));
+        const restrictStrength =
+            ![0, 1, 2, 3, 4, 5].every(star => strengthSet.has(star));
 
         return (source || []).filter((m: Match) => {
             // SURFACE
-            if (sSet.size > 0) {
+            if (restrictSurface) {
                 const sId = this.normalizeSurfaceId(m);
                 if (sId == null || !sSet.has(sId)) return false;
             }
 
             // TYPE
-            if (tSet.size > 0) {
+            if (restrictType) {
                 const tId = this.normalizeTypeId(m);
                 if (tId == null || !tSet.has(tId)) return false;
             }
 
             // STRENGTH (0..5 bucket)
-            if (strengthSet.size > 0) {
+            if (restrictStrength) {
                 const bucket = this.strengthBucket(m);
                 if (!strengthSet.has(bucket)) return false;
             }
@@ -1451,6 +1473,13 @@ export class MatchesComponent implements OnInit, OnDestroy {
                 const has = this.hasOdds(m);
                 if (this.activeOdds === 'with' && !has) return false;
                 if (this.activeOdds === 'without' && has) return false;
+            }
+
+            // MODEL CONFIDENCE
+            if (this.activeConfidence !== 'all') {
+                const prediction = this.getPrediction(m);
+                const minimum = Number(this.activeConfidence);
+                if (!prediction || prediction.confidence < minimum) return false;
             }
 
             // ✅ VALUE (novo): barem jedan edge >= MIN_EDGE (koristi tvoj getBetSide)
@@ -1493,7 +1522,13 @@ export class MatchesComponent implements OnInit, OnDestroy {
         this.activeDateFilter = 'all';
         this.activeFromDate = null;
         this.activeToDate = null;
+        this.activeSurfaceIds = [1, 2, 3, 4];
+        this.activeTournamentTypeIds = [2, 4];
+        this.activeStrengthStars = [0, 1, 2, 3, 4, 5];
+        this.activeStatus = 'all';
         this.activeOdds = 'all';
+        this.valueFilter = 'all';
+        this.activeConfidence = 'all';
 
         this.clearFilter();
     }

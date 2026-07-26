@@ -284,6 +284,7 @@
                 [activeTournamentTypeIds]="activeTournamentTypeIds" [activeStrengthStars]="activeStrengthStars"
                 [activeTournamentLevelIds]="activeTournamentLevelIds" [activeStatus]="activeStatus"
                 [activeOdds]="activeOdds" [activeValueFilter]="valueFilter" (filterApplied)="onFilterApplied($event)"
+                [activeConfidence]="activeConfidence"
                 (resetFilter)="onFilterReset()"></app-match-filter-modal>
 
             <app-match-details-modal #detailsModal [isOpen]="isDetailsOpen" [matchTPId]="selectedMatchTPId!"
