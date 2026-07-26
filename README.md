@@ -2,15 +2,28 @@
 
 This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 19.2.8.
 
-## Development server
+## Local development
 
-To start a local development server, run:
+To run the frontend against the Brotli archives in the sibling
+`StaticFiles/Data/Archives` folder, run:
 
 ```bash
-ng serve
+npm run start:local
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+This starts the read-only local archive server on port `5000` and Angular on
+port `4200`. It does not require the hosted API or R2. Override the archive
+folder with `BONZOBYTE_ARCHIVES_ROOT` when the files live elsewhere.
+
+To run only one side of the local setup:
+
+```bash
+npm run start:archives
+npm start
+```
+
+Once the frontend is running, open `http://localhost:4200/`. The application
+automatically reloads whenever you modify a source file.
 
 ## Code scaffolding
 

@@ -803,11 +803,11 @@ export class StaticArchivesService {
   // }
 
   getPlayerPhotoUrl(playerTPId: number, gender?: 'M' | 'W'): string {
-    return `https://bonzobyte-backend.onrender.com/api/archives/players/photo/483767`;
+    return `${this.apiBase}/players/photo/${playerTPId}`;
   }
 
   getDefaultPlayerPhotoUrl(gender: 'M' | 'W'): string {
-    return `${this.apiBase}/players/photo/photo${gender}.jpg`;
+    return `/assets/userImages/default${gender}.png`;
   }
 
   getPlayerDetails(playerTPId: number | string): Observable<PlayerDetailsRaw | null> {
