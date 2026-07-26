@@ -92,6 +92,35 @@
         <div class="matches-content" [class.is-blurred]="loading">
 
             <div class="table-wrapper">
+                <section *ngIf="!loading && filteredMatches.length > 0" class="prediction-summary"
+                    aria-label="BonzoByte prediction overview">
+                    <div class="prediction-summary__intro">
+                        <span class="prediction-summary__eyebrow">BonzoByte model</span>
+                        <strong>Prediction overview</strong>
+                        <span>Model output leads. Market data is context only.</span>
+                    </div>
+
+                    <div class="prediction-summary__metrics">
+                        <div class="prediction-summary__metric">
+                            <strong>{{ getPredictionCount() }}</strong>
+                            <span>Predictions</span>
+                            <small>{{ getPredictionCoverage() }}% coverage</small>
+                        </div>
+                        <div class="prediction-summary__metric">
+                            <strong>{{ getConfidenceCount(70) }}</strong>
+                            <span>High confidence</span>
+                            <small>70% or higher</small>
+                        </div>
+                        <div class="prediction-summary__metric">
+                            <strong>{{ getConfidenceCount(80) }}</strong>
+                            <span>Very high</span>
+                            <small>80% or higher</small>
+                        </div>
+                    </div>
+
+                    <span class="prediction-summary__note">Confidence is a model estimate, not a guarantee.</span>
+                </section>
+
                 <!-- No matches (unfiltered) -->
                 <div *ngIf="!loading && filteredMatches.length === 0 && !isFiltered"
                     class="text-center mt-3 p-3 rounded border" style="background-color:transparent;padding-top:10px;">
@@ -113,13 +142,12 @@
                         <col class="c-strength" *ngIf="viewMode !== 'tournament'" />
                         <col class="c-round" />
                         <col class="c-surface" *ngIf="viewMode !== 'tournament'" />
+                        <col class="c-prob" />
                         <col class="c-p1" />
                         <col class="c-p2" />
                         <col class="c-result" />
                         <col class="c-result-details" />
                         <col class="c-odds" />
-                        <col class="c-prob" />
-                        <col class="c-pl" />
                         <col class="c-details logreg" />
                     </colgroup>
                     <thead>
@@ -139,13 +167,12 @@
                             </th>
                             <th class="col-center">Round</th>
                             <th class="col-center" *ngIf="viewMode !== 'tournament'">Surface</th>
+                            <th class="col-center">Prediction</th>
                             <th class="col-center">Player 1</th>
                             <th class="col-center">Player 2</th>
                             <th class="col-center">Result</th>
                             <th class="col-center">Result Details</th>
-                            <th class="col-center">Odds</th>
-                            <th class="col-center">Probability</th>
-                            <th class="col-center">PL</th>
+                            <th class="col-center" title="Market benchmark">Market</th>
                             <th class="col-center">Details</th>
                         </tr>
                     </thead>
@@ -178,7 +205,27 @@
 
                             <td *ngIf="viewMode !== 'tournament'">{{ formatSurface(match.surface) }}</td>
 
-                            <td class="col-center">
+                            <td class="col-center prediction-cell" [ngClass]="getPredictionClass(match)"
+                                [title]="getPredictionTooltip(match)">
+                                <ng-container *ngIf="getPrediction(match) as prediction; else noPrediction">
+                                    <div class="prediction-cell__topline">
+                                        <span class="prediction-cell__player">{{ prediction.playerName }}</span>
+                                        <strong>{{ prediction.confidence | number:'1.2-2' }}%</strong>
+                                    </div>
+                                    <div class="prediction-cell__bar" aria-hidden="true">
+                                        <span [style.width.%]="prediction.confidence"></span>
+                                    </div>
+                                    <div class="prediction-cell__meta">
+                                        <span>{{ prediction.label }}</span>
+                                        <span>{{ prediction.side === 'p1' ? 'P1' : 'P2' }}</span>
+                                    </div>
+                                </ng-container>
+                                <ng-template #noPrediction>
+                                    <span class="prediction-cell__unavailable">No prediction</span>
+                                </ng-template>
+                            </td>
+
+                            <td class="col-center" [class.predicted-player-cell]="isPredictedSide(match, 'p1')">
                                 <span class="fi fi-{{ flagCode(match.player1CountryISO2).toLowerCase() }}"
                                     [title]="match.player1CountryFull"></span>
                                 <span class="clickable-text" (click)="openPlayerModal(match.player1TPId)">
@@ -191,7 +238,7 @@
                                 </span>
                             </td>
 
-                            <td class="col-center">
+                            <td class="col-center" [class.predicted-player-cell]="isPredictedSide(match, 'p2')">
                                 <span class="fi fi-{{ flagCode(match.player2CountryISO2).toLowerCase() }}"
                                     [title]="match.player2CountryFull"></span>
                                 <span class="clickable-text" (click)="openPlayerModal(match.player2TPId)">
@@ -207,12 +254,8 @@
                             <td class="col-center">{{ getDisplayResult(match) }}</td>
                             <td class="col-center">{{ formatResultDetails(match.resultDetails) }}</td>
 
-                            <td class="col-center odds-combined-cell" [innerHTML]="formatOddsHTML(match.oddsText)"></td>
-                            <td class="col-center odds-combined-cell percentage-cell"
-                                [innerHTML]="formatProbHTML(match.probabilityText)"></td>
-                            <td class="col-center pl-cell" [ngClass]="getPLClass(match)" [title]="getPLTooltip(match)">
-                                {{ formatPL(match) }}
-                            </td>
+                            <td class="col-center odds-combined-cell market-cell" title="Market benchmark"
+                                [innerHTML]="formatOddsHTML(match.oddsText)"></td>
 
                             <td class="col-center details-cell">
                                 <ng-container *ngIf="match.isFinished; else lockedTpl">

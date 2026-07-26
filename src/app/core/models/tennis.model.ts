@@ -198,6 +198,8 @@ export interface Match {
 
   oddsText?: string | null;         // "1.52 - 2.43"
   probabilityText?: string | null;  // "76.31 - 23.69"
+  modelProbabilityPlayer1?: number | null;
+  modelProbabilityPlayer2?: number | null;
 
   // za savr�eno poravnanje oko crtice:
   oddsLeft?: string;                // figure-space padded " 1.52"

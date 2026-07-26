@@ -611,6 +611,8 @@ export class StaticArchivesService {
 
       oddsText: oddsText as any,
       probabilityText: probabilityText as any,
+      modelProbabilityPlayer1: p1,
+      modelProbabilityPlayer2: p2,
     } as any as Match;
   }
 

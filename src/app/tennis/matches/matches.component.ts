@@ -20,6 +20,14 @@ interface BootstrapDatesResult {
     max: Date;
 }
 
+interface MatchPrediction {
+    side: 'p1' | 'p2';
+    playerName: string;
+    confidence: number;
+    label: string;
+    tone: 'lean' | 'clear' | 'high' | 'very-high';
+}
+
 @Component({
     selector: 'app-matches',
     standalone: true,
@@ -2001,11 +2009,83 @@ export class MatchesComponent implements OnInit, OnDestroy {
     }
 
     private parseProbs(match: any): [number | null, number | null] {
-        const [p1, p2] = this.parseDualNumbers(match?.probabilityText);
+        const directP1 = Number(match?.modelProbabilityPlayer1);
+        const directP2 = Number(match?.modelProbabilityPlayer2);
+        const hasDirectPair =
+            match?.modelProbabilityPlayer1 != null &&
+            match?.modelProbabilityPlayer2 != null &&
+            Number.isFinite(directP1) && directP1 >= 0 && directP1 <= 100 &&
+            Number.isFinite(directP2) && directP2 >= 0 && directP2 <= 100;
+
+        const [p1, p2] = hasDirectPair
+            ? [directP1, directP2]
+            : this.parseDualNumbers(match?.probabilityText);
+
         // očekujemo 0..100
         const v1 = p1 != null && p1 >= 0 && p1 <= 100 ? p1 : null;
         const v2 = p2 != null && p2 >= 0 && p2 <= 100 ? p2 : null;
         return [v1, v2];
+    }
+
+    getPrediction(match: Match): MatchPrediction | null {
+        const [p1, p2] = this.parseProbs(match);
+        if (p1 == null || p2 == null) return null;
+
+        const side: 'p1' | 'p2' = p1 >= p2 ? 'p1' : 'p2';
+        const confidence = side === 'p1' ? p1 : p2;
+        const playerName =
+            (side === 'p1' ? match.player1Name : match.player2Name)?.trim() ||
+            (side === 'p1' ? 'Player 1' : 'Player 2');
+
+        if (confidence >= 80) {
+            return { side, playerName, confidence, label: 'Very high confidence', tone: 'very-high' };
+        }
+
+        if (confidence >= 70) {
+            return { side, playerName, confidence, label: 'High confidence', tone: 'high' };
+        }
+
+        if (confidence >= 60) {
+            return { side, playerName, confidence, label: 'Clear lean', tone: 'clear' };
+        }
+
+        return { side, playerName, confidence, label: 'Lean', tone: 'lean' };
+    }
+
+    getPredictionCount(): number {
+        return this.filteredMatches.reduce(
+            (count, match) => count + (this.getPrediction(match) ? 1 : 0),
+            0
+        );
+    }
+
+    getConfidenceCount(minimum: number): number {
+        return this.filteredMatches.reduce((count, match) => {
+            const prediction = this.getPrediction(match);
+            return count + (prediction && prediction.confidence >= minimum ? 1 : 0);
+        }, 0);
+    }
+
+    getPredictionCoverage(): number {
+        if (this.filteredMatches.length === 0) return 0;
+        return Math.round((this.getPredictionCount() / this.filteredMatches.length) * 100);
+    }
+
+    isPredictedSide(match: Match, side: 'p1' | 'p2'): boolean {
+        return this.getPrediction(match)?.side === side;
+    }
+
+    getPredictionClass(match: Match): string {
+        const prediction = this.getPrediction(match);
+        return prediction ? `prediction-cell--${prediction.tone}` : 'prediction-cell--empty';
+    }
+
+    getPredictionTooltip(match: Match): string {
+        const prediction = this.getPrediction(match);
+        if (!prediction) return 'No model prediction is available.';
+
+        return `${prediction.playerName}: ${prediction.confidence.toFixed(2)}% model estimate. ` +
+            'This is a probability estimate, not a guarantee.';
     }
 
     private getWinnerSide(match: Match): 'p1' | 'p2' | null {
