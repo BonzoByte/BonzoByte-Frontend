@@ -12,6 +12,11 @@ import { AuthService } from './auth.service';
 import { environment } from '../../../environments/environment';
 import { AnalyticsDashboard } from '../models/analytics.model';
 import { PlayerTsHistoryRaw } from 'src/app/core/models/player-details.model';
+import {
+  DETAILS_LOCK_HOURS,
+  evaluateClientDetailsAccess,
+  normalizeDetailsHttpError,
+} from '../helpers/match-details-access';
 
 export interface DailyArchiveIndex {
   minDate: string;
@@ -42,8 +47,11 @@ export interface DailyManifestTournaments extends DailyArchiveIndex {
 }
 
 export interface DetailsLockedError {
+  status: 'error';
   code: 'DETAILS_LOCKED';
-  unlocksAt: string; // ISO
+  reason?: string;
+  expectedStartUtc?: string | null;
+  unlocksAt: string | null;
   lockHours: number;
 }
 
@@ -308,38 +316,41 @@ export class StaticArchivesService {
       .pipe(map(buf => this.decodeBrotliJson<MatchDetailsRaw>(buf)));
   }
 
-  getDetailsGuarded(match: Match, lockHours = 2): Observable<MatchDetailsRaw> {
-    // finished -> always allowed
-    if (match?.isFinished) {
-      return this.getDetails(match.matchTPId);
+  getDetailsGuarded(
+    match: Match,
+    lockHours = DETAILS_LOCK_HOURS
+  ): Observable<MatchDetailsRaw> {
+    const request$ = this.getDetails(match.matchTPId).pipe(
+      catchError((err: unknown) =>
+        throwError(() => normalizeDetailsHttpError(err))
+      )
+    );
+
+    // In API mode the backend is authoritative for both access and cache policy.
+    if (this.mode === 'api') {
+      return request$;
     }
 
-    const user = this.auth.getUser();
-    const ent: any = (user as any)?.entitlements;
-    const privileged = !!(user?.isAdmin || ent?.isPremium || ent?.hasTrial);
+    const access = evaluateClientDetailsAccess({
+      isFinished: match?.isFinished,
+      user: this.auth.getUser(),
+      scheduledStart: match?.dateTime,
+      lockHours,
+    });
 
-    if (privileged) {
-      return this.getDetails(match.matchTPId);
-    }
-
-    // Free user: enforce lock window (2h before expected start)
-    const unlocksAt = this.calcUnlocksAtIso(match, lockHours);
-
-    if (unlocksAt && Date.now() < Date.parse(unlocksAt)) {
+    if (access.locked) {
       return throwError(() => ({
+        status: 'error',
         code: 'DETAILS_LOCKED',
-        unlocksAt,
+        reason: access.reason,
+        expectedStartUtc:
+          typeof match?.dateTime === 'string' ? match.dateTime : null,
+        unlocksAt: access.unlocksAt,
         lockHours,
       } as DetailsLockedError));
     }
 
-    // unlocked -> same archive pipeline as everything else
-    return this.getDetails(match.matchTPId).pipe(
-      catchError((err: any) => {
-        if (err?.error) return throwError(() => err.error);
-        return throwError(() => err);
-      })
-    );
+    return request$;
   }
 
   private analyticsDashboard$?: Observable<AnalyticsDashboard>;
@@ -382,14 +393,6 @@ export class StaticArchivesService {
     }
 
     return this.analyticsDashboard$;
-  }
-
-  private calcUnlocksAtIso(match: Match, lockHours: number): string | null {
-    const dt = match?.dateTime ? new Date(match.dateTime) : null;
-    if (!dt || isNaN(dt.getTime())) return null;
-
-    const unlockMs = dt.getTime() - lockHours * 60 * 60 * 1000;
-    return new Date(unlockMs).toISOString();
   }
 
   private playersIndexRows$?: Observable<PlayerIndex[]>;

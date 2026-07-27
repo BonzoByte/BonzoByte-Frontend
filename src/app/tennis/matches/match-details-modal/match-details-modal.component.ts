@@ -111,8 +111,9 @@ type DetailsLockedError = {
     status: 'error';
     code: 'DETAILS_LOCKED';
     lockHours: number;
-    expectedStartUtc: string;
-    unlocksAt: string;
+    reason?: string;
+    expectedStartUtc: string | null;
+    unlocksAt: string | null;
     message?: string;
 };
 
@@ -848,7 +849,7 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
                 status: 'error',
                 message: 'DEV FORCE LOCK',
                 expectedStartUtc: new Date().toISOString(),
-                lockHours: 2,
+                lockHours: 1,
                 unlocksAt: new Date(Date.now() + 60 * 60 * 1000).toISOString(), // +1h
             } as any;
 
@@ -868,7 +869,7 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
         this.cdr.markForCheck();
 
         // fetch
-        this.detailsSub = this.staticArchives.getDetailsGuarded(this.match, 2).subscribe({
+        this.detailsSub = this.staticArchives.getDetailsGuarded(this.match).subscribe({
             next: (details) => {
                 console.log('[DETAILS] loaded', details);
 

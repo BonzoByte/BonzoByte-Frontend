@@ -13,6 +13,7 @@ import { AuthService } from 'src/app/core/services/auth.service';
 import { Subject, Subscription, Observable, takeUntil } from 'rxjs';
 import { catchError, debounceTime, distinctUntilChanged, map } from 'rxjs/operators';
 import { ActivatedRoute } from '@angular/router';
+import { evaluateClientDetailsAccess } from '../../core/helpers/match-details-access';
 
 interface BootstrapDatesResult {
     dates: string[];
@@ -2280,29 +2281,14 @@ export class MatchesComponent implements OnInit, OnDestroy {
         return this.getBetSide(match).side != null;
     }
 
-    private readonly DEV_FORCE_LOCK_UI = true; // samo dok testiramo billing
-
     isDetailsLocked(m: Match): boolean {
         if (!m) return true;
-        if (this.DEV_FORCE_LOCK_UI) return true;
 
-        // finished -> unlocked
-        const finVal: any = (m as any)?.isFinished ?? (m as any)?.l03;
-        const finished = finVal === true || finVal === 1 || finVal === '1' || finVal === 'true';
-        if (finished) return false;
-
-        // privileged -> unlocked
-        const u = this.auth.getUser();
-        const ent: any = (u as any)?.entitlements;
-        const privileged = !!(u?.isAdmin || ent?.isPremium || ent?.hasTrial);
-        if (privileged) return false;
-
-        // free/guest -> lock window
-        const dt = m.dateTime ? new Date(m.dateTime as any) : null;
-        if (!dt || isNaN(dt.getTime())) return false; // fail-open
-
-        const unlockMs = dt.getTime() - 2 * 60 * 60 * 1000;
-        return Date.now() < unlockMs;
+        return evaluateClientDetailsAccess({
+            isFinished: (m as any)?.isFinished ?? (m as any)?.l03,
+            user: this.auth.getUser(),
+            scheduledStart: m.dateTime,
+        }).locked;
     }
 
     get tournamentHeaderStrengthStars(): number {

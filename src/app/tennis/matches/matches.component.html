@@ -258,7 +258,7 @@
                                 [innerHTML]="formatOddsHTML(match.oddsText)"></td>
 
                             <td class="col-center details-cell">
-                                <ng-container *ngIf="match.isFinished; else lockedTpl">
+                                <ng-container *ngIf="!isDetailsLocked(match); else lockedTpl">
                                     <button type="button" class="details-icon-btn logreg" (click)="openDetails(match)"
                                         title="Open details" aria-label="Open details">
                                         i
