@@ -861,7 +861,7 @@ export class StaticArchivesService {
   getTsHistory(playerTPId: number | string): Observable<any> {
     if (this.mode === 'api') {
       return this.http
-        .get(`${this.apiBase}/ts/${playerTPId}`, { responseType: 'arraybuffer' as const })
+        .get(`${this.playersTsStaticBase}/${playerTPId}`, { responseType: 'arraybuffer' as const })
         .pipe(map(buf => this.decodeBrotliJson<any>(buf)));
     }
 
