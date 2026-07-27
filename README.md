@@ -11,9 +11,12 @@ To run the frontend against the Brotli archives in the sibling
 npm run start:local
 ```
 
-This starts the read-only local archive server on port `5000` and Angular on
-port `4200`. It does not require the hosted API or R2. Override the archive
-folder with `BONZOBYTE_ARCHIVES_ROOT` when the files live elsewhere.
+This starts the read-only local archive server on port `5001` and Angular on
+port `4200`. Archive requests stay local and do not require R2. Authentication
+and guarded match-details requests are routed to the BonzoByte backend on port
+`5000`, so start the sibling backend separately when testing either feature.
+Override the archive folder with `BONZOBYTE_ARCHIVES_ROOT` when the files live
+elsewhere.
 
 To run only one side of the local setup:
 
@@ -24,6 +27,17 @@ npm start
 
 Once the frontend is running, open `http://localhost:4200/`. The application
 automatically reloads whenever you modify a source file.
+
+### Local routing smoke check
+
+With the backend, archive server, and Angular running, verify:
+
+- `http://localhost:4200/api/health` returns the backend health response.
+- `http://localhost:4200/api/archives/health` reports `mode: local-brotli`.
+- `http://localhost:4200/api/archives/match-details/<id>` is served through the
+  backend guard.
+- `http://localhost:4200/api/auth/google` and `/api/auth/facebook` redirect to
+  their provider instead of returning an archive-route error.
 
 ## Code scaffolding
 

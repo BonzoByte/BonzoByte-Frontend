@@ -17,7 +17,7 @@ const defaultArchivesRoot = path.resolve(
 const archivesRoot = path.resolve(
   process.env.BONZOBYTE_ARCHIVES_ROOT || defaultArchivesRoot,
 );
-const port = Number(process.env.BONZOBYTE_ARCHIVE_PORT || 5000);
+const port = Number(process.env.BONZOBYTE_ARCHIVE_PORT || 5001);
 const host = process.env.BONZOBYTE_ARCHIVE_HOST || '127.0.0.1';
 
 const dailyRoot = path.join(archivesRoot, 'daily');

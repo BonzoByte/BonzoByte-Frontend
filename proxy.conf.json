@@ -1,4 +1,19 @@
 {
+  "/api/archives/match-details": {
+    "target": "http://localhost:5000",
+    "secure": false,
+    "changeOrigin": true
+  },
+  "/api/archives/matches": {
+    "target": "http://localhost:5000",
+    "secure": false,
+    "changeOrigin": true
+  },
+  "/api/archives": {
+    "target": "http://localhost:5001",
+    "secure": false,
+    "changeOrigin": true
+  },
   "/api": {
     "target": "http://localhost:5000",
     "secure": false,
