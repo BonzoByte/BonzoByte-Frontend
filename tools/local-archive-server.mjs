@@ -3,6 +3,11 @@ import http from 'node:http';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { brotliDecompress } from 'node:zlib';
+import {
+  createVersionedLruPromiseCache,
+  mapWithConcurrency,
+  parsePositiveInteger,
+} from './local-archive-server-helpers.mjs';
 
 const scriptDirectory = path.dirname(fileURLToPath(import.meta.url));
 const defaultArchivesRoot = path.resolve(
@@ -19,14 +24,24 @@ const archivesRoot = path.resolve(
 );
 const port = Number(process.env.BONZOBYTE_ARCHIVE_PORT || 5001);
 const host = process.env.BONZOBYTE_ARCHIVE_HOST || '127.0.0.1';
+const detailEnrichmentConcurrency = parsePositiveInteger(
+  process.env.BONZOBYTE_ARCHIVE_DETAIL_CONCURRENCY,
+  8,
+);
+const dailyJsonCacheSize = parsePositiveInteger(
+  process.env.BONZOBYTE_ARCHIVE_DAILY_CACHE_SIZE,
+  6,
+);
 
 const dailyRoot = path.join(archivesRoot, 'daily');
+const detailsRoot = path.join(archivesRoot, 'matches');
 const apiPrefix = '/api/archives';
 const compactDatePattern = /^\d{8}$/;
 const numericIdPattern = /^\d+$/;
 const archiveNamePattern = /^[A-Za-z0-9._-]+\.br$/;
 
 let dailyIndexCache;
+const dailyJsonCache = createVersionedLruPromiseCache(dailyJsonCacheSize);
 
 function sendJson(response, statusCode, value) {
   const body = Buffer.from(JSON.stringify(value));
@@ -163,9 +178,7 @@ function getMoneylineMedians(details, player1Id, player2Id) {
 }
 
 async function enrichDailyOdds(rows) {
-  const detailsRoot = path.join(archivesRoot, 'matches');
-
-  return Promise.all(rows.map(async row => {
+  return mapWithConcurrency(rows, detailEnrichmentConcurrency, async row => {
     const currentPlayer1Odds = Number(row?.l29);
     const currentPlayer2Odds = Number(row?.l30);
 
@@ -208,7 +221,57 @@ async function enrichDailyOdds(rows) {
       console.warn(`[local-archives] Odds enrichment skipped for match ${matchId}:`, error);
       return row;
     }
-  }));
+  });
+}
+
+async function getDetailsDirectoryVersion() {
+  try {
+    const stat = await fs.stat(detailsRoot);
+    return stat.isDirectory()
+      ? `${stat.mtimeMs}:${stat.ctimeMs}`
+      : 'not-a-directory';
+  } catch (error) {
+    if (error?.code === 'ENOENT') {
+      return 'missing';
+    }
+
+    throw error;
+  }
+}
+
+async function getDailyArchiveIdentity(compactDate) {
+  const dailyPath = path.join(dailyRoot, `${compactDate}.br`);
+  const [dailyStat, detailsDirectoryVersion] = await Promise.all([
+    fs.stat(dailyPath),
+    getDetailsDirectoryVersion(),
+  ]);
+
+  return {
+    dailyPath,
+    version: [
+      dailyStat.size,
+      dailyStat.mtimeMs,
+      dailyStat.ctimeMs,
+      detailsDirectoryVersion,
+    ].join(':'),
+  };
+}
+
+async function buildDailyJsonBody(dailyPath) {
+  const compressed = await fs.readFile(dailyPath);
+  const decompressed = await brotliDecompressAsync(compressed);
+  const rows = JSON.parse(decompressed.toString('utf8'));
+  const enrichedRows = Array.isArray(rows) ? await enrichDailyOdds(rows) : rows;
+  return Buffer.from(JSON.stringify(enrichedRows));
+}
+
+async function getDailyJsonBody(compactDate) {
+  const { dailyPath, version } = await getDailyArchiveIdentity(compactDate);
+  return dailyJsonCache.get(
+    compactDate,
+    version,
+    () => buildDailyJsonBody(dailyPath),
+  );
 }
 
 async function sendFile(request, response, filePath, contentType = 'application/octet-stream') {
@@ -265,11 +328,7 @@ async function sendDailyJson(request, response, compactDate) {
     return;
   }
 
-  const compressed = await fs.readFile(path.join(dailyRoot, `${compactDate}.br`));
-  const decompressed = await brotliDecompressAsync(compressed);
-  const rows = JSON.parse(decompressed.toString('utf8'));
-  const enrichedRows = Array.isArray(rows) ? await enrichDailyOdds(rows) : rows;
-  const body = Buffer.from(JSON.stringify(enrichedRows));
+  const body = await getDailyJsonBody(compactDate);
 
   response.writeHead(200, {
     'Cache-Control': 'no-store',
@@ -486,6 +545,9 @@ server.listen(port, host, async () => {
     console.log(`[local-archives] Serving ${index.compactDates.length} daily archives.`);
     console.log(`[local-archives] Range ${index.isoDates[0]} -> ${index.isoDates.at(-1)}.`);
     console.log(`[local-archives] Root ${archivesRoot}.`);
+    console.log(
+      `[local-archives] Daily cache=${dailyJsonCacheSize}, detail concurrency=${detailEnrichmentConcurrency}.`,
+    );
     console.log(`[local-archives] Listening on http://${host}:${port}.`);
   } catch (error) {
     console.error('[local-archives] Startup validation failed:', error);
