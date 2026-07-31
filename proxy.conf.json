@@ -1,6 +1,6 @@
 {
   "/api/archives/match-details": {
-    "target": "http://localhost:5000",
+    "target": "http://localhost:5001",
     "secure": false,
     "changeOrigin": true
   },
