@@ -2113,15 +2113,53 @@ export class MatchesComponent implements OnInit, OnDestroy {
 
     getPredictionClass(match: Match): string {
         const prediction = this.getPrediction(match);
-        return prediction ? `prediction-cell--${prediction.tone}` : 'prediction-cell--empty';
+        if (!prediction) return 'prediction-cell--empty';
+
+        const outcome = this.getPredictionOutcome(match);
+        return [
+            `prediction-cell--${prediction.tone}`,
+            outcome ? `prediction-cell--${outcome}` : '',
+        ].filter(Boolean).join(' ');
     }
 
     getPredictionTooltip(match: Match): string {
         const prediction = this.getPrediction(match);
         if (!prediction) return 'No model prediction is available.';
 
-        return `${prediction.playerName}: ${prediction.confidence.toFixed(2)}% model estimate. ` +
-            'This is a probability estimate, not a guarantee.';
+        const outcome = this.getPredictionOutcome(match);
+        const outcomeText = outcome === 'correct'
+            ? ' Historical outcome: correct.'
+            : outcome === 'incorrect'
+                ? ' Historical outcome: incorrect.'
+                : '';
+
+        return `${prediction.playerName}: ${prediction.confidence.toFixed(2)}% model estimate.` +
+            `${outcomeText} This is a probability estimate, not a guarantee.`;
+    }
+
+    getPredictionOutcome(match: Match): 'correct' | 'incorrect' | null {
+        if (!this.isCanonicalFinishedMatch(match)) return null;
+
+        // TennisPrediction stores the winner on the left for every canonical
+        // finished result, so Player 1 is the only valid historical winner.
+        const prediction = this.getPrediction(match);
+        if (!prediction) return null;
+
+        return prediction.side === 'p1'
+            ? 'correct'
+            : 'incorrect';
+    }
+
+    private isCanonicalFinishedMatch(match: Match): boolean {
+        if (!match?.isFinished) return false;
+
+        const rawResult = String(match.result ?? match.resultText ?? '')
+            .replace(/[^0-9]/g, '');
+        return rawResult === '20' ||
+            rawResult === '21' ||
+            rawResult === '30' ||
+            rawResult === '31' ||
+            rawResult === '32';
     }
 
     private getWinnerSide(match: Match): 'p1' | 'p2' | null {
