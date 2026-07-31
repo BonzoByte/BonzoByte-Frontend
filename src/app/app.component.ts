@@ -7,6 +7,7 @@ import { filter, Subscription } from 'rxjs';
 
 import { User } from './core/models/user.model';
 import { AuthService } from './core/services/auth.service';
+import { ThemeService } from './core/services/theme.service';
 import { HeaderComponent } from './shared/ui/header/header.component';
 import { FooterComponent } from './shared/ui/footer/footer.component';
 import { UserModalComponent } from './user/user-modal/user-modal.component';
@@ -43,7 +44,8 @@ export class AppComponent implements OnInit, OnDestroy {
     constructor(
         private authService: AuthService,
         private router: Router,
-        private modalService: NgbModal
+        private modalService: NgbModal,
+        private themeService: ThemeService
     ) { }
 
     ngOnInit(): void {

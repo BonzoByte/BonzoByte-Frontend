@@ -18,6 +18,19 @@
         </div>
 
         <div class="navbar-nav">
+            <label class="theme-picker" title="Choose visual theme">
+                <span class="theme-picker__icon" aria-hidden="true">◐</span>
+                <span class="visually-hidden">Theme</span>
+                <select
+                    aria-label="Visual theme"
+                    [value]="selectedTheme"
+                    (change)="changeTheme($any($event.target).value)">
+                    <option *ngFor="let theme of themes" [value]="theme.id">
+                        {{ theme.label }}
+                    </option>
+                </select>
+            </label>
+            <span class="nav-separator" aria-hidden="true"></span>
             <a class="logreg" (click)="openBillingModal()">Pricing</a>
             <span class="nav-separator" aria-hidden="true"></span>
 

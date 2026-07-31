@@ -26,6 +26,17 @@
     --bb-header-btn-border: rgba(255, 255, 255, 0.30);
     --bb-header-btn-hover: rgba(255, 255, 255, 0.10);
     --bb-header-avatar-border: rgba(255, 255, 255, 0.40);
+    --bb-header-select-bg: #1d1d1d;
+    --bb-theme-accent: #8ad4ff;
+    --bb-page-text: #eee;
+    --bb-body-bg:
+        radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.04), transparent 40%),
+        radial-gradient(circle at 80% 70%, rgba(255, 255, 255, 0.03), transparent 45%),
+        radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.02), transparent 60%),
+        linear-gradient(135deg, #0b0b0b, #111, #0e0e0e);
+    --bb-datebar-bg: rgba(10, 10, 10, 0.72);
+    --bb-datebar-text: #fff;
+    --bb-datebar-border: rgba(255, 255, 255, 0.10);
 
     --bb-brand-font: 'Orbitron', system-ui, sans-serif;
 
@@ -46,6 +57,62 @@
 
     --bb-md-success: var(--bb-success, #3fd18b);
     --bb-md-danger: var(--bb-danger, #ff5f5f);
+}
+
+:root[data-bb-theme='light'] {
+    color-scheme: light;
+    --bb-page-text: #15202b;
+    --bb-body-bg: linear-gradient(135deg, #f8fafc, #eef3f7, #ffffff);
+    --bb-header-bg: #f8fafc;
+    --bb-header-text: #15202b;
+    --bb-header-border: rgba(21, 32, 43, 0.16);
+    --bb-header-btn-border: rgba(21, 32, 43, 0.28);
+    --bb-header-btn-hover: rgba(21, 32, 43, 0.08);
+    --bb-header-select-bg: #fff;
+    --bb-footer-bg: #f8fafc;
+    --bb-footer-text: #15202b;
+    --bb-footer-link: #0b5cab;
+    --bb-footer-border: rgba(21, 32, 43, 0.16);
+    --bb-datebar-bg: rgba(248, 250, 252, 0.92);
+    --bb-datebar-text: #15202b;
+    --bb-datebar-border: rgba(21, 32, 43, 0.14);
+    --bb-theme-accent: #0b67c2;
+}
+
+:root[data-bb-theme='wimbledon'] {
+    color-scheme: dark;
+    --bb-body-bg:
+        radial-gradient(circle at 12% 20%, rgba(198, 178, 100, 0.12), transparent 34%),
+        linear-gradient(145deg, #10291d, #173c29 52%, #0d2118);
+    --bb-header-bg: #173c29;
+    --bb-footer-bg: #10291d;
+    --bb-datebar-bg: rgba(55, 22, 79, 0.88);
+    --bb-theme-accent: #d2bd71;
+    --bb-header-select-bg: #214d36;
+}
+
+:root[data-bb-theme='roland-garros'] {
+    color-scheme: dark;
+    --bb-body-bg:
+        radial-gradient(circle at 18% 24%, rgba(244, 182, 116, 0.13), transparent 36%),
+        linear-gradient(145deg, #3b1f18, #743b25 54%, #271713);
+    --bb-header-bg: #512719;
+    --bb-footer-bg: #321b16;
+    --bb-datebar-bg: rgba(137, 66, 34, 0.88);
+    --bb-theme-accent: #f1b173;
+    --bb-header-select-bg: #66331f;
+}
+
+:root[data-bb-theme='us-open'] {
+    color-scheme: dark;
+    --bb-body-bg:
+        radial-gradient(circle at 78% 20%, rgba(72, 179, 255, 0.14), transparent 38%),
+        linear-gradient(145deg, #071d3a, #0d315e 54%, #07172e);
+    --bb-header-bg: #08254a;
+    --bb-footer-bg: #061a35;
+    --bb-datebar-bg: rgba(14, 57, 108, 0.9);
+    --bb-theme-accent: #ffd447;
+    --bb-header-select-bg: #103969;
 }
 
 html,
@@ -71,13 +138,8 @@ body {
     padding-bottom: var(--footer-h);
     overflow-y: auto;
     min-height: calc(100vh - var(--header-h) - var(--footer-h));
-    color: #eee;
-
-    background:
-        radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.04), transparent 40%),
-        radial-gradient(circle at 80% 70%, rgba(255, 255, 255, 0.03), transparent 45%),
-        radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.02), transparent 60%),
-        linear-gradient(135deg, #0b0b0b, #111, #0e0e0e);
+    color: var(--bb-page-text);
+    background: var(--bb-body-bg);
 }
 
 body.no-datebar {
@@ -173,10 +235,10 @@ main {
     padding: 6px 10px;
     box-sizing: border-box;
 
-    background: rgba(10, 10, 10, 0.72);
+    background: var(--bb-datebar-bg);
     backdrop-filter: blur(6px);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.10);
-    color: #fff;
+    border-bottom: 1px solid var(--bb-datebar-border);
+    color: var(--bb-datebar-text);
 }
 
 .pagination-center-wrapper {

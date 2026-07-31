@@ -8,6 +8,11 @@ import { RegisterComponent } from '../../../auth/register/register.component';
 import { BillingModalComponent } from '../../../billing/billing-modal/billing-modal.component';
 import { AuthService } from '../../../core/services/auth.service';
 import { User } from '../../../core/models/user.model';
+import {
+    BONZOBYTE_THEMES,
+    BonzoByteTheme,
+    ThemeService
+} from '../../../core/services/theme.service';
 
 @Component({
     selector: 'app-header',
@@ -35,6 +40,8 @@ export class HeaderComponent implements OnInit, OnDestroy {
     user: User | null = null;
     userNickname = '';
     userDisplayName = '';
+    readonly themes = BONZOBYTE_THEMES;
+    selectedTheme: BonzoByteTheme;
 
     private switchToRegisterHandler = () => {
         this.showLoginModal = false;
@@ -70,8 +77,11 @@ export class HeaderComponent implements OnInit, OnDestroy {
     constructor(
         private authService: AuthService,
         private router: Router,
-        private zone: NgZone
-    ) { }
+        private zone: NgZone,
+        private themeService: ThemeService
+    ) {
+        this.selectedTheme = themeService.selectedTheme;
+    }
 
     ngOnInit(): void {
         window.addEventListener('openBilling', () => console.log('[WINDOW] openBilling fired'));
@@ -143,4 +153,9 @@ export class HeaderComponent implements OnInit, OnDestroy {
     logout(): void { this.authService.logout(); }
 
     openUserModal() { this.userModalOpened.emit(); }
+
+    changeTheme(theme: string): void {
+        this.themeService.setTheme(theme);
+        this.selectedTheme = this.themeService.selectedTheme;
+    }
 }
