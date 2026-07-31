@@ -308,7 +308,12 @@
             {{ v.header.name }}<span *ngIf="v.header.iso3"> ({{ v.header.iso3 }})</span>
         </span>
 
-        <span class="bb-pill">{{ v.header.round }}</span>
+        <span
+          class="bb-pill"
+          *ngIf="v.header.round && v.header.round.toLowerCase() !== 'unknown'"
+        >
+          {{ v.header.round }}
+        </span>
         <span class="bb-pill">{{ v.header.surface }}</span>
         <span class="bb-pill">{{ v.header.dateText }}</span>
 
