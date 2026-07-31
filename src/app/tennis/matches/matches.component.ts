@@ -2180,8 +2180,7 @@ export class MatchesComponent implements OnInit, OnDestroy {
 
         if (!odds1 || !odds2 || p1 == null || p2 == null) return { side: null };
 
-        const imp1 = 1 / odds1;
-        const imp2 = 1 / odds2;
+        const [imp1, imp2] = this.getFairMarketProbabilities(odds1, odds2);
 
         const m1 = p1 / 100;
         const m2 = p2 / 100;
@@ -2256,8 +2255,9 @@ export class MatchesComponent implements OnInit, OnDestroy {
         const bet = this.getBetSide(match);
 
         if (!odds1 || !odds2 || p1 == null || p2 == null) return 'No odds/probability data.';
-        const imp1 = 100 * (1 / odds1);
-        const imp2 = 100 * (1 / odds2);
+        const [fair1, fair2] = this.getFairMarketProbabilities(odds1, odds2);
+        const imp1 = 100 * fair1;
+        const imp2 = 100 * fair2;
 
         const e1 = bet.edge1 != null ? (bet.edge1 * 100).toFixed(2) : 'n/a';
         const e2 = bet.edge2 != null ? (bet.edge2 * 100).toFixed(2) : 'n/a';
@@ -2265,8 +2265,16 @@ export class MatchesComponent implements OnInit, OnDestroy {
         const chosen = bet.side ? (bet.side === 'p1' ? 'Player 1' : 'Player 2') : 'None';
 
         return `Chosen: ${chosen}
-      P1: model ${p1.toFixed(2)}% | implied ${imp1.toFixed(2)}% | edge ${e1}%
-      P2: model ${p2.toFixed(2)}% | implied ${imp2.toFixed(2)}% | edge ${e2}%`;
+      P1: model ${p1.toFixed(2)}% | fair market ${imp1.toFixed(2)}% | edge ${e1}%
+      P2: model ${p2.toFixed(2)}% | fair market ${imp2.toFixed(2)}% | edge ${e2}%`;
+    }
+
+    private getFairMarketProbabilities(odds1: number, odds2: number): [number, number] {
+        const raw1 = 1 / odds1;
+        const raw2 = 1 / odds2;
+        const overround = raw1 + raw2;
+
+        return [raw1 / overround, raw2 / overround];
     }
 
     private getStrengthKey(match: any): number {
