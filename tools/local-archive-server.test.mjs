@@ -2,7 +2,9 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
   createVersionedLruPromiseCache,
+  getMoneylineMedianOfMedians,
   mapWithConcurrency,
+  median,
   parsePositiveInteger,
 } from './local-archive-server-helpers.mjs';
 
@@ -94,4 +96,60 @@ test('parsePositiveInteger accepts safe positive integers and otherwise falls ba
   assert.equal(parsePositiveInteger('0', 4), 4);
   assert.equal(parsePositiveInteger('2.5', 4), 4);
   assert.equal(parsePositiveInteger('not-a-number', 4), 4);
+});
+
+test('median rejects unusable odds and rounds the midpoint to two decimals', () => {
+  assert.equal(median([Number.NaN, 1, 2.123, 1.987]), 2.06);
+  assert.equal(median([null, 0, 1]), null);
+});
+
+test('moneyline benchmark is the median of paired bookmaker history medians', () => {
+  const details = {
+    o: [{
+      i: 1,
+      m: [{
+        x: [
+          {
+            p: 101,
+            o: [
+              { b: 10, q: 1.8, r: 1 },
+              { b: 10, q: 2.0, r: 2 },
+              { b: 20, q: 2.1, r: 1 },
+              { b: 30, q: 9.9, r: 1 },
+            ],
+          },
+          {
+            p: 202,
+            o: [
+              { b: 10, q: 2.2, r: 1 },
+              { b: 10, q: 2.4, r: 2 },
+              { b: 20, q: 1.7, r: 1 },
+            ],
+          },
+        ],
+      }],
+    }],
+  };
+
+  assert.deepEqual(getMoneylineMedianOfMedians(details, 101, 202), {
+    player1Median: 2,
+    player2Median: 2,
+    pairedBookmakers: 2,
+  });
+});
+
+test('moneyline benchmark requires both players from the same bookmaker', () => {
+  const details = {
+    o: [{
+      i: 1,
+      m: [{
+        x: [
+          { p: 101, o: [{ b: 10, q: 1.8 }] },
+          { p: 202, o: [{ b: 20, q: 2.2 }] },
+        ],
+      }],
+    }],
+  };
+
+  assert.equal(getMoneylineMedianOfMedians(details, 101, 202), null);
 });

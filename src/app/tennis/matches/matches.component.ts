@@ -2200,6 +2200,19 @@ export class MatchesComponent implements OnInit, OnDestroy {
         return { side: ok1 ? 'p1' : 'p2', edge1, edge2 };
     }
 
+    getMarketEdge(match: Match): { side: 'p1' | 'p2', label: string } | null {
+        const edge = this.getBetSide(match);
+        if (!edge.side) return null;
+
+        const value = edge.side === 'p1' ? edge.edge1 : edge.edge2;
+        if (value == null || !Number.isFinite(value)) return null;
+
+        return {
+            side: edge.side,
+            label: `${edge.side.toUpperCase()} +${(value * 100).toFixed(1)}%`
+        };
+    }
+
     private computePL(match: Match): number | null {
         const winner = this.getWinnerSide(match);
         if (!winner) return null; // nema validan rezultat

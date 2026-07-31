@@ -254,8 +254,16 @@
                             <td class="col-center">{{ getDisplayResult(match) }}</td>
                             <td class="col-center">{{ formatResultDetails(match.resultDetails) }}</td>
 
-                            <td class="col-center odds-combined-cell market-cell" title="Market benchmark"
-                                [innerHTML]="formatOddsHTML(match.oddsText)"></td>
+                            <td class="col-center odds-combined-cell market-cell"
+                                [title]="getPLTooltip(match)">
+                                <div class="market-cell__odds"
+                                    [innerHTML]="formatOddsHTML(match.oddsText)"></div>
+                                <span *ngIf="getMarketEdge(match) as marketEdge"
+                                    class="market-cell__edge"
+                                    [class.market-cell__edge--p2]="marketEdge.side === 'p2'">
+                                    {{ marketEdge.label }}
+                                </span>
+                            </td>
 
                             <td class="col-center details-cell">
                                 <ng-container *ngIf="!isDetailsLocked(match); else lockedTpl">

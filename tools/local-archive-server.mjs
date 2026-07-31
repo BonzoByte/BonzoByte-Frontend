@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { brotliDecompress } from 'node:zlib';
 import {
   createVersionedLruPromiseCache,
+  getMoneylineMedianOfMedians,
   mapWithConcurrency,
   parsePositiveInteger,
 } from './local-archive-server-helpers.mjs';
@@ -112,82 +113,8 @@ function brotliDecompressAsync(buffer) {
   });
 }
 
-function median(values) {
-  const sorted = values
-    .filter(value => Number.isFinite(value) && value > 1)
-    .sort((left, right) => left - right);
-
-  if (sorted.length === 0) {
-    return null;
-  }
-
-  const middle = Math.floor(sorted.length / 2);
-  const value = sorted.length % 2 === 0
-    ? (sorted[middle - 1] + sorted[middle]) / 2
-    : sorted[middle];
-
-  return Math.round(value * 100) / 100;
-}
-
-function getMoneylineMedians(details, player1Id, player2Id) {
-  const offersByPlayer = new Map([
-    [player1Id, new Map()],
-    [player2Id, new Map()],
-  ]);
-
-  for (const group of Array.isArray(details?.o) ? details.o : []) {
-    if (Number(group?.i) !== 1) {
-      continue;
-    }
-
-    for (const market of Array.isArray(group?.m) ? group.m : []) {
-      for (const selection of Array.isArray(market?.x) ? market.x : []) {
-        const playerId = Number(selection?.p);
-        const bookieOffers = offersByPlayer.get(playerId);
-
-        if (!bookieOffers) {
-          continue;
-        }
-
-        for (const offer of Array.isArray(selection?.o) ? selection.o : []) {
-          const bookieId = Number(offer?.b);
-          const odds = Number(offer?.q);
-          const seriesOrdinal = Number(offer?.r ?? 0);
-
-          if (!Number.isFinite(bookieId) || !Number.isFinite(odds) || odds <= 1) {
-            continue;
-          }
-
-          const existing = bookieOffers.get(bookieId);
-          if (!existing || seriesOrdinal >= existing.seriesOrdinal) {
-            bookieOffers.set(bookieId, { odds, seriesOrdinal });
-          }
-        }
-      }
-    }
-  }
-
-  const player1Median = median(
-    [...offersByPlayer.get(player1Id).values()].map(value => value.odds),
-  );
-  const player2Median = median(
-    [...offersByPlayer.get(player2Id).values()].map(value => value.odds),
-  );
-
-  return player1Median != null && player2Median != null
-    ? { player1Median, player2Median }
-    : null;
-}
-
 async function enrichDailyOdds(rows) {
   return mapWithConcurrency(rows, detailEnrichmentConcurrency, async row => {
-    const currentPlayer1Odds = Number(row?.l29);
-    const currentPlayer2Odds = Number(row?.l30);
-
-    if (currentPlayer1Odds > 1 && currentPlayer2Odds > 1) {
-      return row;
-    }
-
     const matchId = Number(row?.l01);
     const player1Id = Number(row?.l13);
     const player2Id = Number(row?.l20);
@@ -204,7 +131,11 @@ async function enrichDailyOdds(rows) {
       const compressed = await fs.readFile(path.join(detailsRoot, `${matchId}.br`));
       const detailsJson = await brotliDecompressAsync(compressed);
       const details = JSON.parse(detailsJson.toString('utf8'));
-      const medians = getMoneylineMedians(details, player1Id, player2Id);
+      const medians = getMoneylineMedianOfMedians(
+        details,
+        player1Id,
+        player2Id,
+      );
 
       if (!medians) {
         return row;

@@ -3,6 +3,87 @@ export function parsePositiveInteger(value, fallback) {
   return Number.isSafeInteger(parsed) && parsed > 0 ? parsed : fallback;
 }
 
+export function median(values) {
+  const sorted = values
+    .filter(value => Number.isFinite(value) && value > 1)
+    .sort((left, right) => left - right);
+
+  if (sorted.length === 0) {
+    return null;
+  }
+
+  const middle = Math.floor(sorted.length / 2);
+  const value = sorted.length % 2 === 0
+    ? (sorted[middle - 1] + sorted[middle]) / 2
+    : sorted[middle];
+
+  return Math.round(value * 100) / 100;
+}
+
+export function getMoneylineMedianOfMedians(details, player1Id, player2Id) {
+  const historiesByPlayer = new Map([
+    [player1Id, new Map()],
+    [player2Id, new Map()],
+  ]);
+
+  for (const group of Array.isArray(details?.o) ? details.o : []) {
+    if (Number(group?.i) !== 1) {
+      continue;
+    }
+
+    for (const market of Array.isArray(group?.m) ? group.m : []) {
+      for (const selection of Array.isArray(market?.x) ? market.x : []) {
+        const playerId = Number(selection?.p);
+        const historiesByBookmaker = historiesByPlayer.get(playerId);
+
+        if (!historiesByBookmaker) {
+          continue;
+        }
+
+        for (const offer of Array.isArray(selection?.o) ? selection.o : []) {
+          const bookmakerId = Number(offer?.b);
+          const odds = Number(offer?.q);
+
+          if (
+            !Number.isFinite(bookmakerId) ||
+            !Number.isFinite(odds) ||
+            odds <= 1
+          ) {
+            continue;
+          }
+
+          const history = historiesByBookmaker.get(bookmakerId) ?? [];
+          history.push(odds);
+          historiesByBookmaker.set(bookmakerId, history);
+        }
+      }
+    }
+  }
+
+  const player1Histories = historiesByPlayer.get(player1Id);
+  const player2Histories = historiesByPlayer.get(player2Id);
+  const pairedBookmakerIds = [...player1Histories.keys()]
+    .filter(bookmakerId => player2Histories.has(bookmakerId));
+
+  const player1BookmakerMedians = pairedBookmakerIds
+    .map(bookmakerId => median(player1Histories.get(bookmakerId)))
+    .filter(value => value != null);
+  const player2BookmakerMedians = pairedBookmakerIds
+    .map(bookmakerId => median(player2Histories.get(bookmakerId)))
+    .filter(value => value != null);
+
+  const player1Median = median(player1BookmakerMedians);
+  const player2Median = median(player2BookmakerMedians);
+
+  return player1Median != null && player2Median != null
+    ? {
+        player1Median,
+        player2Median,
+        pairedBookmakers: pairedBookmakerIds.length,
+      }
+    : null;
+}
+
 export async function mapWithConcurrency(items, concurrency, mapper) {
   if (!Array.isArray(items)) {
     throw new TypeError('items must be an array.');
