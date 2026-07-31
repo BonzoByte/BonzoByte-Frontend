@@ -13,6 +13,10 @@ import { environment } from '../../../environments/environment';
 import { AnalyticsDashboard } from '../models/analytics.model';
 import { PlayerTsHistoryRaw } from 'src/app/core/models/player-details.model';
 import {
+  PredictionSimulationManifest,
+  PredictionSimulationReport,
+} from '../models/prediction-simulation.model';
+import {
   DETAILS_LOCK_HOURS,
   evaluateClientDetailsAccess,
   normalizeDetailsHttpError,
@@ -72,6 +76,7 @@ export class StaticArchivesService {
   private detailsStaticBase = `${this.staticBase}/matches`;
   private tsStaticBase = `${this.staticBase}/players/ts`;
   private analyticsStaticBase = `${this.staticBase}/analytics`;
+  private simulationStaticBase = `${this.staticBase}/simulation`;
   private playerDetailsStaticBase = `${this.staticBase}/players/details`;
   private playerMatchesStaticBase = `${this.staticBase}/players/matches`;
   private tournamentsMatchesStaticBase = `${this.staticBase}/tournaments/matches`;
@@ -395,6 +400,52 @@ export class StaticArchivesService {
     return this.analyticsDashboard$;
   }
 
+  private predictionSimulation$?: Observable<PredictionSimulationReport>;
+
+  getPredictionSimulation(): Observable<PredictionSimulationReport> {
+    if (!this.predictionSimulation$) {
+      const archive$ = this.mode === 'api'
+        ? this.http.get(
+            `${this.apiUrl}/archives/simulation/report`,
+            { responseType: 'arraybuffer' as const }
+          )
+        : this.http
+            .get<PredictionSimulationManifest>(
+              `${this.simulationStaticBase}/prediction-simulation.v1.manifest.json?cb=${Date.now()}`
+            )
+            .pipe(
+              switchMap(manifest => {
+                const fileName = String(manifest?.report?.file ?? '').trim();
+                if (
+                  manifest?.schema !== 'bonzobyte.prediction-simulation.manifest' ||
+                  manifest?.schemaVersion !== 1 ||
+                  manifest?.report?.schema !== 'bonzobyte.prediction-simulation' ||
+                  manifest?.report?.schemaVersion !== 1 ||
+                  !/^prediction-simulation\.v1\.[0-9a-f]{16}\.json\.br$/i.test(fileName)
+                ) {
+                  return throwError(
+                    () => new Error('Prediction simulation manifest is invalid.')
+                  );
+                }
+
+                return this.http.get(
+                  `${this.simulationStaticBase}/${fileName}`,
+                  { responseType: 'arraybuffer' as const }
+                );
+              })
+            );
+
+      this.predictionSimulation$ = archive$.pipe(
+        map(buf => this.normalizePredictionSimulation(
+          this.decodeBrotliJson<unknown>(buf)
+        )),
+        shareReplay(1)
+      );
+    }
+
+    return this.predictionSimulation$;
+  }
+
   private playersIndexRows$?: Observable<PlayerIndex[]>;
   private tournamentsIndex$?: Observable<{
     items: TournamentIndex[];
@@ -610,6 +661,36 @@ export class StaticArchivesService {
           ? normalized.schemaVersion
           : 1,
     } as AnalyticsDashboard;
+  }
+
+  private normalizePredictionSimulation(
+    value: unknown
+  ): PredictionSimulationReport {
+    const normalized = this.camelizeArchiveKeys(value) as
+      Partial<PredictionSimulationReport> | null;
+
+    if (
+      !normalized ||
+      normalized.schema !== 'bonzobyte.prediction-simulation' ||
+      normalized.schemaVersion !== 1 ||
+      !normalized.labels ||
+      !normalized.provenance ||
+      !normalized.window ||
+      !Array.isArray(normalized.models)
+    ) {
+      throw new Error('Prediction simulation archive has an unsupported schema.');
+    }
+
+    const hasInvalidModel = normalized.models.some(model =>
+      !model?.model ||
+      !model?.coverage ||
+      !Array.isArray(model?.cohorts)
+    );
+    if (hasInvalidModel) {
+      throw new Error('Prediction simulation archive contains an invalid model.');
+    }
+
+    return normalized as PredictionSimulationReport;
   }
 
   private camelizeArchiveKeys(value: unknown): unknown {

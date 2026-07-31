@@ -39,6 +39,8 @@ const apiPrefix = '/api/archives';
 const compactDatePattern = /^\d{8}$/;
 const numericIdPattern = /^\d+$/;
 const archiveNamePattern = /^[A-Za-z0-9._-]+\.br$/;
+const simulationArchiveNamePattern =
+  /^prediction-simulation\.v1\.[0-9a-f]{16}\.json\.br$/i;
 
 let dailyIndexCache;
 const dailyJsonCache = createVersionedLruPromiseCache(dailyJsonCacheSize);
@@ -370,6 +372,30 @@ async function sendAnalyticsDashboard(request, response) {
   await sendFile(request, response, path.join(analyticsRoot, archiveName));
 }
 
+async function sendPredictionSimulation(request, response) {
+  const simulationRoot = path.join(archivesRoot, 'simulation');
+  const manifestPath = path.join(
+    simulationRoot,
+    'prediction-simulation.v1.manifest.json',
+  );
+  const manifest = JSON.parse(await fs.readFile(manifestPath, 'utf8'));
+  const archiveName = manifest?.report?.file;
+
+  if (
+    manifest?.schema !== 'bonzobyte.prediction-simulation.manifest' ||
+    manifest?.schemaVersion !== 1 ||
+    manifest?.report?.schema !== 'bonzobyte.prediction-simulation' ||
+    manifest?.report?.schemaVersion !== 1 ||
+    !simulationArchiveNamePattern.test(archiveName || '')
+  ) {
+    throw new Error(
+      'Local prediction simulation manifest has no safe versioned report.',
+    );
+  }
+
+  await sendFile(request, response, path.join(simulationRoot, archiveName));
+}
+
 function safeArchivePath(root, value, extension = '.br') {
   if (!numericIdPattern.test(value)) {
     return null;
@@ -520,6 +546,23 @@ async function routeRequest(request, response) {
 
   if (relativeRoute === '/analytics/dashboard') {
     await sendAnalyticsDashboard(request, response);
+    return;
+  }
+
+  if (relativeRoute === '/simulation/manifest') {
+    await sendManifest(
+      response,
+      path.join(
+        archivesRoot,
+        'simulation',
+        'prediction-simulation.v1.manifest.json',
+      ),
+    );
+    return;
+  }
+
+  if (relativeRoute === '/simulation/report') {
+    await sendPredictionSimulation(request, response);
     return;
   }
 

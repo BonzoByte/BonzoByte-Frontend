@@ -1,0 +1,262 @@
+<main class="sim-page" *ngIf="!isLoading && report as simulation">
+  <section class="sim-hero">
+    <div>
+      <div class="sim-kicker">BonzoByte Research Lab</div>
+      <h1>Prediction Simulation</h1>
+      <p>
+        A transparent historical comparison of model probabilities and recorded
+        bookmaker prices. Every selected cohort keeps both winning and losing
+        observations.
+      </p>
+    </div>
+
+    <div class="sim-hero__meta">
+      <span>Updated {{ simulation.generatedAtUtc | date:'dd.MM.yyyy HH:mm':'UTC' }} UTC</span>
+      <span>
+        Window {{ simulation.window.fromInclusive | date:'dd.MM.yyyy' }}
+        <ng-container *ngIf="simulation.window.toExclusive">
+          – {{ simulation.window.toExclusive | date:'dd.MM.yyyy' }}
+        </ng-container>
+      </span>
+    </div>
+  </section>
+
+  <section class="sim-disclosure" aria-label="Simulation limitations">
+    <div class="sim-disclosure__icon" aria-hidden="true">i</div>
+    <div>
+      <strong>Research only — no guaranteed profit.</strong>
+      <p>{{ simulation.labels.disclosure }}</p>
+      <div class="sim-tags">
+        <span>Undated odds</span>
+        <span>Closing-price proxy</span>
+        <span>Strict temporal unavailable</span>
+        <span>Database read-only</span>
+        <span *ngIf="simulation.labels.localOnly">Local-only artifact</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="sim-controls">
+    <label>
+      <span>Model</span>
+      <select [(ngModel)]="selectedModelIndex">
+        <option
+          *ngFor="let model of simulation.models; let index = index"
+          [ngValue]="index">
+          {{ modelLabel(model) }}
+        </option>
+      </select>
+    </label>
+
+    <div class="sim-policy" role="group" aria-label="Recorded price policy">
+      <button
+        type="button"
+        [class.is-active]="selectedExecutionPolicy === 'median-bookmaker'"
+        (click)="setExecutionPolicy('median-bookmaker')">
+        Median bookmaker
+      </button>
+      <button
+        type="button"
+        [class.is-active]="selectedExecutionPolicy === 'best-price'"
+        (click)="setExecutionPolicy('best-price')">
+        Best price
+        <small>optimistic</small>
+      </button>
+    </div>
+  </section>
+
+  <ng-container *ngIf="selectedModel as model">
+    <section class="sim-model-strip">
+      <div>
+        <span>Tour</span>
+        <strong>{{ model.model.tour }}</strong>
+      </div>
+      <div>
+        <span>Version</span>
+        <strong>{{ model.model.modelVersion }}</strong>
+      </div>
+      <div>
+        <span>Features</span>
+        <strong>{{ model.model.featureCount }}</strong>
+      </div>
+      <div>
+        <span>Training</span>
+        <strong>{{ model.model.trainingPolicy }}</strong>
+      </div>
+      <div>
+        <span>H2H</span>
+        <strong>{{ model.model.usesH2H ? 'Included' : 'Excluded' }}</strong>
+      </div>
+    </section>
+
+    <section class="sim-summary-grid">
+      <article>
+        <span>Eligible predictions</span>
+        <strong>{{ model.coverage.eligibleFinishedPredictions | number }}</strong>
+        <small>Canonical finished matches</small>
+      </article>
+      <article>
+        <span>Complete price pairs</span>
+        <strong>{{ model.coverage.matchesWithCompletePair | number }}</strong>
+        <small>Same-bookmaker player pair</small>
+      </article>
+      <article>
+        <span>Candidate matches</span>
+        <strong>{{ model.coverage.matchesWithCandidate | number }}</strong>
+        <small>Directional model probability</small>
+      </article>
+      <article *ngIf="referenceCohort as cohort">
+        <span>Reference flat ROI</span>
+        <strong [class.is-positive]="cohort.flat.roi > 0" [class.is-negative]="cohort.flat.roi < 0">
+          {{ cohort.flat.roi | percent:'1.2-2' }}
+        </strong>
+        <small>{{ cohortLabel(cohort) }} · {{ cohort.bets | number }} bets</small>
+      </article>
+      <article *ngIf="referenceCohort as cohort">
+        <span>Reference hit rate</span>
+        <strong>{{ cohort.hitRate | percent:'1.2-2' }}</strong>
+        <small>{{ cohort.wins | number }} W · {{ cohort.losses | number }} L</small>
+      </article>
+      <article *ngIf="referenceCohort as cohort">
+        <span>95% ROI interval</span>
+        <strong class="sim-interval">{{ confidenceInterval(cohort) }}</strong>
+        <small>Normal approximation</small>
+      </article>
+    </section>
+
+    <section class="sim-chart-grid">
+      <article class="sim-panel">
+        <div class="sim-panel__header">
+          <div>
+            <span>Execution comparison</span>
+            <h2>Flat ROI by edge threshold</h2>
+          </div>
+        </div>
+        <div class="sim-chart">
+          <canvas
+            baseChart
+            [data]="roiChartData"
+            [options]="roiChartOptions"
+            [type]="'bar'">
+          </canvas>
+        </div>
+        <p class="sim-caption">
+          Best-price assumes access to the strongest recorded offer and is an
+          intentionally optimistic upper bound.
+        </p>
+      </article>
+
+      <article class="sim-panel">
+        <div class="sim-panel__header">
+          <div>
+            <span>Compounding scenarios</span>
+            <h2>Ending bankroll by edge threshold</h2>
+          </div>
+        </div>
+        <div class="sim-chart">
+          <canvas
+            baseChart
+            [data]="bankrollChartData"
+            [options]="bankrollChartOptions"
+            [type]="'line'">
+          </canvas>
+        </div>
+        <p class="sim-caption">
+          Starting bankroll is 1,000. Fixed staking risks 1% per bet; fractional
+          Kelly uses one-quarter Kelly capped at 2%.
+        </p>
+      </article>
+    </section>
+
+    <section class="sim-panel sim-panel--table">
+      <div class="sim-panel__header">
+        <div>
+          <span>Full cohort audit</span>
+          <h2>{{ selectedExecutionPolicy === 'median-bookmaker' ? 'Median bookmaker' : 'Best price (optimistic)' }}</h2>
+        </div>
+        <div class="sim-table-note">No losing observation is removed.</div>
+      </div>
+
+      <div class="sim-table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Cohort</th>
+              <th>Bets</th>
+              <th>W / L</th>
+              <th>Coverage</th>
+              <th>Hit rate</th>
+              <th>Avg odds</th>
+              <th>Avg edge</th>
+              <th>Flat ROI</th>
+              <th>95% interval</th>
+              <th>1% return</th>
+              <th>¼ Kelly return</th>
+              <th>Kelly max DD</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let cohort of selectedCohorts">
+              <td><strong>{{ cohortLabel(cohort) }}</strong></td>
+              <td>{{ cohort.bets | number }}</td>
+              <td>{{ cohort.wins | number }} / {{ cohort.losses | number }}</td>
+              <td>{{ cohort.coverage | percent:'1.1-1' }}</td>
+              <td>{{ cohort.hitRate | percent:'1.1-1' }}</td>
+              <td>{{ cohort.averageOdds | number:'1.2-3' }}</td>
+              <td>{{ cohort.averageEdge | percent:'1.1-1' }}</td>
+              <td [class.is-positive]="cohort.flat.roi > 0" [class.is-negative]="cohort.flat.roi < 0">
+                {{ cohort.flat.roi | percent:'1.2-2' }}
+              </td>
+              <td>{{ confidenceInterval(cohort) }}</td>
+              <td [class.is-positive]="cohort.fixedPercentage.return > 0" [class.is-negative]="cohort.fixedPercentage.return < 0">
+                {{ cohort.fixedPercentage.return | percent:'1.2-2' }}
+              </td>
+              <td [class.is-positive]="cohort.fractionalKelly.return > 0" [class.is-negative]="cohort.fractionalKelly.return < 0">
+                {{ cohort.fractionalKelly.return | percent:'1.2-2' }}
+              </td>
+              <td>{{ cohort.fractionalKelly.maximumDrawdown | percent:'1.1-1' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="sim-method">
+      <h2>What this page can — and cannot — tell us</h2>
+      <div class="sim-method__grid">
+        <article>
+          <span>Outcome contract</span>
+          <p>{{ simulation.provenance.outcomeContract }}</p>
+        </article>
+        <article>
+          <span>Price pairing</span>
+          <p>{{ simulation.provenance.pricePairingContract }}</p>
+        </article>
+        <article>
+          <span>Interpretation</span>
+          <p>
+            These results compare an audited historical model with an undated
+            archive snapshot. They do not prove that the same price was
+            executable before match start.
+          </p>
+        </article>
+      </div>
+    </section>
+  </ng-container>
+
+  <div class="sim-empty" *ngIf="simulation.models.length === 0">
+    The artifact contains no scored models for this date window.
+  </div>
+</main>
+
+<div class="bb-loading-overlay" [class.is-active]="isLoading" aria-live="polite">
+  <div class="bb-loading-card" role="status" aria-label="Loading simulation">
+    <div class="bb-spinner"></div>
+    <div class="bb-loading-text">Loading simulation…</div>
+  </div>
+</div>
+
+<div class="sim-state sim-state--error" *ngIf="!isLoading && error">
+  <strong>Simulation is not ready</strong>
+  <p>{{ error }}</p>
+</div>
