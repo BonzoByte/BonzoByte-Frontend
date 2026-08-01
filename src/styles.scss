@@ -28,12 +28,29 @@
     --bb-header-avatar-border: rgba(255, 255, 255, 0.40);
     --bb-header-select-bg: #1d1d1d;
     --bb-theme-accent: #8ad4ff;
-    --bb-page-text: #eee;
-    --bb-body-bg:
-        radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.04), transparent 40%),
-        radial-gradient(circle at 80% 70%, rgba(255, 255, 255, 0.03), transparent 45%),
-        radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.02), transparent 60%),
-        linear-gradient(135deg, #0b0b0b, #111, #0e0e0e);
+    --bb-page-text: #e8edf2;
+    --bb-text: #e8edf2;
+    --bb-text-strong: #ffffff;
+    --bb-text-muted: #9ba8b5;
+    --bb-body-bg: #101419;
+    --bb-page-bg: #101419;
+    --bb-surface-1: #151b21;
+    --bb-surface-2: #1b232b;
+    --bb-surface-3: #252f39;
+    --bb-surface-soft: rgba(255, 255, 255, 0.035);
+    --bb-border: rgba(255, 255, 255, 0.11);
+    --bb-border-strong: rgba(255, 255, 255, 0.19);
+    --bb-control-bg: #202832;
+    --bb-control-text: #f4f7fa;
+    --bb-control-border: rgba(255, 255, 255, 0.18);
+    --bb-table-bg: #13191f;
+    --bb-table-head-bg: #303a45;
+    --bb-table-head-text: #ffffff;
+    --bb-table-row-odd: #171e25;
+    --bb-table-row-even: #141a20;
+    --bb-table-row-hover: inherit;
+    --bb-icon-filter: brightness(0) invert(1);
+    --bb-card-shadow: 0 10px 28px rgba(0, 0, 0, 0.18);
     --bb-datebar-bg: rgba(10, 10, 10, 0.72);
     --bb-datebar-text: #fff;
     --bb-datebar-border: rgba(255, 255, 255, 0.10);
@@ -61,8 +78,29 @@
 
 :root[data-bb-theme='light'] {
     color-scheme: light;
-    --bb-page-text: #15202b;
-    --bb-body-bg: linear-gradient(135deg, #f8fafc, #eef3f7, #ffffff);
+    --bb-page-text: #17212b;
+    --bb-text: #17212b;
+    --bb-text-strong: #0b141d;
+    --bb-text-muted: #586776;
+    --bb-body-bg: #f2f5f7;
+    --bb-page-bg: #f2f5f7;
+    --bb-surface-1: #ffffff;
+    --bb-surface-2: #f8fafb;
+    --bb-surface-3: #e8eef2;
+    --bb-surface-soft: rgba(23, 33, 43, 0.035);
+    --bb-border: rgba(23, 33, 43, 0.14);
+    --bb-border-strong: rgba(23, 33, 43, 0.24);
+    --bb-control-bg: #ffffff;
+    --bb-control-text: #17212b;
+    --bb-control-border: rgba(23, 33, 43, 0.22);
+    --bb-table-bg: #ffffff;
+    --bb-table-head-bg: #dfe7ec;
+    --bb-table-head-text: #111b24;
+    --bb-table-row-odd: #ffffff;
+    --bb-table-row-even: #f4f7f9;
+    --bb-table-row-hover: inherit;
+    --bb-icon-filter: none;
+    --bb-card-shadow: 0 8px 22px rgba(23, 33, 43, 0.08);
     --bb-header-bg: #f8fafc;
     --bb-header-text: #15202b;
     --bb-header-border: rgba(21, 32, 43, 0.16);
@@ -81,9 +119,16 @@
 
 :root[data-bb-theme='wimbledon'] {
     color-scheme: dark;
-    --bb-body-bg:
-        radial-gradient(circle at 12% 20%, rgba(198, 178, 100, 0.12), transparent 34%),
-        linear-gradient(145deg, #10291d, #173c29 52%, #0d2118);
+    --bb-body-bg: #10291d;
+    --bb-page-bg: #10291d;
+    --bb-surface-1: #173725;
+    --bb-surface-2: #1d432e;
+    --bb-surface-3: #28523a;
+    --bb-table-bg: #143120;
+    --bb-table-head-bg: #294d38;
+    --bb-table-row-odd: #173725;
+    --bb-table-row-even: #132f20;
+    --bb-control-bg: #214d36;
     --bb-header-bg: #173c29;
     --bb-footer-bg: #10291d;
     --bb-datebar-bg: rgba(55, 22, 79, 0.88);
@@ -93,9 +138,16 @@
 
 :root[data-bb-theme='roland-garros'] {
     color-scheme: dark;
-    --bb-body-bg:
-        radial-gradient(circle at 18% 24%, rgba(244, 182, 116, 0.13), transparent 36%),
-        linear-gradient(145deg, #3b1f18, #743b25 54%, #271713);
+    --bb-body-bg: #3b211a;
+    --bb-page-bg: #3b211a;
+    --bb-surface-1: #4b291f;
+    --bb-surface-2: #5c3225;
+    --bb-surface-3: #70402f;
+    --bb-table-bg: #43251d;
+    --bb-table-head-bg: #75442f;
+    --bb-table-row-odd: #4a291f;
+    --bb-table-row-even: #3f241c;
+    --bb-control-bg: #66331f;
     --bb-header-bg: #512719;
     --bb-footer-bg: #321b16;
     --bb-datebar-bg: rgba(137, 66, 34, 0.88);
@@ -105,9 +157,16 @@
 
 :root[data-bb-theme='us-open'] {
     color-scheme: dark;
-    --bb-body-bg:
-        radial-gradient(circle at 78% 20%, rgba(72, 179, 255, 0.14), transparent 38%),
-        linear-gradient(145deg, #071d3a, #0d315e 54%, #07172e);
+    --bb-body-bg: #071d3a;
+    --bb-page-bg: #071d3a;
+    --bb-surface-1: #0b294f;
+    --bb-surface-2: #10365f;
+    --bb-surface-3: #174574;
+    --bb-table-bg: #092445;
+    --bb-table-head-bg: #174a78;
+    --bb-table-row-odd: #0c2c53;
+    --bb-table-row-even: #092547;
+    --bb-control-bg: #103969;
     --bb-header-bg: #08254a;
     --bb-footer-bg: #061a35;
     --bb-datebar-bg: rgba(14, 57, 108, 0.9);
@@ -164,7 +223,7 @@ main {
     left: 0;
     right: 0;
     min-height: var(--header-h);
-    background: #fff;
+    background: var(--bb-header-bg);
     z-index: 12000;
     box-shadow: 0 1px 0 var(--sep-strong);
 }
@@ -175,7 +234,7 @@ main {
     left: 0;
     right: 0;
     min-height: var(--footer-h);
-    background: #fff;
+    background: var(--bb-footer-bg);
     z-index: 12000;
     border-top: 1px solid var(--sep-strong);
 }
@@ -236,7 +295,6 @@ main {
     box-sizing: border-box;
 
     background: var(--bb-datebar-bg);
-    backdrop-filter: blur(6px);
     border-bottom: 1px solid var(--bb-datebar-border);
     color: var(--bb-datebar-text);
 }
@@ -286,7 +344,7 @@ main {
     height: 1em;
     vertical-align: middle;
     display: inline-block;
-    filter: brightness(0) invert(1);
+    filter: var(--bb-icon-filter);
     opacity: 0.9;
     cursor: pointer;
 }
@@ -308,7 +366,7 @@ main {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    color: #fff;
+    color: var(--bb-datebar-text);
     cursor: pointer;
 }
 
@@ -326,9 +384,9 @@ main {
     padding: 4px 10px;
     border-radius: 10px;
 
-    border: 1px solid var(--sep-strong);
-    background: #222;
-    color: #fff;
+    border: 1px solid var(--bb-control-border);
+    background: var(--bb-control-bg);
+    color: var(--bb-control-text);
 
     font-variant-numeric: tabular-nums lining-nums;
     font-feature-settings: "tnum" 1, "lnum" 1;
@@ -506,13 +564,13 @@ main {
     width: auto;
     max-width: 100%;
     border-collapse: collapse;
-    color: #c0c0c0;
-    background: rgba(0, 0, 0, 0.25);
+    color: var(--bb-text);
+    background: var(--bb-table-bg);
 }
 
 .match-table th,
 .match-table td {
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    border: 1px solid var(--bb-border);
     padding: 4px;
     white-space: nowrap;
     overflow: hidden;
@@ -524,29 +582,25 @@ main {
     top: calc(var(--header-h) + var(--datebar-h));
     z-index: 5;
 
-    background: #444;
-    color: #fff;
+    background: var(--bb-table-head-bg);
+    color: var(--bb-table-head-text);
     font-weight: 600;
-    border-bottom: 2px solid #333;
+    border-bottom: 2px solid var(--bb-border-strong);
 
     font-variant-numeric: tabular-nums lining-nums;
     font-feature-settings: "tnum" 1, "lnum" 1;
 }
 
-.match-table thead th:hover {
-    background: #1f1e1e;
-}
-
 .match-table tbody tr:nth-child(odd) {
-    background: rgba(255, 255, 255, 0.03);
+    background: var(--bb-table-row-odd);
 }
 
 .match-table tbody tr:nth-child(even) {
-    background: rgba(255, 255, 255, 0.015);
+    background: var(--bb-table-row-even);
 }
 
 .match-table tbody tr:hover {
-    background: rgba(255, 255, 255, 0.06);
+    background: var(--bb-table-row-hover);
 }
 
 .match-table td .fi {
@@ -2028,3 +2082,211 @@ body.modal-open {
   .bb-modal.bb-modal--player-details .bb-body {
     overflow-x: hidden;
   }
+
+/* ================================================================================================
+   Global theme bridge
+   Visual surfaces live here; component SCSS should keep only route-specific geometry and sizing.
+================================================================================================ */
+
+:where(
+    .matches-page,
+    .players-page,
+    .analytics-page,
+    .mi-page,
+    .sim-page,
+    .home-page
+) {
+    background: var(--bb-page-bg) !important;
+    color: var(--bb-text) !important;
+}
+
+:where(
+    .analytics-card,
+    .analytics-chart-card,
+    .mi-hero__content,
+    .mi-hero__highlights,
+    .mi-panel,
+    .mi-finding-card,
+    .mi-policy-card,
+    .mi-segment-card,
+    .sim-hero,
+    .sim-controls,
+    .sim-model-strip,
+    .sim-panel,
+    .sim-method,
+    .home-hero__content,
+    .home-hero__stats,
+    .home-stat-card,
+    .home-card,
+    .home-panel
+) {
+    background: var(--bb-surface-1) !important;
+    border-color: var(--bb-border) !important;
+    box-shadow: var(--bb-card-shadow) !important;
+    backdrop-filter: none !important;
+}
+
+:where(
+    .prediction-summary,
+    .analytics-inline-stat,
+    .mi-stat-card,
+    .mi-meta,
+    .sim-hero__meta,
+    .sim-policy,
+    .home-chip,
+    .home-tech
+) {
+    background: var(--bb-surface-2) !important;
+    border-color: var(--bb-border) !important;
+}
+
+:where(
+    .home-title,
+    .home-section__header h2,
+    .home-stat-card__title,
+    .home-card h3,
+    .mi-title,
+    .mi-section__header h2,
+    .mi-stat-card__title,
+    .mi-finding-card__title,
+    .mi-policy-card__ratio,
+    .sim-hero h1,
+    .sim-panel__header h2,
+    .analytics-header h1,
+    .analytics-section h2
+) {
+    color: var(--bb-text-strong) !important;
+}
+
+:where(
+    .home-subtitle,
+    .home-stat-card p,
+    .home-card p,
+    .mi-subtitle,
+    .mi-stat-card p,
+    .mi-meta,
+    .sim-hero p,
+    .sim-hero__meta,
+    .analytics-subtitle,
+    .analytics-meta,
+    .analytics-card-label
+) {
+    color: var(--bb-text-muted) !important;
+}
+
+:where(
+    .details-icon-btn,
+    .sim-controls select,
+    .sim-policy button
+) {
+    color: var(--bb-control-text) !important;
+    background: var(--bb-control-bg) !important;
+    border-color: var(--bb-control-border) !important;
+}
+
+:where(.details-icon-btn, .mi-stat-card):hover {
+    transform: none !important;
+    border-color: var(--bb-theme-accent) !important;
+}
+
+/* Long data grids intentionally have no per-row paint/transform effect while scrolling. */
+.match-table tbody tr,
+.match-table tbody tr:hover,
+.match-table tbody tr:focus-within {
+    transform: none !important;
+    box-shadow: none !important;
+    transition: none !important;
+}
+
+.match-table tbody tr:nth-child(odd):hover,
+.match-table tbody tr:nth-child(odd):focus-within {
+    background: var(--bb-table-row-odd) !important;
+}
+
+.match-table tbody tr:nth-child(even):hover,
+.match-table tbody tr:nth-child(even):focus-within {
+    background: var(--bb-table-row-even) !important;
+}
+
+/* External SVG images do not inherit currentColor, so theme them with a root token. */
+.date-nav-sticky .arrow-icon,
+.date-nav-sticky .icon,
+.date-nav-sticky .icon-filter {
+    filter: var(--bb-icon-filter) !important;
+}
+
+/* Match intelligence keeps semantic accents, while all readable copy follows the active theme. */
+:where(
+    .prediction-summary__intro strong,
+    .prediction-summary__metric strong,
+    .prediction-summary__metric span,
+    .prediction-cell__topline,
+    .matches-page .predicted-player-cell
+) {
+    color: var(--bb-text-strong) !important;
+}
+
+:where(
+    .prediction-summary__intro > span:last-child,
+    .prediction-summary__metric small,
+    .prediction-summary__note,
+    .matches-page .market-cell,
+    .prediction-cell__meta,
+    .prediction-cell__unavailable
+) {
+    color: var(--bb-text-muted) !important;
+}
+
+.prediction-summary__metric,
+.prediction-cell__bar {
+    background: var(--bb-surface-3) !important;
+    border-color: var(--bb-border) !important;
+}
+
+.matches-page .predicted-player-cell {
+    background: color-mix(in srgb, var(--bb-theme-accent) 10%, transparent) !important;
+    box-shadow: inset 3px 0 0 color-mix(in srgb, var(--bb-theme-accent) 62%, transparent) !important;
+}
+
+:where(
+    .mi-finding-card h3,
+    .mi-policy-card h3,
+    .mi-segment-card h3,
+    .mi-policy-badge
+) {
+    color: var(--bb-text-strong) !important;
+}
+
+:where(
+    .mi-kicker,
+    .mi-section__eyebrow,
+    .mi-stat-card__eyebrow,
+    .mi-finding-card__eyebrow,
+    .mi-policy-card__scope,
+    .mi-meta__label,
+    .mi-lead,
+    .mi-finding-card p,
+    .mi-policy-ratio,
+    .mi-policy-summary,
+    .mi-segment-card__summary,
+    .mi-bullet-list,
+    .mi-bullet-list--notes li
+) {
+    color: var(--bb-text-muted) !important;
+}
+
+:where(.mi-policy-badge, .mi-policy-bar) {
+    background: var(--bb-surface-3) !important;
+    border-color: var(--bb-border) !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+    }
+}

@@ -25,7 +25,10 @@
                     aria-label="Visual theme"
                     [value]="selectedTheme"
                     (change)="changeTheme($any($event.target).value)">
-                    <option *ngFor="let theme of themes" [value]="theme.id">
+                    <option
+                        *ngFor="let theme of themes"
+                        [value]="theme.id"
+                        [selected]="theme.id === selectedTheme">
                         {{ theme.label }}
                     </option>
                 </select>

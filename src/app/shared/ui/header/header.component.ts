@@ -34,6 +34,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
     isLoggedIn = false;
     authSub!: Subscription;
+    themeSub!: Subscription;
     showRegisterModal = false;
     showLoginModal = false;
     showBillingModal = false;
@@ -84,6 +85,10 @@ export class HeaderComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit(): void {
+        this.themeSub = this.themeService.selectedTheme$.subscribe(theme => {
+            this.selectedTheme = theme;
+        });
+
         window.addEventListener('openBilling', () => console.log('[WINDOW] openBilling fired'));
         this.router.events
             .pipe(filter((e): e is NavigationEnd => e instanceof NavigationEnd))
@@ -112,6 +117,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
     ngOnDestroy(): void {
         if (this.authSub) this.authSub.unsubscribe();
+        if (this.themeSub) this.themeSub.unsubscribe();
         window.removeEventListener('openRegister', this.openRegisterFromGlobal);
         window.removeEventListener('switchToRegister', this.switchToRegisterHandler);
         window.removeEventListener('openLogin', this.openLoginFromGlobal);

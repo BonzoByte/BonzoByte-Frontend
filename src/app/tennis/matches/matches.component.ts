@@ -558,6 +558,9 @@ export class MatchesComponent implements OnInit, OnDestroy {
                 const rows = (data || []).map((m, i) => ({ ...(m as any), __idx: i }));
 
                 // preporuka: najnoviji mečevi prvi
+                this.sortField = 'date';
+                this.sortDirection = 'desc';
+
                 rows.sort((a: any, b: any) => {
                     const ta = Date.parse(a?.dateTime ?? '') || 0;
                     const tb = Date.parse(b?.dateTime ?? '') || 0;
@@ -749,7 +752,11 @@ export class MatchesComponent implements OnInit, OnDestroy {
         if (s === 'r16' || s === 'round of 16') return 0;
         if (s === 'qf' || s === 'quarter finals') return 1;
         if (s === 'sf' || s === 'semi finals') return 2;
+        if (s === 'third place' || s === 'third-place' || s === '3rd place') return 3;
         if (s === 'f' || s === 'final' || s === 'finals') return 3;
+
+        const leagueRound = s.match(/^league\s+round\s+(\d+)$/);
+        if (leagueRound) return 200 + Number(leagueRound[1]);
 
         // ostale "Rxx" kratice (ako ikad dođu)
         // npr. R32, R64... => stavi ih poslije "main" faza
@@ -787,6 +794,13 @@ export class MatchesComponent implements OnInit, OnDestroy {
         const h = dt.getHours();
         const m = dt.getMinutes();
         return (h === 0 && m === 0);
+    }
+
+    private getDateSortKey(d: string | Date | null | undefined): number | null {
+        if (d == null || d === '') return null;
+
+        const value = d instanceof Date ? d.getTime() : new Date(d).getTime();
+        return Number.isFinite(value) ? value : null;
     }
 
     sortMatches(): void {
@@ -856,25 +870,20 @@ export class MatchesComponent implements OnInit, OnDestroy {
                 return ia - ib;
             }
 
-            // ---- SORT: DATE (kad klikneš Date header)
-            if (!legacy) {
-                const da = new Date(a.dateTime).getTime();
-                const db = new Date(b.dateTime).getTime();
+            // ---- SORT: DATE
+            // Historical dates and records without a known time are still valid calendar dates.
+            // Keep them in chronological order instead of grouping them by round.
+            const da = this.getDateSortKey(a.dateTime);
+            const db = this.getDateSortKey(b.dateTime);
+
+            if (da !== null && db !== null) {
                 if (da < db) return -1 * dir;
                 if (da > db) return 1 * dir;
-
-                // tie-breaker: turnir
-                if (ta < tb) return -1 * dir;
-                if (ta > tb) return 1 * dir;
-
-                return (ia - ib) * dir;
+            } else if (da !== null) {
+                return -1; // invalid/missing dates always stay at the end
+            } else if (db !== null) {
+                return 1;
             }
-
-            // legacy date sort: runda primarno, pa turnir, pa __idx
-            const ra = this.getRoundSortKey((a as any).roundName);
-            const rb = this.getRoundSortKey((b as any).roundName);
-            if (ra < rb) return -1;   // fiksno
-            if (ra > rb) return 1;
 
             if (ta < tb) return -1 * dir;
             if (ta > tb) return 1 * dir;
@@ -1810,6 +1819,10 @@ export class MatchesComponent implements OnInit, OnDestroy {
         if (key === 'final') return 'F';
         if (key === 'semi finals' || key === 'semifinals' || key === 'semi-final') return 'SF';
         if (key === 'quarter finals' || key === 'quarterfinals' || key === 'quarter-final') return 'QF';
+        if (key === 'third place' || key === 'third-place' || key === '3rd place') return '3P';
+
+        const leagueRound = key.match(/^league\s+round\s+(\d+)$/);
+        if (leagueRound) return `L${leagueRound[1]}`;
 
         // round of X
         const m = key.match(/^round of\s+(\d+)$/);
@@ -1830,7 +1843,11 @@ export class MatchesComponent implements OnInit, OnDestroy {
         if (s === 'qualifications') return 'Q';
         if (s === 'quarter finals') return 'QF';
         if (s === 'semi finals') return 'SF';
+        if (s === 'third place' || s === 'third-place' || s === '3rd place') return '3P';
         if (s === 'finals' || s === 'final') return 'F';
+
+        const leagueRound = s.match(/^league\s+round\s+(\d+)$/);
+        if (leagueRound) return `L${leagueRound[1]}`;
 
         // "1st round"..."5th round" => R1..R5
         const m1 = s.match(/^(\d+)(st|nd|rd|th)\s+round$/);
@@ -2386,8 +2403,15 @@ export class MatchesComponent implements OnInit, OnDestroy {
         if (!s || s === 'unknown') return 0;
 
         if (s === 'finals' || s === 'final') return 100;
+        if (s === 'third place' || s === 'third-place' || s === '3rd place') return 95;
         if (s === 'semi finals' || s === 'semifinals' || s === 'semi-final') return 90;
         if (s === 'quarter finals' || s === 'quarterfinals' || s === 'quarter-final') return 80;
+
+        const leagueRound = s.match(/^league\s+round\s+(\d+)$/);
+        if (leagueRound) {
+            const n = Number(leagueRound[1]);
+            if (Number.isFinite(n)) return 10 + n;
+        }
 
         const roundOf = s.match(/^round\s+of\s+(\d+)$/);
         if (roundOf) {

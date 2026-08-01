@@ -119,7 +119,7 @@
     overflow-x: auto;
     padding-top: 0;
     padding-right: 16px;
-    padding-bottom: 12px;
+    padding-bottom: calc(var(--footer-h) + 12px);
     padding-left: 16px;
 }
 

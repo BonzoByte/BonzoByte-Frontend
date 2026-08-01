@@ -715,8 +715,8 @@ export class StaticArchivesService {
   private mapLiteRowToMatch(r: any): Match {
     const isFinished =
       r?.l03 === true || r?.l03 === 1 || r?.l03 === '1' || r?.l03 === 'true';
-    const p1 = this.asNum(r?.l31);
-    const p2 = p1 != null ? Math.max(0, 100 - p1) : null;
+    const p1 = this.asProbabilityPercentage(r?.l31);
+    const p2 = p1 != null ? 100 - p1 : null;
 
     const probabilityText =
       (p1 != null && p2 != null) ? `${p1.toFixed(2)} - ${p2.toFixed(2)}` : null;
@@ -773,6 +773,15 @@ export class StaticArchivesService {
   private asNum(v: any): number | null {
     const n = Number(v);
     return Number.isFinite(n) ? n : null;
+  }
+
+  private asProbabilityPercentage(v: any): number | null {
+    const probability = this.asNum(v);
+    if (probability == null || probability < 0 || probability > 100) return null;
+
+    // Full player/tournament rebuilds historically wrote 0..1, while daily
+    // archive updates write 0..100. Accept both contracts during migration.
+    return probability <= 1 ? probability * 100 : probability;
   }
 
   private decodeLevel(v: any): string {
