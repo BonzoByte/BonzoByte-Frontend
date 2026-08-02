@@ -79,7 +79,7 @@ export function safeText(v: any): string {
   return s.length ? s : '–';
 }
 
-export type NnGroupId = 'c' | 'w' | 'r' | 'z' | 'd' | 'h';
+export type NnGroupId = 'c' | 'w' | 'r' | 'z' | 'd' | 'h' | 'g' | 's' | 'x';
 
 export interface NnFeatureDefinition {
   key: string;
@@ -189,6 +189,63 @@ export const NN_H2H_FEATURES: NnFeatureDefinition[] = [
   { key: 'h09', featureName: 'T_H2HRecency365_Diff', label: 'H2H Recency 365 Diff (Transformed)' },
 ];
 
+export const NN_TS5L_GLOBAL_FEATURES: NnFeatureDefinition[] = [
+  { key: 'g01', featureName: 'TS5L_G_M_WP', label: 'Global M Win Probability' },
+  { key: 'g02', featureName: 'TS5L_G_M_LeftMean', label: 'Global M Left Mean' },
+  { key: 'g03', featureName: 'TS5L_G_M_RightMean', label: 'Global M Right Mean' },
+  { key: 'g04', featureName: 'TS5L_G_M_LeftSD', label: 'Global M Left SD' },
+  { key: 'g05', featureName: 'TS5L_G_M_RightSD', label: 'Global M Right SD' },
+  { key: 'g06', featureName: 'TS5L_G_SM_WP', label: 'Global SM Win Probability' },
+  { key: 'g07', featureName: 'TS5L_G_SM_LeftMean', label: 'Global SM Left Mean' },
+  { key: 'g08', featureName: 'TS5L_G_SM_RightMean', label: 'Global SM Right Mean' },
+  { key: 'g09', featureName: 'TS5L_G_SM_LeftSD', label: 'Global SM Left SD' },
+  { key: 'g10', featureName: 'TS5L_G_SM_RightSD', label: 'Global SM Right SD' },
+  { key: 'g11', featureName: 'TS5L_G_GSM_WP', label: 'Global GSM Win Probability' },
+  { key: 'g12', featureName: 'TS5L_G_GSM_LeftMean', label: 'Global GSM Left Mean' },
+  { key: 'g13', featureName: 'TS5L_G_GSM_RightMean', label: 'Global GSM Right Mean' },
+  { key: 'g14', featureName: 'TS5L_G_GSM_LeftSD', label: 'Global GSM Left SD' },
+  { key: 'g15', featureName: 'TS5L_G_GSM_RightSD', label: 'Global GSM Right SD' },
+];
+
+export const NN_TS5L_SURFACE_FEATURES: NnFeatureDefinition[] = [
+  { key: 's01', featureName: 'TS5L_S_M_WP', label: 'Surface M Win Probability' },
+  { key: 's02', featureName: 'TS5L_S_M_LeftMean', label: 'Surface M Left Mean' },
+  { key: 's03', featureName: 'TS5L_S_M_RightMean', label: 'Surface M Right Mean' },
+  { key: 's04', featureName: 'TS5L_S_M_LeftSD', label: 'Surface M Left SD' },
+  { key: 's05', featureName: 'TS5L_S_M_RightSD', label: 'Surface M Right SD' },
+  { key: 's06', featureName: 'TS5L_S_SM_WP', label: 'Surface SM Win Probability' },
+  { key: 's07', featureName: 'TS5L_S_SM_LeftMean', label: 'Surface SM Left Mean' },
+  { key: 's08', featureName: 'TS5L_S_SM_RightMean', label: 'Surface SM Right Mean' },
+  { key: 's09', featureName: 'TS5L_S_SM_LeftSD', label: 'Surface SM Left SD' },
+  { key: 's10', featureName: 'TS5L_S_SM_RightSD', label: 'Surface SM Right SD' },
+  { key: 's11', featureName: 'TS5L_S_GSM_WP', label: 'Surface GSM Win Probability' },
+  { key: 's12', featureName: 'TS5L_S_GSM_LeftMean', label: 'Surface GSM Left Mean' },
+  { key: 's13', featureName: 'TS5L_S_GSM_RightMean', label: 'Surface GSM Right Mean' },
+  { key: 's14', featureName: 'TS5L_S_GSM_LeftSD', label: 'Surface GSM Left SD' },
+  { key: 's15', featureName: 'TS5L_S_GSM_RightSD', label: 'Surface GSM Right SD' },
+  { key: 's16', featureName: 'TS5L_S_Available', label: 'Surface History Available' },
+];
+
+export const NN_TS5L_H2H_FEATURES: NnFeatureDefinition[] = [
+  { key: 'x01', featureName: 'TS5L_H_M_WP', label: 'TS5L H2H M Win Probability' },
+  { key: 'x02', featureName: 'TS5L_H_M_LeftMean', label: 'TS5L H2H M Left Mean' },
+  { key: 'x03', featureName: 'TS5L_H_M_RightMean', label: 'TS5L H2H M Right Mean' },
+  { key: 'x04', featureName: 'TS5L_H_M_LeftSD', label: 'TS5L H2H M Left SD' },
+  { key: 'x05', featureName: 'TS5L_H_M_RightSD', label: 'TS5L H2H M Right SD' },
+  { key: 'x06', featureName: 'TS5L_H_SM_WP', label: 'TS5L H2H SM Win Probability' },
+  { key: 'x07', featureName: 'TS5L_H_SM_LeftMean', label: 'TS5L H2H SM Left Mean' },
+  { key: 'x08', featureName: 'TS5L_H_SM_RightMean', label: 'TS5L H2H SM Right Mean' },
+  { key: 'x09', featureName: 'TS5L_H_SM_LeftSD', label: 'TS5L H2H SM Left SD' },
+  { key: 'x10', featureName: 'TS5L_H_SM_RightSD', label: 'TS5L H2H SM Right SD' },
+  { key: 'x11', featureName: 'TS5L_H_GSM_WP', label: 'TS5L H2H GSM Win Probability' },
+  { key: 'x12', featureName: 'TS5L_H_GSM_LeftMean', label: 'TS5L H2H GSM Left Mean' },
+  { key: 'x13', featureName: 'TS5L_H_GSM_RightMean', label: 'TS5L H2H GSM Right Mean' },
+  { key: 'x14', featureName: 'TS5L_H_GSM_LeftSD', label: 'TS5L H2H GSM Left SD' },
+  { key: 'x15', featureName: 'TS5L_H_GSM_RightSD', label: 'TS5L H2H GSM Right SD' },
+  { key: 'x16', featureName: 'TS5L_H_PriorMatches', label: 'TS5L H2H Prior Matches' },
+  { key: 'x17', featureName: 'TS5L_H_HasPrior', label: 'TS5L H2H History Available' },
+];
+
 export const NN_FEATURE_GROUPS: NnFeatureGroupDefinition[] = [
   { id: 'c', title: 'Context', definitions: NN_CONTEXT_FEATURES },
   { id: 'w', title: 'WP Core', definitions: NN_WP_CORE_FEATURES },
@@ -196,6 +253,9 @@ export const NN_FEATURE_GROUPS: NnFeatureGroupDefinition[] = [
   { id: 'z', title: 'Normalized TrueSkill', definitions: NN_NORMALIZED_TS_FEATURES },
   { id: 'd', title: 'Derived TrueSkill', definitions: NN_DERIVED_TS_FEATURES },
   { id: 'h', title: 'Head-to-Head', definitions: NN_H2H_FEATURES },
+  { id: 'g', title: 'TS5L Global', definitions: NN_TS5L_GLOBAL_FEATURES },
+  { id: 's', title: 'TS5L Surface', definitions: NN_TS5L_SURFACE_FEATURES },
+  { id: 'x', title: 'TS5L Head-to-Head', definitions: NN_TS5L_H2H_FEATURES },
 ];
 
 export interface NnFeatureItemVm {
@@ -219,29 +279,7 @@ export interface NnTabVm {
   includeH2h: boolean;
   groupCount: number;
   featureCount: number;
-  groups: NnFeatureGroupVm[];
-}
-
-export interface NnFeatureItemVm {
-  minifiedKey: string;
-  featureName: string;
-  label: string;
-  value: unknown;
-  displayValue: string;
-}
-
-export interface NnFeatureGroupVm {
-  id: 'c' | 'w' | 'r' | 'z' | 'd' | 'h';
-  title: string;
-  items: NnFeatureItemVm[];
-  visible: boolean;
-}
-
-export interface NnTabVm {
-  version: string;
-  modelFamily: string;
-  includeH2h: boolean;
-  groupCount: number;
-  featureCount: number;
+  modelFeatureCount: number;
+  featureSnapshotComplete: boolean;
   groups: NnFeatureGroupVm[];
 }

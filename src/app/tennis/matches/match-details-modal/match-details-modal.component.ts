@@ -28,7 +28,7 @@ import { ChangeDetectorRef } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { AuthService } from '@app/core/services/auth.service';
 import { BbModalShellComponent } from "@app/shared/ui/bb-modal-shell.component/bb-modal-shell.component";
-import { NN_FEATURE_GROUPS, NnFeatureGroupVm, NnFeatureItemVm, NnTabVm } from './match-details-vm';
+import { NN_FEATURE_GROUPS, NnFeatureGroupVm, NnFeatureItemVm, NnGroupId, NnTabVm } from './match-details-vm';
 import { NN_FEATURE_HELP, NnFeatureHelpEntry } from 'src/app/localization/nn/match-details-nn-help';
 
 // =================================================================================================
@@ -1149,6 +1149,7 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
         }).filter(g => g.visible);
 
         const featureCount = groups.reduce((sum, group) => sum + group.items.length, 0);
+        const modelFeatureCount = this.resolveNnModelFeatureCount(nn, featureCount);
 
         return {
             version: String(nn.v ?? '—'),
@@ -1156,8 +1157,25 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
             includeH2h: nn.h === true || nn.h === 1,
             groupCount: groups.length,
             featureCount,
+            modelFeatureCount,
+            featureSnapshotComplete: featureCount === modelFeatureCount,
             groups,
         };
+    }
+
+    private resolveNnModelFeatureCount(
+        nn: MatchDetailsNeuralNetworkDTO,
+        archivedFeatureCount: number,
+    ): number {
+        const version = String(nn.v ?? '').toLowerCase();
+        const family = String(nn.m ?? '').toLowerCase();
+
+        return version.startsWith('phase5m-atp-') ||
+            version.startsWith('phase5n-atp-') ||
+            family === 'p5m-q6' ||
+            family === 'p5n-q6r'
+            ? 119
+            : archivedFeatureCount;
     }
 
     private formatNnFeatureValue(value: unknown): string {
@@ -1194,23 +1212,23 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
         return String(value);
     }
 
-    public activeNnSection: 'overview' | 'c' | 'w' | 'r' | 'z' | 'd' | 'h' = 'overview';
+    public activeNnSection: 'overview' | NnGroupId = 'overview';
 
-    public setActiveNnSection(section: 'overview' | 'c' | 'w' | 'r' | 'z' | 'd' | 'h'): void {
+    public setActiveNnSection(section: 'overview' | NnGroupId): void {
         this.activeNnSection = section;
     }
 
-    public isActiveNnSection(section: 'overview' | 'c' | 'w' | 'r' | 'z' | 'd' | 'h'): boolean {
+    public isActiveNnSection(section: 'overview' | NnGroupId): boolean {
         return this.activeNnSection === section;
     }
 
-    public get nnSectionTabs(): { id: 'overview' | 'c' | 'w' | 'r' | 'z' | 'd' | 'h'; title: string }[] {
+    public get nnSectionTabs(): { id: 'overview' | NnGroupId; title: string }[] {
         const groups = this.vm?.nn?.groups ?? [];
 
         return [
             { id: 'overview', title: 'Overview' },
             ...groups.map(group => ({
-                id: group.id as 'c' | 'w' | 'r' | 'z' | 'd' | 'h',
+                id: group.id,
                 title: group.title,
             })),
         ];

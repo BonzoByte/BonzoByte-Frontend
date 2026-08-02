@@ -11,6 +11,7 @@ import { PlayerDetailsRaw } from '../models/player-details.model';
 import { AuthService } from './auth.service';
 import { environment } from '../../../environments/environment';
 import { AnalyticsDashboard } from '../models/analytics.model';
+import { ModelExplainabilityReport } from '../models/model-explainability.model';
 import { PlayerTsHistoryRaw } from 'src/app/core/models/player-details.model';
 import {
   PredictionSimulationManifest,
@@ -243,7 +244,11 @@ export class StaticArchivesService {
     return Math.floor(ms / 86400000);
   }
 
-  private dailyCache = new Map<string, Observable<Match[]>>();
+  private readonly dailyCacheTtlMs = 60_000;
+  private dailyCache = new Map<string, {
+    expiresAt: number;
+    request$: Observable<Match[]>;
+  }>();
 
   getDailyIndex(): Observable<DailyArchiveIndex> {
     return this.dailyIndex$;
@@ -253,7 +258,8 @@ export class StaticArchivesService {
     const yyyymmdd = dateKey.includes('-') ? this.isoToCompact(dateKey) : dateKey;
 
     const cached = this.dailyCache.get(yyyymmdd);
-    if (cached) return cached;
+    if (cached && cached.expiresAt > Date.now()) return cached.request$;
+    if (cached) this.dailyCache.delete(yyyymmdd);
 
     let request$: Observable<Match[]>;
 
@@ -283,7 +289,10 @@ export class StaticArchivesService {
         );
     }
 
-    this.dailyCache.set(yyyymmdd, request$);
+    this.dailyCache.set(yyyymmdd, {
+      expiresAt: Date.now() + this.dailyCacheTtlMs,
+      request$
+    });
     return request$;
   }
 
@@ -359,6 +368,31 @@ export class StaticArchivesService {
   }
 
   private analyticsDashboard$?: Observable<AnalyticsDashboard>;
+  private modelExplainability$?: Observable<ModelExplainabilityReport>;
+
+  getModelExplainability(): Observable<ModelExplainabilityReport> {
+    if (!this.modelExplainability$) {
+      this.modelExplainability$ = this.http
+        .get<ModelExplainabilityReport>(
+          'assets/model-insights/shap-explainability.v1.json'
+        )
+        .pipe(
+          map(report => {
+            if (
+              report?.schema !== 'bonzobyte.model-explainability' ||
+              report?.schemaVersion !== 1 ||
+              !Array.isArray(report.models) ||
+              report.models.length === 0
+            ) {
+              throw new Error('Model explainability payload is invalid.');
+            }
+            return report;
+          }),
+          shareReplay(1)
+        );
+    }
+    return this.modelExplainability$;
+  }
 
   getAnalyticsDashboard(): Observable<AnalyticsDashboard> {
     if (!this.analyticsDashboard$) {

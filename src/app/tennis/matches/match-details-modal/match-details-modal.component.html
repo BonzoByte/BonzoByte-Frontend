@@ -1145,12 +1145,21 @@
                                 </div>
 
                                 <div class="nn-meta-row">
-                                    <div class="nn-meta-label">Groups</div>
+                                    <div class="nn-meta-label">
+                                        {{ nn.featureSnapshotComplete ? 'Groups' : 'Archived groups' }}
+                                    </div>
                                     <div class="nn-meta-value">{{ nn.groupCount }}</div>
                                 </div>
 
                                 <div class="nn-meta-row">
-                                    <div class="nn-meta-label">Features</div>
+                                    <div class="nn-meta-label">
+                                        {{ nn.featureSnapshotComplete ? 'Features' : 'Model features' }}
+                                    </div>
+                                    <div class="nn-meta-value">{{ nn.modelFeatureCount }}</div>
+                                </div>
+
+                                <div *ngIf="!nn.featureSnapshotComplete" class="nn-meta-row">
+                                    <div class="nn-meta-label">Archived values</div>
                                     <div class="nn-meta-value">{{ nn.featureCount }}</div>
                                 </div>
                             </div>
@@ -1159,7 +1168,7 @@
                                 <section class="nn-copy-block">
                                     <h4>What this model view shows</h4>
                                     <p>
-                                        This tab reveals the structured feature groups behind the neural-network-based
+                                        This tab reveals the structured feature groups behind the production model-based
                                         match probability shown in the modal. It is designed as a transparency layer,
                                         exposing the main input families that contribute to the final prediction instead
                                         of presenting the result as a black box.

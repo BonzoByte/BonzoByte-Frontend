@@ -112,15 +112,46 @@
 
 .matches-page .table-wrapper {
     min-width: 0;
+    min-height: 0;
     max-width: 100%;
     flex-direction: column;
     align-items: stretch;
     justify-content: flex-start;
-    overflow-x: auto;
+    overflow: hidden;
     padding-top: 0;
     padding-right: 16px;
-    padding-bottom: calc(var(--footer-h) + 12px);
+    padding-bottom: 12px;
     padding-left: 16px;
+}
+
+.match-table-scroll {
+    flex: 1 1 auto;
+    width: 100%;
+    min-height: 0;
+    max-width: 100%;
+    overflow: auto;
+    padding-bottom: 6px;
+    scrollbar-gutter: stable;
+    overscroll-behavior-inline: contain;
+}
+
+.match-table-scroll .match-table {
+    width: max-content;
+    min-width: 1180px;
+    max-width: none;
+}
+
+.responsive-label {
+    display: inline-block;
+    max-width: calc(100% - 22px);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
+.responsive-label__compact {
+    display: none;
 }
 
 .prediction-summary {
@@ -216,6 +247,11 @@
 
 .market-cell__odds {
     line-height: 1.15;
+}
+
+.market-cell__empty {
+    color: var(--bb-text-muted);
+    opacity: 0.7;
 }
 
 .market-cell__edge {
@@ -367,6 +403,57 @@
     }
 }
 
+@media (max-width: 1380px) {
+    .responsive-label__full {
+        display: none;
+    }
+
+    .responsive-label__compact {
+        display: inline;
+    }
+
+    .matches-page .match-table td.match-date-cell {
+        line-height: 1.15;
+        text-align: center;
+        white-space: pre-line;
+    }
+
+    .responsive-label--tournament {
+        display: -webkit-box;
+        max-height: 2.35em;
+        line-height: 1.15;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: normal;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+    }
+
+    .matches-page .match-table col.c-tournament {
+        width: 150px !important;
+    }
+
+    .matches-page .match-table col.c-p1,
+    .matches-page .match-table col.c-p2 {
+        width: 140px !important;
+    }
+}
+
+@media (max-width: 760px) {
+    .matches-page .match-table col.c-date {
+        width: 84px !important;
+    }
+
+    .matches-page .match-table col.c-tournament {
+        width: 132px !important;
+    }
+
+    .matches-page .match-table col.c-p1,
+    .matches-page .match-table col.c-p2 {
+        width: 104px !important;
+    }
+}
+
 .matches-page .match-table {
     align-self: flex-start;
     margin-right: auto;
@@ -375,7 +462,18 @@
 }
 
 .matches-page .match-table thead th {
-    top: calc(var(--header-h) + var(--datebar-h) - 2px);
+    top: 0;
+}
+
+.matches-page-wrapper.matches-page {
+    height: calc(100dvh - var(--header-h) - var(--datebar-h) - var(--footer-h));
+    min-height: 0;
+    overflow: hidden;
+}
+
+.matches-page-wrapper.matches-page > .matches-page,
+.matches-page-wrapper.matches-page .matches-content {
+    min-height: 0;
 }
 
 .bb-mode-subheader {

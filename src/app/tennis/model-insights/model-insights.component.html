@@ -51,6 +51,96 @@
     </article>
   </section>
 
+  <section class="mi-section mi-explainability" *ngIf="explainability as x">
+    <div class="mi-section__header mi-explainability__header">
+      <div>
+        <span class="mi-section__eyebrow">Model Explainability</span>
+        <h2>{{ x.title }}</h2>
+        <p class="mi-explainability__subtitle">{{ x.subtitle }}</p>
+      </div>
+
+      <div class="mi-model-switcher" role="group" aria-label="Select model">
+        <button
+          type="button"
+          *ngFor="let model of x.models"
+          [class.is-active]="model.id === selectedExplainabilityModelId"
+          [attr.aria-pressed]="model.id === selectedExplainabilityModelId"
+          (click)="selectExplainabilityModel(model.id)">
+          {{ model.tour }}
+        </button>
+      </div>
+    </div>
+
+    <ng-container *ngIf="selectedExplainabilityModel as model">
+      <div class="mi-explainability__meta">
+        <div>
+          <span>Model</span>
+          <strong>{{ model.label }}</strong>
+        </div>
+        <div>
+          <span>Out-of-time sample</span>
+          <strong>{{ model.sampleRows | number }} matches</strong>
+        </div>
+        <div>
+          <span>Features</span>
+          <strong>{{ model.featureCount }}</strong>
+        </div>
+        <div>
+          <span>Accuracy</span>
+          <strong>{{ model.metrics.accuracy | percent:'1.1-1' }}</strong>
+        </div>
+        <div>
+          <span>AUC</span>
+          <strong>{{ model.metrics.auc | number:'1.3-3' }}</strong>
+        </div>
+      </div>
+
+      <div class="mi-explainability__charts">
+        <article class="mi-panel mi-explainability__chart-card">
+          <div class="mi-explainability__chart-heading">
+            <h3>Most influential features</h3>
+            <p>Share of total mean absolute SHAP influence.</p>
+          </div>
+          <div class="mi-explainability__chart mi-explainability__chart--features">
+            <canvas
+              baseChart
+              type="bar"
+              [data]="featureChartData"
+              [options]="featureChartOptions">
+            </canvas>
+          </div>
+        </article>
+
+        <article class="mi-panel mi-explainability__chart-card">
+          <div class="mi-explainability__chart-heading">
+            <h3>Feature families</h3>
+            <p>How model influence is distributed across signal groups.</p>
+          </div>
+          <div class="mi-explainability__chart mi-explainability__chart--families">
+            <canvas
+              baseChart
+              type="doughnut"
+              [data]="familyChartData"
+              [options]="familyChartOptions">
+            </canvas>
+          </div>
+        </article>
+      </div>
+
+      <div class="mi-explainability__window">
+        Explanation window:
+        {{ model.window.from | date:'dd.MM.yyyy':'UTC' }}–{{ model.window.to | date:'dd.MM.yyyy':'UTC' }}.
+      </div>
+    </ng-container>
+
+    <article class="mi-panel mi-panel--subtle mi-explainability__notes">
+      <strong>How to read these charts</strong>
+      <ul class="mi-bullet-list mi-bullet-list--notes">
+        <li *ngFor="let note of x.methodology">{{ note }}</li>
+      </ul>
+    </article>
+  </section>
+
   <section class="mi-section" *ngIf="m.keyFindings.length">
     <div class="mi-section__header">
       <span class="mi-section__eyebrow">Core Takeaways</span>

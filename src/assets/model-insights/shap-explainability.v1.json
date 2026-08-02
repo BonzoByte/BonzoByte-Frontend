@@ -1,0 +1,324 @@
+{
+  "schema": "bonzobyte.model-explainability",
+  "schemaVersion": 1,
+  "generatedAtUtc": "2026-08-02T05:19:58.310590+00:00",
+  "title": "How the model decides",
+  "subtitle": "SHAP analysis of out-of-time matches shows how each production model uses ratings, surface context and uncertainty.",
+  "models": [
+    {
+      "id": "phase5n-atp",
+      "tour": "ATP",
+      "status": "accepted",
+      "label": "Phase 5N ATP",
+      "window": {
+        "from": "2025-01-01T00:35:00.002000",
+        "to": "2026-02-15T22:05:00"
+      },
+      "sampleRows": 20000,
+      "eligibleRows": 38214,
+      "featureCount": 119,
+      "metrics": {
+        "accuracy": 0.7093,
+        "auc": 0.7873208388434861,
+        "logLoss": 0.5522431394811407,
+        "brier": 0.1877065095315112
+      },
+      "topFeatures": [
+        {
+          "name": "TS5L_G_GSM_WP",
+          "label": "Global Gameâ€“Setâ€“Match strength",
+          "family": "TS5L global M/SM/GSM",
+          "share": 0.23405127245911397,
+          "directionCorrelation": 0.9931762052835004
+        },
+        {
+          "name": "WPSM",
+          "label": "Legacy Setâ€“Match probability",
+          "family": "Legacy win probabilities",
+          "share": 0.08745895710497456,
+          "directionCorrelation": 0.9350812089562011
+        },
+        {
+          "name": "TS5L_G_SM_WP",
+          "label": "Global Setâ€“Match strength",
+          "family": "TS5L global M/SM/GSM",
+          "share": 0.08241212873868115,
+          "directionCorrelation": 0.9775023270589147
+        },
+        {
+          "name": "TS5L_S_SM_WP",
+          "label": "Surface Setâ€“Match strength",
+          "family": "TS5L surface M/SM/GSM",
+          "share": 0.03528172374510351,
+          "directionCorrelation": 0.9453301679682354
+        },
+        {
+          "name": "P1SDGSM",
+          "label": "Player 1 GSM uncertainty",
+          "family": "Legacy TS M/SM/GSM",
+          "share": 0.033282117885748454,
+          "directionCorrelation": -0.9537409496567397
+        },
+        {
+          "name": "P2SDGSM",
+          "label": "Player 2 GSM uncertainty",
+          "family": "Legacy TS M/SM/GSM",
+          "share": 0.03254571357403579,
+          "directionCorrelation": 0.9514288691446658
+        },
+        {
+          "name": "Experience_AgeDiff",
+          "label": "Age difference",
+          "family": "Player context",
+          "share": 0.03230436342358157,
+          "directionCorrelation": -0.9682268979586403
+        },
+        {
+          "name": "Z_TSMean_G_Diff",
+          "label": "Normalized global strength gap",
+          "family": "Legacy TS transforms",
+          "share": 0.023378330347714995,
+          "directionCorrelation": 0.792359553660794
+        },
+        {
+          "name": "WP",
+          "label": "Legacy match probability",
+          "family": "Legacy win probabilities",
+          "share": 0.02074607431458883,
+          "directionCorrelation": 0.8875261521624096
+        },
+        {
+          "name": "TS5L_G_GSM_RightSD",
+          "label": "TS5L_G_GSM_RightSD",
+          "family": "TS5L global M/SM/GSM",
+          "share": 0.018328180795312392,
+          "directionCorrelation": -0.6942684854121332
+        },
+        {
+          "name": "TS5L_S_M_RightSD",
+          "label": "TS5L_S_M_RightSD",
+          "family": "TS5L surface M/SM/GSM",
+          "share": 0.016698211846511355,
+          "directionCorrelation": 0.8436219865715379
+        },
+        {
+          "name": "TS5L_S_M_LeftSD",
+          "label": "TS5L_S_M_LeftSD",
+          "family": "TS5L surface M/SM/GSM",
+          "share": 0.016551859274896642,
+          "directionCorrelation": -0.8805935685561059
+        }
+      ],
+      "families": [
+        {
+          "name": "TS5L global M/SM/GSM",
+          "share": 0.38922257681784656,
+          "featureCount": 15
+        },
+        {
+          "name": "Legacy TS M/SM/GSM",
+          "share": 0.15549364451123668,
+          "featureCount": 24
+        },
+        {
+          "name": "TS5L surface M/SM/GSM",
+          "share": 0.14834192781905237,
+          "featureCount": 16
+        },
+        {
+          "name": "Legacy win probabilities",
+          "share": 0.13362395655875467,
+          "featureCount": 11
+        },
+        {
+          "name": "Player context",
+          "share": 0.04451950584640309,
+          "featureCount": 4
+        },
+        {
+          "name": "Legacy TS transforms",
+          "share": 0.03730765933498845,
+          "featureCount": 8
+        },
+        {
+          "name": "TS5L H2H M/SM/GSM",
+          "share": 0.0330337745110364,
+          "featureCount": 17
+        },
+        {
+          "name": "Tournament context",
+          "share": 0.02464353455826388,
+          "featureCount": 6
+        },
+        {
+          "name": "Round semantics",
+          "share": 0.01884103944802408,
+          "featureCount": 2
+        },
+        {
+          "name": "Surface context",
+          "share": 0.011082095336558828,
+          "featureCount": 8
+        },
+        {
+          "name": "Legacy H2H",
+          "share": 0.0038902852578350873,
+          "featureCount": 8
+        }
+      ]
+    },
+    {
+      "id": "legacy-wta",
+      "tour": "WTA",
+      "status": "production",
+      "label": "Production WTA",
+      "window": {
+        "from": "2025-01-01T00:35:00.003000",
+        "to": "2026-02-15T18:15:00.001000"
+      },
+      "sampleRows": 10000,
+      "eligibleRows": 45838,
+      "featureCount": 75,
+      "metrics": {
+        "accuracy": 0.7524,
+        "auc": 0.8382912225861324,
+        "logLoss": 0.4916683816875306,
+        "brier": 0.16416943386110297
+      },
+      "topFeatures": [
+        {
+          "name": "WPGSM",
+          "label": "WPGSM",
+          "family": "Legacy win probabilities",
+          "share": 0.22697359400714695,
+          "directionCorrelation": 0.9895589320695178
+        },
+        {
+          "name": "Z_TSMean_G_Diff",
+          "label": "Normalized global strength gap",
+          "family": "Legacy TS transforms",
+          "share": 0.1309606021737718,
+          "directionCorrelation": 0.8771340383477271
+        },
+        {
+          "name": "WPSM",
+          "label": "Legacy Setâ€“Match probability",
+          "family": "Legacy win probabilities",
+          "share": 0.12155984335388659,
+          "directionCorrelation": 0.9369330950430579
+        },
+        {
+          "name": "WP",
+          "label": "Legacy match probability",
+          "family": "Legacy win probabilities",
+          "share": 0.08237085183033525,
+          "directionCorrelation": 0.9433439173910965
+        },
+        {
+          "name": "WPGSMS",
+          "label": "WPGSMS",
+          "family": "Legacy win probabilities",
+          "share": 0.03769773944028348,
+          "directionCorrelation": 0.9397492275895435
+        },
+        {
+          "name": "P2SDGSM",
+          "label": "Player 2 GSM uncertainty",
+          "family": "Legacy TS M/SM/GSM",
+          "share": 0.035686728184245564,
+          "directionCorrelation": 0.9208138975212564
+        },
+        {
+          "name": "P1SDGSM",
+          "label": "Player 1 GSM uncertainty",
+          "family": "Legacy TS M/SM/GSM",
+          "share": 0.03232632993164731,
+          "directionCorrelation": -0.9049783247400545
+        },
+        {
+          "name": "P1SDM",
+          "label": "P1SDM",
+          "family": "Legacy TS M/SM/GSM",
+          "share": 0.021662948312153,
+          "directionCorrelation": -0.8182063077700418
+        },
+        {
+          "name": "WPPondered",
+          "label": "WPPondered",
+          "family": "Legacy win probabilities",
+          "share": 0.019048054660679648,
+          "directionCorrelation": 0.8635067609423298
+        },
+        {
+          "name": "T_TSMean_G_Diff",
+          "label": "T_TSMean_G_Diff",
+          "family": "Legacy TS transforms",
+          "share": 0.01736432827888267,
+          "directionCorrelation": 0.9659526664760625
+        },
+        {
+          "name": "P2SDM",
+          "label": "P2SDM",
+          "family": "Legacy TS M/SM/GSM",
+          "share": 0.015953246325165177,
+          "directionCorrelation": 0.7941735554385223
+        },
+        {
+          "name": "P1SDGSMS",
+          "label": "P1SDGSMS",
+          "family": "Legacy TS M/SM/GSM",
+          "share": 0.012551393895150979,
+          "directionCorrelation": -0.7622775888979423
+        }
+      ],
+      "families": [
+        {
+          "name": "Legacy win probabilities",
+          "share": 0.5173089453024277,
+          "featureCount": 13
+        },
+        {
+          "name": "Legacy TS M/SM/GSM",
+          "share": 0.24705847003207876,
+          "featureCount": 24
+        },
+        {
+          "name": "Legacy TS transforms",
+          "share": 0.1700367786934759,
+          "featureCount": 9
+        },
+        {
+          "name": "Player context",
+          "share": 0.022546929544781286,
+          "featureCount": 4
+        },
+        {
+          "name": "Surface context",
+          "share": 0.016016715425571905,
+          "featureCount": 8
+        },
+        {
+          "name": "Legacy H2H",
+          "share": 0.014988649635203117,
+          "featureCount": 9
+        },
+        {
+          "name": "Tournament context",
+          "share": 0.007514096611365535,
+          "featureCount": 6
+        },
+        {
+          "name": "Round semantics",
+          "share": 0.004529414755095818,
+          "featureCount": 2
+        }
+      ]
+    }
+  ],
+  "methodology": [
+    "Only matches from 2025 onward are included in the explanation sample.",
+    "Feature influence is measured in model log-odds and shown as a share of total mean absolute SHAP influence.",
+    "SHAP explains model behaviour; it does not establish causality or guarantee an individual prediction.",
+    "Rejected research candidates are not presented as production models."
+  ]
+}

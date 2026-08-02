@@ -85,7 +85,7 @@
   width: 100%;
   height: 220px;
   margin-top: 1rem;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid var(--bb-border);
   border-radius: 12px;
   padding: 0.5rem;
 }
@@ -122,9 +122,9 @@
   gap: 1.25rem;
   align-items: center;
   padding: 1rem 1.25rem;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid var(--bb-border);
   border-radius: 16px;
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--bb-surface-2);
   margin-top: 0.75rem;
 }
 
@@ -188,9 +188,9 @@
   gap: 1.1rem;
   align-items: center;
   padding: 0.9rem 1.15rem;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid var(--bb-border);
   border-radius: 16px;
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--bb-surface-2);
   margin-top: 0.75rem;
 }
 
@@ -252,9 +252,9 @@
   }
 
   .bb-stats-table-wrap {
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    border: 1px solid var(--bb-border);
     border-radius: 16px;
-    background: rgba(255, 255, 255, 0.03);
+    background: var(--bb-surface-2);
     padding: 0.85rem 1rem;
     overflow-x: auto;
   }
@@ -269,13 +269,13 @@
     text-align: left;
     font-weight: 700;
     padding: 0 0 0.55rem 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid var(--bb-border);
     white-space: nowrap;
   }
 
   .bb-stats-table tbody td {
     padding: 0.5rem 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    border-bottom: 1px solid var(--bb-border);
     white-space: nowrap;
   }
 
@@ -288,9 +288,9 @@
   }
 
   .bb-player-info {
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    border: 1px solid var(--bb-border);
     border-radius: 16px;
-    background: rgba(255, 255, 255, 0.03);
+    background: var(--bb-surface-2);
     padding: 0.85rem 1rem;
     display: grid;
     gap: 0.55rem;
@@ -400,9 +400,9 @@
 }
 
 .bb-player-form .bb-form-card {
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid var(--bb-border);
   border-radius: 16px;
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--bb-surface-2);
   padding: 0.85rem 1rem;
   display: flex;
   flex-direction: column;

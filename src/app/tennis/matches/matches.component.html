@@ -134,7 +134,9 @@
                     Please adjust your filter options or clear the filters to continue browsing.
                 </div>
 
-                <table class="match-table" *ngIf="filteredMatches.length > 0">
+                <div class="match-table-scroll" *ngIf="filteredMatches.length > 0" tabindex="0"
+                    aria-label="Scrollable match table">
+                <table class="match-table">
                     <colgroup>
                         <col class="c-date" />
                         <col class="c-type" *ngIf="showTypeColumn" />
@@ -180,14 +182,18 @@
                     <tbody>
                         <!-- OSTAVI SVOJ POSTOJEĆI *ngFor sadržaj -->
                         <tr *ngFor="let match of filteredMatches">
-                            <td>{{ getLocalizedDateMaybeTime(match.dateTime) }}</td>
+                            <td class="match-date-cell" [title]="getLocalizedDateMaybeTime(match.dateTime)">{{
+                                getLocalizedDateMaybeTime(match.dateTime) }}</td>
                             <td *ngIf="showTypeColumn">{{ match.tournamentTypeName }}</td>
 
                             <td *ngIf="viewMode !== 'tournament'" class="col-center">
                                 <span class="fi fi-{{ flagCode(match.tournamentEventCountryISO2).toLowerCase() }}"
                                     [title]="match.tournamentEventCountryFull || 'World'"></span>
-                                <span class="clickable-text" (click)="openTournamentModal(match.tournamentEventTPId)">
-                                    {{ formatTournamentDisplayLabel(match) }}
+                                <span class="clickable-text responsive-label responsive-label--tournament"
+                                    [title]="formatTournamentDisplayLabel(match)"
+                                    (click)="openTournamentModal(match.tournamentEventTPId)">
+                                    <span class="responsive-label__full">{{ formatTournamentDisplayLabel(match) }}</span>
+                                    <span class="responsive-label__compact">{{ formatTournamentCompactLabel(match) }}</span>
                                 </span>
                             </td>
 
@@ -199,8 +205,8 @@
                                 </span>
                             </td>
 
-                            <td class="col-center round-cell" [title]="match.roundName || ''">
-                                {{ formatRoundShort(match.roundName) }}
+                            <td class="col-center round-cell" [title]="getMatchRoundTooltip(match)">
+                                {{ formatMatchRoundShort(match) }}
                             </td>
 
                             <td *ngIf="viewMode !== 'tournament'">{{ formatSurface(match.surface) }}</td>
@@ -228,26 +234,46 @@
                             <td class="col-center" [class.predicted-player-cell]="isPredictedSide(match, 'p1')">
                                 <span class="fi fi-{{ flagCode(match.player1CountryISO2).toLowerCase() }}"
                                     [title]="match.player1CountryFull"></span>
-                                <span class="clickable-text" (click)="openPlayerModal(match.player1TPId)">
-                                    {{ formatPlayerLabel(
-                                    decodeHtmlEntities(match.player1Label || match.player1Name || ''),
-                                    match.player1CountryISO3,
-                                    match.player1Seed,
-                                    match.player1Rank
-                                    ) }}
+                                <span class="clickable-text responsive-label"
+                                    [title]="formatPlayerLabel(
+                                        decodeHtmlEntities(match.player1Label || match.player1Name || ''),
+                                        match.player1CountryISO3,
+                                        match.player1Seed,
+                                        match.player1Rank
+                                    )"
+                                    (click)="openPlayerModal(match.player1TPId)">
+                                    <span class="responsive-label__full">{{ formatPlayerLabel(
+                                        decodeHtmlEntities(match.player1Label || match.player1Name || ''),
+                                        match.player1CountryISO3,
+                                        match.player1Seed,
+                                        match.player1Rank
+                                    ) }}</span>
+                                    <span class="responsive-label__compact">{{ formatPlayerCompactLabel(
+                                        match.player1Name || match.player1Label || ''
+                                    ) }}</span>
                                 </span>
                             </td>
 
                             <td class="col-center" [class.predicted-player-cell]="isPredictedSide(match, 'p2')">
                                 <span class="fi fi-{{ flagCode(match.player2CountryISO2).toLowerCase() }}"
                                     [title]="match.player2CountryFull"></span>
-                                <span class="clickable-text" (click)="openPlayerModal(match.player2TPId)">
-                                    {{ formatPlayerLabel(
-                                    decodeHtmlEntities(match.player2Label || match.player2Name || ''),
-                                    match.player2CountryISO3,
-                                    match.player2Seed,
-                                    match.player2Rank
-                                    ) }}
+                                <span class="clickable-text responsive-label"
+                                    [title]="formatPlayerLabel(
+                                        decodeHtmlEntities(match.player2Label || match.player2Name || ''),
+                                        match.player2CountryISO3,
+                                        match.player2Seed,
+                                        match.player2Rank
+                                    )"
+                                    (click)="openPlayerModal(match.player2TPId)">
+                                    <span class="responsive-label__full">{{ formatPlayerLabel(
+                                        decodeHtmlEntities(match.player2Label || match.player2Name || ''),
+                                        match.player2CountryISO3,
+                                        match.player2Seed,
+                                        match.player2Rank
+                                    ) }}</span>
+                                    <span class="responsive-label__compact">{{ formatPlayerCompactLabel(
+                                        match.player2Name || match.player2Label || ''
+                                    ) }}</span>
                                 </span>
                             </td>
 
@@ -256,8 +282,11 @@
 
                             <td class="col-center odds-combined-cell market-cell"
                                 [title]="getPLTooltip(match)">
-                                <div class="market-cell__odds"
+                                <div *ngIf="hasMarketOdds(match); else noMarketOdds" class="market-cell__odds"
                                     [innerHTML]="formatOddsHTML(match.oddsText)"></div>
+                                <ng-template #noMarketOdds>
+                                    <span class="market-cell__empty" title="Market odds are not available">&mdash;</span>
+                                </ng-template>
                                 <span *ngIf="getMarketEdge(match) as marketEdge"
                                     class="market-cell__edge"
                                     [class.market-cell__edge--p2]="marketEdge.side === 'p2'">
@@ -284,6 +313,7 @@
                         </tr>
                     </tbody>
                 </table>
+                </div>
             </div>
 
             <app-match-filter-modal *ngIf="showFilterModalSafe" [activeDateFilter]="activeDateFilter"

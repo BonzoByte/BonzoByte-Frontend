@@ -985,6 +985,9 @@ export interface MatchDetailsNeuralNetworkFeatureGroupsDTO {
   w?: Record<string, unknown>;
   r?: Record<string, unknown>;
   z?: Record<string, unknown>;
-  d?: Record<string, unknown>;
-  h?: Record<string, unknown>;
-}
+    d?: Record<string, unknown>;
+    h?: Record<string, unknown>;
+    g?: Record<string, unknown>;
+    s?: Record<string, unknown>;
+    x?: Record<string, unknown>;
+  }

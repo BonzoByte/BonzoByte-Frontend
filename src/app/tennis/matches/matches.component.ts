@@ -46,6 +46,10 @@ interface MatchPrediction {
 
 export class MatchesComponent implements OnInit, OnDestroy {
     Math = Math;
+    private readonly compactSurnamePrefixes = new Set([
+        'al', 'bar', 'ben', 'bin', 'da', 'das', 'de', 'del', 'di', 'dos', 'du', 'ibn',
+        'la', 'le', 'van', 'von'
+    ]);
     matches: Match[] = [];
     filteredMatches: Match[] = [];
     isFiltered = false;
@@ -1103,7 +1107,7 @@ export class MatchesComponent implements OnInit, OnDestroy {
         // ako je vrijeme "00:00" -> ne prikazuj
         if (hours === 0 && minutes === 0) return `${day}.${month}.${year}`;
 
-        return `${day}.${month}.${year} ${pad(hours)}:${pad(minutes)}`;
+        return `${day}.${month}.${year}\n${pad(hours)}:${pad(minutes)}`;
     }
 
     formatOdds(value: number | null | undefined): string {
@@ -1809,6 +1813,23 @@ export class MatchesComponent implements OnInit, OnDestroy {
         return `${n}${isoPart}${seedPart}${rankPart}`.trim();
     }
 
+    formatPlayerCompactLabel(name?: string | null): string {
+        const decoded = this.decodeHtmlEntities(name ?? '').trim();
+        if (!decoded) return '';
+
+        const parts = decoded.split(/\s+/).filter(Boolean);
+        if (parts.length < 2) return decoded;
+
+        const first = parts[0].toLocaleLowerCase();
+        if (first === 'de' && parts[1]?.toLocaleLowerCase() === 'la' && parts[2]) {
+            return parts.slice(0, 3).join(' ');
+        }
+
+        return this.compactSurnamePrefixes.has(first) && parts[1]
+            ? `${parts[0]} ${parts[1]}`
+            : parts[0];
+    }
+
     formatRound(value?: string | null): string {
         const s = (value ?? '').trim();
         if (!s) return '';
@@ -1858,6 +1879,33 @@ export class MatchesComponent implements OnInit, OnDestroy {
         if (m2) return `R${m2[1]}`;
 
         return value ?? ''; // fallback
+    }
+
+    isQualificationMatch(match?: Match | null): boolean {
+        return !!match && this.normalizeLevelId(match) === 3;
+    }
+
+    formatMatchRoundShort(match?: Match | null): string {
+        if (!match) return '';
+
+        const round = this.formatRoundShort(match.roundName);
+        if (!round) return '';
+
+        if (!this.isQualificationMatch(match) || round === 'Q') return round;
+        return `Q · ${round}`;
+    }
+
+    getMatchRoundTooltip(match?: Match | null): string {
+        if (!match) return '';
+
+        const round = (match.roundName ?? '').trim();
+        if (!round || round.toLowerCase() === 'unknown') {
+            return this.isQualificationMatch(match) ? 'Qualifying · unknown round' : '';
+        }
+
+        return this.isQualificationMatch(match)
+            ? `Qualifying · ${round}`
+            : round;
     }
 
     private pad2(n: number): string { return String(n).padStart(2, '0'); }
@@ -2550,6 +2598,14 @@ export class MatchesComponent implements OnInit, OnDestroy {
         const level = this.extractTournamentLevel(match);
       
         return this.appendQualificationSuffix(base, level);
+      }
+
+      formatTournamentCompactLabel(match: any): string {
+        return this.formatTournamentDisplayLabel(match);
+      }
+
+      hasMarketOdds(match: Match): boolean {
+        return this.hasOdds(match);
       }
 
       formatSurface(value?: string | null): string {
