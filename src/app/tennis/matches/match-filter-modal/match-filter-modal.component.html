@@ -39,6 +39,46 @@
 
     <div class="bb-hr"></div>
 
+    <!-- MATCH OUTCOME -->
+    <div class="bb-section">
+        <div class="bb-section-head">
+            <span class="bb-section-title">Match outcome</span>
+        </div>
+
+        <div class="bb-chip-row">
+            <label class="bb-chip">
+                <input type="radio" name="status" value="all" [(ngModel)]="selectedStatus" />
+                <span>All</span>
+            </label>
+
+            <label class="bb-chip">
+                <input type="radio" name="status" value="completed" [(ngModel)]="selectedStatus" />
+                <span>Final results only</span>
+            </label>
+
+            <label class="bb-chip">
+                <input type="radio" name="status" value="incomplete" [(ngModel)]="selectedStatus" />
+                <span>Incomplete / retired</span>
+            </label>
+
+            <label class="bb-chip">
+                <input type="radio" name="status" value="not-played" [(ngModel)]="selectedStatus" />
+                <span>Not played</span>
+            </label>
+
+            <label class="bb-chip">
+                <input type="radio" name="status" value="pending" [(ngModel)]="selectedStatus" />
+                <span>Pending</span>
+            </label>
+        </div>
+
+        <div class="bb-hint">
+            Final results exclude retirements, interrupted matches and matches without a result.
+        </div>
+    </div>
+
+    <div class="bb-hr"></div>
+
     <!-- ODDS -->
     <div class="bb-section">
         <div class="bb-section-head">

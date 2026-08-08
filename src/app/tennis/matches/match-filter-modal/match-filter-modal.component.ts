@@ -14,7 +14,7 @@ import {
 import { FormsModule } from '@angular/forms';
 import { BbModalShellComponent } from '../../../shared/ui/bb-modal-shell.component/bb-modal-shell.component';
 
-export type MatchStatus = 'all' | 'finished' | 'unfinished';
+export type MatchStatus = 'all' | 'completed' | 'incomplete' | 'not-played' | 'pending';
 export type OddsFilter = 'all' | 'with' | 'without';
 export type ValueFilter = 'all' | 'valueOnly';
 export type ConfidenceFilter = 'all' | '60' | '70' | '80';

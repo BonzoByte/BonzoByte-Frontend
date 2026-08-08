@@ -6,7 +6,7 @@ import { NgbDatepickerModule, NgbDateStruct } from '@ng-bootstrap/ng-bootstrap';
 import { TranslateService } from '@ngx-translate/core';
 import { AppComponent } from '../../app.component';
 import { Match } from '../../core/models/tennis.model';
-import { MatchFilterModalComponent } from "./match-filter-modal/match-filter-modal.component";
+import { MatchFilterModalComponent, type MatchStatus } from "./match-filter-modal/match-filter-modal.component";
 import { MatchDetailsModalComponent } from "../matches/match-details-modal/match-details-modal.component";
 import { StaticArchivesService } from '../../core/services/static-archives.service';
 import { AuthService } from 'src/app/core/services/auth.service';
@@ -83,7 +83,7 @@ export class MatchesComponent implements OnInit, OnDestroy {
     activeTournamentTypeIds: number[] = [2, 4];
     activeTournamentLevelIds: number[] = [1, 2, 3, 4];
     activeStrengthStars: number[] = [0, 1, 2, 3, 4, 5];
-    activeStatus: 'all' | 'finished' | 'unfinished' = 'all';
+    activeStatus: MatchStatus = 'all';
     activeOdds: 'all' | 'with' | 'without' = 'all';
     tournamentHeaderLevel = '';
     filteredAvailableDates: string[] = [];
@@ -1250,7 +1250,7 @@ export class MatchesComponent implements OnInit, OnDestroy {
         surfaceIds: number[];
         tournamentTypeIds: number[];
         strengthStars: number[];
-        status: 'all' | 'finished' | 'unfinished' | undefined;
+        status: MatchStatus | undefined;
         odds: 'all' | 'with' | 'without';
         valueFilter: 'all' | 'valueOnly';
         confidence: 'all' | '60' | '70' | '80';
@@ -1445,6 +1445,7 @@ export class MatchesComponent implements OnInit, OnDestroy {
         // ✅ ali: valueFilter je isto filter -> uključimo ga u gate
         const hasAnyFilter =
             this.isFiltered ||
+            this.activeStatus !== 'all' ||
             this.valueFilter === 'valueOnly' ||
             this.activeConfidence !== 'all';
 
@@ -1482,12 +1483,7 @@ export class MatchesComponent implements OnInit, OnDestroy {
             // STATUS
             if (this.activeStatus !== 'all') {
                 // podržava i normalni shape i minified (l03)
-                const finVal = (m as any)?.isFinished ?? (m as any)?.l03;
-                const finished =
-                    finVal === true || finVal === 1 || finVal === '1' || finVal === 'true';
-
-                if (this.activeStatus === 'finished' && !finished) return false;
-                if (this.activeStatus === 'unfinished' && finished) return false;
+                if (this.getMatchOutcomeStatus(m) !== this.activeStatus) return false;
             }
 
             // ODDS
@@ -2189,12 +2185,13 @@ export class MatchesComponent implements OnInit, OnDestroy {
         if (!prediction) return 'prediction-cell--empty';
 
         const outcome = this.getPredictionOutcome(match);
+        const status = this.getMatchOutcomeStatus(match);
         return [
             `prediction-cell--${prediction.tone}`,
             outcome
                 ? `prediction-cell--${outcome}`
-                : !match?.isFinished
-                    ? 'prediction-cell--pending'
+                : status !== 'completed'
+                    ? `prediction-cell--${status}`
                     : '',
         ].filter(Boolean).join(' ');
     }
@@ -2204,11 +2201,16 @@ export class MatchesComponent implements OnInit, OnDestroy {
         if (!prediction) return 'No model prediction is available.';
 
         const outcome = this.getPredictionOutcome(match);
+        const status = this.getMatchOutcomeStatus(match);
         const outcomeText = outcome === 'correct'
             ? ' Historical outcome: correct.'
             : outcome === 'incorrect'
                 ? ' Historical outcome: incorrect.'
-                : '';
+                : status === 'incomplete'
+                    ? ' Outcome status: incomplete; score data exists without a valid final result.'
+                    : status === 'not-played'
+                        ? ' Outcome status: not played; no score was recorded for this historical match.'
+                        : ' Outcome status: pending; no result has been recorded yet.';
 
         const market = this.getPredictionMarketContext(match);
         const marketText = market
@@ -2263,8 +2265,20 @@ export class MatchesComponent implements OnInit, OnDestroy {
             : 'incorrect';
     }
 
+    getMatchOutcomeStatus(match: Match): Exclude<MatchStatus, 'all'> {
+        if (this.isCanonicalFinishedMatch(match)) return 'completed';
+
+        const finishedValue = (match as any)?.isFinished ?? (match as any)?.l03;
+        if (this.hasRecordedResultData(match) || this.isFinishedValue(finishedValue)) {
+            return 'incomplete';
+        }
+
+        return this.isHistoricalMatchDay(match) ? 'not-played' : 'pending';
+    }
+
     private isCanonicalFinishedMatch(match: Match): boolean {
-        if (!match?.isFinished) return false;
+        const finishedValue = (match as any)?.isFinished ?? (match as any)?.l03;
+        if (!this.isFinishedValue(finishedValue)) return false;
 
         const rawResult = String(match.result ?? match.resultText ?? '')
             .replace(/[^0-9]/g, '');
@@ -2273,6 +2287,29 @@ export class MatchesComponent implements OnInit, OnDestroy {
             rawResult === '30' ||
             rawResult === '31' ||
             rawResult === '32';
+    }
+
+    private hasRecordedResultData(match: Match): boolean {
+        return [
+            match?.result,
+            match?.resultText,
+            match?.resultDetails,
+            match?.resultDetailsText,
+        ].some(value => value != null && String(value).trim().length > 0);
+    }
+
+    private isFinishedValue(value: unknown): boolean {
+        return value === true || value === 1 || value === '1' || value === 'true';
+    }
+
+    private isHistoricalMatchDay(match: Match): boolean {
+        const raw = match?.dateTime;
+        if (!raw) return false;
+
+        const parsed = new Date(raw);
+        if (Number.isNaN(parsed.getTime())) return false;
+
+        return this.toISOFromDateLocal(parsed) < this.toISOFromDateLocal(new Date());
     }
 
     private getWinnerSide(match: Match): 'p1' | 'p2' | null {
