@@ -38,7 +38,6 @@
   box-shadow:
     0 20px 60px rgba(0, 0, 0, 0.28),
     inset 0 1px 0 rgba(255, 255, 255, 0.04);
-  backdrop-filter: blur(8px);
 }
 
 .mi-hero__content {
@@ -105,10 +104,6 @@
   border-radius: 16px;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.07);
-  transition:
-    transform 0.2s ease,
-    border-color 0.2s ease,
-    background 0.2s ease;
 }
 
 .mi-stat-card__title {

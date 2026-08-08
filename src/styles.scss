@@ -24,7 +24,6 @@
     --bb-header-text: #fff;
     --bb-header-border: rgba(255, 255, 255, 0.08);
     --bb-header-btn-border: rgba(255, 255, 255, 0.30);
-    --bb-header-btn-hover: rgba(255, 255, 255, 0.10);
     --bb-header-avatar-border: rgba(255, 255, 255, 0.40);
     --bb-header-select-bg: #1d1d1d;
     --bb-theme-accent: #8ad4ff;
@@ -48,7 +47,6 @@
     --bb-table-head-text: #ffffff;
     --bb-table-row-odd: #171e25;
     --bb-table-row-even: #141a20;
-    --bb-table-row-hover: inherit;
     --bb-icon-filter: brightness(0) invert(1);
     --bb-card-shadow: 0 10px 28px rgba(0, 0, 0, 0.18);
     --bb-datebar-bg: rgba(10, 10, 10, 0.72);
@@ -98,14 +96,12 @@
     --bb-table-head-text: #111b24;
     --bb-table-row-odd: #ffffff;
     --bb-table-row-even: #f4f7f9;
-    --bb-table-row-hover: inherit;
     --bb-icon-filter: none;
     --bb-card-shadow: 0 8px 22px rgba(23, 33, 43, 0.08);
     --bb-header-bg: #f8fafc;
     --bb-header-text: #15202b;
     --bb-header-border: rgba(21, 32, 43, 0.16);
     --bb-header-btn-border: rgba(21, 32, 43, 0.28);
-    --bb-header-btn-hover: rgba(21, 32, 43, 0.08);
     --bb-header-select-bg: #fff;
     --bb-footer-bg: #f8fafc;
     --bb-footer-text: #15202b;
@@ -506,8 +502,6 @@ main {
     color: transparent;
     /* standard alternative */
     -webkit-text-fill-color: transparent;
-
-    text-shadow: 0 0 4px rgba(255, 215, 0, 0.35), 0 0 8px rgba(255, 215, 0, 0.15);
 }
 
 .strength-cell .star.half::after {
@@ -523,8 +517,6 @@ main {
     -webkit-background-clip: text;
     color: transparent;
     -webkit-text-fill-color: transparent;
-
-    text-shadow: 0 0 4px rgba(255, 215, 0, 0.3);
 }
 
 .round-cell {
@@ -585,7 +577,6 @@ main {
   ---------------------------- */
 
 .matches-content.is-blurred {
-    filter: blur(2px);
     opacity: 0.92;
     pointer-events: none;
     user-select: none;
@@ -641,8 +632,6 @@ main {
     flex-direction: column;
     align-items: center;
     gap: 8px;
-
-    backdrop-filter: blur(6px);
 }
 
 .bb-spinner {
@@ -680,7 +669,6 @@ main {
     min-height: 100vh;
     width: 100vw;
     background: rgba(0, 0, 0, 0.65);
-    backdrop-filter: blur(1px);
     pointer-events: auto;
 }
 
@@ -964,7 +952,6 @@ body.modal-open {
     font-weight: 700;
     cursor: pointer;
     user-select: none;
-    transition: transform 120ms ease, background 120ms ease, border-color 120ms ease;
 }
 
 .oauth-btn:disabled {
@@ -1488,7 +1475,6 @@ body.modal-open {
 
     cursor: pointer;
     user-select: none;
-    transition: transform 120ms ease, background 120ms ease, border-color 120ms ease;
 }
 
 .bb-btn:active {
@@ -1821,8 +1807,6 @@ body.modal-open {
     font-weight: 900;
     letter-spacing: 1px;
     margin-bottom: 6px;
-    transform: translateZ(0);
-    transition: transform 200ms ease;
     color: var(--bb-text, #fff);
 
     text-shadow:
@@ -2155,7 +2139,6 @@ body.modal-open {
 
 .matches-page .predicted-player-cell {
     background: color-mix(in srgb, var(--bb-theme-accent) 10%, transparent) !important;
-    box-shadow: inset 3px 0 0 color-mix(in srgb, var(--bb-theme-accent) 62%, transparent) !important;
 }
 
 :where(
