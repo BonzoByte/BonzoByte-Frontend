@@ -33,8 +33,8 @@ interface PredictionMarketContext {
     side: 'p1' | 'p2';
     fairProbability: number;
     decimalOdds: number;
-    edgePoints: number;
-    edgeLabel: string;
+    gapPoints: number;
+    gapLabel: string;
 }
 
 @Component({
@@ -2191,7 +2191,11 @@ export class MatchesComponent implements OnInit, OnDestroy {
         const outcome = this.getPredictionOutcome(match);
         return [
             `prediction-cell--${prediction.tone}`,
-            outcome ? `prediction-cell--${outcome}` : '',
+            outcome
+                ? `prediction-cell--${outcome}`
+                : !match?.isFinished
+                    ? 'prediction-cell--pending'
+                    : '',
         ].filter(Boolean).join(' ');
     }
 
@@ -2210,7 +2214,8 @@ export class MatchesComponent implements OnInit, OnDestroy {
         const marketText = market
             ? ` Market benchmark for ${market.side.toUpperCase()}: ` +
                 `${market.fairProbability.toFixed(2)}% fair probability at ` +
-                `${market.decimalOdds.toFixed(2)} odds; model difference ${market.edgeLabel}.`
+                `${market.decimalOdds.toFixed(2)} odds; model-market gap ${market.gapLabel}. ` +
+                'The gap is a pre-match comparison, not the match outcome or a realized return.'
             : ' Market benchmark is not available.';
 
         return `${prediction.playerName}: ${prediction.confidence.toFixed(2)}% model estimate.` +
@@ -2225,16 +2230,16 @@ export class MatchesComponent implements OnInit, OnDestroy {
         const [fair1, fair2] = this.getFairMarketProbabilities(odds1, odds2);
         const fairProbability = 100 * (prediction.side === 'p1' ? fair1 : fair2);
         const decimalOdds = prediction.side === 'p1' ? odds1 : odds2;
-        const rawEdgePoints = prediction.confidence - fairProbability;
-        const edgePoints = Math.abs(rawEdgePoints) < 0.05 ? 0 : rawEdgePoints;
-        const sign = edgePoints > 0 ? '+' : '';
+        const rawGapPoints = prediction.confidence - fairProbability;
+        const gapPoints = Math.abs(rawGapPoints) < 0.05 ? 0 : rawGapPoints;
+        const sign = gapPoints > 0 ? '+' : '';
 
         return {
             side: prediction.side,
             fairProbability,
             decimalOdds,
-            edgePoints,
-            edgeLabel: `${sign}${edgePoints.toFixed(1)} pp`
+            gapPoints,
+            gapLabel: `vs mkt ${sign}${gapPoints.toFixed(1)} pp`
         };
     }
 

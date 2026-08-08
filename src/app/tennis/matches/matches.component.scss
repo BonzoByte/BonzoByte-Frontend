@@ -325,28 +325,16 @@
     font-size: inherit;
 }
 
-.prediction-cell__edge {
+.prediction-cell__gap {
     flex: 0 0 auto;
-    border: 1px solid color-mix(in srgb, #52d3a1 36%, transparent);
+    border: 1px solid var(--bb-border);
     border-radius: 999px;
     padding: 2px 5px;
-    background: color-mix(in srgb, #52d3a1 11%, transparent);
-    color: #65d8ad;
-    font-size: 8.5px;
-    font-weight: 800;
-    letter-spacing: 0.015em;
-}
-
-.prediction-cell__edge--negative {
-    border-color: color-mix(in srgb, #d5b65d 38%, transparent);
-    background: color-mix(in srgb, #d5b65d 11%, transparent);
-    color: #d5b65d;
-}
-
-.prediction-cell__edge--neutral {
-    border-color: var(--bb-border);
     background: var(--bb-surface-3);
     color: var(--bb-text-muted);
+    font-size: 8.5px;
+    font-weight: 700;
+    letter-spacing: 0.015em;
 }
 
 .prediction-cell__market--muted {
@@ -404,6 +392,13 @@
 
 .prediction-cell--incorrect .prediction-cell__meta::after {
     content: "Miss";
+}
+
+.prediction-cell--pending .prediction-cell__meta::after {
+    content: "Pending";
+    color: var(--bb-text-muted);
+    font-weight: 700;
+    letter-spacing: 0.05em;
 }
 
 .prediction-cell__unavailable {

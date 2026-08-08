@@ -97,7 +97,7 @@
                     <div class="prediction-summary__intro">
                         <span class="prediction-summary__eyebrow">BonzoByte model</span>
                         <strong>Prediction overview</strong>
-                        <span>Model output leads. Market data is context only.</span>
+                        <span>Model output leads. Market gaps are pre-match context only.</span>
                     </div>
 
                     <div class="prediction-summary__metrics">
@@ -168,7 +168,8 @@
                             </th>
                             <th class="col-center">Round</th>
                             <th class="col-center" *ngIf="viewMode !== 'tournament'">Surface</th>
-                            <th class="col-center" title="Model prediction with fair market benchmark">
+                            <th class="col-center"
+                                title="Model prediction and pre-match market comparison; market gap is not an outcome or return">
                                 Prediction &amp; market
                             </th>
                             <th class="col-center">Player 1</th>
@@ -237,10 +238,9 @@
                                             {{ market.fairProbability | number:'1.1-1' }}%
                                             <small>&#64;{{ market.decimalOdds | number:'1.2-2' }}</small>
                                         </span>
-                                        <strong class="prediction-cell__edge"
-                                            [class.prediction-cell__edge--negative]="market.edgePoints < 0"
-                                            [class.prediction-cell__edge--neutral]="market.edgePoints === 0">
-                                            {{ market.edgeLabel }}
+                                        <strong class="prediction-cell__gap"
+                                            title="Pre-match difference between model and fair market probability; not a result or realized return">
+                                            {{ market.gapLabel }}
                                         </strong>
                                     </div>
                                 </ng-container>
