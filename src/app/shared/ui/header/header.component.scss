@@ -78,10 +78,6 @@
     text-decoration: none;
 }
 
-.custom-header a:hover {
-    text-decoration: underline;
-}
-
 .theme-picker {
     display: inline-flex;
     align-items: center;
@@ -116,10 +112,6 @@
     padding: 4px 10px;
     border-radius: 6px;
     cursor: pointer;
-}
-
-.custom-header button:hover {
-    background: var(--bb-header-btn-hover, rgba(255, 255, 255, 0.10));
 }
 
 /* User block */

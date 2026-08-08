@@ -270,11 +270,6 @@ main {
     padding: 12px 16px;
 }
 
-.logreg:hover {
-    transform: scale(1.06);
-    cursor: pointer;
-}
-
 /* ----------------------------
      Sticky date bar (layout + theme)
   ---------------------------- */
@@ -349,10 +344,6 @@ main {
     cursor: pointer;
 }
 
-.arrow-icon:hover {
-    transform: scale(1.04);
-}
-
 .date-nav-sticky .icon-filter {
     width: 0.9em;
     height: 0.9em;
@@ -409,9 +400,6 @@ main {
     text-underline-offset: 2px;
 }
 
-.bb-hint a:hover,
-.bb-contact-email a:hover,
-.bb-about-email a:hover,
 .bb-hint a:focus,
 .bb-contact-email a:focus,
 .bb-about-email a:focus {
@@ -424,12 +412,6 @@ main {
     cursor: pointer;
     text-decoration: none;
     text-underline-offset: 2px;
-
-    &:hover {
-        text-decoration: underline;
-        opacity: 0.9;
-        transform: scale(1.06);
-    }
 
     &:focus {
         text-decoration: underline;
@@ -545,11 +527,6 @@ main {
     text-shadow: 0 0 4px rgba(255, 215, 0, 0.3);
 }
 
-.strength-cell:hover .star.full::before,
-.strength-cell:hover .star.half::after {
-    text-shadow: 0 0 6px rgba(255, 215, 0, 0.6), 0 0 12px rgba(255, 215, 0, 0.3);
-}
-
 .round-cell {
     text-align: center;
     font-weight: 600;
@@ -597,10 +574,6 @@ main {
 
 .match-table tbody tr:nth-child(even) {
     background: var(--bb-table-row-even);
-}
-
-.match-table tbody tr:hover {
-    background: var(--bb-table-row-hover);
 }
 
 .match-table td .fi {
@@ -746,11 +719,6 @@ main {
     gap: 6px;
 }
 
-.bb-modal.bb-modal--match-details .bb-pill:hover {
-    transform: scale(1.00);
-    cursor: default;
-}
-
 /* Flag spacing inside pill */
 .bb-modal.bb-modal--match-details .bb-pill--title .bb-flag-wrap {
     display: inline-flex;
@@ -866,18 +834,12 @@ main {
     text-decoration: none;
 }
 
-.custom-header .brand-title .main-title:hover {
-    cursor: pointer;
-    text-decoration: none;
-}
-
 .brand-link {
     text-decoration: none!important;
     color: inherit;
     display: inline-block;
 }
 
-.brand-link:hover,
 .brand-link:focus {
     text-decoration: none;
     color: inherit;
@@ -949,11 +911,6 @@ body.modal-open {
     background: rgba(0, 0, 0, 0.25);
     color: #fff;
 
-    &:hover:not(:disabled) {
-        background: rgba(255, 255, 255, 0.06);
-        transform: scale(1.03);
-    }
-
     &:disabled {
         opacity: 0.55;
     }
@@ -1010,11 +967,6 @@ body.modal-open {
     transition: transform 120ms ease, background 120ms ease, border-color 120ms ease;
 }
 
-.oauth-btn:hover {
-    background: var(--bb-surface-3);
-    transform: scale(1.03);
-}
-
 .oauth-btn:disabled {
     opacity: 0.6;
     cursor: not-allowed;
@@ -1044,11 +996,6 @@ body.modal-open {
     border: 1px solid rgba(255, 255, 255, 0.12);
 }
 
-.bb-secondary-action:hover {
-    background: rgba(255, 255, 255, 0.1);
-    transform: scale(1.03);
-}
-
 .secondary-text {
     display: block;
     font-size: 13px;
@@ -1065,11 +1012,6 @@ body.modal-open {
     text-decoration: underline;
     text-underline-offset: 3px;
     font-size: 14px;
-}
-
-.bb-link:hover {
-    color: var(--bb-text-strong);
-    transform: scale(1.03);
 }
 
 .bb-link:disabled {
@@ -1343,12 +1285,6 @@ body.modal-open {
     box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.15) inset;
 }
 
-/* hover */
-.radio-pill:hover {
-    border-color: rgba(255, 255, 255, 0.45);
-    transform: scale(1.03);
-}
-
 .bb-ts-snapshot {
     margin: 10px 0 12px;
 }
@@ -1435,11 +1371,6 @@ body.modal-open {
 .details-link.locked {
     opacity: 0.85;
     cursor: pointer;
-}
-
-.details-link.locked:hover {
-    opacity: 1;
-    transform: scale(1.03);
 }
 
 /* LOCKED state spacing + readability */
@@ -1558,12 +1489,6 @@ body.modal-open {
     cursor: pointer;
     user-select: none;
     transition: transform 120ms ease, background 120ms ease, border-color 120ms ease;
-}
-
-.bb-btn:hover {
-    background: var(--bb-surface-3);
-    border-color: var(--bb-theme-accent);
-    transform: scale(1.03);
 }
 
 .bb-btn:active {
@@ -1712,10 +1637,6 @@ body.modal-open {
         border-color: var(--bb-theme-accent);
         color: var(--bb-text-strong);
     }
-}
-
-.bb-tab:hover {
-    transform: scale(1.03);
 }
 
 .bb-pill {
@@ -1913,10 +1834,6 @@ body.modal-open {
     font-size: 13px;
     opacity: 0.75;
     letter-spacing: 0.5px;
-}
-
-.bb-modal.bb-modal--match-details .bb-result-main:hover {
-    transform: scale(1.03);
 }
 
 .bb-modal-title {
@@ -2185,26 +2102,18 @@ body.modal-open {
     border-color: var(--bb-control-border) !important;
 }
 
-:where(.details-icon-btn, .mi-stat-card):hover {
-    transform: none !important;
-    border-color: var(--bb-theme-accent) !important;
-}
-
 /* Long data grids intentionally have no per-row paint/transform effect while scrolling. */
 .match-table tbody tr,
-.match-table tbody tr:hover,
 .match-table tbody tr:focus-within {
     transform: none !important;
     box-shadow: none !important;
     transition: none !important;
 }
 
-.match-table tbody tr:nth-child(odd):hover,
 .match-table tbody tr:nth-child(odd):focus-within {
     background: var(--bb-table-row-odd) !important;
 }
 
-.match-table tbody tr:nth-child(even):hover,
 .match-table tbody tr:nth-child(even):focus-within {
     background: var(--bb-table-row-even) !important;
 }

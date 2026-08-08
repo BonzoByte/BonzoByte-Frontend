@@ -563,9 +563,6 @@
       border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     }
 
-    tbody tr:hover {
-      background: rgba(255, 255, 255, 0.04);
-    }
   }
 
   .bb-odds-num {
@@ -913,7 +910,6 @@
     transition: opacity 120ms ease, border-color 120ms ease, transform 120ms ease;
   }
   
-  .nn-feature-help:hover,
   .nn-feature-help:focus {
     opacity: 1;
     border-color: rgba(255, 255, 255, 0.5);

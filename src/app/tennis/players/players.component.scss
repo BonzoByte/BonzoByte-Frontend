@@ -52,12 +52,6 @@
         opacity 0.15s ease;
 }
 
-.players-page .details-icon-btn:hover {
-    transform: scale(1.08);
-    background: rgba(255, 255, 255, 0.12);
-    border-color: rgba(255, 255, 255, 0.34);
-}
-
 .players-page .details-icon-btn:focus {
     outline: none;
     transform: scale(1.08);
