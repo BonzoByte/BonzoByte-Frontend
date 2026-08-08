@@ -144,12 +144,11 @@
                         <col class="c-strength" *ngIf="viewMode !== 'tournament'" />
                         <col class="c-round" />
                         <col class="c-surface" *ngIf="viewMode !== 'tournament'" />
-                        <col class="c-prob" />
+                        <col class="c-prob-market" />
                         <col class="c-p1" />
                         <col class="c-p2" />
                         <col class="c-result" />
                         <col class="c-result-details" />
-                        <col class="c-odds" />
                         <col class="c-details logreg" />
                     </colgroup>
                     <thead>
@@ -169,12 +168,13 @@
                             </th>
                             <th class="col-center">Round</th>
                             <th class="col-center" *ngIf="viewMode !== 'tournament'">Surface</th>
-                            <th class="col-center">Prediction</th>
+                            <th class="col-center" title="Model prediction with fair market benchmark">
+                                Prediction &amp; market
+                            </th>
                             <th class="col-center">Player 1</th>
                             <th class="col-center">Player 2</th>
                             <th class="col-center">Result</th>
                             <th class="col-center">Result Details</th>
-                            <th class="col-center" title="Market benchmark">Market</th>
                             <th class="col-center">Details</th>
                         </tr>
                     </thead>
@@ -229,6 +229,32 @@
                                 <ng-template #noPrediction>
                                     <span class="prediction-cell__unavailable">No prediction</span>
                                 </ng-template>
+
+                                <ng-container *ngIf="getPredictionMarketContext(match) as market; else marketOnly">
+                                    <div class="prediction-cell__market">
+                                        <span class="prediction-cell__market-copy">
+                                            Mkt {{ market.side === 'p1' ? 'P1' : 'P2' }}
+                                            {{ market.fairProbability | number:'1.1-1' }}%
+                                            <small>&#64;{{ market.decimalOdds | number:'1.2-2' }}</small>
+                                        </span>
+                                        <strong class="prediction-cell__edge"
+                                            [class.prediction-cell__edge--negative]="market.edgePoints < 0"
+                                            [class.prediction-cell__edge--neutral]="market.edgePoints === 0">
+                                            {{ market.edgeLabel }}
+                                        </strong>
+                                    </div>
+                                </ng-container>
+                                <ng-template #marketOnly>
+                                    <div class="prediction-cell__market prediction-cell__market--muted">
+                                        <ng-container *ngIf="getMarketOddsLabel(match) as oddsLabel; else noMarketData">
+                                            <span>Market odds</span>
+                                            <strong>{{ oddsLabel }}</strong>
+                                        </ng-container>
+                                        <ng-template #noMarketData>
+                                            <span>Market unavailable</span>
+                                        </ng-template>
+                                    </div>
+                                </ng-template>
                             </td>
 
                             <td class="col-center" [class.predicted-player-cell]="isPredictedSide(match, 'p1')">
@@ -279,20 +305,6 @@
 
                             <td class="col-center">{{ getDisplayResult(match) }}</td>
                             <td class="col-center">{{ formatResultDetails(match.resultDetails) }}</td>
-
-                            <td class="col-center odds-combined-cell market-cell"
-                                [title]="getPLTooltip(match)">
-                                <div *ngIf="hasMarketOdds(match); else noMarketOdds" class="market-cell__odds"
-                                    [innerHTML]="formatOddsHTML(match.oddsText)"></div>
-                                <ng-template #noMarketOdds>
-                                    <span class="market-cell__empty" title="Market odds are not available">&mdash;</span>
-                                </ng-template>
-                                <span *ngIf="getMarketEdge(match) as marketEdge"
-                                    class="market-cell__edge"
-                                    [class.market-cell__edge--p2]="marketEdge.side === 'p2'">
-                                    {{ marketEdge.label }}
-                                </span>
-                            </td>
 
                             <td class="col-center details-cell">
                                 <ng-container *ngIf="!isDetailsLocked(match); else lockedTpl">

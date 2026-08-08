@@ -49,12 +49,8 @@
     width: 95px !important;
 }
 
-.matches-page .match-table col.c-odds {
-    width: 82px !important;
-}
-
-.matches-page .match-table col.c-prob {
-    width: 172px !important;
+.matches-page .match-table col.c-prob-market {
+    width: 218px !important;
 }
 
 .matches-page .match-table col.c-details {
@@ -137,7 +133,7 @@
 
 .match-table-scroll .match-table {
     width: max-content;
-    min-width: 1180px;
+    min-width: 1140px;
     max-width: none;
 }
 
@@ -240,39 +236,6 @@
     text-align: right;
 }
 
-.matches-page .market-cell {
-    color: rgba(207, 214, 212, 0.52);
-    font-size: 10px;
-}
-
-.market-cell__odds {
-    line-height: 1.15;
-}
-
-.market-cell__empty {
-    color: var(--bb-text-muted);
-    opacity: 0.7;
-}
-
-.market-cell__edge {
-    display: inline-flex;
-    margin-top: 3px;
-    border: 1px solid rgba(82, 211, 161, 0.28);
-    border-radius: 999px;
-    padding: 2px 5px;
-    background: rgba(82, 211, 161, 0.1);
-    color: #7ee0b9;
-    font-size: 9px;
-    font-weight: 800;
-    letter-spacing: 0.02em;
-}
-
-.market-cell__edge--p2 {
-    border-color: rgba(99, 178, 255, 0.3);
-    background: rgba(99, 178, 255, 0.11);
-    color: #8bc6ff;
-}
-
 .matches-page .predicted-player-cell {
     background: linear-gradient(90deg, rgba(84, 214, 168, 0.12), transparent 48%);
     box-shadow: inset 3px 0 0 rgba(84, 214, 168, 0.62);
@@ -334,6 +297,67 @@
     font-weight: 650;
     letter-spacing: 0.03em;
     text-transform: uppercase;
+}
+
+.prediction-cell__market {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 7px;
+    margin-top: 4px;
+    padding-top: 4px;
+    border-top: 1px solid color-mix(in srgb, var(--bb-border) 72%, transparent);
+    color: var(--bb-text-muted);
+    font-size: 8.5px;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.1;
+    white-space: nowrap;
+}
+
+.prediction-cell__market-copy {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.prediction-cell__market-copy small {
+    color: inherit;
+    font-size: inherit;
+}
+
+.prediction-cell__edge {
+    flex: 0 0 auto;
+    border: 1px solid color-mix(in srgb, #52d3a1 36%, transparent);
+    border-radius: 999px;
+    padding: 2px 5px;
+    background: color-mix(in srgb, #52d3a1 11%, transparent);
+    color: #65d8ad;
+    font-size: 8.5px;
+    font-weight: 800;
+    letter-spacing: 0.015em;
+}
+
+.prediction-cell__edge--negative {
+    border-color: color-mix(in srgb, #d5b65d 38%, transparent);
+    background: color-mix(in srgb, #d5b65d 11%, transparent);
+    color: #d5b65d;
+}
+
+.prediction-cell__edge--neutral {
+    border-color: var(--bb-border);
+    background: var(--bb-surface-3);
+    color: var(--bb-text-muted);
+}
+
+.prediction-cell__market--muted {
+    justify-content: flex-start;
+    opacity: 0.72;
+}
+
+.prediction-cell__market--muted strong {
+    color: var(--bb-text-muted);
+    font-size: inherit;
+    font-weight: 650;
 }
 
 .prediction-cell--lean {

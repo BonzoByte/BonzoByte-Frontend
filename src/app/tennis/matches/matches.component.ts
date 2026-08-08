@@ -29,6 +29,14 @@ interface MatchPrediction {
     tone: 'lean' | 'clear' | 'high' | 'very-high';
 }
 
+interface PredictionMarketContext {
+    side: 'p1' | 'p2';
+    fairProbability: number;
+    decimalOdds: number;
+    edgePoints: number;
+    edgeLabel: string;
+}
+
 @Component({
     selector: 'app-matches',
     standalone: true,
@@ -2198,8 +2206,43 @@ export class MatchesComponent implements OnInit, OnDestroy {
                 ? ' Historical outcome: incorrect.'
                 : '';
 
+        const market = this.getPredictionMarketContext(match);
+        const marketText = market
+            ? ` Market benchmark for ${market.side.toUpperCase()}: ` +
+                `${market.fairProbability.toFixed(2)}% fair probability at ` +
+                `${market.decimalOdds.toFixed(2)} odds; model difference ${market.edgeLabel}.`
+            : ' Market benchmark is not available.';
+
         return `${prediction.playerName}: ${prediction.confidence.toFixed(2)}% model estimate.` +
-            `${outcomeText} This is a probability estimate, not a guarantee.`;
+            `${outcomeText}${marketText} This is a probability estimate, not a guarantee.`;
+    }
+
+    getPredictionMarketContext(match: Match): PredictionMarketContext | null {
+        const prediction = this.getPrediction(match);
+        const [odds1, odds2] = this.parseOdds(match);
+        if (!prediction || !odds1 || !odds2) return null;
+
+        const [fair1, fair2] = this.getFairMarketProbabilities(odds1, odds2);
+        const fairProbability = 100 * (prediction.side === 'p1' ? fair1 : fair2);
+        const decimalOdds = prediction.side === 'p1' ? odds1 : odds2;
+        const rawEdgePoints = prediction.confidence - fairProbability;
+        const edgePoints = Math.abs(rawEdgePoints) < 0.05 ? 0 : rawEdgePoints;
+        const sign = edgePoints > 0 ? '+' : '';
+
+        return {
+            side: prediction.side,
+            fairProbability,
+            decimalOdds,
+            edgePoints,
+            edgeLabel: `${sign}${edgePoints.toFixed(1)} pp`
+        };
+    }
+
+    getMarketOddsLabel(match: Match): string | null {
+        const [odds1, odds2] = this.parseOdds(match);
+        if (!odds1 || !odds2) return null;
+
+        return `P1 ${odds1.toFixed(2)} · P2 ${odds2.toFixed(2)}`;
     }
 
     getPredictionOutcome(match: Match): 'correct' | 'incorrect' | null {
