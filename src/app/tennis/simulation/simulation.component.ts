@@ -19,9 +19,10 @@ import { StaticArchivesService } from '../../core/services/static-archives.servi
   styleUrls: ['./simulation.component.scss'],
 })
 export class SimulationComponent implements OnInit, OnDestroy {
+  readonly consensusPolicy = 'median-of-bookmaker-medians';
   report: PredictionSimulationReport | null = null;
   selectedModelIndex = 0;
-  selectedExecutionPolicy = 'median-bookmaker';
+  selectedExecutionPolicy = this.consensusPolicy;
   isLoading = true;
   error: string | null = null;
 
@@ -85,7 +86,7 @@ export class SimulationComponent implements OnInit, OnDestroy {
     this.archives.getPredictionSimulation().subscribe({
       next: report => {
         this.report = report;
-        this.selectedModelIndex = this.findResearchLeader(report.models);
+        this.selectedModelIndex = 0;
         this.isLoading = false;
       },
       error: error => {
@@ -133,9 +134,9 @@ export class SimulationComponent implements OnInit, OnDestroy {
       labels: thresholds.map(value => `${(value * 100).toFixed(1)}%`),
       datasets: [
         {
-          label: 'Median bookmaker',
+          label: 'Consensus median',
           data: thresholds.map(threshold =>
-            this.findEdgeCohort(model, 'median-bookmaker', threshold)?.flat.roi ?? 0
+            this.findEdgeCohort(model, this.consensusPolicy, threshold)?.flat.roi ?? 0
           ),
           backgroundColor: 'rgba(45, 212, 191, 0.72)',
           borderColor: '#5eead4',
@@ -215,40 +216,6 @@ export class SimulationComponent implements OnInit, OnDestroy {
     }
 
     return `${(interval.low * 100).toFixed(1)}% to ${(interval.high * 100).toFixed(1)}%`;
-  }
-
-  private findResearchLeader(models: PredictionSimulationModel[]): number {
-    let bestIndex = 0;
-    let bestRoi = Number.NEGATIVE_INFINITY;
-    let fallbackBets = -1;
-
-    models.forEach((model, index) => {
-      const medianEdgeCohorts = model.cohorts.filter(cohort =>
-        cohort.executionPolicy === 'median-bookmaker' &&
-        cohort.cohortKind === 'edge'
-      );
-      const eligible = medianEdgeCohorts.filter(cohort => cohort.bets >= 30);
-      const candidate = eligible.sort((left, right) =>
-        right.flat.roi - left.flat.roi
-      )[0];
-      const modelFallbackBets = Math.max(
-        0,
-        ...medianEdgeCohorts.map(cohort => cohort.bets)
-      );
-
-      if (candidate && candidate.flat.roi > bestRoi) {
-        bestRoi = candidate.flat.roi;
-        bestIndex = index;
-      } else if (
-        bestRoi === Number.NEGATIVE_INFINITY &&
-        modelFallbackBets > fallbackBets
-      ) {
-        fallbackBets = modelFallbackBets;
-        bestIndex = index;
-      }
-    });
-
-    return bestIndex;
   }
 
   private edgeThresholds(

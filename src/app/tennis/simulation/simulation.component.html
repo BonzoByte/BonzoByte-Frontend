@@ -51,9 +51,10 @@
     <div class="sim-policy" role="group" aria-label="Recorded price policy">
       <button
         type="button"
-        [class.is-active]="selectedExecutionPolicy === 'median-bookmaker'"
-        (click)="setExecutionPolicy('median-bookmaker')">
-        Median bookmaker
+        [class.is-active]="selectedExecutionPolicy === consensusPolicy"
+        (click)="setExecutionPolicy(consensusPolicy)">
+        Consensus median
+        <small>bookmaker medians</small>
       </button>
       <button
         type="button"
@@ -141,6 +142,8 @@
           </canvas>
         </div>
         <p class="sim-caption">
+          Consensus first takes each bookmaker's median across its clean
+          snapshots, then the median of those bookmaker medians.
           Best-price assumes access to the strongest recorded offer and is an
           intentionally optimistic upper bound.
         </p>
@@ -172,7 +175,7 @@
       <div class="sim-panel__header">
         <div>
           <span>Full cohort audit</span>
-          <h2>{{ selectedExecutionPolicy === 'median-bookmaker' ? 'Median bookmaker' : 'Best price (optimistic)' }}</h2>
+          <h2>{{ selectedExecutionPolicy === consensusPolicy ? 'Consensus median' : 'Best price (optimistic)' }}</h2>
         </div>
         <div class="sim-table-note">No losing observation is removed.</div>
       </div>

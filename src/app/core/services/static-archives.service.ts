@@ -438,10 +438,9 @@ export class StaticArchivesService {
 
   getPredictionSimulation(): Observable<PredictionSimulationReport> {
     if (!this.predictionSimulation$) {
-      const archive$ = this.mode === 'api'
-        ? this.http.get(
-            `${this.apiUrl}/archives/simulation/report`,
-            { responseType: 'arraybuffer' as const }
+      const report$ = this.mode === 'api'
+        ? this.http.get<unknown>(
+            `${this.apiUrl}/archives/simulation/report`
           )
         : this.http
             .get<PredictionSimulationManifest>(
@@ -467,12 +466,13 @@ export class StaticArchivesService {
                   { responseType: 'arraybuffer' as const }
                 );
               })
+            )
+            .pipe(
+              map(buf => this.decodeBrotliJson<unknown>(buf))
             );
 
-      this.predictionSimulation$ = archive$.pipe(
-        map(buf => this.normalizePredictionSimulation(
-          this.decodeBrotliJson<unknown>(buf)
-        )),
+      this.predictionSimulation$ = report$.pipe(
+        map(value => this.normalizePredictionSimulation(value)),
         shareReplay(1)
       );
     }
