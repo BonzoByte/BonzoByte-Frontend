@@ -125,7 +125,7 @@
       </article>
     </section>
 
-    <section class="sim-chart-grid">
+    <section class="sim-chart-grid sim-chart-grid--single">
       <article class="sim-panel">
         <div class="sim-panel__header">
           <div>
@@ -148,27 +148,99 @@
           intentionally optimistic upper bound.
         </p>
       </article>
+    </section>
 
-      <article class="sim-panel">
-        <div class="sim-panel__header">
-          <div>
-            <span>Compounding scenarios</span>
-            <h2>Ending bankroll by edge threshold</h2>
+    <section class="sim-panel sim-panel--trajectories" *ngIf="selectedEdgeCohort as curveCohort">
+      <div class="sim-panel__header sim-panel__header--trajectory">
+        <div>
+          <span>Chronological wager audit</span>
+          <h2>Cumulative profit across every selected match</h2>
+        </div>
+        <label class="sim-edge-select">
+          <span>Minimum edge</span>
+          <select [(ngModel)]="selectedEdgeThreshold">
+            <option *ngFor="let threshold of edgeThresholdOptions" [ngValue]="threshold">
+              Edge ≥ {{ threshold | percent:'1.1-1' }}
+            </option>
+          </select>
+        </label>
+      </div>
+
+      <div class="sim-trajectory-summary">
+        <span><strong>{{ curveCohort.bets | number }}</strong> wagers</span>
+        <span>{{ curveCohort.wins | number }} wins · {{ curveCohort.losses | number }} losses</span>
+        <span>{{ selectedExecutionPolicy === consensusPolicy ? 'Consensus median' : 'Best price (optimistic)' }}</span>
+      </div>
+
+      <div class="sim-trajectory-grid">
+        <article class="sim-trajectory-card">
+          <div class="sim-trajectory-card__header">
+            <div>
+              <span>Flat staking</span>
+              <h3>One unit per wager</h3>
+            </div>
+            <strong [class.is-positive]="curveCohort.flat.profitUnits > 0" [class.is-negative]="curveCohort.flat.profitUnits < 0">
+              {{ curveCohort.flat.profitUnits | number:'1.2-2' }} units
+            </strong>
           </div>
-        </div>
-        <div class="sim-chart">
-          <canvas
-            baseChart
-            [data]="bankrollChartData"
-            [options]="bankrollChartOptions"
-            [type]="'line'">
-          </canvas>
-        </div>
-        <p class="sim-caption">
-          Starting bankroll is 1,000. Fixed staking risks 1% per bet; fractional
-          Kelly uses one-quarter Kelly capped at 2%.
-        </p>
-      </article>
+          <div class="sim-chart sim-chart--trajectory">
+            <canvas
+              baseChart
+              [data]="flatTrajectoryChartData"
+              [options]="flatTrajectoryChartOptions"
+              [type]="'line'">
+            </canvas>
+          </div>
+        </article>
+
+        <article class="sim-trajectory-card">
+          <div class="sim-trajectory-card__header">
+            <div>
+              <span>Adaptive staking</span>
+              <h3>Quarter Kelly, capped at 2%</h3>
+            </div>
+            <strong [class.is-positive]="curveCohort.fractionalKelly.profit > 0" [class.is-negative]="curveCohort.fractionalKelly.profit < 0">
+              {{ curveCohort.fractionalKelly.profit | number:'1.2-2' }}
+            </strong>
+          </div>
+          <div class="sim-chart sim-chart--trajectory">
+            <canvas
+              baseChart
+              [data]="kellyTrajectoryChartData"
+              [options]="kellyTrajectoryChartOptions"
+              [type]="'line'">
+            </canvas>
+          </div>
+        </article>
+
+        <article class="sim-trajectory-card">
+          <div class="sim-trajectory-card__header">
+            <div>
+              <span>Bounded bankroll staking</span>
+              <h3>1% of bankroll, stake 1–100</h3>
+            </div>
+            <strong [class.is-positive]="curveCohort.boundedPercentage.profit > 0" [class.is-negative]="curveCohort.boundedPercentage.profit < 0">
+              {{ curveCohort.boundedPercentage.profit | number:'1.2-2' }}
+            </strong>
+          </div>
+          <div class="sim-chart sim-chart--trajectory">
+            <canvas
+              baseChart
+              [data]="boundedTrajectoryChartData"
+              [options]="boundedTrajectoryChartOptions"
+              [type]="'line'">
+            </canvas>
+          </div>
+        </article>
+      </div>
+
+      <p class="sim-caption">
+        Every point after zero is one retained wager in chronological order.
+        Both player sides are evaluated from complementary model probabilities;
+        only a positive raw-EV side meeting the selected edge threshold enters
+        these curves. Kelly and bounded staking start from a 1,000 bankroll;
+        all three charts show cumulative profit so each begins at zero.
+      </p>
     </section>
 
     <section class="sim-panel sim-panel--table">
@@ -193,7 +265,8 @@
               <th>Avg edge</th>
               <th>Flat ROI</th>
               <th>95% interval</th>
-              <th>1% return</th>
+              <th>Uncapped 1% return</th>
+              <th>Bounded 1% return</th>
               <th>¼ Kelly return</th>
               <th>Kelly max DD</th>
             </tr>
@@ -213,6 +286,9 @@
               <td>{{ confidenceInterval(cohort) }}</td>
               <td [class.is-positive]="cohort.fixedPercentage.return > 0" [class.is-negative]="cohort.fixedPercentage.return < 0">
                 {{ cohort.fixedPercentage.return | percent:'1.2-2' }}
+              </td>
+              <td [class.is-positive]="cohort.boundedPercentage.return > 0" [class.is-negative]="cohort.boundedPercentage.return < 0">
+                {{ cohort.boundedPercentage.return | percent:'1.2-2' }}
               </td>
               <td [class.is-positive]="cohort.fractionalKelly.return > 0" [class.is-negative]="cohort.fractionalKelly.return < 0">
                 {{ cohort.fractionalKelly.return | percent:'1.2-2' }}
@@ -234,6 +310,10 @@
         <article>
           <span>Price pairing</span>
           <p>{{ simulation.provenance.pricePairingContract }}</p>
+        </article>
+        <article>
+          <span>Value-side selection</span>
+          <p>{{ simulation.provenance.valueSelectionContract }}</p>
         </article>
         <article>
           <span>Interpretation</span>

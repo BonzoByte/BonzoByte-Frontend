@@ -39,7 +39,9 @@
 .sim-method article span,
 .sim-model-strip span,
 .sim-summary-grid article > span,
-.sim-controls label > span {
+.sim-controls label > span,
+.sim-edge-select > span,
+.sim-trajectory-card__header span {
   color: rgba(226, 232, 240, 0.62);
   font-size: 0.7rem;
   font-weight: 800;
@@ -266,6 +268,10 @@
   margin-top: 0.85rem;
 }
 
+.sim-chart-grid--single {
+  grid-template-columns: 1fr;
+}
+
 .sim-panel,
 .sim-method {
   border-radius: 20px;
@@ -294,6 +300,86 @@
   position: relative;
   height: 300px;
   margin-top: 0.7rem;
+}
+
+.sim-panel--trajectories {
+  margin-top: 0.85rem;
+}
+
+.sim-panel__header--trajectory {
+  align-items: end;
+}
+
+.sim-edge-select {
+  display: flex;
+  flex: 0 0 210px;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.sim-edge-select select {
+  min-height: 38px;
+  padding: 0 0.68rem;
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  border-radius: 10px;
+  color: #f8fafc;
+  background: rgba(2, 6, 23, 0.68);
+}
+
+.sim-trajectory-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-top: 0.7rem;
+}
+
+.sim-trajectory-summary span {
+  padding: 0.28rem 0.55rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  color: rgba(226, 232, 240, 0.68);
+  background: rgba(2, 6, 23, 0.34);
+  font-size: 0.72rem;
+}
+
+.sim-trajectory-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.8rem;
+  margin-top: 0.8rem;
+}
+
+.sim-trajectory-card {
+  min-width: 0;
+  padding: 0.8rem;
+  border: 1px solid rgba(255, 255, 255, 0.075);
+  border-radius: 16px;
+  background: rgba(2, 6, 23, 0.28);
+}
+
+.sim-trajectory-card:last-child {
+  grid-column: 1 / -1;
+}
+
+.sim-trajectory-card__header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.sim-trajectory-card__header h3 {
+  margin: 0.15rem 0 0;
+  font-size: 0.95rem;
+}
+
+.sim-trajectory-card__header > strong {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.sim-chart--trajectory {
+  height: 320px;
 }
 
 .sim-caption,
@@ -354,7 +440,7 @@ th {
 
 .sim-method__grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.7rem;
   margin-top: 0.7rem;
 }
@@ -402,6 +488,14 @@ th {
   .sim-chart-grid {
     grid-template-columns: 1fr;
   }
+
+  .sim-trajectory-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .sim-trajectory-card:last-child {
+    grid-column: auto;
+  }
 }
 
 @media (max-width: 820px) {
@@ -422,6 +516,16 @@ th {
 
   .sim-controls {
     grid-template-columns: 1fr;
+  }
+
+  .sim-panel__header--trajectory {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .sim-edge-select {
+    flex: 0 0 auto;
+    width: 100%;
   }
 
   .sim-model-strip {

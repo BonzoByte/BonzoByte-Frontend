@@ -43,6 +43,7 @@ export interface PredictionSimulationReport {
     databaseReadOnly: boolean;
     outcomeContract: string;
     pricePairingContract: string;
+    valueSelectionContract: string;
     reportGenerator: string;
   };
   models: PredictionSimulationModel[];
@@ -101,7 +102,9 @@ export interface PredictionSimulationCohort {
     maximumDrawdown: number;
   };
   fixedPercentage: PredictionSimulationBankroll;
+  boundedPercentage: PredictionSimulationBankroll;
   fractionalKelly: PredictionSimulationBankroll;
+  trajectories: PredictionSimulationTrajectories;
 }
 
 export interface PredictionSimulationBankroll {
@@ -116,4 +119,38 @@ export interface PredictionSimulationBankroll {
   fixedStakeFraction: number | null;
   kellyMultiplier: number | null;
   maximumStakeFraction: number | null;
+  minimumStake: number | null;
+  maximumStake: number | null;
+}
+
+export interface PredictionSimulationTrajectoryPoint {
+  sequence: number;
+  matchTPId: number;
+  matchDateTime: string;
+  selectedPlayer1: boolean;
+  won: boolean;
+  modelProbability: number;
+  marketFairProbability: number;
+  edge: number;
+  selectedOdds: number;
+  flatUnit: PredictionSimulationTrajectoryValue;
+  boundedPercentage: PredictionSimulationTrajectoryValue;
+  fractionalKelly: PredictionSimulationTrajectoryValue;
+}
+
+export interface PredictionSimulationTrajectoryValue {
+  stake: number;
+  profit: number;
+  cumulativeProfit: number;
+  balance: number;
+}
+
+export interface PredictionSimulationTrajectories {
+  flatUnitPolicy: string;
+  flatUnitStartingBalance: number;
+  boundedPercentagePolicy: string;
+  boundedPercentageStartingBalance: number;
+  fractionalKellyPolicy: string;
+  fractionalKellyStartingBalance: number;
+  points: PredictionSimulationTrajectoryPoint[];
 }

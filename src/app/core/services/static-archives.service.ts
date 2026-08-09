@@ -444,17 +444,17 @@ export class StaticArchivesService {
           )
         : this.http
             .get<PredictionSimulationManifest>(
-              `${this.simulationStaticBase}/prediction-simulation.v1.manifest.json?cb=${Date.now()}`
+              `${this.simulationStaticBase}/prediction-simulation.v2.manifest.json?cb=${Date.now()}`
             )
             .pipe(
               switchMap(manifest => {
                 const fileName = String(manifest?.report?.file ?? '').trim();
                 if (
                   manifest?.schema !== 'bonzobyte.prediction-simulation.manifest' ||
-                  manifest?.schemaVersion !== 1 ||
+                  manifest?.schemaVersion !== 2 ||
                   manifest?.report?.schema !== 'bonzobyte.prediction-simulation' ||
-                  manifest?.report?.schemaVersion !== 1 ||
-                  !/^prediction-simulation\.v1\.[0-9a-f]{16}\.json\.br$/i.test(fileName)
+                  manifest?.report?.schemaVersion !== 2 ||
+                  !/^prediction-simulation\.v2\.[0-9a-f]{16}\.json\.br$/i.test(fileName)
                 ) {
                   return throwError(
                     () => new Error('Prediction simulation manifest is invalid.')
@@ -706,7 +706,7 @@ export class StaticArchivesService {
     if (
       !normalized ||
       normalized.schema !== 'bonzobyte.prediction-simulation' ||
-      normalized.schemaVersion !== 1 ||
+      normalized.schemaVersion !== 2 ||
       !normalized.labels ||
       !normalized.provenance ||
       !normalized.window ||
@@ -718,7 +718,11 @@ export class StaticArchivesService {
     const hasInvalidModel = normalized.models.some(model =>
       !model?.model ||
       !model?.coverage ||
-      !Array.isArray(model?.cohorts)
+      !Array.isArray(model?.cohorts) ||
+      model.cohorts.some(cohort =>
+        !cohort?.trajectories ||
+        !Array.isArray(cohort.trajectories.points)
+      )
     );
     if (hasInvalidModel) {
       throw new Error('Prediction simulation archive contains an invalid model.');

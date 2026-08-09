@@ -11,6 +11,11 @@ import {
 } from '../../core/models/prediction-simulation.model';
 import { StaticArchivesService } from '../../core/services/static-archives.service';
 
+type DisplayTrajectoryKind =
+  | 'flatUnit'
+  | 'boundedPercentage'
+  | 'fractionalKelly';
+
 @Component({
   selector: 'app-simulation',
   standalone: true,
@@ -23,6 +28,7 @@ export class SimulationComponent implements OnInit, OnDestroy {
   report: PredictionSimulationReport | null = null;
   selectedModelIndex = 0;
   selectedExecutionPolicy = this.consensusPolicy;
+  selectedEdgeThreshold = 0;
   isLoading = true;
   error: string | null = null;
 
@@ -57,27 +63,12 @@ export class SimulationComponent implements OnInit, OnDestroy {
     },
   };
 
-  readonly bankrollChartOptions: ChartOptions<'line'> = {
-    responsive: true,
-    maintainAspectRatio: false,
-    interaction: { mode: 'index', intersect: false },
-    scales: {
-      x: {
-        ticks: { color: '#cbd5e1' },
-        grid: { display: false },
-      },
-      y: {
-        ticks: { color: '#cbd5e1' },
-        grid: { color: 'rgba(255,255,255,0.08)' },
-      },
-    },
-    plugins: {
-      legend: {
-        position: 'bottom',
-        labels: { color: '#e2e8f0', usePointStyle: true },
-      },
-    },
-  };
+  readonly flatTrajectoryChartOptions =
+    this.createTrajectoryChartOptions('flatUnit');
+  readonly kellyTrajectoryChartOptions =
+    this.createTrajectoryChartOptions('fractionalKelly');
+  readonly boundedTrajectoryChartOptions =
+    this.createTrajectoryChartOptions('boundedPercentage');
 
   constructor(private readonly archives: StaticArchivesService) {}
 
@@ -157,35 +148,43 @@ export class SimulationComponent implements OnInit, OnDestroy {
     };
   }
 
-  get bankrollChartData(): ChartData<'line'> {
-    const model = this.selectedModel;
-    const cohorts = this.edgeThresholds(model)
-      .map(threshold =>
-        this.findEdgeCohort(model, this.selectedExecutionPolicy, threshold)
-      )
-      .filter((cohort): cohort is PredictionSimulationCohort => cohort != null);
+  get edgeThresholdOptions(): number[] {
+    return this.edgeThresholds(this.selectedModel);
+  }
 
-    return {
-      labels: cohorts.map(cohort => `${(cohort.threshold * 100).toFixed(1)}%`),
-      datasets: [
-        {
-          label: 'Fixed 1% ending bankroll',
-          data: cohorts.map(cohort => cohort.fixedPercentage.endingBankroll),
-          borderColor: '#60a5fa',
-          backgroundColor: 'rgba(96, 165, 250, 0.15)',
-          pointBackgroundColor: '#93c5fd',
-          tension: 0.28,
-        },
-        {
-          label: '¼ Kelly ending bankroll',
-          data: cohorts.map(cohort => cohort.fractionalKelly.endingBankroll),
-          borderColor: '#c084fc',
-          backgroundColor: 'rgba(192, 132, 252, 0.15)',
-          pointBackgroundColor: '#d8b4fe',
-          tension: 0.28,
-        },
-      ],
-    };
+  get selectedEdgeCohort(): PredictionSimulationCohort | null {
+    return this.findEdgeCohort(
+      this.selectedModel,
+      this.selectedExecutionPolicy,
+      this.selectedEdgeThreshold
+    ) ?? null;
+  }
+
+  get flatTrajectoryChartData(): ChartData<'line'> {
+    return this.trajectoryChartData(
+      'flatUnit',
+      'Flat one-unit cumulative profit',
+      '#38bdf8',
+      'rgba(56, 189, 248, 0.12)'
+    );
+  }
+
+  get kellyTrajectoryChartData(): ChartData<'line'> {
+    return this.trajectoryChartData(
+      'fractionalKelly',
+      'Quarter-Kelly cumulative profit',
+      '#c084fc',
+      'rgba(192, 132, 252, 0.12)'
+    );
+  }
+
+  get boundedTrajectoryChartData(): ChartData<'line'> {
+    return this.trajectoryChartData(
+      'boundedPercentage',
+      'Bounded 1% cumulative profit',
+      '#2dd4bf',
+      'rgba(45, 212, 191, 0.12)'
+    );
   }
 
   modelLabel(model: PredictionSimulationModel): string {
@@ -240,5 +239,111 @@ export class SimulationComponent implements OnInit, OnDestroy {
       cohort.cohortKind === 'edge' &&
       Math.abs(cohort.threshold - threshold) < 0.000001
     );
+  }
+
+  private trajectoryChartData(
+    kind: DisplayTrajectoryKind,
+    label: string,
+    borderColor: string,
+    backgroundColor: string
+  ): ChartData<'line'> {
+    const points = this.selectedEdgeCohort?.trajectories?.points ?? [];
+    return {
+      labels: ['0', ...points.map(point => String(point.sequence))],
+      datasets: [
+        {
+          label,
+          data: [0, ...points.map(point => point[kind].cumulativeProfit)],
+          borderColor,
+          backgroundColor,
+          fill: true,
+          pointRadius: 0,
+          pointHoverRadius: 4,
+          borderWidth: 2,
+          tension: 0.16,
+        },
+      ],
+    };
+  }
+
+  private createTrajectoryChartOptions(
+    kind: DisplayTrajectoryKind
+  ): ChartOptions<'line'> {
+    return {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      scales: {
+        x: {
+          title: {
+            display: true,
+            text: 'Chronological wager number',
+            color: '#94a3b8',
+          },
+          ticks: {
+            color: '#cbd5e1',
+            autoSkip: true,
+            maxTicksLimit: 12,
+          },
+          grid: { display: false },
+        },
+        y: {
+          title: {
+            display: true,
+            text: 'Cumulative profit',
+            color: '#94a3b8',
+          },
+          ticks: {
+            color: '#cbd5e1',
+            callback: value => Number(value).toFixed(0),
+          },
+          grid: { color: 'rgba(255,255,255,0.08)' },
+        },
+      },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            title: items => this.trajectoryTooltipTitle(
+              kind,
+              items[0]?.dataIndex ?? 0
+            ),
+            label: context =>
+              `Cumulative profit: ${Number(context.raw).toFixed(2)}`,
+            afterLabel: context => this.trajectoryTooltipDetails(
+              kind,
+              context.dataIndex
+            ),
+          },
+        },
+      },
+    };
+  }
+
+  private trajectoryTooltipTitle(
+    _kind: DisplayTrajectoryKind,
+    dataIndex: number
+  ): string {
+    if (dataIndex === 0) return 'Starting point';
+    const point = this.selectedEdgeCohort?.trajectories?.points[dataIndex - 1];
+    if (!point) return `Wager ${dataIndex}`;
+    const date = new Date(point.matchDateTime);
+    return `Wager ${point.sequence} · ${date.toLocaleDateString('en-GB')}`;
+  }
+
+  private trajectoryTooltipDetails(
+    kind: DisplayTrajectoryKind,
+    dataIndex: number
+  ): string[] {
+    if (dataIndex === 0) return [];
+    const point = this.selectedEdgeCohort?.trajectories?.points[dataIndex - 1];
+    if (!point) return [];
+    const strategy = point[kind];
+    return [
+      `Match: ${point.matchTPId}`,
+      `Side: Player ${point.selectedPlayer1 ? '1' : '2'} · ${point.won ? 'win' : 'loss'}`,
+      `Odds: ${point.selectedOdds.toFixed(2)} · Edge: ${(point.edge * 100).toFixed(1)} pp`,
+      `Stake: ${strategy.stake.toFixed(2)} · P/L: ${strategy.profit.toFixed(2)}`,
+    ];
   }
 }
