@@ -25,7 +25,7 @@ export class PlayersComponent implements OnInit, OnDestroy {
 
   // raw + view
   allPlayers: PlayerIndex[] = [];
-  players: PlayerIndex[] = []; // ovo je "paged" lista za prikaz
+  players: PlayerIndex[] = []; // Current page rendered by the table.
 
   // paging
   currentPage = 1;
@@ -130,7 +130,7 @@ export class PlayersComponent implements OnInit, OnDestroy {
     const clamped = Math.max(1, Math.min(this.totalPages, page));
     this.currentPage = clamped;
 
-    // sync DOM (da nema “glupih” vrijednosti)
+    // Synchronize the DOM control after clamping invalid values.
     if (this.pageInputRef?.nativeElement) {
       this.pageInputRef.nativeElement.value = String(clamped);
     }
@@ -292,7 +292,7 @@ export class PlayersComponent implements OnInit, OnDestroy {
     const wrapper = document.querySelector('.table-wrapper') as HTMLElement | null;
     if (!wrapper) return;
     wrapper.scrollTop = 0;
-    // i window scroll (ako ti wrapper nije scroll container)
+    // Also reset window scrolling when the wrapper is not the scroll container.
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
@@ -304,7 +304,7 @@ export class PlayersComponent implements OnInit, OnDestroy {
     return 'empty';
   }
 
-  // kalibracija (isti osjećaj kao matches); po potrebi ćemo fino dotjerati
+    // Keep strength calibration consistent with the matches view.
   private readonly TS_MIN = 18; // “low”
   private readonly TS_MAX = 32; // “high”
 

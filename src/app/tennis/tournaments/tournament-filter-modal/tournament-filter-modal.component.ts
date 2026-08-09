@@ -112,7 +112,7 @@ export class TournamentFilterModalComponent implements OnChanges {
   }
 
   onForceOptionChange(value: string) {
-    // Omogući klik ako korisnik klikne već aktivnu opciju
+    // Clicking the active option keeps the control responsive without clearing it.
     if (this.selectedDateOption === value) {
       this.onDateOptionChange();
     }

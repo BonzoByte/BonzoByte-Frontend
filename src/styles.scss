@@ -304,7 +304,7 @@ main {
     /* vertikalno poravnanje svih itema */
     justify-content: flex-end;
     gap: 12px;
-    /* po ukusu */
+    /* Fine-tune this value with the surrounding layout. */
 }
 
 .date-right .link-button.logreg {
@@ -312,7 +312,7 @@ main {
     align-items: center;
     gap: 8px;
     line-height: 1;
-    /* makne baseline čudnosti */
+  /* Remove inline-image baseline spacing. */
 }
 
 .date-right .icon-filter {
@@ -941,7 +941,7 @@ body.modal-open {
 
 .bb-btn,
 .oauth-btn {
-    /* baza gumba */
+  /* Shared button foundation. */
     appearance: none;
     border: 1px solid var(--bb-control-border);
     background: var(--bb-surface-2);
@@ -1039,7 +1039,7 @@ body.modal-open {
     flex-wrap: wrap;
 }
 
-/* Filter modal width (samo za ovaj modal) */
+/* Width override scoped to the filter modal. */
 .bb-filter-modal {
     max-width: 720px;
     width: min(720px, calc(100vw - 32px));
@@ -1199,7 +1199,7 @@ body.modal-open {
 
 .bb-filter-modal .bb-chip {
     padding: 6px 10px;
-    border-radius: 999px; // malo modernije "pill"
+    border-radius: 999px; // Rounded pill treatment.
 }
 
 .bb-filter-modal .bb-chip input {
@@ -1248,11 +1248,11 @@ body.modal-open {
 
     line-height: 1;
     min-width: 110px;
-    /* da All / Value only budu simetrični */
+/* Keep the All and Value only options symmetrical. */
     text-align: center;
 }
 
-/* sakrij default radio */
+  /* Hide the native radio control. */
 .radio-pill input[type="radio"] {
     position: absolute;
     opacity: 0;
@@ -1486,7 +1486,7 @@ body.modal-open {
     cursor: not-allowed;
 }
 
-/* Optional (ako nam zatreba kasnije) */
+/* Optional helper retained for future layouts. */
 .bb-btn-primary {
     background: rgba(255, 255, 255, 0.18);
     border-color: rgba(255, 255, 255, 0.22);
@@ -1799,7 +1799,7 @@ body.modal-open {
 .bb-modal.bb-modal--match-details .bb-result {
     text-align: center;
     max-width: none;
-    /* makni 520px limit */
+  /* Remove the legacy 520px width limit. */
 }
 
 .bb-modal.bb-modal--match-details .bb-result-main {

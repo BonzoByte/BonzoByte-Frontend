@@ -10,7 +10,7 @@ import { AuthService } from '../../core/services/auth.service';
 import { AccessibleClickDirective } from '../../shared/directives/accessible-click.directive';
 import { BbModalShellComponent } from "@app/shared/ui/bb-modal-shell.component/bb-modal-shell.component";
 
-/** Async validator za nickname zauzetost */
+/** Async validator that checks nickname availability. */
 function usernameAvailableValidator(auth: AuthService): AsyncValidatorFn {
     return (control: AbstractControl): Observable<ValidationErrors | null> => {
         const value = (control.value || '').trim();
@@ -66,7 +66,7 @@ export class UserModalComponent implements OnInit, OnDestroy {
     ngOnInit(): void {
         const u = this.authService.getUser();
         if (!u) {
-            // fallback - ako se nekako otvori bez usera
+      // Close defensively if the modal opens without a user.
             this.errorMessage = 'User is not loaded.';
             return;
         }
@@ -92,7 +92,7 @@ export class UserModalComponent implements OnInit, OnDestroy {
 
         this.previewUrl = this.currentUser.avatarUrl || null;
 
-        // 🔒 zabrani scroll pozadine dok je modal otvoren
+    // Lock background scrolling while the modal is open.
         document.body.classList.add('modal-open');
     }
 
@@ -117,7 +117,7 @@ export class UserModalComponent implements OnInit, OnDestroy {
 
         const nicknameCtrl = this.userForm.get('nickname');
 
-        // Trim nickname bez triggeranja valueChanges
+        // Trim the nickname without triggering valueChanges.
         if (nicknameCtrl && typeof nicknameCtrl.value === 'string') {
             const raw = nicknameCtrl.value as string;
             const trimmed = raw.trim();
@@ -128,7 +128,7 @@ export class UserModalComponent implements OnInit, OnDestroy {
         this.userForm.markAllAsTouched();
         this.userForm.updateValueAndValidity({ onlySelf: false, emitEvent: false });
 
-        // Ako je pending (async validator), pričekaj jednom pa nastavi
+      // Wait once for an asynchronous validator before continuing.
         if (this.userForm.pending) {
             this.userForm.statusChanges
                 .pipe(filter(s => s !== 'PENDING'), take(1))

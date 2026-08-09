@@ -32,7 +32,7 @@ export class PlayerFilterModalComponent implements OnInit {
   ngOnInit(): void {
     this.selectedTournamentTypeIds = [...this.activeTournamentTypeIds];
 
-    // Ako ništa nije aktivno, defaultiraj na oba
+    // Default to both tours when no explicit selection exists.
     if (this.selectedTournamentTypeIds.length === 0) {
       this.selectedTournamentTypeIds = [2, 4];
     }

@@ -4,7 +4,7 @@
   (closed)="close()"
 >
   <form [formGroup]="emailForm" (ngSubmit)="requestReset()" autocomplete="off" novalidate>
-    <!-- STATUS (ako imaš u TS-u success/error poruke) -->
+  <!-- Verification success and error state. -->
     <div class="bb-alert bb-alert--success" *ngIf="successMessage">
       {{ successMessage }}
     </div>

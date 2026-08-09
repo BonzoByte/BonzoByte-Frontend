@@ -9,7 +9,7 @@ export interface Entitlements {
 export interface User {
     _id?: string;
 
-    // Osnovni podaci
+  // Core identity fields.
     name: string;
     nickname?: string;
     email: string;
@@ -29,7 +29,7 @@ export interface User {
     isOnline?: boolean;
     isVerified?: boolean;
 
-    // Dodatni korisnički info
+  // Optional profile metadata.
     avatarUrl?: string;
     countryTPId?: number;
     gender?: 'male' | 'female' | 'other';
@@ -40,11 +40,11 @@ export interface User {
     player1TPId?: number;
     player2TPId?: number;
 
-    // Reset lozinke
+  // Password-reset state.
     resetPasswordToken?: string;
     resetPasswordExpires?: Date;
 
-    // Automatska Mongo polja
+  // Mongo-managed fields.
     createdAt?: Date;
     updatedAt?: Date;
     

@@ -29,7 +29,7 @@ export class LoginComponent implements OnInit {
         private snackBar: MatSnackBar
     ) {
         this.loginForm = this.fb.group({
-            identifier: ['', Validators.required], // samo required, bez email validacije
+    identifier: ['', Validators.required], // Accept either an email address or username.
             password: ['', Validators.required]
         });
     }
@@ -63,7 +63,7 @@ export class LoginComponent implements OnInit {
 
         this.authService.login(this.loginForm.value).subscribe({
             next: (res) => {
-                // ✅ uspjeh
+          // Successful authentication.
                 this.authService.applyLogin(res.token, res.user);
                 this.snackBar.open('Successful login', '', {
                     duration: 2500,
@@ -79,7 +79,7 @@ export class LoginComponent implements OnInit {
             error: (err) => {
                 this.submitting = false;
 
-                // ✅ backend ti vraća {status:'error', code:'...', message:'...'}
+          // The backend returns { status: 'error', code: '...', message: '...' }.
                 const code = err?.error?.code;
                 const msg = err?.error?.message;
 
@@ -90,7 +90,7 @@ export class LoginComponent implements OnInit {
                 this.loginFailed = false;
                 this.showRegisterSuggestion = false;
 
-                // Mapiranje na UI ponašanje
+          // Map stable backend codes to explicit UI states.
                 switch (code) {
                     case 'EMAIL_NOT_VERIFIED':
                         this.serverErrorMessage = msg || 'Please verify your email before logging in.';
@@ -100,7 +100,7 @@ export class LoginComponent implements OnInit {
                     case 'INVALID_CREDENTIALS':
                         this.serverErrorMessage = 'Invalid email/username or password.';
                         this.loginFailed = true;
-                        // po želji: suggestion register samo kad pokušava s emailom
+              // Suggest registration only when the attempted identifier is an email address.
                         this.showRegisterSuggestion = true;
                         break;
 
@@ -109,7 +109,7 @@ export class LoginComponent implements OnInit {
                         break;
 
                     default:
-                        // ako je server pukao (500) ili nešto nepredviđeno
+              // Keep an actionable fallback for server errors and unknown responses.
                         this.serverErrorMessage = msg || 'Login failed. Please try again.';
                         break;
                 }

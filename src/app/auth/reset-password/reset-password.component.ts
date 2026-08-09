@@ -32,7 +32,7 @@ import { BbModalShellComponent } from '../../shared/ui/bb-modal-shell.component/
 })
 export class ResetPasswordComponent implements OnInit, OnDestroy {
 
-    @Output() close = new EventEmitter<void>(); // 🔑 KLJUČNO
+  @Output() close = new EventEmitter<void>(); // Allows modal hosts to restore shell state.
 
     form: FormGroup;
 
@@ -105,7 +105,7 @@ export class ResetPasswordComponent implements OnInit, OnDestroy {
                 this.successMessage = res?.message || 'Password successfully changed.';
                 this.snack.open(this.successMessage, '', { duration: 3000 });
 
-                // ⏱️ kratki delay radi UX-a
+        // Brief delay lets the user see the success state before navigation.
                 setTimeout(() => {
                     this.closeAndGoToLogin();
                 }, 800);
@@ -120,10 +120,10 @@ export class ResetPasswordComponent implements OnInit, OnDestroy {
     closeAndGoToLogin(): void {
         document.body.classList.remove('modal-open');
 
-        // ako je otvoreno kao modal
+    // Notify the parent when hosted as a modal.
         this.close.emit();
 
-        // ako je standalone ruta
+    // Standalone routes return to the home screen.
         this.router.navigateByUrl('/').then(() => {
             window.dispatchEvent(new CustomEvent('openLogin'));
         });

@@ -463,8 +463,8 @@ export class PlayerModalComponent implements OnChanges, OnDestroy {
   }
 
   onTsSelectorsChanged(): void {
-    // trenutno ne moramo ništa posebno raditi,
-    // ali ostavljamo isti hook pattern kao u Match Details
+    // No additional teardown is currently required;
+    // Keep the same lifecycle hook pattern used by Match Details.
   }
 
   onTsChartMouseMove(event: MouseEvent): void {

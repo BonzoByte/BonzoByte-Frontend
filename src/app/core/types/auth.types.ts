@@ -14,7 +14,7 @@ export interface ResetPasswordResponse {
       name?: string;
       avatarUrl?: string;
       isAdmin: boolean;
-      // ...dodaj polja po potrebi
+  // Extend only when the backend authentication contract adds stable fields.
     };
   }
   

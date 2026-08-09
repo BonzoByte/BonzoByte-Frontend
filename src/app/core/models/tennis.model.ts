@@ -176,12 +176,12 @@ export interface Match {
   valueMarginPlayer2?: number;
   who2Bet?: number;
   prize?: number;
-  // --- formatirana polja koja dolaze s /api/archives/daily ---
-  tournamentCleanName?: string | null; // "Monastir" (bez sufiksa/zagrada)
-  surfaceDisplay?: string | null;      // prazno ako je 'unknown'
+  // Formatted fields supplied by /api/archives/daily.
+  tournamentCleanName?: string | null; // For example, "Monastir" without suffixes or parentheses.
+  surfaceDisplay?: string | null;      // Empty when the source surface is unknown.
   who2BetName?: string | null;         // "Player 1" / "Player 2" / null
 
-  /** UI/formatirana polja iz /api/archives/daily */
+  /** UI-ready fields supplied by /api/archives/daily. */
   tournamentEventCountryISO2Display?: string;
   player1CountryISO2Display?: string;
   player2CountryISO2Display?: string;
@@ -201,7 +201,7 @@ export interface Match {
   modelProbabilityPlayer1?: number | null;
   modelProbabilityPlayer2?: number | null;
 
-  // za savr�eno poravnanje oko crtice:
+  // Fields used to align values around the separator.
   oddsLeft?: string;                // figure-space padded " 1.52"
   oddsRight?: string;               // " 2.43"
   probLeft?: string;                // "76.31"

@@ -118,7 +118,7 @@ export class VerifyComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    // ✅ shell sada unlocka scroll, pa ovo više ne treba:
+    // The application shell now owns scroll locking.
     // document.body.classList.remove('modal-open');
   }
 
@@ -136,7 +136,7 @@ export class VerifyComponent implements OnInit, OnDestroy {
   }
 
   goHome(): void {
-    // ✅ shell će maknuti modal-open kroz ngOnDestroy; ne trebamo to ručno
+    // The shell removes modal-open during its own ngOnDestroy lifecycle.
     sessionStorage.removeItem('verifyToken');
     this.router.navigateByUrl('/');
   }

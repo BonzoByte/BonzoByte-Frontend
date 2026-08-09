@@ -19,7 +19,7 @@ export class BillingModalComponent {
     private openedAt = Date.now();
 
     close(): void {
-        // ignoriraj klik unutar prvih 150ms (isti click koji je otvorio modal)
+    // Ignore the opening click for 150 ms so it cannot immediately close the modal.
         if (Date.now() - this.openedAt < 150) return;
         this.closed.emit();
     }
@@ -32,7 +32,7 @@ export class BillingModalComponent {
         const chosen = this.plans.find(p => p.key === this.selectedKey);
         console.log('[BILLING] continue (placeholder), selected=', chosen);
 
-        // kasnije: redirect na checkout
+        // Redirect to checkout when billing is enabled.
         // npr: window.location.href = `${environment.apiUrl}/billing/checkout?plan=${chosen?.key}`;
 
         this.close();

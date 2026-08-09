@@ -11,7 +11,7 @@ import {
     standalone: true
   })
   export class TrapFocusDirective implements OnInit {
-    @Input() onEscape!: () => void; // callback za ESC
+    @Input() onEscape!: () => void; // Callback invoked when Escape is pressed.
   
     private focusableEls: HTMLElement[] = [];
     private firstEl!: HTMLElement;
@@ -23,7 +23,7 @@ import {
       this.setFocusableElements();
       setTimeout(() => this.firstEl?.focus(), 0);
     }
-   
+
     @HostListener('keydown', ['$event'])
     handleKeydown(event: KeyboardEvent): void {
       if (event.key === 'Escape' && this.onEscape) {
@@ -58,4 +58,4 @@ import {
       this.firstEl = this.focusableEls[0];
       this.lastEl = this.focusableEls[this.focusableEls.length - 1];
     }
-  }  
+  }

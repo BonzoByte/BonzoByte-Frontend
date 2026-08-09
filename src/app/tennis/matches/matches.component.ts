@@ -63,8 +63,8 @@ export class MatchesComponent implements OnInit, OnDestroy {
     isFiltered = false;
     filteredPage = 1;
     currentDate: Date = new Date('1990-01-01');//currentDate: Date = new Date();
-    currentDateISO = ''; // uvijek "YYYY-MM-DD" (source of truth)
-    currentDateDMY = ''; // uvijek "DD.MM.YYYY" (UI prikaz)
+    currentDateISO = ''; // Always YYYY-MM-DD; this is the source of truth.
+    currentDateDMY = ''; // Always DD.MM.YYYY for UI display.
     isNextDisabled = false;
     isPrevDisabled = false;
     loading = false;
@@ -130,7 +130,7 @@ export class MatchesComponent implements OnInit, OnDestroy {
         }
     };
     private deferScrollToTop(): void {
-        // 2x raf = praktično “nakon što Angular nacrta DOM”
+    // Two animation frames allow Angular to finish rendering before measurement.
         requestAnimationFrame(() => requestAnimationFrame(() => this.scrollToTop()));
     }
 
@@ -153,17 +153,17 @@ export class MatchesComponent implements OnInit, OnDestroy {
     onDetailsRequestUpgrade(): void {
         console.log('[PARENT] requestUpgrade');
         this.pendingAfterDetailsClose = 'upgrade';
-        this.closeDetailsModal(); // ovo mora okinuti (closed)
+        this.closeDetailsModal(); // Closing through the public API must emit closed.
     }
 
     openLoginModal(): void {
-        // Header sluša "openLogin"
+    // The header listens for openLogin.
         window.dispatchEvent(new CustomEvent('openLogin'));
     }
 
     openRegisterModal(): void {
-        // Header NE sluša "openRegister", ali sluša switchToRegister handler
-        // Najjednostavnije: re-use postojeći event koji već imaš:
+    // Registration is reached through the header's switchToRegister handler.
+    // Reuse the existing event contract instead of introducing a second path.
         window.dispatchEvent(new CustomEvent('switchToRegister'));
     }
 
@@ -173,13 +173,13 @@ export class MatchesComponent implements OnInit, OnDestroy {
     }
 
     private closeDetailsModal(): void {
-        // Ako je modal živ, zatvori ga “pravilno” da emit-a closed
+    // Let a live modal close through its public API so it emits closed.
         if (this.detailsModal) {
             this.detailsModal.close();
             return;
         }
 
-        // fallback (ako iz nekog razloga ref nije spreman)
+    // Fall back when the view reference is not ready.
         this.isDetailsOpen = false;
         this.selectedMatchTPId = null;
         this.selectedMatch = null;
@@ -204,16 +204,16 @@ export class MatchesComponent implements OnInit, OnDestroy {
         private translate: TranslateService,
         private appComponent: AppComponent) { }
 
-    // mapira specijalne/blank kodove na nešto što flag-icons zna prikazati
+    // Map special and blank source codes to values supported by flag-icons.
     flagCode(iso2?: string | null): string {
         const c = (iso2 || '').toUpperCase().trim();
         if (!c || c === 'WD' || c === 'WLD' || c === 'XX' || c === 'XW' || c === '-') return 'UN';
-        // sitni aliasi, ako se pojave
-        if (c === 'UK') return 'GB';   // flag-icons koristi 'gb'
+    // Normalize common aliases when they appear.
+    if (c === 'UK') return 'GB';   // flag-icons uses gb.
         return c;
     }
 
-    /** yyyy-MM-dd u LOKALNOJ zoni (bez UTC shiftanja) */
+    /** Formats yyyy-MM-dd in the local time zone without a UTC shift. */
     private ymdLocal(d: Date): string {
         const y = d.getFullYear();
         const m = String(d.getMonth() + 1).padStart(2, '0');
@@ -221,7 +221,7 @@ export class MatchesComponent implements OnInit, OnDestroy {
         return `${y}-${m}-${day}`;
     }
 
-    /** YYYYMMDD za backend, iz lokalnog datuma */
+    /** Converts a local date to the backend YYYYMMDD format. */
     private ymdCompact(d: Date): string {
         return this.ymdLocal(d).replace(/-/g, '');
     }
@@ -283,7 +283,7 @@ export class MatchesComponent implements OnInit, OnDestroy {
     private static readonly TS_MIN = 9.023;
     private static readonly TS_MAX = 35.755;
 
-    // ✅ prag edge-a (0.00 = betaj na svaki pozitivan edge)
+    // Minimum edge threshold; 0.00 accepts every positive edge.
     private readonly MIN_EDGE = 0.02; // 2% points
 
     getTournamentStrengthTS(match: Match): number | null {
@@ -435,7 +435,7 @@ export class MatchesComponent implements OnInit, OnDestroy {
                             throw new Error('daily index.json returned invalid min/max date');
                         }
 
-                        // minimalna lista da UI ne pukne
+                        // Provide a minimal list so the UI remains usable.
                         const dates = [minIso, maxIso].filter(Boolean);
 
                         return { dates, min, max };
@@ -454,7 +454,7 @@ export class MatchesComponent implements OnInit, OnDestroy {
         const firstRow = document.querySelector('.match-table tbody tr') as HTMLElement | null;
         const thead = document.querySelector('.match-table thead') as HTMLElement | null;
 
-        // uzmi --top iz CSS-a (header + datebar)
+        // Read --top from CSS; it includes the header and date bar.
         const cssTop = getComputedStyle(document.documentElement)
             .getPropertyValue('--top')
             .trim();
@@ -462,10 +462,10 @@ export class MatchesComponent implements OnInit, OnDestroy {
         const topBars = cssTop ? parseFloat(cssTop) : (56 + 40); // fallback
         const theadH = thead ? Math.ceil(thead.getBoundingClientRect().height) : 0;
 
-        // malo zraka da ne "lijepi" odmah ispod head-a
+        // Leave a small gap below the sticky header.
         const extra = 8;
 
-        // target: prvi red (najpreciznije) ili wrapper kao fallback
+        // Prefer the first row as the scroll target, with the wrapper as fallback.
         const target = firstRow ?? wrapper;
         if (!target) {
             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -569,7 +569,7 @@ export class MatchesComponent implements OnInit, OnDestroy {
                 });
                 const rows = (data || []).map((m, i) => ({ ...(m as any), __idx: i }));
 
-                // preporuka: najnoviji mečevi prvi
+    // Show the newest matches first by default.
                 this.sortField = 'date';
                 this.sortDirection = 'desc';
 
@@ -760,7 +760,7 @@ export class MatchesComponent implements OnInit, OnDestroy {
             .replace(/quarterfinals?/g, 'quarter finals')
             .replace(/semifinals?/g, 'semi finals');
 
-        // ✅ prioritet koji ti želiš (osmina → QF → SF → F)
+    // Order the final tournament stages from round of 16 through the final.
         if (s === 'r16' || s === 'round of 16') return 0;
         if (s === 'qf' || s === 'quarter finals') return 1;
         if (s === 'sf' || s === 'semi finals') return 2;
@@ -770,12 +770,12 @@ export class MatchesComponent implements OnInit, OnDestroy {
         const leagueRound = s.match(/^league\s+round\s+(\d+)$/);
         if (leagueRound) return 200 + Number(leagueRound[1]);
 
-        // ostale "Rxx" kratice (ako ikad dođu)
-        // npr. R32, R64... => stavi ih poslije "main" faza
+    // Handle any additional Rxx abbreviations defensively.
+        // Place R32, R64, and similar rounds after the main final stages.
         const rx = s.match(/^r(\d{1,3})$/);
         if (rx) {
             const n = parseInt(rx[1], 10);
-            // veći broj = ranija faza, ali svejedno iza top faza
+    // Larger round numbers are earlier stages and remain behind the final stages.
             return 100 + (1000 - n);
         }
 
@@ -783,13 +783,13 @@ export class MatchesComponent implements OnInit, OnDestroy {
         const m1 = s.match(/^(\d+)(st|nd|rd|th)\s+round$/);
         if (m1) {
             const n = parseInt(m1[1], 10); // 1..5
-            return 200 + n;               // poslije top faza
+            return 200 + n;               // After the main final stages.
         }
 
         // qualifications / qualifying / Q
         if (s === 'q' || s === 'qualifications' || s === 'qualification' || s.includes('qualif')) return 900;
 
-        // unknown zadnji
+        // Unknown rounds sort last.
         if (s === 'unknown') return 999;
 
         return 500; // fallback
@@ -802,7 +802,7 @@ export class MatchesComponent implements OnInit, OnDestroy {
         const y = dt.getFullYear();
         if (y < 2004) return true;               // tvoj cutoff
 
-        // ako parser prebaci ?? u 00:00, tretiramo to kao "unknown" i radije koristimo round+idx
+    // Treat a parser fallback of 00:00 as unknown and prefer round plus source index.
         const h = dt.getHours();
         const m = dt.getMinutes();
         return (h === 0 && m === 0);
@@ -830,17 +830,17 @@ export class MatchesComponent implements OnInit, OnDestroy {
 
             // ---- SORT: TOURNAMENT (default)
             if (this.sortField === 'tournament') {
-                // 1) turnir
+    // 1) Tournament.
                 if (ta < tb) return -1 * dir;
                 if (ta > tb) return 1 * dir;
 
-                // 2) ✅ unutar istog turnira: runda (barem za legacy, a može i uvijek)
+    // 2) Round order within the same tournament, including legacy rows.
                 const ra = this.getRoundSortKey((a as any).roundName);
                 const rb = this.getRoundSortKey((b as any).roundName);
                 if (ra < rb) return -1;
                 if (ra > rb) return 1;
 
-                // 4) onda po dateTime ako je legit, inače po __idx
+    // 4) Use a valid dateTime next, otherwise retain source order through __idx.
                 if (!legacy) {
                     const da = new Date(a.dateTime).getTime();
                     const db = new Date(b.dateTime).getTime();
@@ -870,7 +870,7 @@ export class MatchesComponent implements OnInit, OnDestroy {
                 if (ra < rb) return -1;
                 if (ra > rb) return 1;
 
-                // tie-breaker: dateTime ako je legit
+    // Use a valid dateTime as the final tie-breaker.
                 if (!legacy) {
                     const da = new Date(a.dateTime).getTime();
                     const db = new Date(b.dateTime).getTime();
@@ -878,7 +878,7 @@ export class MatchesComponent implements OnInit, OnDestroy {
                     if (da > db) return 1;
                 }
 
-                // zadnje: stabilnost
+                // Final stable-order tie-breaker.
                 return ia - ib;
             }
 
@@ -909,7 +909,7 @@ export class MatchesComponent implements OnInit, OnDestroy {
             this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
         } else {
             this.sortField = field;
-            this.sortDirection = (field === 'strength') ? 'desc' : 'asc'; // ✅ najjače gore
+      this.sortDirection = (field === 'strength') ? 'desc' : 'asc'; // Strongest tournaments first.
         }
 
         this.sortMatches();
@@ -929,14 +929,14 @@ export class MatchesComponent implements OnInit, OnDestroy {
             if (!isInsideFilter) {
                 this.showOutOfFilterRangeModal();
 
-                // Resetiraj Angular property koji se bind-a
+                // Reset the Angular-bound property.
                 const currentDateFormatted = this.currentDate
                     ? this.formatDateForInput(this.currentDate)
                     : '';
                 console.log('Resetting input to last valid date:', this.currentDate, currentDateFormatted);
                 this.currentDateString = currentDateFormatted;
 
-                // I ručno postavi value DOM elementa
+    // Synchronize the native date input after adjusting the component state.
                 if (this.dateInputRef?.nativeElement) {
                     this.dateInputRef.nativeElement.value = this.currentDateString;
                 }
@@ -945,7 +945,7 @@ export class MatchesComponent implements OnInit, OnDestroy {
             }
         }
 
-        // Ako je sve ok, nastavi normalno
+    // Continue normally when the date is already valid.
         this.loadMatchesForDate(rawDate);
     }
 
@@ -955,7 +955,7 @@ export class MatchesComponent implements OnInit, OnDestroy {
 
         if (isNaN(rawDate.getTime())) return;
 
-        // ako je filtrirano i koristiš filter range validaciju
+      // Respect the active filter range when filters are enabled.
         const formatted = rawDate.toISOString().split('T')[0];
 
         if (this.isFiltered && this.filteredAvailableDates.length > 0) {
@@ -973,7 +973,7 @@ export class MatchesComponent implements OnInit, OnDestroy {
             }
         }
 
-        // clamp na min/max ako nije filtrirano
+      // Otherwise clamp to the global archive range.
         if (!this.isFiltered) {
             const corrected = this.correctDateIfOutOfBounds(rawDate);
 
@@ -1012,7 +1012,7 @@ export class MatchesComponent implements OnInit, OnDestroy {
         const curIso = this.currentDateISO || this.toISOFromDateLocal(this.currentDate);
         const idx = list.indexOf(curIso);
 
-        // ako iz nekog razloga nismo na danu iz liste, snap na najbliži manji (ili zadnji)
+      // If the current date is absent, snap to the nearest earlier date or the last entry.
         const safeIdx = idx >= 0 ? idx : (this.findPrevIndex(list, curIso) ?? (list.length - 1));
         const prevIdx = safeIdx - 1;
 
@@ -1038,7 +1038,7 @@ export class MatchesComponent implements OnInit, OnDestroy {
         const curIso = this.currentDateISO || this.toISOFromDateLocal(this.currentDate);
         const idx = list.indexOf(curIso);
 
-        // ako nismo na danu iz liste, snap na najbliži veći (ili prvi)
+      // If the current date is absent, snap to the nearest later date or the first entry.
         const safeIdx = idx >= 0 ? idx : (this.findNextIndex(list, curIso) ?? 0);
         const nextIdx = safeIdx + 1;
 
@@ -1055,9 +1055,9 @@ export class MatchesComponent implements OnInit, OnDestroy {
         this.loadMatchesForDate(targetDate);
     }
 
-    // helpers (dodaj negdje u klasu)
+    // Date-navigation helpers.
     private findPrevIndex(list: string[], iso: string): number | null {
-        // list je ASC; tražimo najveći index gdje je list[i] < iso
+    // The list is ascending; find the greatest index whose value is less than iso.
         for (let i = list.length - 1; i >= 0; i--) {
             if (list[i] < iso) return i;
         }
@@ -1065,7 +1065,7 @@ export class MatchesComponent implements OnInit, OnDestroy {
     }
 
     private findNextIndex(list: string[], iso: string): number | null {
-        // tražimo najmanji index gdje je list[i] > iso
+    // Find the smallest index whose value is greater than iso.
         for (let i = 0; i < list.length; i++) {
             if (list[i] > iso) return i;
         }
@@ -1109,10 +1109,10 @@ export class MatchesComponent implements OnInit, OnDestroy {
         const hours = d.getHours();
         const minutes = d.getMinutes();
 
-        // prije 2004: nikad ne prikazuj vrijeme
+    // Source times before 2004 are not reliable enough to display.
         if (year < 2004) return `${day}.${month}.${year}`;
 
-        // ako je vrijeme "00:00" -> ne prikazuj
+    // Midnight represents an unknown source time and is hidden.
         if (hours === 0 && minutes === 0) return `${day}.${month}.${year}`;
 
         return `${day}.${month}.${year}\n${pad(hours)}:${pad(minutes)}`;
@@ -1160,10 +1160,10 @@ export class MatchesComponent implements OnInit, OnDestroy {
         if (raw == null) return '';
         const s = String(raw).trim();
 
-        // već formatirano ili specijalni ishod
+    // Preserve already formatted scores and special outcomes.
         if (!s) return '';
         if (s.includes(':')) return s;         // npr. "2:1"
-        if (/^(RET|W[OW]|ABD|CAN|DEF)$/i.test(s)) return s; // posebni slučajevi
+    if (/^(RET|W[OW]|ABD|CAN|DEF)$/i.test(s)) return s; // Special outcomes.
 
         // "21", "2-1", "02-01" → "2:1"
         const m = s.match(/^(\d{1,2})\D?(\d{1,2})$/);
@@ -1179,16 +1179,16 @@ export class MatchesComponent implements OnInit, OnDestroy {
         const tokens = raw.split(/\s+/).filter(Boolean);
         if (!tokens.length) return '';
 
-        // 1) Normaliziraj sve u "a:b" ili "a:b(x)" format (npr. "76(5)" -> "7:6(5)", "20" -> "2:0")
+    // 1) Normalize tokens to a:b or a:b(x), for example 76(5) -> 7:6(5) and 20 -> 2:0.
         const normalized = tokens
             .map(t => this.normalizeSetToken(t))
             .filter(t => !!t);
 
         if (!normalized.length) return '';
 
-        // 2) Ako prvi token izgleda kao ukupni set-score (2:0, 2:1, 3:2, ...)
-        // i nakon njega postoje barem 2 stvarna seta (6:4, 7:6(5), 10:8, ...)
-        // izbaci taj prvi token
+    // 2) Remove a leading overall set score such as 2:0, 2:1, or 3:2.
+        // Remove the leading summary token only when at least two real set scores follow,
+        // such as 6:4, 7:6(5), or 10:8.
         if (this.looksLikeSetScoreHeader(normalized[0])) {
             const setLikeCount = normalized.slice(1).filter(t => this.looksLikeRealSetToken(t)).length;
             if (setLikeCount >= 2) {
@@ -1210,13 +1210,13 @@ export class MatchesComponent implements OnInit, OnDestroy {
         if (!m) return false;
         const a = parseInt(m[1], 10);
         const b = parseInt(m[2], 10);
-        return Math.max(a, b) >= 6; // setovi obično 6/7, superTB 10
+    return Math.max(a, b) >= 6; // Sets normally reach 6/7 games; a super tie-break reaches 10.
     }
 
     private normalizeSetToken(tok: string): string {
         const t = tok.trim();
 
-        // već "6:4" ili "7:6(5)"
+    // Already formatted as 6:4 or 7:6(5).
         if (/^\d{1,2}:\d{1,2}(\([^)]+\))?$/.test(t)) return t;
 
         // "6-4" ili "10-8"
@@ -1258,7 +1258,7 @@ export class MatchesComponent implements OnInit, OnDestroy {
         console.log('🧪 onFilterApplied (incoming):', filter);
         console.log('[PARENT RECEIVED] status =', filter.status);
 
-        // 1) spremi aktivne vrijednosti (modal već šalje start/end izračunate)
+    // 1) Store active values; the modal already resolves start and end dates.
         this.activeDateFilter = filter.option;
         this.activeFromDate = filter.startDate;
         this.activeToDate = filter.endDate;
@@ -1311,7 +1311,7 @@ export class MatchesComponent implements OnInit, OnDestroy {
         );
         this.filterApplied = this.isFiltered;
 
-        // 3) izračunaj filteredAvailableDates (samo date range dio filtera)
+    // 3) Calculate available dates constrained only by the date-range filter.
         const hasDateRange = !!(this.activeFromDate && this.activeToDate);
 
         if (this.availableDates?.length) {
@@ -1334,7 +1334,7 @@ export class MatchesComponent implements OnInit, OnDestroy {
             last: this.filteredAvailableDates[this.filteredAvailableDates.length - 1],
         });
 
-        // 4) ako filtrirani date range nema dana -> pokaži "no results" i ostani na trenutnom danu
+    // 4) When the date range is empty, show no results and retain the current day.
         if (this.isFiltered && hasDateRange && this.filteredAvailableDates.length === 0) {
             this.matches = [];
             this.daySourceMatches = [];
@@ -1344,7 +1344,7 @@ export class MatchesComponent implements OnInit, OnDestroy {
             return;
         }
 
-        // 5) odredi na koji dan trebamo skočiti
+    // 5) Resolve the target archive day.
         const currentIso = this.currentDateISO || this.toISOFromDateLocal(this.currentDate);
 
         let targetIso = currentIso;
@@ -1355,7 +1355,7 @@ export class MatchesComponent implements OnInit, OnDestroy {
             }
         }
 
-        // 6) zatvori modal i učitaj taj dan
+    // 6) Close the modal and load the resolved day.
         this.filteredPage = 1;
         this.showFilterModal = false;
 
@@ -1382,7 +1382,7 @@ export class MatchesComponent implements OnInit, OnDestroy {
         const v = m.tournamentTypeId ?? m.typeId ?? null;
         if (v !== null && v !== undefined && !Number.isNaN(+v)) return +v;
 
-        // ✅ dodaj tournamentTypeName (to ti dolazi iz daily archive)
+        // Include tournamentTypeName from the daily archive.
         const s = m.tournamentTypeName ?? m.tournamentType ?? m.series ?? m.tour ?? m.category ?? null;
 
         if (s) {
@@ -1441,8 +1441,8 @@ export class MatchesComponent implements OnInit, OnDestroy {
         }));
         console.log('[FILTER SAMPLE]', sample);
 
-        // ako nema filtera, vrati izvor
-        // ✅ ali: valueFilter je isto filter -> uključimo ga u gate
+    // Return the source directly when no filters are active.
+    // valueFilter participates in this gate like every other filter.
         const hasAnyFilter =
             this.isFiltered ||
             this.activeStatus !== 'all' ||
@@ -1482,7 +1482,7 @@ export class MatchesComponent implements OnInit, OnDestroy {
 
             // STATUS
             if (this.activeStatus !== 'all') {
-                // podržava i normalni shape i minified (l03)
+      // Support both expanded and minified (l03) archive shapes.
                 if (this.getMatchOutcomeStatus(m) !== this.activeStatus) return false;
             }
 
@@ -1500,7 +1500,7 @@ export class MatchesComponent implements OnInit, OnDestroy {
                 if (!prediction || prediction.confidence < minimum) return false;
             }
 
-            // ✅ VALUE (novo): barem jedan edge >= MIN_EDGE (koristi tvoj getBetSide)
+      // Value-only requires at least one side with edge >= MIN_EDGE.
             if (this.valueFilter === 'valueOnly') {
                 if (!this.hasValueBet(m)) return false;
             }
@@ -1513,7 +1513,7 @@ export class MatchesComponent implements OnInit, OnDestroy {
         // 1) aktivni filteri
         let rows = this.filterMatchesByActiveFilters(this.matches);
 
-        // 2) search (novo)
+        // 2) Free-text search.
         rows = this.filterMatchesBySearchTerm(rows);
 
         this.filteredMatches = rows;
@@ -1521,7 +1521,7 @@ export class MatchesComponent implements OnInit, OnDestroy {
         if (this.viewMode === 'tournament') {
             this.filteredMatches = this.sortTournamentMatches(this.filteredMatches as any[]);
           }
-        // UX: no results i za filter i za search
+        // Show the empty state for both filters and free-text search.
         this.noMatchesForFilter =
             (this.isFiltered || !!this.searchTerm.trim()) && this.filteredMatches.length === 0;
     }
@@ -1585,7 +1585,7 @@ export class MatchesComponent implements OnInit, OnDestroy {
         const curIso = this.currentDateISO || this.toISOFromDateLocal(baseDate);
         const idx = list.indexOf(curIso);
 
-        // ako trenutno nije u listi, strelice i dalje imaju smisla (možemo naći najbliže)
+    // Navigation remains available when the current date is absent; resolve the nearest entry.
         const prevIdx = (idx >= 0) ? idx - 1 : (this.findPrevIndex(list, curIso) ?? -1);
         const nextIdx = (idx >= 0) ? idx + 1 : (this.findNextIndex(list, curIso) ?? list.length);
 
@@ -1612,14 +1612,14 @@ export class MatchesComponent implements OnInit, OnDestroy {
 
         let out = name;
 
-        // 1) makni trailing (...) grupe
+        // 1) Remove trailing parenthesized groups.
         out = out.replace(/\s*(?:\([^()]*\)\s*)+$/g, '');
 
-        // 2) makni rimski broj na kraju ako je odvojen razmakom
+    // 2) Remove a trailing Roman numeral when separated by whitespace.
         out = out.replace(/\s+(?:[IVXLCDM]{1,6})\s*$/i, '');
 
-        // 3) makni trailing "Q" (qualifications), s razmakom ili bez
-        // npr. "Vancouver Q", "VancouverQ"
+        // 3) Remove a trailing qualifications Q, with or without whitespace,
+        // for example "Vancouver Q" or "VancouverQ".
         out = out.replace(/\s*Q\s*$/i, '');
 
         // 4) normaliziraj razmake
@@ -1639,15 +1639,15 @@ export class MatchesComponent implements OnInit, OnDestroy {
         return !!(l && r);
     }
 
-    /** Poravnaj broj na fiksnu širinu: intWidth znamenki prije točke + fracWidth decimala.
-     *  figure space (U+2007) zauzima širinu znamenke ali je “prazan”, pa je 01.23 jednako široko kao 1.23 */
+  /** Aligns a number to intWidth digits before the decimal and fracWidth decimals.
+   *  A figure space (U+2007) occupies a digit's width while remaining blank. */
     private alignFixed(value: string, intWidth: number, fracWidth: number): string {
         const v = Number(String(value).replace(',', '.'));
         if (!Number.isFinite(v)) return '';
         const [intPartRaw, fracPartRaw = ''] = v.toFixed(fracWidth).split('.');
-        const intPart = intPartRaw; // nema minusa u tvojim podacima
+    const intPart = intPartRaw; // Archive values are non-negative.
         const padCount = Math.max(0, intWidth - intPart.length);
-        const FIG = '\u2007'; // figure space = širina znamenke
+    const FIG = '\u2007'; // A figure space has the width of a digit.
         return FIG.repeat(padCount) + intPart + '.' + fracPartRaw;
     }
 
@@ -1665,13 +1665,13 @@ export class MatchesComponent implements OnInit, OnDestroy {
         return [i, f];
     }
 
-    /* nevidljive vodeće nule do targetWidth: <span class="ghost">00</span> */
+  /* Invisible leading zeroes fill targetWidth: <span class="ghost">00</span>. */
     private ghostPadInt(intPart: string, targetWidth: number): string {
         const need = Math.max(0, targetWidth - intPart.length);
         return need ? `<span class="ghost">${'0'.repeat(need)}</span>${intPart}` : intPart;
     }
 
-    /* ODS — prazno ako obje strane 0.00; širine 2+2 */
+  /* Odds: empty when both sides are 0.00; use 2+2 widths. */
     formatOddsHTML(text?: string | null): string {
         const [l, r] = this.splitPair(text);
         const [li, lf] = this.toFixedParts(l, 2);
@@ -1683,7 +1683,7 @@ export class MatchesComponent implements OnInit, OnDestroy {
         return `<span class="dual dual-odds"><span class="l">${L}</span><span class="mid">–</span><span class="r">${R}</span></span>`;
     }
 
-    /* PROB — širine 3+2 (do 100.xx) */
+  /* Probability: use 3+2 widths to accommodate 100.xx. */
     formatProbHTML(text?: string | null): string {
         const [l, r] = this.splitPair(text);
         const [li, lf] = this.toFixedParts(l, 2);
@@ -1702,15 +1702,15 @@ export class MatchesComponent implements OnInit, OnDestroy {
     }
 
     commitDateInput(): void {
-        // currentDateString je "YYYY-MM-DD" (što type=date drži interno)
+    // Native date inputs store currentDateString as YYYY-MM-DD.
         const rawDate = new Date(this.currentDateString);
 
         if (isNaN(rawDate.getTime())) return;
 
-        // clamp na min/max
+        // Clamp the date to the available range.
         const corrected = this.correctDateIfOutOfBounds(rawDate);
 
-        // sync string (da odmah pokaže korigirano)
+      // Synchronize the string so the corrected value appears immediately.
         this.currentDateString = this.ymdLocal(corrected);
 
         // update i load
@@ -1739,16 +1739,16 @@ export class MatchesComponent implements OnInit, OnDestroy {
     }
 
     getDisplayResult(match: Match): string {
-        // pokušaj iz details-a (frontend patch)
+    // Prefer the richer details payload when it is already available.
         const computed = this.computeResultFromDetails(match.resultDetails);
         if (computed) return computed;
 
-        // fallback na backend result
+        // Fall back to the backend result.
         return this.formatResult(match.result);
     }
 
     private computeResultFromDetails(raw?: string | null): string | null {
-        const cleaned = this.formatResultDetails(raw); // ovo već normalizira i miče header
+    const cleaned = this.formatResultDetails(raw); // Normalizes tokens and removes the summary header.
         if (!cleaned) return null;
 
         const tokens = cleaned.split(/\s+/).filter(Boolean);
@@ -1765,7 +1765,7 @@ export class MatchesComponent implements OnInit, OnDestroy {
             else if (b > a) p2++;
         }
 
-        // Ako nemamo nijedan valjan set, ne diraj backend result
+    // Preserve the backend result when no valid set token exists.
         if (p1 + p2 === 0) return null;
 
         return `${p1}:${p2}`;
@@ -1774,11 +1774,11 @@ export class MatchesComponent implements OnInit, OnDestroy {
     getStrengthStars(match: any): number {
         const ts = match.tournamentStrengthMeanTS;
 
-        if (ts == null || Number.isNaN(ts)) return 0;   // omogući 0
+    if (ts == null || Number.isNaN(ts)) return 0;   // Zero is a valid minimum strength.
 
-        // PROBNA kalibracija (ti brojevi su ključ!)
-        const min = 18;  // najniža očekivana snaga
-        const max = 32;  // najviša očekivana snaga
+    // Display calibration aligned with the expected tournament-strength range.
+    const min = 18;  // Lowest expected strength.
+    const max = 32;  // Highest expected strength.
 
         // normalizacija 0..1
         const t = (ts - min) / (max - min);
@@ -1789,7 +1789,7 @@ export class MatchesComponent implements OnInit, OnDestroy {
         // map 0..5
         const stars = clamped * 5;
 
-        // zaokruži na pola zvjezdice
+    // Round to the nearest half-star.
         return Math.round(stars * 2) / 2;
     }
 
@@ -1915,7 +1915,7 @@ export class MatchesComponent implements OnInit, OnDestroy {
     private pad2(n: number): string { return String(n).padStart(2, '0'); }
 
     private toISOFromDateLocal(d: Date): string {
-        // lokalni datum → "YYYY-MM-DD"
+        // Convert a local date to YYYY-MM-DD.
         const y = d.getFullYear();
         const m = this.pad2(d.getMonth() + 1);
         const day = this.pad2(d.getDate());
@@ -1943,7 +1943,7 @@ export class MatchesComponent implements OnInit, OnDestroy {
         if (mm < 1 || mm > 12 || dd < 1 || dd > 31) return null;
 
         const dt = new Date(yyyy, mm - 1, dd);
-        // spriječi overflow tipa 31.02.
+    // Reject calendar overflow such as 31 February.
         if (dt.getFullYear() !== yyyy || dt.getMonth() !== mm - 1 || dt.getDate() !== dd) return null;
 
         return this.toISOFromDateLocal(dt);
@@ -1975,11 +1975,11 @@ export class MatchesComponent implements OnInit, OnDestroy {
         const dt = this.isoToDateLocal(iso);
         if (!dt) return;
 
-        // clamp na globalni min/max (da ne upiše 1800. godinu)
+    // Clamp to the global archive range to reject unrealistic years.
         const corrected = this.correctDateIfOutOfBounds(dt);
         const correctedIso = this.toISOFromDateLocal(corrected);
 
-        // ✅ postavi current date na ono što je user htio (ili clamped)
+    // Apply the requested date after clamping.
         this.currentDate = corrected;
         this.syncDateStringsFromCurrentDate();
 
@@ -1987,19 +1987,19 @@ export class MatchesComponent implements OnInit, OnDestroy {
 
         this.filteredPage = 1;
 
-        // ✅ ako taj dan NE postoji u availableDates -> samo pokaži "No matches" (bez preskakanja)
+    // If the day has no archive, show "No matches" without skipping to another date.
         if (this.availableDates?.length && !this.availableDates.includes(correctedIso)) {
             this.daySourceMatches = [];
             this.matches = [];
             this.filteredMatches = [];
-            this.noMatchesForFilter = false; // nije filter problem
+      this.noMatchesForFilter = false; // The absence is unrelated to active filters.
 
             this.checkAdjacentDaysAvailability(corrected);
             this.deferScrollToTop();
             return;
         }
 
-        // inače normalno učitaj taj dan
+    // Otherwise load the selected day normally.
         this.loadMatchesForDate(corrected);
     }
     onDateDMYInput(event: Event): void {
@@ -2008,10 +2008,10 @@ export class MatchesComponent implements OnInit, OnDestroy {
         const raw = input.value ?? '';
         const caret = input.selectionStart ?? raw.length;
 
-        // koliko znamenki je bilo lijevo od kursora PRIJE reformatiranja
+        // Count digits left of the caret before reformatting.
         const digitsBeforeCaret = raw.slice(0, caret).replace(/\D/g, '').length;
 
-        // uzmi samo znamenke, max 8
+    // Keep at most eight date digits.
         const digits = raw.replace(/\D/g, '').slice(0, 8);
 
         // format DD.MM.YYYY
@@ -2030,7 +2030,7 @@ export class MatchesComponent implements OnInit, OnDestroy {
             const el = this.dateInputRef.nativeElement;
             el.value = formatted;
 
-            // vrati caret na logično mjesto prema broju znamenki lijevo
+    // Restore the caret according to the number of digits on its left.
             let nextCaret = 0;
             let seenDigits = 0;
 
@@ -2091,7 +2091,7 @@ export class MatchesComponent implements OnInit, OnDestroy {
     private parseDualNumbers(text?: string | null): [number | null, number | null] {
         if (!text) return [null, null];
 
-        // podrži “–” i “-”
+    // Accept both en dash and hyphen separators.
         const parts = text.includes('–') ? text.split('–') : text.split('-');
         const l = (parts[0] || '').trim().replace(',', '.');
         const r = (parts[1] || '').trim().replace(',', '.');
@@ -2126,7 +2126,7 @@ export class MatchesComponent implements OnInit, OnDestroy {
             ? [directP1, directP2]
             : this.parseDualNumbers(match?.probabilityText);
 
-        // očekujemo 0..100
+    // Model probabilities are expected in the 0..100 display range.
         const v1 = p1 != null && p1 >= 0 && p1 <= 100 ? p1 : null;
         const v2 = p2 != null && p2 >= 0 && p2 <= 100 ? p2 : null;
         return [v1, v2];
@@ -2313,7 +2313,7 @@ export class MatchesComponent implements OnInit, OnDestroy {
     }
 
     private getWinnerSide(match: Match): 'p1' | 'p2' | null {
-        // koristi tvoj prikazni rezultat (već ti radi iz details)
+      // Use the normalized display result already populated from match details.
         const res = this.getDisplayResult(match); // npr "2:1" ili "RET"
         const m = (res || '').match(/^(\d{1,2}):(\d{1,2})$/);
         if (!m) return null;
@@ -2338,13 +2338,13 @@ export class MatchesComponent implements OnInit, OnDestroy {
         const edge1 = m1 - imp1;
         const edge2 = m2 - imp2;
 
-        // moramo imati barem jedan edge >= MIN_EDGE
+        // At least one side must satisfy edge >= MIN_EDGE.
         const ok1 = edge1 >= this.MIN_EDGE;
         const ok2 = edge2 >= this.MIN_EDGE;
 
         if (!ok1 && !ok2) return { side: null, edge1, edge2 };
 
-        // uzmi jači edge (ako oba prolaze)
+    // Select the stronger edge when both sides qualify.
         if (ok1 && ok2) return { side: edge1 >= edge2 ? 'p1' : 'p2', edge1, edge2 };
         return { side: ok1 ? 'p1' : 'p2', edge1, edge2 };
     }
@@ -2364,13 +2364,13 @@ export class MatchesComponent implements OnInit, OnDestroy {
 
     private computePL(match: Match): number | null {
         const winner = this.getWinnerSide(match);
-        if (!winner) return null; // nema validan rezultat
+    if (!winner) return null; // A valid outcome is required for grading.
 
         const [odds1, odds2] = this.parseOdds(match);
         if (!odds1 || !odds2) return null;
 
         const bet = this.getBetSide(match);
-        if (!bet.side) return null; // nema edge-a => ne betamo
+    if (!bet.side) return null; // Do not grade a match without a qualifying edge.
 
         const won = bet.side === winner;
         const odds = bet.side === 'p1' ? odds1 : odds2;
@@ -2378,7 +2378,7 @@ export class MatchesComponent implements OnInit, OnDestroy {
         // unit stake
         const pl = won ? (odds - 1) : -1;
 
-        // za stabilan prikaz
+        // Keep the displayed value stable.
         return Math.round(pl * 100) / 100;
     }
 
@@ -2429,7 +2429,7 @@ export class MatchesComponent implements OnInit, OnDestroy {
 
     private getStrengthKey(match: any): number {
         const ts = Number(match?.tournamentStrengthMeanTS);
-        // null/NaN -> na dno
+        // Sort null and NaN values last.
         return Number.isFinite(ts) ? ts : -Infinity;
     }
 
@@ -2442,14 +2442,14 @@ export class MatchesComponent implements OnInit, OnDestroy {
         // DTO/minified
         if (m?.l29 != null || m?.l30 != null) return true;
 
-        // "expanded" shape (ako negdje postoji)
+    // Support the expanded archive shape when present.
         if (m?.player1Odds != null || m?.player2Odds != null) return true;
 
-        // tekstualni prikaz (npr. "1.35 - 2.82")
+        // Support textual odds such as "1.35 - 2.82".
         const t = (m?.oddsText ?? '').toString().trim();
         if (!t) return false;
 
-        // ako ima barem jednu brojku, tretiramo kao da odds postoje
+    // Treat the row as having odds when at least one numeric value exists.
         return /\d/.test(t);
     }
 
@@ -2470,7 +2470,7 @@ export class MatchesComponent implements OnInit, OnDestroy {
             const p1 = this.norm(m.player1Name);
             const p2 = this.norm(m.player2Name);
 
-            // preferiraj clean name ako postoji (bolji UX), fallback na eventName
+    // Prefer the normalized tournament name and fall back to eventName.
             const t = this.norm(m.tournamentCleanName ?? m.tournamentEventName);
 
             return p1.includes(q) || p2.includes(q) || t.includes(q);
@@ -2481,7 +2481,7 @@ export class MatchesComponent implements OnInit, OnDestroy {
         return String(v ?? '')
             .toLowerCase()
             .normalize('NFD')
-            .replace(/[\u0300-\u036f]/g, '') // makne dijakritiku (č/ć/š/đ/ž)
+      .replace(/[\u0300-\u036f]/g, '') // Remove combining diacritics for stable search.
             .replace(/\s+/g, ' ')
             .trim();
     }

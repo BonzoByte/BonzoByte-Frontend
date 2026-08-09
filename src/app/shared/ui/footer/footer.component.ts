@@ -39,7 +39,7 @@ export class FooterComponent implements OnDestroy {
     }
 
     ngOnDestroy(): void {
-        // safety: očisti lock ako se komponenta uništi s otvorenim modalom
+    // Release the body lock if the component is destroyed while a modal is open.
         document.body.classList.remove('modal-open');
     }
 }

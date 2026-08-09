@@ -749,7 +749,7 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
 
     ngOnInit(): void {
         this.authSub = this.auth.user$.subscribe(() => {
-            // ako smo locked i modal je otvoren -> retry
+      // Retry when the modal is still open and the access window was previously locked.
             if (this.isOpen && this.match?.matchTPId && this.isLocked) {
                 console.log('[LOCKED] auth changed -> retry load');
                 this.load();
@@ -889,8 +889,8 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
             error: (err) => {
                 this.loading = false;
 
-                // StaticArchivesService već prosljeđuje err.error kao "err" često,
-                // ali nek bude robustno:
+    // StaticArchivesService often forwards err.error as the top-level error,
+    // Keep payload normalization defensive across interceptor configurations.
                 const payload = (err && typeof err === 'object' && 'error' in err) ? (err as any).error : err;
 
                 console.log('[DETAILS ERROR PAYLOAD]', { err, payload });
@@ -996,14 +996,14 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
     private unwrapHttpError(err: any): any {
         if (!err) return null;
 
-        // Ako interceptor već baca payload, to je već "pravo"
+    // An interceptor may already have unwrapped the response payload.
         if (typeof err === 'object' && err.code) return err;
 
         // Angular HttpErrorResponse shape: err.error je server payload
         const maybeError = (err && typeof err === 'object' && 'error' in err) ? (err as any).error : null;
         if (maybeError) return maybeError;
 
-        // nekad dođe string
+    // Some legacy endpoints return a plain string.
         if (typeof err === 'string') return { message: err };
 
         return err;
@@ -1248,7 +1248,7 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
 
     playerAvatarUrlById(tpId?: number): string {
         if (!tpId) return this.staticArchives.getDefaultPlayerPhotoUrl(this.genderHint);
-        // šaljemo gender hint kao query param da backend zna koji default vratiti kad nema slike
+    // Send a gender hint so the backend can choose the correct default image.
         return this.staticArchives.getPlayerPhotoUrl(tpId, this.genderHint);
     }
 
@@ -1684,7 +1684,7 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
         const rawOdds = (this._details as any)?.o;
         if (!Array.isArray(rawOdds) || !rawOdds.length) return [];
 
-        // legacy format: uvijek winner
+        // The legacy format always identifies the winner.
         if (this.isLegacyOddsArray(rawOdds)) {
             return this.activeOddsMarket === 'winner' ? rawOdds : [];
         }
@@ -1842,7 +1842,7 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
         13: '188Bet',
         14: '10Bet',
         15: 'Sbobet',
-        // dodavat ćemo po potrebi
+    // Extend the supported aliases only when a source contract requires it.
     };
 
     private getBookieName(bookieId: number): string {
@@ -1861,7 +1861,7 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
     }
 
     private oddsTimeMs(r: OddsRow): number | null {
-        const v: unknown = r.o03; // ključni fix za TS "instanceof" error
+      const v: unknown = r.o03; // Keep the value unknown before narrowing with instanceof.
         if (!v) return null;
 
         const d = (v instanceof Date) ? v : new Date(v as any);
@@ -1873,12 +1873,12 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
         return Number.isFinite(r.o04 as number) ? Number(r.o04) : 0;
     }
 
-    /** Sve čiste odds stavke (bez filtriranja po seriji) */
+  /** Returns every clean odds item without filtering by series. */
     get cleanOddsRows(): OddsRow[] {
         return this.oddsRows.filter(r => this.isCleanOddsRow(r));
     }
 
-    /** Zadnji (latest) red po bookie-u: usporedi po vremenu, fallback po seriesOrdinal */
+  /** Returns the latest row per bookmaker by time, falling back to seriesOrdinal. */
     get latestOddsByBookie(): OddsRow[] {
         const best = new Map<number, OddsRow>();
 
@@ -1895,7 +1895,7 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
                 continue;
             }
 
-            // fallback: seriesOrdinal (veći = noviji)
+      // Fall back to seriesOrdinal, where larger values are newer.
             if (this.seriesOrdinal(r) > this.seriesOrdinal(cur)) {
                 best.set(id, r);
             }
@@ -1904,7 +1904,7 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
         return Array.from(best.values()).sort((a, b) => (a.o02 ?? '').localeCompare(b.o02 ?? ''));
     }
 
-    /** Cijela povijest za bookie: novije -> starije (time desc, fallback seriesOrdinal desc) */
+  /** Returns a bookmaker's full history newest-first, with a seriesOrdinal fallback. */
     bookieHistory(bookieId: number): OddsRow[] {
         const id = Number(bookieId);
 
@@ -2320,7 +2320,7 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
             map((resp: any) => {
                 const data = this.unwrapTsResponse(resp);
 
-                // 🔥 debug (privremeno, ali sad nam je zlato)
+    // Retain this diagnostic snapshot while archive-shape compatibility is under review.
                 console.log('[TS] getTsHistoryCached$ resp keys', Object.keys(resp ?? {}));
                 console.log('[TS] getTsHistoryCached$ unwrapped has s?', !!data?.s);
 
@@ -2427,7 +2427,7 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
                             this.activeChartPoint = null;
 
                             this.pinnedDefaultTooltip = base;
-                            this.pinnedTooltip = base; // <-- ovo je jedini summary koji renderamo
+    this.pinnedTooltip = base; // Render only the normalized summary.
                         }
                     }
 
@@ -3472,7 +3472,7 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
     }
 
     bookieSeriesHistory(bookieId: number): OddsRow[] {
-        // sve odds za tog bookija, IGNORE suspicious/switched/mask, sortirano po SeriesOrdinal desc (najnovije prvo)
+    // Keep clean odds for this bookmaker, newest series first.
         return this.oddsRows
             .filter((x: OddsRow) => x.o01 === bookieId)
             .filter((x: OddsRow) => !x.o07 && !x.o08 && (x.o09 ?? 0) === 0)
@@ -3481,7 +3481,7 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
     }
 
     private getCurrentUser(): any | null {
-        // AuthService ti očito ima funkciju koja vraća usera
+    // Read the current user through the AuthService public contract.
         try {
             const fn: any = (this.auth as any)?.getUser;
             if (typeof fn === 'function') return fn.call(this.auth);

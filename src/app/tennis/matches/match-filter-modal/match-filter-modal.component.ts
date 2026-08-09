@@ -43,7 +43,7 @@ export class MatchFilterModalComponent implements OnChanges, OnInit, OnDestroy {
     @Output() filterApplied = new EventEmitter<FilterPayload>();
     @Output() resetFilter = new EventEmitter<void>();
 
-    // (legacy outputs – ostavljamo ako ih parent negdje sluša)
+  // Preserve legacy outputs while parent components still subscribe to them.
     @Output() surfaceFilterChanged = new EventEmitter<number | null>();
     @Output() tournamentTypeFilterChanged = new EventEmitter<number | null>();
     @Output() tournamentLevelFilterChanged = new EventEmitter<number | null>(); // legacy
@@ -55,10 +55,10 @@ export class MatchFilterModalComponent implements OnChanges, OnInit, OnDestroy {
     @Input() activeSurfaceIds: number[] = [];
     @Input() activeTournamentTypeIds: number[] = [];
 
-    // legacy input (više ga ne koristimo u UI-u, ali ostavljamo da parent ne pukne)
+  // Preserve the legacy input for parent compatibility even though the UI no longer uses it.
     @Input() activeTournamentLevelIds: number[] = [];
 
-    /** ✅ NEW: parent može (kasnije) slati aktivne zvjezdice; ako ne šalje, držimo default */
+  /** The parent may provide active strength stars; otherwise keep the default selection. */
     @Input() activeStrengthStars: number[] = [];
 
     @Input() minDate!: Date;
@@ -226,7 +226,7 @@ export class MatchFilterModalComponent implements OnChanges, OnInit, OnDestroy {
     private toggleIdWithMinOne(selected: number[], id: number): number[] {
         const has = selected.includes(id);
 
-        // ako pokušava ugasiti zadnju preostalu -> ne dopuštamo
+    // Keep at least one tour selected.
         if (has && selected.length === 1) return selected;
 
         if (has) return selected.filter(x => x !== id);
@@ -264,7 +264,7 @@ export class MatchFilterModalComponent implements OnChanges, OnInit, OnDestroy {
             return { startDate: a, endDate: b };
         }
 
-        // relative → compute from maxDate (zadnji dostupni meč), not "today"
+      // Relative ranges are anchored to maxDate, the newest available match, not today.
         if (!this.maxDate) {
             const today = new Date();
             return { startDate: this.calcRelativeFrom(today, this.selectedDateOption), endDate: this.fmt(today) };

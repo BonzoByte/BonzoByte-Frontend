@@ -11,7 +11,7 @@ export class EllipsisTooltipDirective implements AfterViewInit {
   ngAfterViewInit(): void {
     const element = this.el.nativeElement;
 
-    // Delay od 0ms da Angular završi rendering
+    // Defer measurement until Angular finishes rendering the current view.
     setTimeout(() => {
       if (element.scrollWidth > element.clientWidth) {
         this.renderer.setAttribute(element, 'title', element.textContent.trim());

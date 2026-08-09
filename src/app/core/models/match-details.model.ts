@@ -94,7 +94,7 @@ export interface PlayerDTO {
     m010?: string;
     m011?: string;
   
-    // stari summary odds više ne moraju postojati
+  // Legacy summary odds are optional during archive migration.
     m012?: number;
     m013?: number;
   
@@ -111,9 +111,9 @@ export interface PlayerDTO {
     p2: PlayerDTO;
     t: TournamentEventDTO;
   
-    // novi odds
+  // Versioned bookmaker odds payload.
     o?: BetTypeGroupDTOv2[];
   
-    // NN blok ćemo dodati kasnije do kraja ili odmah
+  // Optional neural-network feature payload.
     n?: any;
   };

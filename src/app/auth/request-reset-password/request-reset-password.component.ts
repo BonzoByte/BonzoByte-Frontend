@@ -37,7 +37,7 @@ export class RequestResetPasswordComponent implements OnInit, OnDestroy {
 
     close() {
         document.body.classList.remove('modal-open');
-        this.router.navigate(['/']); // ili kamo želiš
+        this.router.navigate(['/']); // Return to the application after confirmation.
     }
 
     requestReset() {
@@ -46,7 +46,7 @@ export class RequestResetPasswordComponent implements OnInit, OnDestroy {
 
         const { email } = this.emailForm.value;
 
-        // TODO: uskladiti endpoint s backendom ako je drugačiji:
+    // Keep this endpoint aligned with the backend authentication contract.
         // npr. `${environment.apiUrl}/auth/request-password-reset`
         this.http.post(`${environment.apiUrl}/auth/request-password-reset`, { email }).subscribe({
             next: () => {

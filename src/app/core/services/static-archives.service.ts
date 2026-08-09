@@ -92,7 +92,7 @@ export class StaticArchivesService {
 
   constructor(private http: HttpClient, private auth: AuthService) {
     if (this.mode === 'api') {
-      // u api modu sve ide preko backend-a
+      // API mode routes every archive request through the backend access layer.
       this.dailyIndex$ = this.getDateRange().pipe(
         map(r => ({ minDate: r.minDate, maxDate: r.maxDate } as DailyArchiveIndex)),
         shareReplay(1)
@@ -103,7 +103,7 @@ export class StaticArchivesService {
         shareReplay(1)
       );
 
-      // manifesti u api modu nisu dostupni (dok ih ne dodamo na backend)
+      // API mode derives ranges through backend endpoints rather than static manifests.
       this.dailyManifest$ = of({ minDate: '', maxDate: '' } as DailyManifest).pipe(shareReplay(1));
       this.dailyManifestTournaments$ = of({ minDate: '', maxDate: '' } as DailyManifestTournaments).pipe(shareReplay(1));
       return;
@@ -130,7 +130,7 @@ export class StaticArchivesService {
     );
   }
 
-  /** Vrati najbliži dostupni datum (snap), ili null ako nema ništa */
+  /** Returns the nearest available date, or null when the archive is empty. */
   normalizeToAvailableDate(targetISO: string): Observable<string> {
     return this.getDailyIndex().pipe(
       switchMap(idx =>
@@ -207,7 +207,7 @@ export class StaticArchivesService {
     });
   }
 
-  // --- postojeće metode getDaily/getDetails/decoder/mapLiteRowToMatch ostaju iste ---
+  // Daily and detail archive accessors share the same decoding and mapping contracts.
   private availableDatesCached$?: Observable<string[]>;
   private latestDailyCached$?: Observable<{ date: string; iso: string }>;
 
@@ -232,14 +232,14 @@ export class StaticArchivesService {
   }
 
   private toDayNumber(iso: string): number | null {
-    // očekujemo "YYYY-MM-DD"
+    // Archive indexes use the ISO calendar format YYYY-MM-DD.
     if (!iso || iso.length < 10) return null;
     const y = Number(iso.slice(0, 4));
     const m = Number(iso.slice(5, 7));
     const d = Number(iso.slice(8, 10));
     if (!Number.isFinite(y) || !Number.isFinite(m) || !Number.isFinite(d)) return null;
 
-    // UTC day number (stabilno, bez timezone pizdarija)
+    // Use a UTC day number to avoid local time-zone drift.
     const ms = Date.UTC(y, m - 1, d);
     return Math.floor(ms / 86400000);
   }
@@ -664,7 +664,7 @@ export class StaticArchivesService {
       throw new Error(`Got HTML instead of data. First bytes: ${head}`);
     }
 
-    // već JSON?
+    // Some API routes already return decoded JSON.
     if (head.startsWith('{') || head.startsWith('[')) {
       return JSON.parse(this.utf8.decode(u8)) as T;
     }
@@ -842,7 +842,7 @@ export class StaticArchivesService {
     return `${y}-${m}-${d}`;
   }
 
-  /** Provjera postoji li daily archive za dan (prefer HEAD; fallback može biti GET) */
+  /** Checks whether a daily archive exists, preferring HEAD with a GET fallback. */
   private dailyExists(iso: string): Observable<boolean> {
     const key = this.isoToCompact(iso);        // YYYYMMDD
     const url = `${this.dailyStaticBase}/${key}.br`;
@@ -859,17 +859,17 @@ export class StaticArchivesService {
     return iso.replace(/-/g, '');
   }
 
-  /** Nađe najnoviji postojeći datum u [minDate..upperISO] */
+  /** Finds the newest available date in the inclusive [minDate..upperISO] range. */
   private findLatestExistingDate(minISO: string, upperISO: string): Observable<string> {
     const lo0 = this.toDayNumber(minISO);
     const hi0 = this.toDayNumber(upperISO);
     if (lo0 == null || hi0 == null) return of(upperISO);
     if (hi0 < lo0) return of(minISO);
 
-    // binary search: zadnji true u rasponu
+    // Binary search for the last available archive in the range.
     const search = (lo: number, hi: number, best: number | null): Observable<string> => {
       if (lo > hi) {
-        const finalDay = best ?? lo0; // ako ništa nije nađeno, vrati min
+    const finalDay = best ?? lo0; // Fall back to the minimum date when no archive was found.
         const ms = finalDay * 86400000;
         const dt = new Date(ms);
         const y = dt.getUTCFullYear();

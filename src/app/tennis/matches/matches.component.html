@@ -181,7 +181,7 @@
                     </thead>
 
                     <tbody>
-                        <!-- OSTAVI SVOJ POSTOJEĆI *ngFor sadržaj -->
+      <!-- Match rows are rendered by the existing *ngFor contract. -->
                         <tr *ngFor="let match of filteredMatches">
                             <td class="match-date-cell" [title]="getLocalizedDateMaybeTime(match.dateTime)">{{
                                 getLocalizedDateMaybeTime(match.dateTime) }}</td>

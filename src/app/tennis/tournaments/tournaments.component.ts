@@ -41,7 +41,7 @@ export class TournamentsComponent implements OnInit, OnDestroy {
 
   // raw + view
   allTournaments: TournamentIndex[] = [];
-  tournaments: TournamentIndex[] = []; // paged lista za prikaz
+  tournaments: TournamentIndex[] = []; // Current page rendered by the table.
 
   // paging
   currentPage = 1;
@@ -175,7 +175,7 @@ export class TournamentsComponent implements OnInit, OnDestroy {
 
       // default sorting:
       // - name ASC
-      // - ostalo DESC (da “strong/big/recent” ide gore)
+      // - other fields DESC so stronger, larger, or more recent values sort first
       this.sortDirection = (field === 'tournamentEventName') ? 'asc' : 'desc';
     }
 
@@ -356,8 +356,8 @@ export class TournamentsComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Zvjezdice za turnir: temeljeno na AverageMatchStrength,
-   * normalizirano prema (min/median/max) iz manifest.tournaments.json.
+   * Tournament stars are based on AverageMatchStrength,
+   * normalized against min, median, and max from manifest.tournaments.json.
    */
   getStrengthStars(avg: number | null | undefined): number {
     if (avg == null || !Number.isFinite(avg)) return 0;

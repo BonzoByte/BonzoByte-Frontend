@@ -348,7 +348,7 @@
   /* pinned summary = compact inline bar */
   .bb-chart-tooltip.bb-tooltip-summary {
     position: sticky;
-    /* ostaje vidljivo dok scrollaš tab */
+  /* Keep the tab header visible while its content scrolls. */
     top: 0;
     z-index: 5;
 
@@ -613,7 +613,7 @@
   .bb-ts-label {
     flex: 0 0 auto;
     min-width: 76px;
-    /* malo uži od 86 da ne krade prostor */
+  /* Slightly narrower to preserve space for match content. */
     font-size: 12px;
     opacity: 0.75;
     line-height: 1;
