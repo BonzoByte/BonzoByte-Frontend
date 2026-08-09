@@ -444,17 +444,17 @@ export class StaticArchivesService {
           )
         : this.http
             .get<PredictionSimulationManifest>(
-              `${this.simulationStaticBase}/prediction-simulation.v2.manifest.json?cb=${Date.now()}`
+              `${this.simulationStaticBase}/prediction-simulation.v3.manifest.json?cb=${Date.now()}`
             )
             .pipe(
               switchMap(manifest => {
                 const fileName = String(manifest?.report?.file ?? '').trim();
                 if (
                   manifest?.schema !== 'bonzobyte.prediction-simulation.manifest' ||
-                  manifest?.schemaVersion !== 2 ||
+                  manifest?.schemaVersion !== 3 ||
                   manifest?.report?.schema !== 'bonzobyte.prediction-simulation' ||
-                  manifest?.report?.schemaVersion !== 2 ||
-                  !/^prediction-simulation\.v2\.[0-9a-f]{16}\.json\.br$/i.test(fileName)
+                  manifest?.report?.schemaVersion !== 3 ||
+                  !/^prediction-simulation\.v3\.[0-9a-f]{16}\.json\.br$/i.test(fileName)
                 ) {
                   return throwError(
                     () => new Error('Prediction simulation manifest is invalid.')
@@ -706,7 +706,7 @@ export class StaticArchivesService {
     if (
       !normalized ||
       normalized.schema !== 'bonzobyte.prediction-simulation' ||
-      normalized.schemaVersion !== 2 ||
+      normalized.schemaVersion !== 3 ||
       !normalized.labels ||
       !normalized.provenance ||
       !normalized.window ||

@@ -70,6 +70,16 @@ export interface PredictionSimulationModel {
     excludedNoCompletePair: number;
     excludedInvalidPair: number;
     excludedNoDirectionalPrediction: number;
+    firstPrediction: string | null;
+    lastPrediction: string | null;
+    firstBet: string | null;
+    lastBet: string | null;
+  };
+  evaluation: {
+    outOfSampleFrom: string | null;
+    fullHistoryIncludesInSample: boolean;
+    outOfSampleLabel: string;
+    disclosure: string;
   };
   cohorts: PredictionSimulationCohort[];
 }
@@ -146,6 +156,7 @@ export interface PredictionSimulationTrajectoryValue {
 }
 
 export interface PredictionSimulationTrajectories {
+  basisEdgeThreshold: number | null;
   flatUnitPolicy: string;
   flatUnitStartingBalance: number;
   boundedPercentagePolicy: string;

@@ -90,6 +90,36 @@
       </div>
     </section>
 
+    <section
+      class="sim-evidence-window"
+      [class.sim-evidence-window--mixed]="model.evaluation.fullHistoryIncludesInSample">
+      <div>
+        <span>Stored prediction coverage</span>
+        <strong>
+          <ng-container *ngIf="model.coverage.firstPrediction; else noPredictionRange">
+            {{ model.coverage.firstPrediction | date:'dd.MM.yyyy' }}
+            – {{ model.coverage.lastPrediction | date:'dd.MM.yyyy' }}
+          </ng-container>
+          <ng-template #noPredictionRange>Not available</ng-template>
+        </strong>
+      </div>
+      <div>
+        <span>Betting-odds overlap</span>
+        <strong>
+          <ng-container *ngIf="model.coverage.firstBet; else noBetRange">
+            {{ model.coverage.firstBet | date:'dd.MM.yyyy' }}
+            – {{ model.coverage.lastBet | date:'dd.MM.yyyy' }}
+          </ng-container>
+          <ng-template #noBetRange>Not available</ng-template>
+        </strong>
+      </div>
+      <div>
+        <span>Unbiased evaluation boundary</span>
+        <strong>{{ model.evaluation.outOfSampleLabel }}</strong>
+      </div>
+      <p>{{ model.evaluation.disclosure }}</p>
+    </section>
+
     <section class="sim-summary-grid">
       <article>
         <span>Eligible predictions</span>
@@ -170,6 +200,10 @@
         <span><strong>{{ curveCohort.bets | number }}</strong> wagers</span>
         <span>{{ curveCohort.wins | number }} wins · {{ curveCohort.losses | number }} losses</span>
         <span>{{ selectedExecutionPolicy === consensusPolicy ? 'Consensus median' : 'Best price (optimistic)' }}</span>
+        <span *ngIf="model.coverage.firstBet">
+          {{ model.coverage.firstBet | date:'dd.MM.yyyy' }}
+          – {{ model.coverage.lastBet | date:'dd.MM.yyyy' }}
+        </span>
       </div>
 
       <div class="sim-trajectory-grid">
@@ -235,11 +269,18 @@
       </div>
 
       <p class="sim-caption">
-        Every point after zero is one retained wager in chronological order.
+        Every eligible wager in the full stored prediction/odds overlap is
+        included in the calculation. The line retains the exact end-of-day
+        bankroll state in chronological order, avoiding redundant intraday
+        pixels while preserving the full first-to-last date range and ending result.
         Both player sides are evaluated from complementary model probabilities;
         only a positive raw-EV side meeting the selected edge threshold enters
         these curves. Kelly and bounded staking start from a 1,000 bankroll;
         all three charts show cumulative profit so each begins at zero.
+        Results before the registered out-of-sample boundary are descriptive
+        in-sample/calibration history, not unbiased evidence of future performance.
+        Long-horizon percentage and Kelly compounding are mathematical stress
+        scenarios; their exponential totals are not a realistic capital forecast.
       </p>
     </section>
 

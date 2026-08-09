@@ -38,21 +38,21 @@ export class SimulationComponent implements OnInit, OnDestroy {
     interaction: { mode: 'index', intersect: false },
     scales: {
       x: {
-        ticks: { color: '#cbd5e1' },
+        ticks: { color: '#64748b' },
         grid: { display: false },
       },
       y: {
         ticks: {
-          color: '#cbd5e1',
+          color: '#64748b',
           callback: value => `${(Number(value) * 100).toFixed(0)}%`,
         },
-        grid: { color: 'rgba(255,255,255,0.08)' },
+        grid: { color: 'rgba(100,116,139,0.20)' },
       },
     },
     plugins: {
       legend: {
         position: 'bottom',
-        labels: { color: '#e2e8f0', usePointStyle: true },
+        labels: { color: '#64748b', usePointStyle: true },
       },
       tooltip: {
         callbacks: {
@@ -77,7 +77,7 @@ export class SimulationComponent implements OnInit, OnDestroy {
     this.archives.getPredictionSimulation().subscribe({
       next: report => {
         this.report = report;
-        this.selectedModelIndex = 0;
+        this.selectedModelIndex = this.broadestHistoryModelIndex(report);
         this.isLoading = false;
       },
       error: error => {
@@ -249,7 +249,12 @@ export class SimulationComponent implements OnInit, OnDestroy {
   ): ChartData<'line'> {
     const points = this.selectedEdgeCohort?.trajectories?.points ?? [];
     return {
-      labels: ['0', ...points.map(point => String(point.sequence))],
+      labels: [
+        'Start',
+        ...points.map(point =>
+          new Date(point.matchDateTime).toLocaleDateString('en-GB')
+        ),
+      ],
       datasets: [
         {
           label,
@@ -261,6 +266,7 @@ export class SimulationComponent implements OnInit, OnDestroy {
           pointHoverRadius: 4,
           borderWidth: 2,
           tension: 0.16,
+          normalized: true,
         },
       ],
     };
@@ -277,11 +283,11 @@ export class SimulationComponent implements OnInit, OnDestroy {
         x: {
           title: {
             display: true,
-            text: 'Chronological wager number',
-            color: '#94a3b8',
+            text: 'Chronological match date',
+            color: '#64748b',
           },
           ticks: {
-            color: '#cbd5e1',
+            color: '#64748b',
             autoSkip: true,
             maxTicksLimit: 12,
           },
@@ -291,13 +297,13 @@ export class SimulationComponent implements OnInit, OnDestroy {
           title: {
             display: true,
             text: 'Cumulative profit',
-            color: '#94a3b8',
+            color: '#64748b',
           },
           ticks: {
-            color: '#cbd5e1',
+            color: '#64748b',
             callback: value => Number(value).toFixed(0),
           },
-          grid: { color: 'rgba(255,255,255,0.08)' },
+          grid: { color: 'rgba(100,116,139,0.20)' },
         },
       },
       plugins: {
@@ -345,5 +351,22 @@ export class SimulationComponent implements OnInit, OnDestroy {
       `Odds: ${point.selectedOdds.toFixed(2)} · Edge: ${(point.edge * 100).toFixed(1)} pp`,
       `Stake: ${strategy.stake.toFixed(2)} · P/L: ${strategy.profit.toFixed(2)}`,
     ];
+  }
+
+  private broadestHistoryModelIndex(
+    report: PredictionSimulationReport
+  ): number {
+    let selectedIndex = 0;
+    let earliest = Number.POSITIVE_INFINITY;
+    report.models.forEach((model, index) => {
+      const firstBet = model.coverage.firstBet;
+      if (!firstBet) return;
+      const timestamp = new Date(firstBet).getTime();
+      if (Number.isFinite(timestamp) && timestamp < earliest) {
+        earliest = timestamp;
+        selectedIndex = index;
+      }
+    });
+    return selectedIndex;
   }
 }
