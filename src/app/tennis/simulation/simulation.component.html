@@ -36,7 +36,225 @@
     </div>
   </section>
 
-  <section class="sim-controls">
+  <nav class="sim-view-tabs" aria-label="Simulation views">
+    <button
+      type="button"
+      [class.is-active]="selectedView === 'summary'"
+      (click)="setView('summary')">
+      Summary
+      <small>production WP</small>
+    </button>
+    <button
+      type="button"
+      [class.is-active]="selectedView === 'modelAudit'"
+      (click)="setView('modelAudit')">
+      Model audit
+      <small>versioned NN</small>
+    </button>
+  </nav>
+
+  <ng-container *ngIf="selectedView === 'summary'">
+    <ng-container *ngIf="simulation.productionSummary as summary; else noProductionSummary">
+      <section class="sim-controls sim-summary-controls">
+        <div class="sim-policy" role="group" aria-label="Tour scope">
+          <button
+            *ngFor="let scope of ['ALL', 'ATP', 'WTA']"
+            type="button"
+            [class.is-active]="selectedSummaryScope === scope"
+            (click)="setSummaryScope($any(scope))">
+            {{ scope }}
+            <small>{{ scope === 'ALL' ? 'combined tours' : 'tour only' }}</small>
+          </button>
+        </div>
+        <div class="sim-summary-source">
+          <span>{{ summary.sourceMatches | number }} priced matches</span>
+          <small>
+            {{ summary.firstMatch | date:'dd.MM.yyyy' }}
+            &ndash; {{ summary.lastMatch | date:'dd.MM.yyyy' }}
+          </small>
+        </div>
+      </section>
+
+      <section class="sim-evidence-window">
+        <div>
+          <span>Prediction source</span>
+          <strong>{{ summary.predictionSource }}</strong>
+        </div>
+        <div>
+          <span>Execution price</span>
+          <strong>Median of bookmaker medians</strong>
+        </div>
+        <div>
+          <span>Market benchmark</span>
+          <strong>De-vig fair probability</strong>
+        </div>
+        <p>{{ summary.interpretation }}</p>
+      </section>
+
+      <section class="sim-summary-grid" *ngIf="selectedSummaryCohort as cohort">
+        <article>
+          <span>Selected scope</span>
+          <strong>{{ selectedSummaryScope }}</strong>
+          <small>{{ summaryEdgeLabel(cohort.minimumEdge) }}</small>
+        </article>
+        <article>
+          <span>Flat profit</span>
+          <strong [class.is-positive]="cohort.flatProfit > 0" [class.is-negative]="cohort.flatProfit < 0">
+            {{ cohort.flatProfit | number:'1.2-2' }} units
+          </strong>
+          <small>{{ cohort.bets | number }} one-unit wagers</small>
+        </article>
+        <article>
+          <span>Flat ROI</span>
+          <strong [class.is-positive]="cohort.flatRoi > 0" [class.is-negative]="cohort.flatRoi < 0">
+            {{ cohort.flatRoi | percent:'1.2-2' }}
+          </strong>
+          <small>{{ cohort.wins | number }} W / {{ cohort.losses | number }} L</small>
+        </article>
+        <article>
+          <span>Average model probability</span>
+          <strong>{{ cohort.averageModelProbability | percent:'1.2-2' }}</strong>
+          <small>selected side</small>
+        </article>
+        <article>
+          <span>Average market fair probability</span>
+          <strong>{{ cohort.averageMarketFairProbability | percent:'1.2-2' }}</strong>
+          <small>vig removed</small>
+        </article>
+        <article>
+          <span>Average edge</span>
+          <strong>{{ cohort.averageEdge | percent:'1.2-2' }}</strong>
+          <small>model minus fair market</small>
+        </article>
+      </section>
+
+      <section class="sim-chart-grid sim-chart-grid--single">
+        <article class="sim-panel">
+          <div class="sim-panel__header">
+            <div>
+              <span>ALL / ATP / WTA</span>
+              <h2>Production-WP flat ROI by edge threshold</h2>
+            </div>
+          </div>
+          <div class="sim-chart">
+            <canvas
+              baseChart
+              [data]="summaryRoiChartData"
+              [options]="roiChartOptions"
+              [type]="'bar'">
+            </canvas>
+          </div>
+        </article>
+      </section>
+
+      <section class="sim-panel sim-panel--trajectories" *ngIf="selectedSummaryCohort as cohort">
+        <div class="sim-panel__header sim-panel__header--trajectory">
+          <div>
+            <span>Chronological production snapshot</span>
+            <h2>Cumulative one-unit P/L</h2>
+          </div>
+          <label class="sim-edge-select">
+            <span>Minimum edge</span>
+            <select [(ngModel)]="selectedSummaryEdgeThreshold">
+              <option *ngFor="let threshold of summaryEdgeThresholdOptions" [ngValue]="threshold">
+                {{ summaryEdgeLabel(threshold) }}
+              </option>
+            </select>
+          </label>
+        </div>
+        <div class="sim-trajectory-summary">
+          <span><strong>{{ cohort.bets | number }}</strong> wagers</span>
+          <span>{{ cohort.wins | number }} wins &middot; {{ cohort.losses | number }} losses</span>
+          <span>{{ cohort.flatProfit | number:'1.2-2' }} units</span>
+          <span>{{ cohort.flatMaximumDrawdownUnits | number:'1.2-2' }} unit end-of-day max drawdown</span>
+        </div>
+        <div class="sim-chart sim-chart--trajectory sim-summary-trajectory">
+          <canvas
+            baseChart
+            [data]="summaryTrajectoryChartData"
+            [options]="summaryTrajectoryChartOptions"
+            [type]="'line'">
+          </canvas>
+        </div>
+        <p class="sim-caption">
+          The curve begins at zero and keeps every selected win and loss.
+          Fair odds are shown only as a vig-free market benchmark; realized P/L
+          always uses the recorded consensus median odds.
+        </p>
+      </section>
+
+      <section class="sim-panel sim-panel--table">
+        <div class="sim-panel__header">
+          <div>
+            <span>{{ selectedSummaryScope }} production summary</span>
+            <h2>Median execution price versus fair market benchmark</h2>
+          </div>
+          <div class="sim-table-note">No selected loss is removed.</div>
+        </div>
+        <div class="sim-table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Minimum edge</th>
+                <th>Bets</th>
+                <th>W / L</th>
+                <th>Coverage</th>
+                <th>Hit rate</th>
+                <th>Avg median odds</th>
+                <th>Avg fair odds</th>
+                <th>Avg model probability</th>
+                <th>Avg fair probability</th>
+                <th>Avg edge</th>
+                <th>Avg model EV</th>
+                <th>Flat profit</th>
+                <th>Flat ROI</th>
+                <th>95% interval</th>
+                <th>Avg books</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let cohort of summaryCohorts">
+                <td><strong>{{ summaryEdgeLabel(cohort.minimumEdge) }}</strong></td>
+                <td>{{ cohort.bets | number }}</td>
+                <td>{{ cohort.wins | number }} / {{ cohort.losses | number }}</td>
+                <td>{{ cohort.coverage | percent:'1.1-1' }}</td>
+                <td>{{ cohort.hitRate | percent:'1.1-1' }}</td>
+                <td>{{ cohort.averageMedianOdds | number:'1.2-3' }}</td>
+                <td>{{ cohort.averageMarketFairOdds | number:'1.2-3' }}</td>
+                <td>{{ cohort.averageModelProbability | percent:'1.2-2' }}</td>
+                <td>{{ cohort.averageMarketFairProbability | percent:'1.2-2' }}</td>
+                <td>{{ cohort.averageEdge | percent:'1.2-2' }}</td>
+                <td>{{ cohort.averageExpectedValue | percent:'1.2-2' }}</td>
+                <td [class.is-positive]="cohort.flatProfit > 0" [class.is-negative]="cohort.flatProfit < 0">
+                  {{ cohort.flatProfit | number:'1.2-2' }}
+                </td>
+                <td [class.is-positive]="cohort.flatRoi > 0" [class.is-negative]="cohort.flatRoi < 0">
+                  {{ cohort.flatRoi | percent:'1.2-2' }}
+                </td>
+                <td>{{ summaryConfidenceInterval(cohort) }}</td>
+                <td>{{ cohort.averageCompleteBookmakers | number:'1.1-1' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="sim-caption">
+          The 95% interval is a per-bet normal approximation and is not corrected
+          for day, tournament or player clustering. This legacy full-history
+          summary is descriptive and must not be interpreted as an untouched
+          out-of-sample test of the current versioned model.
+        </p>
+      </section>
+    </ng-container>
+
+    <ng-template #noProductionSummary>
+      <div class="sim-state sim-state--error">
+        <strong>Production summary is not available</strong>
+        <p>Regenerate the local read-only simulation artifact to add it.</p>
+      </div>
+    </ng-template>
+  </ng-container>
+
+  <section class="sim-controls" *ngIf="selectedView === 'modelAudit'">
     <label>
       <span>Model</span>
       <select [(ngModel)]="selectedModelIndex">
@@ -66,6 +284,7 @@
     </div>
   </section>
 
+  <ng-container *ngIf="selectedView === 'modelAudit'">
   <ng-container *ngIf="selectedModel as model">
     <section class="sim-model-strip">
       <div>
@@ -366,6 +585,7 @@
         </article>
       </div>
     </section>
+  </ng-container>
   </ng-container>
 
   <div class="sim-empty" *ngIf="simulation.models.length === 0">

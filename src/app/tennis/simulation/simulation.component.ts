@@ -5,6 +5,7 @@ import { ChartData, ChartOptions } from 'chart.js';
 import { BaseChartDirective } from 'ng2-charts';
 
 import {
+  PredictionProductionSummaryCohort,
   PredictionSimulationCohort,
   PredictionSimulationModel,
   PredictionSimulationReport,
@@ -15,6 +16,8 @@ type DisplayTrajectoryKind =
   | 'flatUnit'
   | 'boundedPercentage'
   | 'fractionalKelly';
+type SimulationView = 'summary' | 'modelAudit';
+type ProductionScope = 'ALL' | 'ATP' | 'WTA';
 
 @Component({
   selector: 'app-simulation',
@@ -26,9 +29,12 @@ type DisplayTrajectoryKind =
 export class SimulationComponent implements OnInit, OnDestroy {
   readonly consensusPolicy = 'median-of-bookmaker-medians';
   report: PredictionSimulationReport | null = null;
+  selectedView: SimulationView = 'summary';
   selectedModelIndex = 0;
   selectedExecutionPolicy = this.consensusPolicy;
   selectedEdgeThreshold = 0;
+  selectedSummaryScope: ProductionScope = 'ALL';
+  selectedSummaryEdgeThreshold = 0;
   isLoading = true;
   error: string | null = null;
 
@@ -69,6 +75,40 @@ export class SimulationComponent implements OnInit, OnDestroy {
     this.createTrajectoryChartOptions('fractionalKelly');
   readonly boundedTrajectoryChartOptions =
     this.createTrajectoryChartOptions('boundedPercentage');
+  readonly summaryTrajectoryChartOptions: ChartOptions<'line'> = {
+    responsive: true,
+    maintainAspectRatio: false,
+    interaction: { mode: 'index', intersect: false },
+    scales: {
+      x: {
+        title: {
+          display: true,
+          text: 'Chronological match date',
+          color: '#64748b',
+        },
+        ticks: { color: '#64748b', autoSkip: true, maxTicksLimit: 12 },
+        grid: { display: false },
+      },
+      y: {
+        title: {
+          display: true,
+          text: 'Cumulative flat profit (units)',
+          color: '#64748b',
+        },
+        ticks: { color: '#64748b' },
+        grid: { color: 'rgba(100,116,139,0.20)' },
+      },
+    },
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          label: context =>
+            `Cumulative P/L: ${Number(context.raw).toFixed(2)} units`,
+        },
+      },
+    },
+  };
 
   constructor(private readonly archives: StaticArchivesService) {}
 
@@ -95,6 +135,73 @@ export class SimulationComponent implements OnInit, OnDestroy {
 
   get selectedModel(): PredictionSimulationModel | null {
     return this.report?.models[this.selectedModelIndex] ?? null;
+  }
+
+  get summaryCohorts(): PredictionProductionSummaryCohort[] {
+    return (this.report?.productionSummary?.cohorts ?? [])
+      .filter(cohort => cohort.scope === this.selectedSummaryScope)
+      .sort((left, right) => left.minimumEdge - right.minimumEdge);
+  }
+
+  get selectedSummaryCohort(): PredictionProductionSummaryCohort | null {
+    return this.summaryCohorts.find(cohort =>
+      Math.abs(cohort.minimumEdge - this.selectedSummaryEdgeThreshold) < 0.000001
+    ) ?? this.summaryCohorts[0] ?? null;
+  }
+
+  get summaryEdgeThresholdOptions(): number[] {
+    return this.summaryCohorts.map(cohort => cohort.minimumEdge);
+  }
+
+  get summaryRoiChartData(): ChartData<'bar'> {
+    const summary = this.report?.productionSummary;
+    const thresholds = [
+      ...new Set((summary?.cohorts ?? []).map(cohort => cohort.minimumEdge)),
+    ].sort((left, right) => left - right);
+    const colors: Record<ProductionScope, string> = {
+      ALL: 'rgba(45, 212, 191, 0.72)',
+      ATP: 'rgba(56, 189, 248, 0.70)',
+      WTA: 'rgba(192, 132, 252, 0.70)',
+    };
+    return {
+      labels: thresholds.map(value => this.summaryEdgeLabel(value)),
+      datasets: (['ALL', 'ATP', 'WTA'] as ProductionScope[]).map(scope => ({
+        label: scope,
+        data: thresholds.map(threshold =>
+          summary?.cohorts.find(cohort =>
+            cohort.scope === scope &&
+            Math.abs(cohort.minimumEdge - threshold) < 0.000001
+          )?.flatRoi ?? 0
+        ),
+        backgroundColor: colors[scope],
+        borderWidth: 0,
+        borderRadius: 7,
+      })),
+    };
+  }
+
+  get summaryTrajectoryChartData(): ChartData<'line'> {
+    const points = this.selectedSummaryCohort?.trajectory ?? [];
+    return {
+      labels: [
+        'Start',
+        ...points.map(point =>
+          new Date(point.matchDate).toLocaleDateString('en-GB')
+        ),
+      ],
+      datasets: [{
+        label: 'Legacy production WP flat P/L',
+        data: [0, ...points.map(point => point.cumulativeProfit)],
+        borderColor: '#2dd4bf',
+        backgroundColor: 'rgba(45, 212, 191, 0.12)',
+        fill: true,
+        pointRadius: 0,
+        pointHoverRadius: 4,
+        borderWidth: 2,
+        tension: 0.12,
+        normalized: true,
+      }],
+    };
   }
 
   get selectedCohorts(): PredictionSimulationCohort[] {
@@ -200,6 +307,36 @@ export class SimulationComponent implements OnInit, OnDestroy {
 
   setExecutionPolicy(policy: string): void {
     this.selectedExecutionPolicy = policy;
+  }
+
+  setView(view: SimulationView): void {
+    this.selectedView = view;
+  }
+
+  setSummaryScope(scope: ProductionScope): void {
+    this.selectedSummaryScope = scope;
+    if (!this.summaryEdgeThresholdOptions.some(threshold =>
+      Math.abs(threshold - this.selectedSummaryEdgeThreshold) < 0.000001
+    )) {
+      this.selectedSummaryEdgeThreshold =
+        this.summaryEdgeThresholdOptions[0] ?? 0;
+    }
+  }
+
+  summaryEdgeLabel(threshold: number): string {
+    return threshold === 0
+      ? 'Edge > 0'
+      : `Edge >= ${(threshold * 100).toFixed(0)} pp`;
+  }
+
+  summaryConfidenceInterval(
+    cohort: PredictionProductionSummaryCohort
+  ): string {
+    const interval = cohort.flatRoiCi95;
+    if (!interval.available || interval.low == null || interval.high == null) {
+      return `N/A (n=${interval.sampleSize})`;
+    }
+    return `${(interval.low * 100).toFixed(1)}% to ${(interval.high * 100).toFixed(1)}%`;
   }
 
   cohortLabel(cohort: PredictionSimulationCohort): string {

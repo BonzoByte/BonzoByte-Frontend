@@ -728,7 +728,17 @@ export class StaticArchivesService {
       throw new Error('Prediction simulation archive contains an invalid model.');
     }
 
-    return normalized as PredictionSimulationReport;
+    if (
+      normalized.productionSummary != null &&
+      !Array.isArray(normalized.productionSummary.cohorts)
+    ) {
+      throw new Error('Prediction simulation archive contains an invalid production summary.');
+    }
+
+    return {
+      ...normalized,
+      productionSummary: normalized.productionSummary ?? null,
+    } as PredictionSimulationReport;
   }
 
   private camelizeArchiveKeys(value: unknown): unknown {

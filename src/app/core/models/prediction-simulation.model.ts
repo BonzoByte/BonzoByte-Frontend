@@ -46,7 +46,54 @@ export interface PredictionSimulationReport {
     valueSelectionContract: string;
     reportGenerator: string;
   };
+  productionSummary: PredictionProductionSummary | null;
   models: PredictionSimulationModel[];
+}
+
+export interface PredictionProductionSummary {
+  predictionSource: string;
+  pricePolicy: string;
+  refreshMode: string;
+  interpretation: string;
+  sourceMatches: number;
+  firstMatch: string | null;
+  lastMatch: string | null;
+  cohorts: PredictionProductionSummaryCohort[];
+}
+
+export interface PredictionProductionSummaryCohort {
+  scope: 'ALL' | 'ATP' | 'WTA';
+  minimumEdge: number;
+  candidateMatches: number;
+  bets: number;
+  wins: number;
+  losses: number;
+  coverage: number;
+  hitRate: number;
+  averageCompleteBookmakers: number;
+  averageMedianOdds: number;
+  averageMarketFairProbability: number;
+  averageMarketFairOdds: number;
+  averageModelProbability: number;
+  averageEdge: number;
+  averageExpectedValue: number;
+  flatProfit: number;
+  flatRoi: number;
+  flatRoiCi95: {
+    low: number | null;
+    high: number | null;
+    available: boolean;
+    sampleSize: number;
+    method: string;
+  };
+  flatMaximumDrawdownUnits: number;
+  trajectory: PredictionProductionSummaryTrajectoryPoint[];
+}
+
+export interface PredictionProductionSummaryTrajectoryPoint {
+  sequence: number;
+  matchDate: string;
+  cumulativeProfit: number;
 }
 
 export interface PredictionSimulationModel {

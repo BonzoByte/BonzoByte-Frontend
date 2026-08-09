@@ -11,6 +11,7 @@
 
 .sim-hero,
 .sim-disclosure,
+.sim-view-tabs,
 .sim-controls,
 .sim-model-strip,
 .sim-evidence-window,
@@ -126,6 +127,41 @@
   font-size: 0.7rem;
 }
 
+.sim-view-tabs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.35rem;
+  margin-top: 0.85rem;
+  padding: 0.3rem;
+  border-radius: 16px;
+  background: rgba(15, 23, 42, 0.5);
+}
+
+.sim-view-tabs button {
+  min-height: 46px;
+  padding: 0.45rem 0.8rem;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  color: rgba(226, 232, 240, 0.7);
+  background: transparent;
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.sim-view-tabs button small {
+  display: block;
+  margin-top: 0.12rem;
+  font-size: 0.62rem;
+  font-weight: 600;
+  opacity: 0.66;
+}
+
+.sim-view-tabs button.is-active {
+  border-color: rgba(94, 234, 212, 0.28);
+  color: #ccfbf1;
+  background: rgba(45, 212, 191, 0.13);
+}
+
 .sim-controls {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
@@ -163,6 +199,27 @@
   padding: 3px;
   border-radius: 12px;
   background: rgba(2, 6, 23, 0.72);
+}
+
+.sim-summary-controls {
+  align-items: center;
+}
+
+.sim-summary-controls .sim-policy {
+  grid-template-columns: repeat(3, minmax(120px, 1fr));
+}
+
+.sim-summary-source {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.16rem;
+  color: rgba(226, 232, 240, 0.76);
+  font-size: 0.78rem;
+}
+
+.sim-summary-source small {
+  color: rgba(226, 232, 240, 0.5);
 }
 
 .sim-policy button {
@@ -439,6 +496,10 @@
   height: 320px;
 }
 
+.sim-summary-trajectory {
+  height: 360px;
+}
+
 .sim-caption,
 .sim-table-note {
   color: rgba(226, 232, 240, 0.52);
@@ -543,6 +604,7 @@ th {
 }
 
 .sim-hero,
+.sim-view-tabs,
 .sim-controls,
 .sim-model-strip,
 .sim-evidence-window,
@@ -617,6 +679,25 @@ th {
   color: var(--bb-text-strong);
 }
 
+.sim-view-tabs button {
+  color: var(--bb-text-muted);
+}
+
+.sim-view-tabs button.is-active {
+  border-color: var(--bb-theme-accent);
+  background: color-mix(
+    in srgb,
+    var(--bb-theme-accent) 14%,
+    var(--bb-control-bg)
+  );
+  color: var(--bb-text-strong);
+}
+
+.sim-summary-source,
+.sim-summary-source small {
+  color: var(--bb-text-muted);
+}
+
 .sim-evidence-window--mixed {
   border-color: color-mix(
     in srgb,
@@ -682,6 +763,10 @@ th {
     grid-template-columns: 1fr;
   }
 
+  .sim-summary-source {
+    align-items: flex-start;
+  }
+
   .sim-panel__header--trajectory {
     align-items: stretch;
     flex-direction: column;
@@ -718,7 +803,12 @@ th {
 }
 
 @media (max-width: 520px) {
+  .sim-view-tabs,
   .sim-policy {
+    grid-template-columns: 1fr;
+  }
+
+  .sim-summary-controls .sim-policy {
     grid-template-columns: 1fr;
   }
 
