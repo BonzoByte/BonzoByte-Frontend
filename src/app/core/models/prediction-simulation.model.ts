@@ -161,7 +161,24 @@ export interface PredictionSimulationCohort {
   fixedPercentage: PredictionSimulationBankroll;
   boundedPercentage: PredictionSimulationBankroll;
   fractionalKelly: PredictionSimulationBankroll;
+  temporalSlices: PredictionSimulationTemporalSlice[];
   trajectories: PredictionSimulationTrajectories;
+}
+
+export interface PredictionSimulationTemporalSlice {
+  granularity: 'year' | 'quarter';
+  label: string;
+  fromInclusive: string;
+  toExclusive: string;
+  bets: number;
+  wins: number;
+  losses: number;
+  hitRate: number;
+  averageOdds: number;
+  averageEdge: number;
+  flatProfitUnits: number;
+  flatRoi: number;
+  flatMaximumDrawdownUnits: number;
 }
 
 export interface PredictionSimulationBankroll {

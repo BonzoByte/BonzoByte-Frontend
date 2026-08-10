@@ -444,17 +444,17 @@ export class StaticArchivesService {
           )
         : this.http
             .get<PredictionSimulationManifest>(
-              `${this.simulationStaticBase}/prediction-simulation.v3.manifest.json?cb=${Date.now()}`
+              `${this.simulationStaticBase}/prediction-simulation.v4.manifest.json?cb=${Date.now()}`
             )
             .pipe(
               switchMap(manifest => {
                 const fileName = String(manifest?.report?.file ?? '').trim();
                 if (
                   manifest?.schema !== 'bonzobyte.prediction-simulation.manifest' ||
-                  manifest?.schemaVersion !== 3 ||
+                  manifest?.schemaVersion !== 4 ||
                   manifest?.report?.schema !== 'bonzobyte.prediction-simulation' ||
-                  manifest?.report?.schemaVersion !== 3 ||
-                  !/^prediction-simulation\.v3\.[0-9a-f]{16}\.json\.br$/i.test(fileName)
+                  manifest?.report?.schemaVersion !== 4 ||
+                  !/^prediction-simulation\.v4\.[0-9a-f]{16}\.json\.br$/i.test(fileName)
                 ) {
                   return throwError(
                     () => new Error('Prediction simulation manifest is invalid.')
@@ -706,7 +706,7 @@ export class StaticArchivesService {
     if (
       !normalized ||
       normalized.schema !== 'bonzobyte.prediction-simulation' ||
-      normalized.schemaVersion !== 3 ||
+      normalized.schemaVersion !== 4 ||
       !normalized.labels ||
       !normalized.provenance ||
       !normalized.window ||
@@ -720,6 +720,7 @@ export class StaticArchivesService {
       !model?.coverage ||
       !Array.isArray(model?.cohorts) ||
       model.cohorts.some(cohort =>
+        !Array.isArray(cohort?.temporalSlices) ||
         !cohort?.trajectories ||
         !Array.isArray(cohort.trajectories.points)
       )

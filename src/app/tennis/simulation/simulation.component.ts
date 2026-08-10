@@ -9,6 +9,7 @@ import {
   PredictionSimulationCohort,
   PredictionSimulationModel,
   PredictionSimulationReport,
+  PredictionSimulationTemporalSlice,
 } from '../../core/models/prediction-simulation.model';
 import { StaticArchivesService } from '../../core/services/static-archives.service';
 
@@ -18,6 +19,7 @@ type DisplayTrajectoryKind =
   | 'fractionalKelly';
 type SimulationView = 'summary' | 'modelAudit';
 type ProductionScope = 'ALL' | 'ATP' | 'WTA';
+type TemporalGranularity = 'year' | 'quarter';
 
 @Component({
   selector: 'app-simulation',
@@ -35,6 +37,7 @@ export class SimulationComponent implements OnInit, OnDestroy {
   selectedEdgeThreshold = 0;
   selectedSummaryScope: ProductionScope = 'ALL';
   selectedSummaryEdgeThreshold = 0;
+  selectedTemporalGranularity: TemporalGranularity = 'year';
   isLoading = true;
   error: string | null = null;
 
@@ -105,6 +108,43 @@ export class SimulationComponent implements OnInit, OnDestroy {
         callbacks: {
           label: context =>
             `Cumulative P/L: ${Number(context.raw).toFixed(2)} units`,
+        },
+      },
+    },
+  };
+
+  readonly temporalRoiChartOptions: ChartOptions<'bar'> = {
+    responsive: true,
+    maintainAspectRatio: false,
+    interaction: { mode: 'index', intersect: false },
+    scales: {
+      x: {
+        title: {
+          display: true,
+          text: 'Calendar period',
+          color: '#64748b',
+        },
+        ticks: { color: '#64748b', autoSkip: true, maxTicksLimit: 18 },
+        grid: { display: false },
+      },
+      y: {
+        title: {
+          display: true,
+          text: 'Flat ROI',
+          color: '#64748b',
+        },
+        ticks: {
+          color: '#64748b',
+          callback: value => `${(Number(value) * 100).toFixed(0)}%`,
+        },
+        grid: { color: 'rgba(100,116,139,0.20)' },
+      },
+    },
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          label: context => `Flat ROI: ${(Number(context.raw) * 100).toFixed(2)}%`,
         },
       },
     },
@@ -267,6 +307,33 @@ export class SimulationComponent implements OnInit, OnDestroy {
     ) ?? null;
   }
 
+  get temporalSlices(): PredictionSimulationTemporalSlice[] {
+    return (this.selectedEdgeCohort?.temporalSlices ?? [])
+      .filter(slice => slice.granularity === this.selectedTemporalGranularity)
+      .sort((left, right) =>
+        new Date(left.fromInclusive).getTime() -
+        new Date(right.fromInclusive).getTime()
+      );
+  }
+
+  get temporalRoiChartData(): ChartData<'bar'> {
+    const slices = this.temporalSlices;
+    return {
+      labels: slices.map(slice => slice.label),
+      datasets: [{
+        label: 'Flat ROI',
+        data: slices.map(slice => slice.flatRoi),
+        backgroundColor: slices.map(slice =>
+          slice.flatRoi >= 0
+            ? 'rgba(45, 212, 191, 0.72)'
+            : 'rgba(251, 113, 133, 0.72)'
+        ),
+        borderWidth: 0,
+        borderRadius: 5,
+      }],
+    };
+  }
+
   get flatTrajectoryChartData(): ChartData<'line'> {
     return this.trajectoryChartData(
       'flatUnit',
@@ -313,6 +380,10 @@ export class SimulationComponent implements OnInit, OnDestroy {
     this.selectedView = view;
   }
 
+  setTemporalGranularity(granularity: TemporalGranularity): void {
+    this.selectedTemporalGranularity = granularity;
+  }
+
   setSummaryScope(scope: ProductionScope): void {
     this.selectedSummaryScope = scope;
     if (!this.summaryEdgeThresholdOptions.some(threshold =>
@@ -352,6 +423,18 @@ export class SimulationComponent implements OnInit, OnDestroy {
     }
 
     return `${(interval.low * 100).toFixed(1)}% to ${(interval.high * 100).toFixed(1)}%`;
+  }
+
+  temporalEvidenceLabel(slice: PredictionSimulationTemporalSlice): string {
+    const boundaryValue = this.selectedModel?.evaluation.outOfSampleFrom;
+    if (!boundaryValue) return 'No registered boundary';
+
+    const boundary = new Date(boundaryValue).getTime();
+    const from = new Date(slice.fromInclusive).getTime();
+    const to = new Date(slice.toExclusive).getTime();
+    if (to <= boundary) return 'Before registered boundary';
+    if (from >= boundary) return 'After registered boundary';
+    return 'Boundary crosses this period';
   }
 
   private edgeThresholds(

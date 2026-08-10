@@ -503,6 +503,81 @@
       </p>
     </section>
 
+    <section class="sim-panel sim-panel--periods" *ngIf="temporalSlices.length > 0">
+      <div class="sim-panel__header sim-panel__header--trajectory">
+        <div>
+          <span>Temporal regime audit</span>
+          <h2>Flat performance by calendar period</h2>
+        </div>
+        <div class="sim-period-controls" role="group" aria-label="Temporal audit granularity">
+          <button
+            type="button"
+            [class.is-active]="selectedTemporalGranularity === 'year'"
+            (click)="setTemporalGranularity('year')">
+            Year
+          </button>
+          <button
+            type="button"
+            [class.is-active]="selectedTemporalGranularity === 'quarter'"
+            (click)="setTemporalGranularity('quarter')">
+            Quarter
+          </button>
+        </div>
+      </div>
+
+      <div class="sim-chart sim-chart--temporal">
+        <canvas
+          baseChart
+          [data]="temporalRoiChartData"
+          [options]="temporalRoiChartOptions"
+          [type]="'bar'">
+        </canvas>
+      </div>
+
+      <div class="sim-table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Period</th>
+              <th>Evidence segment</th>
+              <th>Bets</th>
+              <th>W / L</th>
+              <th>Hit rate</th>
+              <th>Avg odds</th>
+              <th>Avg edge</th>
+              <th>Flat profit</th>
+              <th>Flat ROI</th>
+              <th>Max DD</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let slice of temporalSlices">
+              <td><strong>{{ slice.label }}</strong></td>
+              <td>{{ temporalEvidenceLabel(slice) }}</td>
+              <td>{{ slice.bets | number }}</td>
+              <td>{{ slice.wins | number }} / {{ slice.losses | number }}</td>
+              <td>{{ slice.hitRate | percent:'1.1-1' }}</td>
+              <td>{{ slice.averageOdds | number:'1.2-3' }}</td>
+              <td>{{ slice.averageEdge | percent:'1.1-1' }}</td>
+              <td [class.is-positive]="slice.flatProfitUnits > 0" [class.is-negative]="slice.flatProfitUnits < 0">
+                {{ slice.flatProfitUnits | number:'1.2-2' }}
+              </td>
+              <td [class.is-positive]="slice.flatRoi > 0" [class.is-negative]="slice.flatRoi < 0">
+                {{ slice.flatRoi | percent:'1.2-2' }}
+              </td>
+              <td>{{ slice.flatMaximumDrawdownUnits | number:'1.2-2' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="sim-caption">
+        Each row is recomputed from every wager in that calendar segment before
+        browser trajectory compaction. “After registered boundary” means only
+        that the match date follows the stored test/acceptance boundary; it does
+        not turn backfilled predictions or undated odds into prospective evidence.
+      </p>
+    </section>
+
     <section class="sim-panel sim-panel--table">
       <div class="sim-panel__header">
         <div>
