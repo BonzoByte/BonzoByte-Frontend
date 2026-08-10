@@ -621,31 +621,11 @@ export class MatchesComponent implements OnInit, OnDestroy {
                 
                 this.applyActiveFiltersToCurrentDay();
                 this.syncTournamentHeaderFromRows(sortedRows, tournamentsEventTPId);
-                
-                console.log(
-                  '🧭 tournament sorted sample:',
-                  sortedRows.slice(0, 12).map((m: any) => ({
-                    dt: m?.dateTime,
-                    round: m?.roundName,
-                    short: this.formatRoundShort(m?.roundName),
-                    p1: m?.player1Name,
-                    p2: m?.player2Name
-                  }))
-                );
-
-                this.daySourceMatches = rows;
-
-                this.matches = this.isFiltered
-                    ? this.filterMatchesByActiveFilters(this.daySourceMatches)
-                    : this.daySourceMatches;
-
-                this.applyActiveFiltersToCurrentDay();
-                this.syncTournamentHeaderFromRows(rows, tournamentsEventTPId);
 
                 console.log('✅ Tournament matches loaded', {
                     tournamentsEventTPId,
-                    count: rows.length,
-                    first: rows[0]
+                    count: sortedRows.length,
+                    first: sortedRows[0]
                 });
 
                 this.loading = false;
@@ -1529,8 +1509,9 @@ export class MatchesComponent implements OnInit, OnDestroy {
     clearFilter(): void {
         this.isFiltered = false;
         this.filterApplied = false;
-        this.matches = this.daySourceMatches;
+        this.matches = [...this.daySourceMatches];
         this.sortMatches();
+        this.applyActiveFiltersToCurrentDay();
         this.filteredPage = 1;
         this.noMatchesForFilter = false;
     }
