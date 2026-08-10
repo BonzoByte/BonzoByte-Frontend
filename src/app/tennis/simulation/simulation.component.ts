@@ -346,7 +346,7 @@ export class SimulationComponent implements OnInit, OnDestroy {
   get kellyTrajectoryChartData(): ChartData<'line'> {
     return this.trajectoryChartData(
       'fractionalKelly',
-      'Quarter-Kelly cumulative profit',
+      'Quarter-Kelly stress-test cumulative profit',
       '#c084fc',
       'rgba(192, 132, 252, 0.12)'
     );

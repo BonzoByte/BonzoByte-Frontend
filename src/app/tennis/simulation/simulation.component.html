@@ -449,11 +449,11 @@
         <article class="sim-trajectory-card">
           <div class="sim-trajectory-card__header">
             <div>
-              <span>Adaptive staking</span>
-              <h3>Quarter Kelly, capped at 2%</h3>
+              <span>Mathematical stress test</span>
+              <h3>Quarter Kelly, capped at 2% — not a forecast</h3>
             </div>
             <strong [class.is-positive]="curveCohort.fractionalKelly.profit > 0" [class.is-negative]="curveCohort.fractionalKelly.profit < 0">
-              {{ curveCohort.fractionalKelly.profit | number:'1.2-2' }}
+              {{ curveCohort.fractionalKelly.profit | number:'1.2-2' }} units
             </strong>
           </div>
           <div class="sim-chart sim-chart--trajectory">
@@ -473,7 +473,7 @@
               <h3>1% of bankroll, stake 1–100</h3>
             </div>
             <strong [class.is-positive]="curveCohort.boundedPercentage.profit > 0" [class.is-negative]="curveCohort.boundedPercentage.profit < 0">
-              {{ curveCohort.boundedPercentage.profit | number:'1.2-2' }}
+              {{ curveCohort.boundedPercentage.profit | number:'1.2-2' }} units
             </strong>
           </div>
           <div class="sim-chart sim-chart--trajectory">
@@ -602,7 +602,7 @@
               <th>95% interval</th>
               <th>Uncapped 1% return</th>
               <th>Bounded 1% return</th>
-              <th>¼ Kelly return</th>
+              <th>¼ Kelly stress return</th>
               <th>Kelly max DD</th>
             </tr>
           </thead>
