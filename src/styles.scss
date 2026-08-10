@@ -357,6 +357,48 @@ main {
     cursor: pointer;
 }
 
+@media (max-width: 600px) {
+    :root {
+        --header-h: 86px;
+        --datebar-h: 76px;
+    }
+
+    .date-nav-sticky {
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-rows: 32px 32px;
+        gap: 2px;
+        padding: 5px 8px;
+    }
+
+    .date-nav-sticky .date-left {
+        display: none;
+    }
+
+    .date-nav-sticky .pagination-center-wrapper {
+        grid-column: 1;
+        grid-row: 1;
+        min-width: 0;
+    }
+
+    .date-nav-sticky .date-right {
+        grid-column: 1;
+        grid-row: 2;
+        min-width: 0;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .date-nav-sticky .topbar-search {
+        width: min(200px, 52vw) !important;
+        min-width: 0;
+    }
+
+    .date-nav-sticky .topbar-clear {
+        padding-right: 8px;
+        padding-left: 8px;
+    }
+}
+
 /* ----------------------------
      Shared date/page input
   ---------------------------- */

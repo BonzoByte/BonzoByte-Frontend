@@ -180,3 +180,71 @@
 
     box-shadow: 0 1px 0 var(--bb-header-border, rgba(255, 255, 255, 0.08));
 }
+
+@media (max-width: 600px) {
+    .custom-header>div {
+        grid-template-columns: minmax(0, 1fr) auto;
+        grid-template-rows: 46px 40px;
+        gap: 0 6px;
+        height: var(--header-h);
+        padding: 0 6px;
+    }
+
+    .custom-header>div .brand-title {
+        grid-column: 1;
+        grid-row: 1;
+        justify-self: start;
+    }
+
+    .custom-header>div .brand-title .main-title {
+        font-size: 22px;
+    }
+
+    .custom-header>div .brand-title .main-title::after {
+        margin-top: 2px;
+    }
+
+    .custom-header>div .navbar-nav:first-of-type {
+        grid-column: 1 / -1;
+        grid-row: 2;
+        justify-self: stretch;
+        max-width: 100%;
+        overflow-x: auto;
+        overflow-y: hidden;
+        gap: 12px;
+        padding: 0 2px 4px;
+        scrollbar-width: none;
+        overscroll-behavior-inline: contain;
+    }
+
+    .custom-header>div .navbar-nav:first-of-type::-webkit-scrollbar {
+        display: none;
+    }
+
+    .custom-header>div .navbar-nav:last-of-type {
+        grid-column: 2;
+        grid-row: 1;
+        gap: 6px;
+    }
+
+    .custom-header>div .navbar-nav:last-of-type .nav-separator,
+    .custom-header>div .navbar-nav:last-of-type .pricing-link,
+    .custom-header>div .navbar-nav:last-of-type .theme-picker__icon,
+    .custom-header>div .navbar-nav:last-of-type .user-meta {
+        display: none;
+    }
+
+    .theme-picker select {
+        max-width: 78px;
+        padding-right: 18px;
+    }
+
+    .user-block {
+        gap: 6px;
+    }
+
+    .user-avatar {
+        width: 30px;
+        height: 30px;
+    }
+}
