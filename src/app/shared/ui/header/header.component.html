@@ -1,14 +1,20 @@
 ﻿<nav id="main-header" class="custom-header app-header">
     <div>
         <div class="navbar-nav">
-            <a routerLink="/matches" class="logreg">Matches</a>
-            <a routerLink="/players" class="logreg">Players</a>
-            <a routerLink="/tournaments" class="logreg">Tournaments</a>
+            <span class="nav-group">
+                <a routerLink="/matches" class="logreg">Matches</a>
+                <a routerLink="/players" class="logreg">Players</a>
+                <a routerLink="/tournaments" class="logreg">Tournaments</a>
+            </span>
             <span class="nav-separator" aria-hidden="true"></span>
-            <a routerLink="/analytics" class="logreg">Analytics</a>
-            <a routerLink="/model-insights" class="logreg">Model Insights</a>
+            <span class="nav-group">
+                <a routerLink="/analytics" class="logreg">Analytics</a>
+                <a routerLink="/model-insights" class="logreg">Model Insights</a>
+            </span>
             <span class="nav-separator" aria-hidden="true"></span>
-            <a routerLink="/simulation" class="logreg">Simulation</a>
+            <span class="nav-group">
+                <a routerLink="/simulation" class="logreg">Simulation</a>
+            </span>
         </div>
 
         <div class="brand-title">
@@ -18,25 +24,6 @@
         </div>
 
         <div class="navbar-nav">
-            <label class="theme-picker" title="Choose visual theme">
-                <span class="theme-picker__icon" aria-hidden="true">◐</span>
-                <span class="visually-hidden">Theme</span>
-                <select
-                    aria-label="Visual theme"
-                    [value]="selectedTheme"
-                    (change)="changeTheme($any($event.target).value)">
-                    <option
-                        *ngFor="let theme of themes"
-                        [value]="theme.id"
-                        [selected]="theme.id === selectedTheme">
-                        {{ theme.label }}
-                    </option>
-                </select>
-            </label>
-            <span class="nav-separator" aria-hidden="true"></span>
-            <a class="logreg pricing-link" (click)="openBillingModal()">Pricing</a>
-            <span class="nav-separator" aria-hidden="true"></span>
-
             <ng-container *ngIf="!isLoggedIn; else loggedIn">
                 <a class="logreg" (click)="openLoginModal()">{{ 'login' | translate }}</a>
                 <a class="logreg" (click)="openRegisterModal()">{{ 'register' | translate }}</a>

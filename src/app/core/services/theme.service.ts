@@ -46,6 +46,14 @@ export class ThemeService {
     }
   }
 
+  useAnonymousDefault(): void {
+    this.setTheme(DEFAULT_THEME, false);
+  }
+
+  restoreStoredTheme(): void {
+    this.setTheme(this.readStoredTheme(), false);
+  }
+
   private readStoredTheme(): BonzoByteTheme {
     try {
       const stored =

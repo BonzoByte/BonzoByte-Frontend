@@ -78,31 +78,15 @@
     text-decoration: none;
 }
 
-.theme-picker {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-}
-
-.theme-picker__icon {
-    color: var(--bb-theme-accent, #8ad4ff);
-    font-size: 15px;
-}
-
-.theme-picker select {
-    max-width: 108px;
-    border: 1px solid var(--bb-header-btn-border, rgba(255, 255, 255, 0.3));
-    border-radius: 6px;
-    padding: 4px 24px 4px 7px;
-    color: var(--bb-header-text, #fff);
-    background: var(--bb-header-select-bg, #1d1d1d);
-    font: inherit;
+.custom-header .logreg {
     cursor: pointer;
 }
 
-.theme-picker select:focus-visible {
-    outline: 2px solid var(--bb-theme-accent, #8ad4ff);
-    outline-offset: 2px;
+.nav-group {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    flex: 0 0 auto;
 }
 
 /* Header buttons */
@@ -181,7 +165,47 @@
     box-shadow: 0 1px 0 var(--bb-header-border, rgba(255, 255, 255, 0.08));
 }
 
-@media (max-width: 600px) {
+/*
+ * Once the three-column desktop header becomes tight, move navigation to its
+ * own row. This preserves the centered brand and keeps every nav group intact
+ * without changing the regular wide-screen layout.
+ */
+@media (min-width: 801px) and (max-width: 1320px) {
+    .custom-header>div {
+        grid-template-columns: 1fr auto 1fr;
+        grid-template-rows: 54px 42px;
+        gap: 0 8px;
+        padding: 0 8px;
+    }
+
+    .custom-header>div .brand-title {
+        grid-column: 2;
+        grid-row: 1;
+    }
+
+    .custom-header>div .navbar-nav:first-of-type {
+        grid-column: 1 / -1;
+        grid-row: 2;
+        justify-self: center;
+        max-width: 100%;
+        overflow-x: auto;
+        overflow-y: hidden;
+        padding: 0 4px 4px;
+        scrollbar-width: none;
+        overscroll-behavior-inline: contain;
+    }
+
+    .custom-header>div .navbar-nav:first-of-type::-webkit-scrollbar {
+        display: none;
+    }
+
+    .custom-header>div .navbar-nav:last-of-type {
+        grid-column: 3;
+        grid-row: 1;
+    }
+}
+
+@media (max-width: 800px) {
     .custom-header>div {
         grid-template-columns: minmax(0, 1fr) auto;
         grid-template-rows: 46px 40px;
@@ -217,6 +241,10 @@
         overscroll-behavior-inline: contain;
     }
 
+    .nav-group {
+        gap: 12px;
+    }
+
     .custom-header>div .navbar-nav:first-of-type::-webkit-scrollbar {
         display: none;
     }
@@ -228,15 +256,8 @@
     }
 
     .custom-header>div .navbar-nav:last-of-type .nav-separator,
-    .custom-header>div .navbar-nav:last-of-type .pricing-link,
-    .custom-header>div .navbar-nav:last-of-type .theme-picker__icon,
     .custom-header>div .navbar-nav:last-of-type .user-meta {
         display: none;
-    }
-
-    .theme-picker select {
-        max-width: 78px;
-        padding-right: 18px;
     }
 
     .user-block {

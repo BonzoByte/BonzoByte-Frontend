@@ -11,7 +11,7 @@
             <input id="identifier" formControlName="identifier" placeholder="Username or Email"
                 [class.invalid]="identifier?.invalid && (identifier?.touched || submitted)" autocomplete="username" />
             <p class="error" *ngIf="identifier?.hasError('required') && (identifier?.touched || submitted)">
-                Obavezno
+                Required
             </p>
         </div>
 
@@ -29,14 +29,14 @@
                 </button>
             </div>
             <p class="error" *ngIf="password?.hasError('required') && (password?.touched || submitted)">
-                Obavezno
+                Required
             </p>
         </div>
 
         <!-- SUBMIT -->
         <div bbActions class="bb-actions">
             <button type="submit" [disabled]="loginForm.invalid || submitting" class="oauth-btn">
-                {{ submitting ? 'Prijava…' : 'Login' }}
+                {{ submitting ? 'Signing in…' : 'Login' }}
             </button>
         </div>
 
@@ -68,7 +68,7 @@
         <!-- Resend verification -->
         <div class="text-center bb-actions" *ngIf="showResend">
             <button type="button" class="oauth-btn" appAccessibleClick (accessibleClick)="resendVerification()">
-                Ponovno pošalji verifikacijski link
+                Resend verification link
             </button>
         </div>
 

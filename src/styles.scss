@@ -357,7 +357,13 @@ main {
     cursor: pointer;
 }
 
-@media (max-width: 600px) {
+@media (min-width: 801px) and (max-width: 1320px) {
+    :root {
+        --header-h: 96px;
+    }
+}
+
+@media (max-width: 800px) {
     :root {
         --header-h: 86px;
         --datebar-h: 76px;
@@ -817,6 +823,28 @@ main {
     background: var(--bb-control-bg);
     color: var(--bb-control-text);
     outline: none;
+}
+
+.bb-modal .bb-theme-select {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px solid var(--bb-control-border);
+    background: var(--bb-control-bg);
+    color: var(--bb-control-text);
+    outline: none;
+    cursor: pointer;
+}
+
+.bb-modal .bb-theme-select:focus-visible {
+    outline: 2px solid var(--bb-theme-accent);
+    outline-offset: 2px;
+}
+
+.bb-modal .bb-field-hint {
+    color: var(--bb-text-muted);
+    font-size: 11px;
+    line-height: 1.35;
 }
 
 .bb-modal input.invalid {

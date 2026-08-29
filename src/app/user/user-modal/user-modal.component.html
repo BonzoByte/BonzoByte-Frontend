@@ -100,6 +100,42 @@
       </div>
     </div>
 
+    <div class="form-row">
+      <label for="visual-theme">Visual theme</label>
+      <select
+        id="visual-theme"
+        class="bb-theme-select"
+        [value]="selectedTheme"
+        (change)="changeTheme($any($event.target).value)"
+      >
+        <option
+          *ngFor="let theme of themes"
+          [value]="theme.id"
+          [selected]="theme.id === selectedTheme"
+        >
+          {{ theme.label }}
+        </option>
+      </select>
+      <small class="bb-field-hint">
+        Saved in this browser. Signed-out visitors always use Dark.
+      </small>
+    </div>
+
+    <div class="form-row bb-pricing-row">
+      <label>Pricing and membership</label>
+      <button
+        type="button"
+        class="oauth-btn"
+        appAccessibleClick
+        (accessibleClick)="openPricing()"
+      >
+        View pricing and plans
+      </button>
+      <small class="bb-field-hint">
+        Review the available membership plans and account benefits.
+      </small>
+    </div>
+
     <div bbActions class="bb-actions">
       <button
         type="submit"

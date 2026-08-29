@@ -425,6 +425,14 @@ export class SimulationComponent implements OnInit, OnDestroy {
     return `${(interval.low * 100).toFixed(1)}% to ${(interval.high * 100).toFixed(1)}%`;
   }
 
+  formatCompoundedUnits(value: number): string {
+    return `${this.formatLargeNumber(value)} units`;
+  }
+
+  formatCompoundedPercent(value: number): string {
+    return `${this.formatLargeNumber(value * 100)}%`;
+  }
+
   temporalEvidenceLabel(slice: PredictionSimulationTemporalSlice): string {
     const boundaryValue = this.selectedModel?.evaluation.outOfSampleFrom;
     if (!boundaryValue) return 'No registered boundary';
@@ -521,7 +529,7 @@ export class SimulationComponent implements OnInit, OnDestroy {
           },
           ticks: {
             color: '#64748b',
-            callback: value => Number(value).toFixed(0),
+            callback: value => this.formatLargeNumber(Number(value), 0),
           },
           grid: { color: 'rgba(100,116,139,0.20)' },
         },
@@ -535,7 +543,7 @@ export class SimulationComponent implements OnInit, OnDestroy {
               items[0]?.dataIndex ?? 0
             ),
             label: context =>
-              `Cumulative profit: ${Number(context.raw).toFixed(2)}`,
+              `Cumulative profit: ${this.formatLargeNumber(Number(context.raw))}`,
             afterLabel: context => this.trajectoryTooltipDetails(
               kind,
               context.dataIndex
@@ -571,6 +579,39 @@ export class SimulationComponent implements OnInit, OnDestroy {
       `Odds: ${point.selectedOdds.toFixed(2)} · Edge: ${(point.edge * 100).toFixed(1)} pp`,
       `Stake: ${strategy.stake.toFixed(2)} · P/L: ${strategy.profit.toFixed(2)}`,
     ];
+  }
+
+  private formatLargeNumber(value: number, fractionDigits = 2): string {
+    if (!Number.isFinite(value)) return 'N/A';
+
+    const absoluteValue = Math.abs(value);
+    if (absoluteValue === 0 || (absoluteValue >= 0.01 && absoluteValue < 1e15)) {
+      return new Intl.NumberFormat('en-US', {
+        minimumFractionDigits: fractionDigits,
+        maximumFractionDigits: fractionDigits,
+      }).format(value);
+    }
+
+    const exponent = Math.floor(Math.log10(absoluteValue));
+    const mantissa = value / Math.pow(10, exponent);
+    return `${mantissa.toFixed(fractionDigits)} × 10${this.toSuperscript(exponent)}`;
+  }
+
+  private toSuperscript(value: number): string {
+    const superscriptDigits: Record<string, string> = {
+      '-': '⁻',
+      '0': '⁰',
+      '1': '¹',
+      '2': '²',
+      '3': '³',
+      '4': '⁴',
+      '5': '⁵',
+      '6': '⁶',
+      '7': '⁷',
+      '8': '⁸',
+      '9': '⁹',
+    };
+    return value.toString().split('').map(character => superscriptDigits[character]).join('');
   }
 
   private broadestHistoryModelIndex(

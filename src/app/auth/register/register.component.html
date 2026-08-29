@@ -17,10 +17,10 @@
                 placeholder="Email"
                 [class.invalid]="email?.invalid && (email?.touched || submitting)" />
             <p class="error" *ngIf="email?.hasError('required') && (email?.touched || submitting)">
-                Obavezno
+                Required
             </p>
             <p class="error" *ngIf="email?.hasError('email') && (email?.touched || submitting)">
-                Neispravan email
+                Enter a valid email address
             </p>
         </div>
 
@@ -33,7 +33,7 @@
                 placeholder="Nickname"
                 [class.invalid]="nickname?.invalid && (nickname?.touched || submitting)" />
             <p class="error" *ngIf="nickname?.invalid && (nickname?.touched || submitting)">
-                Nickname mora imati 3–30 znakova
+                Nickname must be 3–30 characters long
             </p>
         </div>
 
@@ -57,10 +57,10 @@
                 </button>
             </div>
             <p class="error" *ngIf="password?.hasError('required') && (password?.touched || submitting)">
-                Obavezno
+                Required
             </p>
             <p class="error" *ngIf="password?.hasError('minlength') && (password?.touched || submitting)">
-                Min 8 znakova
+                Minimum 8 characters
             </p>
         </div>
 
@@ -84,10 +84,10 @@
                 </button>
             </div>
             <p class="error" *ngIf="confirmPassword?.hasError('required') && (confirmPassword?.touched || submitting)">
-                Obavezno
+                Required
             </p>
             <p class="error" *ngIf="registerForm.errors?.['passwordsMismatch'] && (confirmPassword?.touched || submitting)">
-                Lozinke se ne podudaraju
+                Passwords do not match
             </p>
         </div>
 

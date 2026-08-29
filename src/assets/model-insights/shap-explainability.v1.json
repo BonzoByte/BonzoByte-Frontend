@@ -26,28 +26,28 @@
       "topFeatures": [
         {
           "name": "TS5L_G_GSM_WP",
-          "label": "Global Gameâ€“Setâ€“Match strength",
+          "label": "Global Game–Set–Match strength",
           "family": "TS5L global M/SM/GSM",
           "share": 0.23405127245911397,
           "directionCorrelation": 0.9931762052835004
         },
         {
           "name": "WPSM",
-          "label": "Legacy Setâ€“Match probability",
+          "label": "Legacy Set–Match probability",
           "family": "Legacy win probabilities",
           "share": 0.08745895710497456,
           "directionCorrelation": 0.9350812089562011
         },
         {
           "name": "TS5L_G_SM_WP",
-          "label": "Global Setâ€“Match strength",
+          "label": "Global Set–Match strength",
           "family": "TS5L global M/SM/GSM",
           "share": 0.08241212873868115,
           "directionCorrelation": 0.9775023270589147
         },
         {
           "name": "TS5L_S_SM_WP",
-          "label": "Surface Setâ€“Match strength",
+          "label": "Surface Set–Match strength",
           "family": "TS5L surface M/SM/GSM",
           "share": 0.03528172374510351,
           "directionCorrelation": 0.9453301679682354
@@ -202,7 +202,7 @@
         },
         {
           "name": "WPSM",
-          "label": "Legacy Setâ€“Match probability",
+          "label": "Legacy Set–Match probability",
           "family": "Legacy win probabilities",
           "share": 0.12155984335388659,
           "directionCorrelation": 0.9369330950430579

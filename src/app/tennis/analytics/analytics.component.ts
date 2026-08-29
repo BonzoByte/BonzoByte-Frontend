@@ -91,6 +91,42 @@ export class AnalyticsComponent implements OnInit {
         }
     };
 
+    readonly averageBookiesLineOptions: ChartOptions<'line'> = {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+            x: {
+                ticks: {
+                    color: '#d1d5db',
+                    autoSkip: false,
+                    minRotation: 45,
+                    maxRotation: 45
+                },
+                grid: { color: 'rgba(255,255,255,0.08)' }
+            },
+            y: {
+                ticks: { color: '#d1d5db' },
+                grid: { color: 'rgba(255,255,255,0.08)' }
+            }
+        },
+        plugins: {
+            legend: { display: false },
+            tooltip: {
+                callbacks: {
+                    label: context =>
+                        `Average qualifying bookmakers: ${Number(context.raw).toFixed(2)}`,
+                    afterLabel: context => {
+                        const coverage = this.analytics?.marketBehaviour?.oddsCoverageOverTime
+                            ?.find(point => point.label === context.label);
+                        return coverage
+                            ? `Matches with odds: ${coverage.value.toLocaleString('en-US')}`
+                            : '';
+                    }
+                }
+            }
+        }
+    };
+
     get atpWtaChartData(): ChartData<'doughnut'> {
         const items = this.analytics?.overview?.tournamentTypeSplit ?? [];
         return {
@@ -299,6 +335,22 @@ export class AnalyticsComponent implements OnInit {
                 }
             ]
         };
+    }
+
+    get averageBookiesCoverageNote(): string {
+        const items = this.analytics?.marketBehaviour?.averageBookiesPerMatchByYear ?? [];
+        const latestYear = items[items.length - 1]?.label;
+        const currentYear = new Date().getUTCFullYear().toString();
+
+        if (!latestYear) {
+            return 'No qualifying bookmaker coverage is available.';
+        }
+
+        const availability = Number(latestYear) < Number(currentYear)
+            ? `The current archive ends in ${latestYear}; ${currentYear} will appear once qualifying bookmaker aggregates are available.`
+            : `The current archive includes ${latestYear}.`;
+
+        return `${availability} Values are per-match averages after odds-quality filters and are not annualized.`;
     }
 
     readonly percentBarOptions: ChartOptions<'bar'> = {

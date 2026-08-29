@@ -453,7 +453,7 @@
               <h3>Quarter Kelly, capped at 2% — not a forecast</h3>
             </div>
             <strong [class.is-positive]="curveCohort.fractionalKelly.profit > 0" [class.is-negative]="curveCohort.fractionalKelly.profit < 0">
-              {{ curveCohort.fractionalKelly.profit | number:'1.2-2' }} units
+              {{ formatCompoundedUnits(curveCohort.fractionalKelly.profit) }}
             </strong>
           </div>
           <div class="sim-chart sim-chart--trajectory">
@@ -620,13 +620,13 @@
               </td>
               <td>{{ confidenceInterval(cohort) }}</td>
               <td [class.is-positive]="cohort.fixedPercentage.return > 0" [class.is-negative]="cohort.fixedPercentage.return < 0">
-                {{ cohort.fixedPercentage.return | percent:'1.2-2' }}
+                {{ formatCompoundedPercent(cohort.fixedPercentage.return) }}
               </td>
               <td [class.is-positive]="cohort.boundedPercentage.return > 0" [class.is-negative]="cohort.boundedPercentage.return < 0">
-                {{ cohort.boundedPercentage.return | percent:'1.2-2' }}
+                {{ formatCompoundedPercent(cohort.boundedPercentage.return) }}
               </td>
               <td [class.is-positive]="cohort.fractionalKelly.return > 0" [class.is-negative]="cohort.fractionalKelly.return < 0">
-                {{ cohort.fractionalKelly.return | percent:'1.2-2' }}
+                {{ formatCompoundedPercent(cohort.fractionalKelly.return) }}
               </td>
               <td>{{ cohort.fractionalKelly.maximumDrawdown | percent:'1.1-1' }}</td>
             </tr>

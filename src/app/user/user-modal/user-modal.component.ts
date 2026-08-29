@@ -7,6 +7,11 @@ import { catchError, debounceTime, finalize, map, switchMap, take, filter } from
 
 import { User } from '../../core/models/user.model';
 import { AuthService } from '../../core/services/auth.service';
+import {
+    BONZOBYTE_THEMES,
+    BonzoByteTheme,
+    ThemeService
+} from '../../core/services/theme.service';
 import { AccessibleClickDirective } from '../../shared/directives/accessible-click.directive';
 import { BbModalShellComponent } from "@app/shared/ui/bb-modal-shell.component/bb-modal-shell.component";
 
@@ -56,12 +61,17 @@ export class UserModalComponent implements OnInit, OnDestroy {
     // states
     isSaving = false;
     isSendingReset = false;
+    readonly themes = BONZOBYTE_THEMES;
+    selectedTheme: BonzoByteTheme;
 
     constructor(
         private fb: FormBuilder,
         private authService: AuthService,
-        private snackBar: MatSnackBar
-    ) { }
+        private snackBar: MatSnackBar,
+        private themeService: ThemeService
+    ) {
+        this.selectedTheme = themeService.selectedTheme;
+    }
 
     ngOnInit(): void {
         const u = this.authService.getUser();
@@ -188,14 +198,14 @@ export class UserModalComponent implements OnInit, OnDestroy {
         const okTypes = ['image/jpeg', 'image/png', 'image/webp'];
 
         if (f.size > 2 * 1024 * 1024) {
-            this.errorMessage = 'Datoteka je prevelika (max 2MB).';
+            this.errorMessage = 'The file is too large (maximum 2 MB).';
             this.selectedFile = null;
             input.value = '';
             return;
         }
 
         if (!okTypes.includes(f.type)) {
-            this.errorMessage = 'Dozvoljeni formati: JPG, PNG, WebP.';
+            this.errorMessage = 'Allowed formats: JPG, PNG, WebP.';
             this.selectedFile = null;
             input.value = '';
             return;
@@ -220,6 +230,16 @@ export class UserModalComponent implements OnInit, OnDestroy {
         (event.target as HTMLImageElement).src = 'assets/images/defaultUser.png';
     }
 
+    changeTheme(theme: string): void {
+        this.themeService.setTheme(theme);
+        this.selectedTheme = this.themeService.selectedTheme;
+    }
+
+    openPricing(): void {
+        this.close();
+        window.dispatchEvent(new CustomEvent('openBilling'));
+    }
+
     // --------
     // Password reset (local accounts)
     // --------
@@ -233,7 +253,7 @@ export class UserModalComponent implements OnInit, OnDestroy {
             .pipe(finalize(() => (this.isSendingReset = false)))
             .subscribe({
                 next: () => {
-                    this.snackBar.open('Reset link poslan na vaš email.', '', {
+                    this.snackBar.open('A password reset link was sent to your email.', '', {
                         duration: 5000,
                         horizontalPosition: 'right',
                         verticalPosition: 'bottom',
@@ -241,7 +261,7 @@ export class UserModalComponent implements OnInit, OnDestroy {
                     });
                 },
                 error: (err) => {
-                    this.snackBar.open(err?.error?.message || 'Greška prilikom slanja linka za reset.', '', {
+                    this.snackBar.open(err?.error?.message || 'The password reset link could not be sent.', '', {
                         duration: 5000,
                         horizontalPosition: 'right',
                         verticalPosition: 'bottom',

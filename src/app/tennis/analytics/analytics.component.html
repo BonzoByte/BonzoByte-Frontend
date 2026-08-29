@@ -229,16 +229,20 @@
           </div>
       
           <div class="analytics-chart-card">
-            <h3>Average Bookies per Match by Year</h3>
+            <h3>Average Qualifying Bookmakers per Match</h3>
       
             <div class="analytics-chart-canvas analytics-chart-canvas--medium">
               <canvas
                 baseChart
                 [data]="averageBookiesPerMatchByYearChartData"
-                [options]="lineOptions"
+                [options]="averageBookiesLineOptions"
                 [type]="'line'">
               </canvas>
             </div>
+
+            <p class="analytics-chart-note">
+              {{ averageBookiesCoverageNote }}
+            </p>
           </div>
         </div>
       </section>

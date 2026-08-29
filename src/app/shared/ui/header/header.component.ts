@@ -9,8 +9,6 @@ import { BillingModalComponent } from '../../../billing/billing-modal/billing-mo
 import { AuthService } from '../../../core/services/auth.service';
 import { User } from '../../../core/models/user.model';
 import {
-    BONZOBYTE_THEMES,
-    BonzoByteTheme,
     ThemeService
 } from '../../../core/services/theme.service';
 
@@ -34,15 +32,12 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
     isLoggedIn = false;
     authSub!: Subscription;
-    themeSub!: Subscription;
     showRegisterModal = false;
     showLoginModal = false;
     showBillingModal = false;
     user: User | null = null;
     userNickname = '';
     userDisplayName = '';
-    readonly themes = BONZOBYTE_THEMES;
-    selectedTheme: BonzoByteTheme;
 
     private switchToRegisterHandler = () => {
         this.showLoginModal = false;
@@ -80,15 +75,9 @@ export class HeaderComponent implements OnInit, OnDestroy {
         private router: Router,
         private zone: NgZone,
         private themeService: ThemeService
-    ) {
-        this.selectedTheme = themeService.selectedTheme;
-    }
+    ) { }
 
     ngOnInit(): void {
-        this.themeSub = this.themeService.selectedTheme$.subscribe(theme => {
-            this.selectedTheme = theme;
-        });
-
         window.addEventListener('openBilling', () => console.log('[WINDOW] openBilling fired'));
         this.router.events
             .pipe(filter((e): e is NavigationEnd => e instanceof NavigationEnd))
@@ -99,6 +88,8 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
         this.authSub = this.authService.authStatus$.subscribe(status => {
             this.isLoggedIn = status;
+            if (status) this.themeService.restoreStoredTheme();
+            else this.themeService.useAnonymousDefault();
             this.user = status ? this.authService.getUser() : null;
             this.userNickname = this.user?.nickname || '';
             this.userDisplayName = this.user?.nickname || this.user?.name || 'User';
@@ -117,7 +108,6 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
     ngOnDestroy(): void {
         if (this.authSub) this.authSub.unsubscribe();
-        if (this.themeSub) this.themeSub.unsubscribe();
         window.removeEventListener('openRegister', this.openRegisterFromGlobal);
         window.removeEventListener('switchToRegister', this.switchToRegisterHandler);
         window.removeEventListener('openLogin', this.openLoginFromGlobal);
@@ -160,8 +150,4 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
     openUserModal() { this.userModalOpened.emit(); }
 
-    changeTheme(theme: string): void {
-        this.themeService.setTheme(theme);
-        this.selectedTheme = this.themeService.selectedTheme;
-    }
 }

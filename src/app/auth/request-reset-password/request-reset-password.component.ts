@@ -50,7 +50,7 @@ export class RequestResetPasswordComponent implements OnInit, OnDestroy {
         // npr. `${environment.apiUrl}/auth/request-password-reset`
         this.http.post(`${environment.apiUrl}/auth/request-password-reset`, { email }).subscribe({
             next: () => {
-                this.snackBar.open('Link za reset lozinke je poslan na email!', '', {
+                this.snackBar.open('A password reset link was sent to your email.', '', {
                     duration: 4000,
                     horizontalPosition: 'right',
                     verticalPosition: 'bottom',
@@ -59,7 +59,7 @@ export class RequestResetPasswordComponent implements OnInit, OnDestroy {
                 this.close();
             },
             error: (err) => {
-                this.snackBar.open(err.error?.message || 'Nešto je pošlo po zlu.', '', {
+                this.snackBar.open(err.error?.message || 'Something went wrong.', '', {
                     duration: 4000,
                     panelClass: 'error-snackbar'
                 });
