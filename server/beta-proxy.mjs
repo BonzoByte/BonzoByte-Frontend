@@ -1,7 +1,8 @@
 const privateHeaders = { 'X-Robots-Tag': 'noindex, nofollow, noarchive',
-    'Cache-Control': 'private, no-store, max-age=0', 'CDN-Cache-Control': 'no-store', 'Vercel-CDN-Cache-Control': 'no-store' };
+    'Cache-Control': 'private, no-store, max-age=0', 'CDN-Cache-Control': 'no-store', 'Vercel-CDN-Cache-Control': 'no-store',
+    'Referrer-Policy': 'same-origin' };
 const denied = (status, code) => new Response(JSON.stringify({ code }), {
-    status, headers: { ...privateHeaders, 'Content-Type': 'application/json', 'Referrer-Policy': 'no-referrer' } });
+    status, headers: { ...privateHeaders, 'Content-Type': 'application/json' } });
 const secureOrigin = value => {
     try { const url = new URL(value); return url.protocol === 'https:' && url.origin === value ? url.origin : ''; }
     catch { return ''; }
@@ -38,7 +39,7 @@ export function createBetaProxy({ settings, next, rewrite, fetcher = fetch }) {
         const api = pathname === '/api' || pathname.startsWith('/api/');
         const needsLogin = () => api || !['GET', 'HEAD'].includes(request.method)
             ? denied(401, 'BETA_ACCESS_REQUIRED')
-            : new Response(null, { status: 303, headers: { ...privateHeaders, Location: '/beta', 'Referrer-Policy': 'no-referrer' } });
+            : new Response(null, { status: 303, headers: { ...privateHeaders, Location: '/beta' } });
         if (!cookie) return needsLogin();
         try {
             const response = await fetcher(backend + '/beta/session', { method: 'GET', headers: { cookie },

@@ -11,7 +11,7 @@
       { "key": "Cache-Control", "value": "private, no-store, max-age=0" },
       { "key": "CDN-Cache-Control", "value": "no-store" },
       { "key": "Vercel-CDN-Cache-Control", "value": "no-store" },
-      { "key": "Referrer-Policy", "value": "no-referrer" }
+      { "key": "Referrer-Policy", "value": "same-origin" }
     ]
   }],
   "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
