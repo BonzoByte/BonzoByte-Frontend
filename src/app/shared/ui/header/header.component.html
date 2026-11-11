@@ -1,0 +1,125 @@
+﻿<nav id="main-header" class="custom-header app-header">
+    <div>
+        <div class="navbar-nav">
+            <span class="nav-group">
+                <a routerLink="/matches" class="logreg">{{ 'navigation.matches' | translate }}</a>
+                <a routerLink="/players" class="logreg">{{ 'navigation.players' | translate }}</a>
+                <a routerLink="/tournaments" class="logreg">{{ 'navigation.tournaments' | translate }}</a>
+            </span>
+            <span *ngIf="!billingLab" class="nav-separator" aria-hidden="true"></span>
+            <span *ngIf="!billingLab" class="nav-group">
+                <a routerLink="/competition" class="logreg">{{ 'competition.leaderboard' | translate }}</a>
+                <a routerLink="/popular" routerLinkActive="is-current" ariaCurrentWhenActive="page"
+                    class="logreg popular-trigger">{{ 'popularity.title' | translate }}</a>
+            </span>
+            <span class="nav-separator" aria-hidden="true"></span>
+            <span class="nav-group">
+                <a routerLink="/analytics" class="logreg">{{ 'navigation.analytics' | translate }}</a>
+                <a routerLink="/model-insights" class="logreg">{{ 'navigation.modelInsights' | translate }}</a>
+            </span>
+            <span class="nav-separator" aria-hidden="true"></span>
+            <span class="nav-group">
+                <a routerLink="/simulation" class="logreg">{{ 'navigation.simulation' | translate }}</a>
+            </span>
+        </div>
+
+        <div class="brand-title">
+            <a routerLink="/" class="main-title brand-link" [attr.aria-label]="'navigation.home' | translate">
+                BonzoByte
+            </a>
+        </div>
+
+        <div class="navbar-nav">
+            <details class="language-picker" #languagePicker (keydown.escape)="languagePicker.open = false">
+                <summary [attr.aria-label]="('language.label' | translate) + ': ' + regional.settings().nativeName" [title]="'language.label' | translate">
+                    <span [class]="'fi fi-' + regional.settings().flagIso2" aria-hidden="true"></span>
+                    <span>{{ regional.settings().shortName }}</span>
+                </summary>
+                <div class="language-options" [attr.aria-label]="'language.available' | translate">
+                    <button *ngFor="let language of regional.supportedLanguages" type="button" class="language-option"
+                        [class.is-current]="regional.language() === language.code"
+                        [attr.aria-current]="regional.language() === language.code ? 'true' : null"
+                        (click)="regional.setLanguage(language.code); languagePicker.open = false">
+                        <span [class]="'fi fi-' + language.flagIso2" aria-hidden="true"></span>
+                        <span [attr.lang]="language.code">{{ language.nativeName }}</span>
+                        <small>{{ language.datePlaceholder }}</small>
+                        <span *ngIf="regional.language() === language.code" aria-hidden="true">✓</span>
+                    </button>
+                    <p class="language-note">{{ 'language.formats' | translate }}</p>
+                    <label class="language-note time-zone-label" for="display-time-zone">{{ 'timeZone.label' | translate }}</label>
+                    <select id="display-time-zone" class="time-zone-select" [value]="regional.timeZoneSelection()"
+                        (change)="regional.setTimeZone($any($event.target).value)">
+                        <option value="auto" [selected]="regional.timeZoneSelection() === 'auto'">{{ 'timeZone.automatic' | translate:{zone: regional.detectedZone} }}</option>
+                        <option *ngFor="let zone of regional.timeZoneOptions" [value]="zone" [selected]="regional.timeZoneSelection() === zone">{{ zone }}</option>
+                    </select>
+                    <label class="language-note time-zone-notice-toggle" for="header-time-zone-notice">
+                        <input id="header-time-zone-notice" type="checkbox"
+                            [checked]="timeZoneNoticePreference.visible$ | async"
+                            (change)="timeZoneNoticePreference.setVisible($any($event.target).checked)" />
+                        <span>{{ 'timeZone.noticeTitle' | translate }}</span>
+                    </label>
+                    <p class="language-note">{{ 'language.sourceTime' | translate }}</p>
+                </div>
+            </details>
+            <ng-container *ngIf="!isLoggedIn; else loggedIn">
+                <a class="logreg" (click)="openLoginModal()">{{ 'login' | translate }}</a>
+                <a class="logreg" (click)="openRegisterModal()">{{ 'register' | translate }}</a>
+            </ng-container>
+
+            <ng-template #loggedIn>
+                <app-discussion-inbox *ngIf="!billingLab"></app-discussion-inbox>
+                <div class="user-block">
+                    <button type="button" class="user-avatar"
+                        [attr.aria-label]="'profile.title' | translate"
+                        (click)="openUserModal()">
+                        <app-account-avatar [identity]="user?._id" [nickname]="user?.nickname"
+                            [imageUrl]="user?.avatarUrl" aria-hidden="true"></app-account-avatar>
+                    </button>
+            
+                    <div class="user-meta" (click)="openUserModal()">
+                        <div class="user-name">
+                            {{ userDisplayName || ('common.user' | translate) }}
+                        </div>
+                        <button *ngIf="user && !user.isVerified" type="button" class="trial-extend"
+                            (click)="$event.stopPropagation(); openVerification()">{{ 'verification.prompt' | translate }}</button>
+            
+                        <div class="user-tier">
+                            <span>{{ accountTierKey | translate }}</span>
+                            <span *ngIf="hasAdFreeAccess" class="user-tier-icon" aria-hidden="true">🏅</span>
+                            <button *ngIf="billingLab || accountTierKey === 'membership.trial' || accountTierKey === 'membership.standard'"
+                                class="trial-extend" type="button" (click)="$event.stopPropagation(); openBillingModal()">
+                                {{ (billingLab ? 'billingLab.history' : accountTierKey === 'membership.trial' ? 'referral.extend' : 'referral.getTrial') | translate }}
+                            </button>
+                        </div>
+                        <div *ngIf="trialRemaining as remaining" class="trial-countdown"
+                            [title]="'membership.until' | translate:{date: regional.dateTime(remaining.endsAt, 'utc')}">
+                            {{ 'membership.trialRemaining' | translate:{days: regional.number(remaining.days, 0), hours: regional.number(remaining.hours, 0), minutes: regional.number(remaining.minutes, 0)} }}
+                        </div>
+                    </div>
+            
+                    <a *ngIf="!billingLab && favourites.signedIn()" class="favourites-trigger" routerLink="/favourites"
+                        routerLinkActive="is-current" ariaCurrentWhenActive="page"
+                        [title]="'favourites.title' | translate"
+                        [attr.aria-label]="favourites.loading() || favourites.error() ? ('favourites.title' | translate) : ('favourites.openCount' | translate:{count: regional.number(favourites.count(), 0)})">
+                        <span class="favourites-star" aria-hidden="true">★</span>
+                        <span aria-hidden="true">{{ favourites.loading() || favourites.error() ? '—' : regional.number(favourites.count(), 0) }}</span>
+                    </a>
+                    <a *ngIf="!billingLab" class="predictions-trigger" routerLink="/predictions" routerLinkActive="is-current"
+                        ariaCurrentWhenActive="page" [title]="'competition.mine' | translate" [attr.aria-label]="'competition.mine' | translate">◎</a>
+                    <span class="nav-separator" aria-hidden="true"></span>
+                    <a class="logreg" (click)="logout()">{{ 'logout' | translate }}</a>
+                </div>
+            </ng-template>
+        </div>
+    </div>
+</nav>
+
+<app-register *ngIf="showRegisterModal" (closed)="closeRegisterModal()"></app-register>
+<app-prediction-dialog *ngIf="!billingLab"></app-prediction-dialog>
+<app-discussion-dialog *ngIf="!billingLab"></app-discussion-dialog>
+@defer (on idle; when privateMessages.selected() !== null) {
+  <app-private-messages-host *ngIf="!billingLab"></app-private-messages-host>
+}
+<app-login *ngIf="showLoginModal" (closed)="closeLoginModal()"></app-login>
+<app-billing-modal *ngIf="showBillingModal" (closed)="closeBillingModal()"></app-billing-modal>
+<app-verification-code *ngIf="verificationContext as context" [context]="context" (closed)="closeVerification()"></app-verification-code>

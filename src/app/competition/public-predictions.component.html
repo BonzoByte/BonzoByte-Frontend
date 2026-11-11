@@ -1,0 +1,29 @@
+<section class="competition-page competition-page--mine">
+    <header><div><p class="competition-eyebrow">BONZOBYTE COMMUNITY</p>
+        <h1>{{ (data ? 'competition.publicTitle' : 'competition.publicPredictions') | translate:{name: nickname} }}</h1></div>
+        <a routerLink="/competition" [queryParams]="{month: month, demo: demoMode ? '1' : null}">{{ 'competition.backToBoard' | translate }}</a></header>
+    <p class="competition-disclaimer">{{ 'competition.virtual' | translate }}</p>
+    <p *ngIf="data?.testActivity" class="competition-demo-note" role="note">{{ 'competition.testActivityNote' | translate }}</p>
+    <p *ngIf="demoMode" class="competition-demo-note"><strong>DEMO</strong> — {{ (localPreview ? 'competition.archivedDemoNote' : 'competition.demoNote') | translate:{date: archiveDay} }}</p>
+    <p class="competition-source-note">{{ 'competition.publicNote' | translate }}</p>
+    <div class="competition-controls"><label>{{ 'competition.month' | translate }}
+        <input type="month" [(ngModel)]="month" [max]="maxMonth" min="2020-01" (change)="load()"></label>
+        <button type="button" class="oauth-btn" [disabled]="loading" (click)="load()">{{ 'competition.refresh' | translate }}</button>
+        <span>{{ 'competition.utcNote' | translate }}</span></div>
+    <p *ngIf="loading && !data" role="status">{{ 'common.loading' | translate }}</p>
+    <p *ngIf="errorKey" role="alert">{{ errorKey | translate }}</p>
+    <ng-container *ngIf="data as history">
+        <div class="competition-summary">
+            <div><span>{{ 'competition.units' | translate }}</span><strong>{{ regional.number(history.summary.units, 2) }}</strong></div>
+            <div><span>{{ 'competition.settled' | translate }}</span><strong>{{ regional.number(history.summary.settled, 0) }}</strong></div>
+            <div><span>{{ 'competition.hitRate' | translate }}</span><strong>{{ history.summary.hitRate === null ? '—' : regional.number(history.summary.hitRate, 1) + '%' }}</strong></div>
+            <div><span>ROI</span><strong>{{ history.summary.roi === null ? '—' : regional.number(history.summary.roi, 1) + '%' }}</strong></div>
+        </div>
+        <p>{{ (history.summary.qualified ? 'competition.qualified' : 'competition.provisional') | translate }}</p>
+        <p *ngIf="!history.entries.length">{{ 'competition.emptyPublic' | translate }}</p>
+        <app-prediction-history-grid *ngIf="displayEntries.length" [entries]="displayEntries" [publicView]="true" [illustrative]="history.demo === true" [localPreview]="localPreview" [retrospective]="!!history.testActivity"></app-prediction-history-grid>
+    </ng-container>
+    <details class="competition-rules"><summary>{{ 'competition.rulesTitle' | translate }}</summary>
+        <p>{{ 'competition.rulesBody' | translate }}</p><p>{{ 'competition.resultRules' | translate }}</p>
+        <p>{{ 'competition.fairness' | translate }}</p><p>{{ 'competition.privacy' | translate }}</p></details>
+</section>

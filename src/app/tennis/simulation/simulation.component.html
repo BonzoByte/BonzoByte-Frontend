@@ -1,0 +1,633 @@
+<nav class="sim-view-tabs sim-local-tabs" *ngIf="localStudyEnabled" [attr.aria-label]="'reports.copy.simulationViews' | translate">
+  <button type="button" [class.is-active]="selectedView === 'matchSelection'" [attr.aria-pressed]="selectedView === 'matchSelection'"
+    (click)="setView('matchSelection')">{{ 'sqlStudy.title' | translate }}<small>{{ 'sqlStudy.localOnly' | translate }}</small></button>
+  <button type="button" [class.is-active]="selectedView === 'summary'" [attr.aria-pressed]="selectedView === 'summary'"
+    (click)="setView('summary')">{{ 'reports.copy.summary' | translate }}<small>{{ 'sqlStudy.legacy' | translate }}</small></button>
+</nav>
+<app-sql-selection-study *ngIf="localStudyEnabled && selectedView === 'matchSelection'"></app-sql-selection-study>
+
+<main class="sim-page" *ngIf="(selectedView === 'summary' || modelAuditVisible && selectedView === 'modelAudit') && !isLoading && report as simulation">
+  <section class="sim-hero">
+    <div>
+      <div class="sim-kicker">{{ 'reports.copy.bonzobyteResearchLab' | translate }}</div>
+      <h1>{{ 'reports.copy.predictionSimulation' | translate }}</h1>
+      <p>{{ 'reports.copy.aTransparentHistoricalComparisonOfModelProbabilitiesAndRecordedBookmaker' | translate }}</p>
+    </div>
+
+    <div class="sim-hero__meta">
+      <span>{{ 'reports.copy.updated' | translate }} {{ p.generatedAt(simulation.generatedAtUtc) }} {{ p.regional.timeZone() }}</span>
+      <span>
+        {{ 'reports.copy.window' | translate }} {{ p.regional.date(simulation.window.fromInclusive) }}
+        <ng-container *ngIf="simulation.window.toExclusive">
+          – {{ p.regional.date(simulation.window.toExclusive) }}
+        </ng-container>
+      </span>
+    </div>
+  </section>
+
+  <section class="sim-disclosure" [attr.aria-label]="'reports.copy.simulationLimitations' | translate">
+    <div class="sim-disclosure__icon" aria-hidden="true">i</div>
+    <div>
+      <strong>{{ 'reports.copy.researchOnlyNoGuaranteedProfit' | translate }}</strong>
+      <p>{{ p.source(simulation.labels.disclosure) }}</p>
+      <p>{{ 'sqlStudy.legacyMin10' | translate }}</p>
+      <p>{{ 'sqlStudy.quoteQualityWarning' | translate }}</p>
+      <p>{{ 'sqlStudy.demoScope' | translate }}</p>
+      <div class="sim-tags">
+        <span>{{ 'reports.copy.undatedOdds' | translate }}</span>
+        <span>{{ (usesReviewedAnnualNn ? 'reports.copy.medianOfBookmakerMedians' : 'reports.copy.closingPriceProxy') | translate }}</span>
+        <span>{{ 'reports.copy.strictTemporalUnavailable' | translate }}</span>
+      </div>
+    </div>
+  </section>
+
+  <ng-container *ngIf="selectedView === 'summary'">
+    <ng-container *ngIf="simulation.productionSummary as summary; else noProductionSummary">
+      <section class="sim-controls sim-summary-controls">
+        <div class="sim-policy" role="group" [attr.aria-label]="'reports.copy.tourScope' | translate">
+          <button
+            *ngFor="let scope of ['ALL', 'ATP', 'WTA']"
+            type="button"
+            [class.is-active]="selectedSummaryScope === scope"
+            [attr.aria-pressed]="selectedSummaryScope === scope"
+            (click)="setSummaryScope($any(scope))">
+            {{ p.scope(scope) }}
+            <small>{{ (scope === 'ALL' ? 'reports.copy.combinedTours' : 'reports.copy.tourOnly') | translate }}</small>
+          </button>
+        </div>
+        <div class="sim-summary-source">
+          <span>{{ p.text('pricedCount', { count: (summary.sourceMatches | number:'1.0-3':p.regional.locale()) }) }}</span>
+          <small>
+            {{ p.regional.matchDateTime(summary.firstMatch, undefined, true) }}
+            &ndash; {{ p.regional.matchDateTime(summary.lastMatch, undefined, true) }}
+          </small>
+        </div>
+      </section>
+
+      <section class="sim-evidence-window">
+        <div>
+          <span>{{ 'reports.copy.predictionSource' | translate }}</span>
+          <strong>{{ summary.predictionSource }}</strong>
+        </div>
+        <div>
+          <span>{{ 'reports.copy.executionPrice' | translate }}</span>
+          <strong>{{ 'reports.copy.medianOfBookmakerMedians' | translate }}</strong>
+        </div>
+        <div>
+          <span>{{ 'reports.copy.marketBenchmark' | translate }}</span>
+          <strong>{{ 'reports.copy.deVigFairProbability' | translate }}</strong>
+        </div>
+        <p>{{ p.source(summary.interpretation) }}</p>
+      </section>
+
+      <section class="sim-summary-grid" *ngIf="selectedSummaryCohort as cohort">
+        <article>
+          <span>{{ 'reports.copy.selectedScope' | translate }}</span>
+          <strong>{{ p.scope(selectedSummaryScope) }}</strong>
+          <small>{{ summaryEdgeLabel(cohort.minimumEdge) }}</small>
+        </article>
+        <article>
+          <span>{{ 'reports.copy.flatProfit' | translate }}</span>
+          <strong [class.is-positive]="cohort.flatProfit > 0" [class.is-negative]="cohort.flatProfit < 0">
+            {{ p.text('units', { value: (cohort.flatProfit | number:'1.2-2':p.regional.locale()) }) }}
+          </strong>
+          <small>{{ p.text('oneUnitWagers', { count: (cohort.bets | number:'1.0-3':p.regional.locale()) }) }}</small>
+        </article>
+        <article>
+          <span>{{ 'reports.copy.flatRoi' | translate }}</span>
+          <strong [class.is-positive]="cohort.flatRoi > 0" [class.is-negative]="cohort.flatRoi < 0">
+            {{ cohort.flatRoi | percent:'1.2-2':p.regional.locale() }}
+          </strong>
+          <small>{{ p.text('shortWinsLosses', { wins: (cohort.wins | number:'1.0-3':p.regional.locale()), losses: (cohort.losses | number:'1.0-3':p.regional.locale()) }) }}</small>
+        </article>
+        <article>
+          <span>{{ 'reports.copy.averageModelProbability' | translate }}</span>
+          <strong>{{ cohort.averageModelProbability | percent:'1.2-2':p.regional.locale() }}</strong>
+          <small>{{ 'reports.copy.selectedSide' | translate }}</small>
+        </article>
+        <article>
+          <span>{{ 'reports.copy.averageMarketFairProbability' | translate }}</span>
+          <strong>{{ cohort.averageMarketFairProbability | percent:'1.2-2':p.regional.locale() }}</strong>
+          <small>{{ 'reports.copy.vigRemoved' | translate }}</small>
+        </article>
+        <article>
+          <span>{{ 'reports.copy.averageEdge' | translate }}</span>
+          <strong>{{ cohort.averageEdge | percent:'1.2-2':p.regional.locale() }}</strong>
+          <small>{{ 'reports.copy.modelMinusFairMarket' | translate }}</small>
+        </article>
+      </section>
+
+      <ng-container *ngIf="showSummaryFairComparison && selectedSummaryCohort as comparisonCohort">
+        <app-atp-fair-comparison mode="summary" [(threshold)]="selectedSummaryEdgeThreshold"
+          [sourceGeneratedAtUtc]="simulation.generatedAtUtc" [expectedBets]="comparisonCohort.bets"
+          [expectedWins]="comparisonCohort.wins" [expectedLosses]="comparisonCohort.losses"
+          [expectedMedianProfit]="comparisonCohort.flatProfit"></app-atp-fair-comparison>
+      </ng-container>
+
+      <section class="sim-chart-grid sim-chart-grid--single">
+        <article class="sim-panel">
+          <div class="sim-panel__header">
+            <div>
+              <span>{{ 'reports.copy.allAtpWta' | translate }}</span>
+              <h2>{{ (usesReviewedAnnualNn ? 'reports.copy.flatRoi' : 'reports.copy.productionWpFlatRoiByEdgeThreshold') | translate }}</h2>
+            </div>
+          </div>
+          <div class="sim-chart">
+            <canvas
+              baseChart
+              [data]="summaryRoiChartData"
+              [options]="p.chartOptions(roiChartOptions)"
+              [type]="'bar'">
+            </canvas>
+          </div>
+        </article>
+      </section>
+
+      <section class="sim-panel sim-panel--trajectories" *ngIf="selectedSummaryCohort as cohort">
+        <div class="sim-panel__header sim-panel__header--trajectory">
+          <div>
+            <span>{{ (usesReviewedAnnualNn ? 'reports.copy.chronologicalReconstruction' : 'reports.copy.chronologicalProductionSnapshot') | translate }}</span>
+            <h2>{{ 'reports.copy.cumulativeOneUnitPL' | translate }}</h2>
+          </div>
+          <div class="sim-edge-select">
+            <span>{{ 'reports.copy.minimumEdge' | translate }}</span>
+            <strong>{{ summaryEdgeLabel(cohort.minimumEdge) }}</strong>
+          </div>
+        </div>
+        <div class="sim-trajectory-summary">
+          <span>{{ p.text('wagers', { count: (cohort.bets | number:'1.0-3':p.regional.locale()) }) }}</span>
+          <span>{{ p.text('winsLosses', { wins: (cohort.wins | number:'1.0-3':p.regional.locale()), losses: (cohort.losses | number:'1.0-3':p.regional.locale()) }) }}</span>
+          <span>{{ p.text('units', { value: (cohort.flatProfit | number:'1.2-2':p.regional.locale()) }) }}</span>
+          <span>{{ p.text('dayDrawdown', { value: (cohort.flatMaximumDrawdownUnits | number:'1.2-2':p.regional.locale()) }) }}</span>
+        </div>
+        <div class="sim-chart sim-chart--trajectory sim-summary-trajectory">
+          <canvas
+            baseChart
+            [data]="summaryTrajectoryChartData"
+            [options]="p.chartOptions(summaryTrajectoryChartOptions)"
+            [type]="'line'">
+          </canvas>
+        </div>
+        <p class="sim-caption">{{ 'reports.copy.theCurveBeginsAtZeroAndKeepsEverySelectedWin' | translate }}</p>
+      </section>
+
+      <section class="sim-panel sim-panel--table">
+        <div class="sim-panel__header">
+          <div>
+            <span>{{ usesReviewedAnnualNn ? p.scope(selectedSummaryScope) + ' · ' + p.source('Archived annual NN') : p.text('productionSummary', { scope: p.scope(selectedSummaryScope) }) }}</span>
+            <h2>{{ 'reports.copy.medianExecutionPriceVersusFairMarketBenchmark' | translate }}</h2>
+          </div>
+          <div class="sim-table-note">{{ 'reports.copy.noSelectedLossIsRemoved' | translate }}</div>
+        </div>
+        <div class="sim-table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>{{ 'reports.copy.minimumEdge' | translate }}</th>
+                <th>{{ 'reports.copy.bets' | translate }}</th>
+                <th>{{ 'reports.copy.wL' | translate }}</th>
+                <th>{{ 'reports.copy.coverage' | translate }}</th>
+                <th>{{ 'reports.copy.hitRate' | translate }}</th>
+                <th>{{ 'reports.copy.avgMedianOdds' | translate }}</th>
+                <th>{{ 'reports.copy.avgFairOdds' | translate }}</th>
+                <th>{{ 'reports.copy.avgModelProbability' | translate }}</th>
+                <th>{{ 'reports.copy.avgFairProbability' | translate }}</th>
+                <th>{{ 'reports.copy.avgEdge' | translate }}</th>
+                <th>{{ 'reports.copy.avgModelEv' | translate }}</th>
+                <th>{{ 'reports.copy.flatProfit' | translate }}</th>
+                <th>{{ 'reports.copy.flatRoi' | translate }}</th>
+                <th>{{ 'reports.copy.95Interval' | translate }}</th>
+                <th>{{ 'reports.copy.avgBooks' | translate }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let cohort of summaryCohorts">
+                <td><strong>{{ summaryEdgeLabel(cohort.minimumEdge) }}</strong></td>
+                <td>{{ cohort.bets | number:'1.0-3':p.regional.locale() }}</td>
+                <td>{{ cohort.wins | number:'1.0-3':p.regional.locale() }} / {{ cohort.losses | number:'1.0-3':p.regional.locale() }}</td>
+                <td>{{ cohort.coverage | percent:'1.1-1':p.regional.locale() }}</td>
+                <td>{{ cohort.hitRate | percent:'1.1-1':p.regional.locale() }}</td>
+                <td>{{ cohort.averageMedianOdds | number:'1.2-3':p.regional.locale() }}</td>
+                <td>{{ cohort.averageMarketFairOdds | number:'1.2-3':p.regional.locale() }}</td>
+                <td>{{ cohort.averageModelProbability | percent:'1.2-2':p.regional.locale() }}</td>
+                <td>{{ cohort.averageMarketFairProbability | percent:'1.2-2':p.regional.locale() }}</td>
+                <td>{{ cohort.averageEdge | percent:'1.2-2':p.regional.locale() }}</td>
+                <td>{{ cohort.averageExpectedValue | percent:'1.2-2':p.regional.locale() }}</td>
+                <td [class.is-positive]="cohort.flatProfit > 0" [class.is-negative]="cohort.flatProfit < 0">
+                  {{ cohort.flatProfit | number:'1.2-2':p.regional.locale() }}
+                </td>
+                <td [class.is-positive]="cohort.flatRoi > 0" [class.is-negative]="cohort.flatRoi < 0">
+                  {{ cohort.flatRoi | percent:'1.2-2':p.regional.locale() }}
+                </td>
+                <td>{{ summaryConfidenceInterval(cohort) }}</td>
+                <td>{{ cohort.averageCompleteBookmakers | number:'1.1-1':p.regional.locale() }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="sim-caption">{{ usesReviewedAnnualNn ? p.source('The interval is a descriptive per-bet normal approximation, not adjusted for correlated matches, model selection or uncertain pre-match prices.') : ('reports.copy.the95IntervalIsAPerBetNormalApproximationAnd' | translate) }}</p>
+      </section>
+    </ng-container>
+
+    <ng-template #noProductionSummary>
+      <div class="bb-page-error" role="alert">
+        {{ 'reports.copy.productionSummaryIsNotAvailable' | translate }}
+      </div>
+    </ng-template>
+  </ng-container>
+
+  <section class="sim-controls" *ngIf="modelAuditVisible && selectedView === 'modelAudit'">
+    <label>
+      <span>{{ 'reports.copy.model' | translate }}</span>
+      <select [(ngModel)]="selectedModelIndex">
+        <option
+          *ngFor="let model of simulation.models; let index = index"
+          [ngValue]="index">
+          {{ modelLabel(model) }}
+        </option>
+      </select>
+    </label>
+
+    <div class="sim-policy" role="group" [attr.aria-label]="'reports.copy.recordedPricePolicy' | translate">
+      <button
+        type="button"
+        [class.is-active]="selectedExecutionPolicy === consensusPolicy"
+        [attr.aria-pressed]="selectedExecutionPolicy === consensusPolicy"
+        (click)="setExecutionPolicy(consensusPolicy)">{{ 'reports.copy.consensusMedian' | translate }}<small>{{ 'reports.copy.bookmakerMedians' | translate }}</small>
+      </button>
+      <button
+        *ngIf="hasExecutionPolicy('best-price')"
+        type="button"
+        [class.is-active]="selectedExecutionPolicy === 'best-price'"
+        [attr.aria-pressed]="selectedExecutionPolicy === 'best-price'"
+        (click)="setExecutionPolicy('best-price')">{{ 'reports.copy.bestPrice' | translate }}<small>{{ 'reports.copy.optimistic' | translate }}</small>
+      </button>
+    </div>
+  </section>
+
+  <ng-container *ngIf="modelAuditVisible && selectedView === 'modelAudit'">
+  <ng-container *ngIf="selectedModel as model">
+    <section class="sim-model-strip">
+      <div>
+        <span>{{ 'reports.copy.tour' | translate }}</span>
+        <strong>{{ model.model.tour }}</strong>
+      </div>
+      <div>
+        <span>{{ 'reports.copy.version' | translate }}</span>
+        <strong>{{ model.model.modelVersion }}</strong>
+      </div>
+      <div>
+        <span>{{ 'reports.copy.features' | translate }}</span>
+        <strong>{{ model.model.featureCount | number:'1.0-0':p.regional.locale() }}</strong>
+      </div>
+      <div>
+        <span>{{ 'reports.copy.training' | translate }}</span>
+        <strong>{{ model.model.trainingPolicy }}</strong>
+      </div>
+      <div>
+        <span>H2H</span>
+        <strong>{{ (model.model.usesH2H ? 'reports.copy.included' : 'reports.copy.excluded') | translate }}</strong>
+      </div>
+    </section>
+
+    <section
+      class="sim-evidence-window"
+      [class.sim-evidence-window--mixed]="model.evaluation.fullHistoryIncludesInSample">
+      <div>
+        <span>{{ 'reports.copy.storedPredictionCoverage' | translate }}</span>
+        <strong>
+          <ng-container *ngIf="model.coverage.firstPrediction; else noPredictionRange">
+            {{ p.regional.matchDateTime(model.coverage.firstPrediction, undefined, true) }}
+            – {{ p.regional.matchDateTime(model.coverage.lastPrediction, undefined, true) }}
+          </ng-container>
+          <ng-template #noPredictionRange>{{ 'reports.copy.notAvailable' | translate }}</ng-template>
+        </strong>
+      </div>
+      <div>
+        <span>{{ 'reports.copy.bettingOddsOverlap' | translate }}</span>
+        <strong>
+          <ng-container *ngIf="model.coverage.firstBet; else noBetRange">
+            {{ p.regional.matchDateTime(model.coverage.firstBet, undefined, true) }}
+            – {{ p.regional.matchDateTime(model.coverage.lastBet, undefined, true) }}
+          </ng-container>
+          <ng-template #noBetRange>{{ 'reports.copy.notAvailable' | translate }}</ng-template>
+        </strong>
+      </div>
+      <div>
+        <span>{{ (usesReviewedAnnualNn ? 'reports.copy.chronologicalReconstruction' : 'reports.copy.unbiasedEvaluationBoundary') | translate }}</span>
+        <strong>{{ p.source(model.evaluation.outOfSampleLabel) }}</strong>
+      </div>
+      <p>{{ p.source(model.evaluation.disclosure) }}</p>
+    </section>
+
+    <section class="sim-summary-grid">
+      <article>
+        <span>{{ 'reports.copy.eligiblePredictions' | translate }}</span>
+        <strong>{{ model.coverage.eligibleFinishedPredictions | number:'1.0-3':p.regional.locale() }}</strong>
+        <small>{{ 'reports.copy.canonicalFinishedMatches' | translate }}</small>
+      </article>
+      <article>
+        <span>{{ 'reports.copy.completePricePairs' | translate }}</span>
+        <strong>{{ model.coverage.matchesWithCompletePair | number:'1.0-3':p.regional.locale() }}</strong>
+        <small>{{ (usesReviewedAnnualNn ? 'reports.copy.medianOfBookmakerMedians' : 'reports.copy.sameBookmakerPlayerPair') | translate }}</small>
+      </article>
+      <article>
+        <span>{{ 'reports.copy.candidateMatches' | translate }}</span>
+        <strong>{{ model.coverage.matchesWithCandidate | number:'1.0-3':p.regional.locale() }}</strong>
+        <small>{{ 'reports.copy.directionalModelProbability' | translate }}</small>
+      </article>
+      <article *ngIf="referenceCohort as cohort">
+        <span>{{ 'reports.copy.referenceFlatRoi' | translate }}</span>
+        <strong [class.is-positive]="cohort.flat.roi > 0" [class.is-negative]="cohort.flat.roi < 0">
+          {{ cohort.flat.roi | percent:'1.2-2':p.regional.locale() }}
+        </strong>
+        <small>{{ cohortLabel(cohort) }} · {{ p.text('wagers', { count: (cohort.bets | number:'1.0-3':p.regional.locale()) }) }}</small>
+      </article>
+      <article *ngIf="referenceCohort as cohort">
+        <span>{{ 'reports.copy.referenceHitRate' | translate }}</span>
+        <strong>{{ cohort.hitRate | percent:'1.2-2':p.regional.locale() }}</strong>
+        <small>{{ p.text('shortWinsLosses', { wins: (cohort.wins | number:'1.0-3':p.regional.locale()), losses: (cohort.losses | number:'1.0-3':p.regional.locale()) }) }}</small>
+      </article>
+      <article *ngIf="referenceCohort as cohort">
+        <span>{{ 'reports.copy.95RoiInterval' | translate }}</span>
+        <strong class="sim-interval">{{ confidenceInterval(cohort) }}</strong>
+        <small>{{ 'reports.copy.normalApproximation' | translate }}</small>
+      </article>
+    </section>
+
+    <ng-container *ngIf="showAuditFairComparison && selectedEdgeCohort as comparisonCohort">
+      <app-atp-fair-comparison mode="audit" [(threshold)]="selectedEdgeThreshold"
+        [sourceGeneratedAtUtc]="simulation.generatedAtUtc" [expectedBets]="comparisonCohort.bets"
+        [expectedWins]="comparisonCohort.wins" [expectedLosses]="comparisonCohort.losses"
+        [expectedMedianProfit]="comparisonCohort.flat.profitUnits"></app-atp-fair-comparison>
+    </ng-container>
+
+    <section class="sim-chart-grid sim-chart-grid--single">
+      <article class="sim-panel">
+        <div class="sim-panel__header">
+          <div>
+            <span>{{ 'reports.copy.executionComparison' | translate }}</span>
+            <h2>{{ 'reports.copy.flatRoiByEdgeThreshold' | translate }}</h2>
+          </div>
+        </div>
+        <div class="sim-chart">
+          <canvas
+            baseChart
+            [data]="roiChartData"
+            [options]="p.chartOptions(roiChartOptions)"
+            [type]="'bar'">
+          </canvas>
+        </div>
+        <p class="sim-caption">{{ usesReviewedAnnualNn ? p.source(simulation.provenance.pricePairingContract) : ('reports.copy.consensusFirstTakesEachBookmakerSMedianAcrossItsClean' | translate) }}</p>
+      </article>
+    </section>
+
+    <section class="sim-panel sim-panel--trajectories" *ngIf="selectedEdgeCohort as curveCohort">
+      <div class="sim-panel__header sim-panel__header--trajectory">
+        <div>
+          <span>{{ 'reports.copy.chronologicalWagerAudit' | translate }}</span>
+          <h2>{{ 'reports.copy.cumulativeProfitAcrossEverySelectedMatch' | translate }}</h2>
+        </div>
+        <div class="sim-edge-select">
+          <span>{{ 'reports.copy.minimumEdge' | translate }}</span>
+          <strong>{{ summaryEdgeLabel(curveCohort.threshold) }}</strong>
+        </div>
+      </div>
+
+      <div class="sim-trajectory-summary">
+        <span>{{ p.text('wagers', { count: (curveCohort.bets | number:'1.0-3':p.regional.locale()) }) }}</span>
+        <span>{{ p.text('winsLosses', { wins: (curveCohort.wins | number:'1.0-3':p.regional.locale()), losses: (curveCohort.losses | number:'1.0-3':p.regional.locale()) }) }}</span>
+        <span>{{ (selectedExecutionPolicy === consensusPolicy ? 'reports.copy.consensusMedian' : 'reports.copy.bestPriceOptimistic') | translate }}</span>
+        <span *ngIf="model.coverage.firstBet">
+          {{ p.regional.matchDateTime(model.coverage.firstBet, undefined, true) }}
+          – {{ p.regional.matchDateTime(model.coverage.lastBet, undefined, true) }}
+        </span>
+      </div>
+
+      <div class="sim-trajectory-grid">
+        <article class="sim-trajectory-card">
+          <div class="sim-trajectory-card__header">
+            <div>
+              <span>{{ 'reports.copy.flatStaking' | translate }}</span>
+              <h3>{{ 'reports.copy.oneUnitPerWager' | translate }}</h3>
+            </div>
+            <strong [class.is-positive]="curveCohort.flat.profitUnits > 0" [class.is-negative]="curveCohort.flat.profitUnits < 0">
+              {{ p.text('units', { value: (curveCohort.flat.profitUnits | number:'1.2-2':p.regional.locale()) }) }}
+            </strong>
+          </div>
+          <div class="sim-chart sim-chart--trajectory">
+            <canvas
+              baseChart
+              [data]="flatTrajectoryChartData"
+              [options]="p.chartOptions(flatTrajectoryChartOptions)"
+              [type]="'line'">
+            </canvas>
+          </div>
+        </article>
+
+        <article class="sim-trajectory-card">
+          <div class="sim-trajectory-card__header">
+            <div>
+              <span>{{ 'reports.copy.mathematicalStressTest' | translate }}</span>
+              <h3>{{ 'reports.copy.quarterKellyCappedAt2NotAForecast' | translate }}</h3>
+            </div>
+            <strong [class.is-positive]="curveCohort.fractionalKelly.profit > 0" [class.is-negative]="curveCohort.fractionalKelly.profit < 0">
+              {{ formatCompoundedUnits(curveCohort.fractionalKelly.profit) }}
+            </strong>
+          </div>
+          <div class="sim-chart sim-chart--trajectory">
+            <canvas
+              baseChart
+              [data]="kellyTrajectoryChartData"
+              [options]="p.chartOptions(kellyTrajectoryChartOptions)"
+              [type]="'line'">
+            </canvas>
+          </div>
+        </article>
+
+        <article class="sim-trajectory-card">
+          <div class="sim-trajectory-card__header">
+            <div>
+              <span>{{ 'reports.copy.boundedBankrollStaking' | translate }}</span>
+              <h3>{{ 'reports.copy.1OfBankrollStake1100' | translate }}</h3>
+            </div>
+            <strong [class.is-positive]="curveCohort.boundedPercentage.profit > 0" [class.is-negative]="curveCohort.boundedPercentage.profit < 0">
+              {{ p.text('units', { value: (curveCohort.boundedPercentage.profit | number:'1.2-2':p.regional.locale()) }) }}
+            </strong>
+          </div>
+          <div class="sim-chart sim-chart--trajectory">
+            <canvas
+              baseChart
+              [data]="boundedTrajectoryChartData"
+              [options]="p.chartOptions(boundedTrajectoryChartOptions)"
+              [type]="'line'">
+            </canvas>
+          </div>
+        </article>
+      </div>
+
+      <p class="sim-caption">{{ usesReviewedAnnualNn ? p.source(simulation.productionSummary?.interpretation) : ('reports.copy.everyEligibleWagerInTheFullStoredPredictionOddsOverlap' | translate) }}</p>
+    </section>
+
+    <section class="sim-panel sim-panel--periods" *ngIf="temporalSlices.length > 0">
+      <div class="sim-panel__header sim-panel__header--trajectory">
+        <div>
+          <span>{{ 'reports.copy.temporalRegimeAudit' | translate }}</span>
+          <h2>{{ 'reports.copy.flatPerformanceByCalendarPeriod' | translate }}</h2>
+        </div>
+        <div class="sim-period-controls" role="group" [attr.aria-label]="'reports.copy.temporalAuditGranularity' | translate">
+          <button
+            type="button"
+            [class.is-active]="selectedTemporalGranularity === 'year'"
+            [attr.aria-pressed]="selectedTemporalGranularity === 'year'"
+            (click)="setTemporalGranularity('year')">{{ 'reports.copy.year' | translate }}</button>
+          <button
+            type="button"
+            [class.is-active]="selectedTemporalGranularity === 'quarter'"
+            [attr.aria-pressed]="selectedTemporalGranularity === 'quarter'"
+            (click)="setTemporalGranularity('quarter')">{{ 'reports.copy.quarter' | translate }}</button>
+        </div>
+      </div>
+
+      <div class="sim-chart sim-chart--temporal">
+        <canvas
+          baseChart
+          [data]="temporalRoiChartData"
+          [options]="p.chartOptions(temporalRoiChartOptions)"
+          [type]="'bar'">
+        </canvas>
+      </div>
+
+      <div class="sim-table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>{{ 'reports.copy.period' | translate }}</th>
+              <th>{{ 'reports.copy.evidenceSegment' | translate }}</th>
+              <th>{{ 'reports.copy.bets' | translate }}</th>
+              <th>{{ 'reports.copy.wL' | translate }}</th>
+              <th>{{ 'reports.copy.hitRate' | translate }}</th>
+              <th>{{ 'reports.copy.avgOdds' | translate }}</th>
+              <th>{{ 'reports.copy.avgEdge' | translate }}</th>
+              <th>{{ 'reports.copy.flatProfit' | translate }}</th>
+              <th>{{ 'reports.copy.flatRoi' | translate }}</th>
+              <th>{{ 'reports.copy.maxDd' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let slice of temporalSlices">
+              <td><strong>{{ p.period(slice.label) }}</strong></td>
+              <td>{{ temporalEvidenceLabel(slice) }}</td>
+              <td>{{ slice.bets | number:'1.0-3':p.regional.locale() }}</td>
+              <td>{{ slice.wins | number:'1.0-3':p.regional.locale() }} / {{ slice.losses | number:'1.0-3':p.regional.locale() }}</td>
+              <td>{{ slice.hitRate | percent:'1.1-1':p.regional.locale() }}</td>
+              <td>{{ slice.averageOdds | number:'1.2-3':p.regional.locale() }}</td>
+              <td>{{ slice.averageEdge | percent:'1.1-1':p.regional.locale() }}</td>
+              <td [class.is-positive]="slice.flatProfitUnits > 0" [class.is-negative]="slice.flatProfitUnits < 0">
+                {{ slice.flatProfitUnits | number:'1.2-2':p.regional.locale() }}
+              </td>
+              <td [class.is-positive]="slice.flatRoi > 0" [class.is-negative]="slice.flatRoi < 0">
+                {{ slice.flatRoi | percent:'1.2-2':p.regional.locale() }}
+              </td>
+              <td>{{ slice.flatMaximumDrawdownUnits | number:'1.2-2':p.regional.locale() }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="sim-caption">{{ 'reports.copy.eachRowIsRecomputedFromEveryWagerInThatCalendar' | translate }}</p>
+    </section>
+
+    <section class="sim-panel sim-panel--table">
+      <div class="sim-panel__header">
+        <div>
+          <span>{{ 'reports.copy.fullCohortAudit' | translate }}</span>
+          <h2>{{ (selectedExecutionPolicy === consensusPolicy ? 'reports.copy.consensusMedian' : 'reports.copy.bestPriceOptimistic') | translate }}</h2>
+        </div>
+        <div class="sim-table-note">{{ 'reports.copy.noLosingObservationIsRemoved' | translate }}</div>
+      </div>
+
+      <div class="sim-table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>{{ 'reports.copy.cohort' | translate }}</th>
+              <th>{{ 'reports.copy.bets' | translate }}</th>
+              <th>{{ 'reports.copy.wL' | translate }}</th>
+              <th>{{ 'reports.copy.coverage' | translate }}</th>
+              <th>{{ 'reports.copy.hitRate' | translate }}</th>
+              <th>{{ 'reports.copy.avgOdds' | translate }}</th>
+              <th>{{ 'reports.copy.avgEdge' | translate }}</th>
+              <th>{{ 'reports.copy.flatRoi' | translate }}</th>
+              <th>{{ 'reports.copy.95Interval' | translate }}</th>
+              <th>{{ 'reports.copy.uncapped1Return' | translate }}</th>
+              <th>{{ 'reports.copy.bounded1Return' | translate }}</th>
+              <th>{{ 'reports.copy.kellyStressReturn' | translate }}</th>
+              <th>{{ 'reports.copy.kellyMaxDd' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let cohort of selectedCohorts">
+              <td><strong>{{ cohortLabel(cohort) }}</strong></td>
+              <td>{{ cohort.bets | number:'1.0-3':p.regional.locale() }}</td>
+              <td>{{ cohort.wins | number:'1.0-3':p.regional.locale() }} / {{ cohort.losses | number:'1.0-3':p.regional.locale() }}</td>
+              <td>{{ cohort.coverage | percent:'1.1-1':p.regional.locale() }}</td>
+              <td>{{ cohort.hitRate | percent:'1.1-1':p.regional.locale() }}</td>
+              <td>{{ cohort.averageOdds | number:'1.2-3':p.regional.locale() }}</td>
+              <td>{{ cohort.averageEdge | percent:'1.1-1':p.regional.locale() }}</td>
+              <td [class.is-positive]="cohort.flat.roi > 0" [class.is-negative]="cohort.flat.roi < 0">
+                {{ cohort.flat.roi | percent:'1.2-2':p.regional.locale() }}
+              </td>
+              <td>{{ confidenceInterval(cohort) }}</td>
+              <td [class.is-positive]="cohort.fixedPercentage.return > 0" [class.is-negative]="cohort.fixedPercentage.return < 0">
+                {{ formatCompoundedPercent(cohort.fixedPercentage.return) }}
+              </td>
+              <td [class.is-positive]="cohort.boundedPercentage.return > 0" [class.is-negative]="cohort.boundedPercentage.return < 0">
+                {{ formatCompoundedPercent(cohort.boundedPercentage.return) }}
+              </td>
+              <td [class.is-positive]="cohort.fractionalKelly.return > 0" [class.is-negative]="cohort.fractionalKelly.return < 0">
+                {{ formatCompoundedPercent(cohort.fractionalKelly.return) }}
+              </td>
+              <td>{{ cohort.fractionalKelly.maximumDrawdown | percent:'1.1-1':p.regional.locale() }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="sim-method">
+      <h2>{{ 'reports.copy.whatThisPageCanAndCannotTellUs' | translate }}</h2>
+      <div class="sim-method__grid">
+        <article>
+          <span>{{ 'reports.copy.outcomeContract' | translate }}</span>
+          <p>{{ p.source(simulation.provenance.outcomeContract) }}</p>
+        </article>
+        <article>
+          <span>{{ 'reports.copy.pricePairing' | translate }}</span>
+          <p>{{ p.source(simulation.provenance.pricePairingContract) }}</p>
+        </article>
+        <article>
+          <span>{{ 'reports.copy.valueSideSelection' | translate }}</span>
+          <p>{{ p.source(simulation.provenance.valueSelectionContract) }}</p>
+        </article>
+        <article>
+          <span>{{ 'reports.copy.interpretation' | translate }}</span>
+          <p>{{ 'reports.copy.theseResultsCompareAnAuditedHistoricalModelWithAnUndated' | translate }}</p>
+        </article>
+      </div>
+    </section>
+  </ng-container>
+  </ng-container>
+
+  <div class="sim-empty" *ngIf="simulation.models.length === 0">{{ 'reports.copy.theArtifactContainsNoScoredModelsForThisDateWindow' | translate }}</div>
+</main>
+
+<div class="bb-loading-overlay" [class.is-active]="selectedView !== 'matchSelection' && isLoading" aria-live="polite">
+  <div class="bb-loading-card" role="status" [attr.aria-label]="'reports.copy.loadingSimulation2' | translate">
+    <div class="bb-spinner"></div>
+    <div class="bb-loading-text">{{ 'reports.copy.loadingSimulation' | translate }}</div>
+  </div>
+</div>
+
+<div class="bb-page-error bb-page-error--standalone" role="alert" *ngIf="selectedView !== 'matchSelection' && !isLoading && error">
+  {{ error | translate }}
+</div>

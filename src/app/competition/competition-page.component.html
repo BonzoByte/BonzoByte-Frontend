@@ -1,0 +1,68 @@
+<section class="competition-page" [class.competition-page--mine]="mineMode" [class.competition-page--board]="!mineMode" [class.competition-page--standings]="!mineMode && boardHasRows">
+    <header><div><p class="competition-eyebrow">BONZOBYTE COMMUNITY</p><h1>{{ (mineMode ? 'competition.mine' : 'competition.leaderboard') | translate }}</h1></div>
+        <a routerLink="/matches">{{ 'favourites.backToMatches' | translate }}</a></header>
+    <p class="competition-disclaimer">{{ 'competition.virtual' | translate }}</p>
+    <p *ngIf="demoMode" class="competition-demo-note" role="status"><strong>DEMO</strong> — {{ 'competition.demoNote' | translate }}</p>
+    <p *ngIf="previewMode" class="competition-demo-note" role="status"><strong>DEMO</strong> — {{ 'competition.previewNote' | translate }}</p>
+    <p *ngIf="testActivity" class="competition-demo-note" role="note">{{ 'competition.testActivityNote' | translate }}</p>
+    <nav class="competition-tabs" [attr.aria-label]="'competition.title' | translate">
+        <a routerLink="/predictions" [queryParams]="{month: month, demo: demoMode ? '1' : null, preview: previewMode ? '1' : null}" routerLinkActive="active" ariaCurrentWhenActive="page">{{ 'competition.mine' | translate }}</a>
+        <a routerLink="/competition" [queryParams]="{month: month, demo: demoMode ? '1' : null}" routerLinkActive="active" ariaCurrentWhenActive="page">{{ 'competition.leaderboard' | translate }}</a>
+    </nav>
+    <p *ngIf="!sourceConnected && !illustrativeMode && !testActivity" class="competition-source-note">{{ 'competition.feedNote' | translate }}</p>
+    <div class="competition-controls"><label>{{ 'competition.month' | translate }} <input type="month" [(ngModel)]="month" [max]="maxMonth" min="2020-01" (change)="load()"></label>
+        <button type="button" class="oauth-btn" [disabled]="loading" (click)="load()">{{ 'competition.refresh' | translate }}</button>
+        <span>{{ 'competition.utcNote' | translate }}</span></div>
+    <p *ngIf="loading && !mine && !board" role="status">{{ 'common.loading' | translate }}</p>
+    <p *ngIf="failed" role="alert">{{ 'competition.unavailable' | translate }}</p>
+    <p *ngIf="mineMode && !previewMode && !service.auth.getUser()?._id">{{ 'competition.signIn' | translate }}</p>
+    <ng-container *ngIf="mine as data">
+        <div class="competition-summary">
+            <div><span>{{ 'competition.units' | translate }}</span><strong>{{ regional.number(data.summary.units, 2) }}</strong></div>
+            <div><span>{{ 'competition.settled' | translate }}</span><strong>{{ regional.number(data.summary.settled, 0) }}</strong></div>
+            <div><span>ROI</span><strong>{{ data.summary.roi === null ? '—' : regional.number(data.summary.roi, 1) + '%' }}</strong></div>
+            <div *ngIf="!demoMode"><span>{{ 'competition.remaining' | translate }}</span><strong>{{ regional.number(data.remainingToday, 0) }} / 5</strong></div>
+        </div>
+        <p>{{ (data.summary.qualified ? 'competition.qualified' : 'competition.provisional') | translate }}</p>
+        <p *ngIf="!data.entries.length && !failed">{{ 'competition.emptyMine' | translate }}</p>
+        <app-prediction-history-grid *ngIf="data.entries.length" [entries]="data.entries" [illustrative]="illustrativeMode" [retrospective]="!!data.testActivity"
+            [localPreview]="previewMode" (openPick)="service.open($event)"></app-prediction-history-grid>
+        <section class="competition-comparison" *ngIf="data.summary.comparison.count > 0"><h2>{{ 'competition.comparison' | translate }}</h2>
+            <p>{{ 'competition.comparisonNote' | translate:{count: data.summary.comparison.count} }}</p>
+            <div class="competition-summary"><div><span>{{ 'competition.you' | translate }}</span><strong>{{ regional.number(data.summary.comparison.userUnits, 2) }}</strong></div>
+                <div><span>BonzoByte</span><strong>{{ regional.number(data.summary.comparison.modelUnits, 2) }}</strong></div>
+                <div><span>{{ 'competition.market' | translate }}</span><strong>{{ regional.number(data.summary.comparison.marketUnits, 2) }}</strong></div></div></section>
+    </ng-container>
+    <ng-container *ngIf="board as data">
+        <p class="competition-ranking-note">{{ 'competition.rankingNote' | translate }}</p>
+        <p *ngIf="!data.qualified.length">{{ 'competition.emptyQualified' | translate }}</p>
+        <div *ngIf="boardHasRows" class="competition-table-scroll leaderboard-scroll" tabindex="0" role="region" [attr.aria-label]="'competition.leaderboard' | translate">
+            <table class="match-table leaderboard-table">
+                <caption class="leaderboard-caption">{{ 'competition.leaderboard' | translate }} — {{ month }}</caption>
+                <ng-container *ngFor="let group of [{rows: data.qualified, key: 'qualified'}, {rows: data.provisional, key: 'provisional'}]">
+                    <tbody *ngIf="group.rows.length" [attr.data-group]="group.key">
+                        <tr class="leaderboard-group-heading"><th colspan="7" scope="rowgroup"><h2>{{ ('competition.' + group.key) | translate }}</h2></th></tr>
+                        <tr class="leaderboard-column-headings"><th scope="col">#</th><th scope="col">{{ 'competition.competitor' | translate }}</th><th scope="col">{{ 'competition.units' | translate }}</th><th scope="col">{{ 'competition.settled' | translate }}</th><th scope="col">{{ 'competition.hitRate' | translate }}</th><th scope="col">ROI</th><th scope="col">{{ 'competition.picks' | translate }}</th></tr>
+                        <tr *ngFor="let row of group.rows" class="leaderboard-entry"><td>{{ row.rank || '—' }}</td><td class="leaderboard-nickname" [title]="leaderboardName(row.nickname)">{{ leaderboardName(row.nickname) }}</td><td>{{ regional.number(row.units, 2) }}</td><td>{{ regional.number(row.settled, 0) }}</td><td>{{ row.settled ? regional.number(100 * row.won / row.settled, 1) + '%' : '—' }}</td><td>{{ row.settled ? regional.number(100 * row.units / row.settled, 1) + '%' : '—' }}</td>
+                            <td class="leaderboard-picks">
+                                <a *ngIf="row.picksProfileId; else privatePicks" class="picks-link" [routerLink]="['/competition/profiles', row.picksProfileId]"
+                                    [queryParams]="{month: month, demo: demoMode && data.demo ? '1' : null}"
+                                    [title]="'competition.viewPublic' | translate:{name: leaderboardName(row.nickname)}"
+                                    [attr.aria-label]="'competition.viewPublic' | translate:{name: leaderboardName(row.nickname)}">
+                                    <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" aria-hidden="true"><rect x="3" y="2" width="14" height="16" rx="2"/><path d="M6 6h8M6 10h8M6 14h5"/></svg>
+                                </a>
+                                <ng-template #privatePicks><span class="picks-private" tabindex="0" role="img" [title]="'competition.privatePicks' | translate" [attr.aria-label]="'competition.privatePicks' | translate">
+                                    <svg width="14" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" aria-hidden="true"><rect x="4" y="9" width="12" height="9" rx="2"/><path d="M6 9V6a4 4 0 018 0v3M10 12v3"/></svg>
+                                </span></ng-template>
+                            </td>
+                        </tr>
+                    </tbody>
+                </ng-container>
+            </table>
+        </div>
+    </ng-container>
+    <details class="competition-rules"><summary>{{ 'competition.rulesTitle' | translate }}</summary>
+        <p>{{ 'competition.rulesBody' | translate }}</p><p>{{ 'competition.resultRules' | translate }}</p>
+        <p>{{ 'competition.fairness' | translate }}</p><p>{{ 'competition.privacy' | translate }}</p>
+    </details>
+</section>

@@ -1,0 +1,69 @@
+<app-bb-modal-shell [title]="'footer.contact' | translate" [closeLabel]="'common.close' | translate" [closeDisabled]="submitting" [closeOnEsc]="!submitting" modalClass="bb-contact-modal" (closed)="close()">
+  <ng-container *ngIf="!confirmDiscard; else discardPrompt">
+    <p class="bb-hint bb-contact-intro">
+        {{ 'contact.intro' | translate }}
+    </p>
+
+    <p class="bb-hint bb-contact-email">
+        <span class="bb-contact-email-label">{{ 'contact.emailLabel' | translate }}</span><span class="bb-public-email"><a [href]="'mailto:' + contactEmail">{{ contactEmail }}</a><app-copy-contact-email [email]="contactEmail" /></span>
+    </p>
+
+    <form [formGroup]="form" (ngSubmit)="submit()" autocomplete="off" novalidate [attr.aria-describedby]="hasDraft ? 'c-draft-hint' : null">
+        <div class="form-row">
+            <label for="c-name">{{ 'contact.name' | translate }}</label>
+            <input #nameField id="c-name" type="text" formControlName="name" [readonly]="submitting" [placeholder]="'contact.namePlaceholder' | translate"
+                [attr.aria-invalid]="name?.invalid && (name?.touched || submitted) ? 'true' : null" aria-describedby="c-name-errors"
+                [class.invalid]="name?.invalid && (name?.touched || submitted)" />
+            <p id="c-name-errors" class="error" *ngIf="name?.hasError('required') && (name?.touched || submitted)">{{ 'auth.required' | translate }}</p>
+        </div>
+
+        <div class="form-row">
+            <label for="c-email">{{ 'auth.email' | translate }}</label>
+            <input #emailField id="c-email" type="email" formControlName="email" [readonly]="submitting" [placeholder]="'contact.emailPlaceholder' | translate"
+                [attr.aria-invalid]="email?.invalid && (email?.touched || submitted) ? 'true' : null" aria-describedby="c-email-errors"
+                [class.invalid]="email?.invalid && (email?.touched || submitted)" />
+            <div id="c-email-errors">
+              <p class="error" *ngIf="email?.hasError('required') && (email?.touched || submitted)">{{ 'auth.required' | translate }}</p>
+              <p class="error" *ngIf="email?.hasError('email') && (email?.touched || submitted)">{{ 'auth.validEmail' | translate }}</p>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <label for="c-msg">{{ 'contact.message' | translate }}</label>
+            <span class="bb-message-input"><textarea #messageField id="c-msg" rows="5" formControlName="message" [readonly]="submitting" [placeholder]="'contact.messagePlaceholder' | translate"
+                cdkTextareaAutosize appMessageAutosize cdkAutosizeMinRows="5" cdkAutosizeMaxRows="8"
+                [appDraftUnloadGuard]="message?.value"
+                appSubmitShortcut [submitShortcutDisabled]="submitting || confirmDiscard" (submitShortcut)="submit()" [title]="'common.sendShortcut' | translate"
+                [attr.aria-invalid]="message?.invalid && (message?.touched || submitted) ? 'true' : null" aria-describedby="c-msg-count c-msg-minimum c-msg-errors"
+                [class.invalid]="message?.invalid && (message?.touched || submitted)"></textarea></span>
+            <div class="bb-contact-message-meta">
+                <span id="c-msg-count">{{ 'contact.characterCount' | translate:{count: messageLength} }}</span>
+                <span id="c-msg-minimum" [class.error]="message?.hasError('minlength') && (message?.touched || submitted)">{{ 'contact.minimumLength' | translate:{count: minimumMessageLength} }}</span>
+            </div>
+            <div id="c-msg-errors">
+            <p class="error" *ngIf="message?.hasError('required') && (message?.touched || submitted)">{{ 'auth.required' | translate }}</p>
+            </div>
+        </div>
+
+        <p *ngIf="hasDraft" id="c-draft-hint" class="bb-hint">{{ 'contact.draftHint' | translate }}</p>
+        <div bbActions class="bb-actions" style="flex-wrap: wrap">
+            <button type="button" class="oauth-btn" [disabled]="submitting" (click)="close()">{{ 'common.close' | translate }}</button>
+            <button *ngIf="hasDraft" type="button" class="oauth-btn bb-contact-discard-draft" [disabled]="submitting" (click)="requestDiscard()">{{ 'contact.discard' | translate }}</button>
+
+            <button type="submit" class="oauth-btn oauth-btn-primary" [disabled]="submitting">
+                {{ (submitting ? 'contact.sending' : 'contact.send') | translate }}
+            </button>
+        </div>
+    </form>
+  </ng-container>
+  <ng-template #discardPrompt>
+    <div class="bb-contact-discard" role="alert">
+      <h5>{{ 'contact.discardTitle' | translate }}</h5>
+      <p>{{ 'contact.discardHint' | translate }}</p>
+    </div>
+    <div class="bb-actions">
+      <button #keepWritingButton type="button" class="oauth-btn oauth-btn-primary" (click)="keepWriting()">{{ 'contact.keepWriting' | translate }}</button>
+      <button type="button" class="oauth-btn" (click)="discard()">{{ 'contact.discard' | translate }}</button>
+    </div>
+  </ng-template>
+</app-bb-modal-shell>

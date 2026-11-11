@@ -1,0 +1,80 @@
+<section class="atp-fair" [attr.aria-label]="t('title')">
+  <header><h2>{{ t('title') }}</h2><p>{{ t('sameSelections') }}</p></header>
+  <div class="atp-fair__caveat">
+    <p>{{ t('theoreticalCaveat') }}</p>
+    <p>{{ t('legacyRule') }}</p>
+  </div>
+  <p *ngIf="loading" role="status">{{ t('loading') }}</p>
+  <p *ngIf="unavailable" role="alert">{{ t('unavailable') }}</p>
+  <p *ngIf="report && !selectedCohort" role="alert">{{ t('stale') }}</p>
+
+  <ng-container *ngIf="selectedCohort as cohort">
+    <div class="atp-fair__controls">
+      <p><strong>{{ thresholdLabel(cohort.threshold) }}</strong> · {{ t('counts', {bets: n(cohort.bets), wins: n(cohort.wins), losses: n(cohort.losses)}) }}</p>
+    </div>
+    <p *ngIf="mode === 'audit'" class="atp-fair__audit-note">{{ t('auditThreshold', {threshold: thresholdLabel(cohort.threshold)}) }}</p>
+    <p *ngIf="family as selectedFamily">{{ t('window') }}: {{ p.regional.date(selectedFamily.from) }} – {{ p.regional.date(selectedFamily.to) }}</p>
+
+    <div class="atp-fair__cards">
+      <article>
+        <h3>{{ t('median') }}</h3>
+        <strong [class.is-positive]="cohort.medianRoi !== null && cohort.medianRoi > 0" [class.is-negative]="cohort.medianRoi !== null && cohort.medianRoi < 0">{{ percent(cohort.medianRoi) }}</strong>
+        <span [class.is-positive]="cohort.medianProfit > 0" [class.is-negative]="cohort.medianProfit < 0">{{ t('units', {value: n(cohort.medianProfit, 2)}) }}</span>
+        <small>{{ t('medianBasis') }}</small>
+      </article>
+      <article>
+        <h3>{{ t('fair') }}</h3>
+        <strong [class.is-positive]="cohort.fairRoi !== null && cohort.fairRoi > 0" [class.is-negative]="cohort.fairRoi !== null && cohort.fairRoi < 0">{{ percent(cohort.fairRoi) }}</strong>
+        <span [class.is-positive]="cohort.fairProfit > 0" [class.is-negative]="cohort.fairProfit < 0">{{ t('units', {value: n(cohort.fairProfit, 2)}) }}</span>
+        <small>{{ t('fairBasis') }}</small>
+      </article>
+    </div>
+
+    <h3>{{ t('curve') }}</h3>
+    <p>{{ t('sampling') }}</p>
+    <div class="atp-fair__chart" *ngIf="cohort.trajectory.length; else noBets">
+      <canvas baseChart type="line" [data]="chartData" [options]="chartOptions" role="img"
+        [attr.aria-label]="t('chartDescription', {median: n(cohort.medianProfit, 2), fair: n(cohort.fairProfit, 2)})"></canvas>
+    </div>
+    <ng-template #noBets><p>{{ t('noBets') }}</p></ng-template>
+
+    <h3>{{ t('allThresholds') }}</h3>
+    <p>{{ t('thresholdOrder') }}</p>
+    <div class="atp-fair__table" role="region" tabindex="0" [attr.aria-label]="t('allThresholds')">
+      <table>
+        <thead><tr><th scope="col">{{ t('threshold') }}</th><th scope="col">{{ t('candidates') }}</th><th scope="col">{{ t('bets') }}</th><th scope="col">{{ t('winsLosses') }}</th><th scope="col">{{ t('medianProfit') }}</th><th scope="col">{{ t('medianRoi') }}</th><th scope="col">{{ t('fairProfit') }}</th><th scope="col">{{ t('fairRoi') }}</th></tr></thead>
+        <tbody><tr *ngFor="let row of cohorts">
+          <th scope="row">{{ thresholdLabel(row.threshold) }}</th>
+          <td>{{ n(row.candidateMatches) }}</td><td>{{ n(row.bets) }}</td><td>{{ n(row.wins) }} / {{ n(row.losses) }}</td>
+          <td [class.is-negative]="row.medianProfit < 0" [class.is-positive]="row.medianProfit > 0">{{ n(row.medianProfit, 2) }}</td>
+          <td [class.is-negative]="row.medianRoi !== null && row.medianRoi < 0" [class.is-positive]="row.medianRoi !== null && row.medianRoi > 0">{{ percent(row.medianRoi) }}</td>
+          <td [class.is-negative]="row.fairProfit < 0" [class.is-positive]="row.fairProfit > 0">{{ n(row.fairProfit, 2) }}</td>
+          <td [class.is-negative]="row.fairRoi !== null && row.fairRoi < 0" [class.is-positive]="row.fairRoi !== null && row.fairRoi > 0">{{ percent(row.fairRoi) }}</td>
+        </tr></tbody>
+      </table>
+    </div>
+
+    <details class="atp-fair__periods">
+      <summary>{{ t('calendar') }}</summary>
+      <p>{{ t('allPeriods') }}</p>
+      <div class="atp-fair__buttons" role="group" [attr.aria-label]="t('calendar')">
+        <button type="button" [class.is-active]="granularity === 'year'" [attr.aria-pressed]="granularity === 'year'" (click)="granularity = 'year'">{{ t('year') }}</button>
+        <button type="button" [class.is-active]="granularity === 'quarter'" [attr.aria-pressed]="granularity === 'quarter'" (click)="granularity = 'quarter'">{{ t('quarter') }}</button>
+      </div>
+      <div class="atp-fair__table" role="region" tabindex="0" [attr.aria-label]="t('calendar')">
+        <table>
+          <thead><tr><th scope="col">{{ t('period') }}</th><th scope="col">{{ t('candidates') }}</th><th scope="col">{{ t('bets') }}</th><th scope="col">{{ t('winsLosses') }}</th><th scope="col">{{ t('medianProfit') }}</th><th scope="col">{{ t('medianRoi') }}</th><th scope="col">{{ t('fairProfit') }}</th><th scope="col">{{ t('fairRoi') }}</th></tr></thead>
+          <tbody><tr *ngFor="let period of periods">
+            <th scope="row">{{ p.period(period.label) }} <small *ngIf="period.partial">({{ t('partial') }})</small></th>
+            <td>{{ n(period.candidateMatches) }}</td><td>{{ n(period.bets) }}</td><td>{{ n(period.wins) }} / {{ n(period.losses) }}</td>
+            <td [class.is-negative]="period.medianProfit < 0" [class.is-positive]="period.medianProfit > 0">{{ n(period.medianProfit, 2) }}</td>
+            <td [class.is-negative]="period.medianRoi !== null && period.medianRoi < 0" [class.is-positive]="period.medianRoi !== null && period.medianRoi > 0">{{ percent(period.medianRoi) }}</td>
+            <td [class.is-negative]="period.fairProfit < 0" [class.is-positive]="period.fairProfit > 0">{{ n(period.fairProfit, 2) }}</td>
+            <td [class.is-negative]="period.fairRoi !== null && period.fairRoi < 0" [class.is-positive]="period.fairRoi !== null && period.fairRoi > 0">{{ percent(period.fairRoi) }}</td>
+          </tr></tbody>
+        </table>
+      </div>
+      <p>{{ t('coverageNote') }}</p>
+    </details>
+  </ng-container>
+</section>

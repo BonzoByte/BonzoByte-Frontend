@@ -1,0 +1,25 @@
+:host { display: block; margin: 1rem 0; }
+.atp-fair { padding: 1.2rem; border: 1px solid var(--bb-border); border-radius: 18px; background: var(--bb-surface-1); color: var(--bb-text); }
+h2 { margin: 0 0 .5rem; font-size: 1.3rem; color: var(--bb-text-strong); }
+h3 { font-size: 1rem; color: var(--bb-text-strong); margin: 1rem 0 .5rem; }
+p { line-height: 1.55; margin: .5rem 0; }
+.atp-fair__caveat { border-left: 4px solid var(--bb-theme-accent); padding-left: .9rem; }
+.atp-fair__controls { display: flex; flex-wrap: wrap; align-items: end; gap: 1rem; margin-top: 1rem; }
+label { display: flex; flex-direction: column; gap: .4rem; font-weight: 700; }
+select, button { min-height: 44px; padding: .5rem .8rem; border: 1px solid var(--bb-control-border); border-radius: 8px; background: var(--bb-control-bg); color: var(--bb-control-text); }
+button.is-active { border-color: var(--bb-theme-accent); background: color-mix(in srgb, var(--bb-theme-accent) 18%, var(--bb-control-bg)); font-weight: 800; }
+button:focus-visible, select:focus-visible, summary:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--bb-theme-accent); outline-offset: 3px; }
+.atp-fair__cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; margin: 1rem 0; }
+article { display: flex; flex-direction: column; gap: .5rem; padding: 1rem; border: 1px solid var(--bb-border); border-radius: 12px; background: var(--bb-surface-2); }
+article h3 { margin: 0; } article strong { font-size: 1.8rem; } article small, .atp-fair__audit-note { color: var(--bb-text-muted); }
+.is-positive { color: #3fd18b; } .is-negative { color: #ff7b85; }
+:host-context([data-bb-theme='light']) .is-positive { color: #087443; }
+:host-context([data-bb-theme='light']) .is-negative { color: #b42335; }
+.atp-fair__chart { position: relative; height: 340px; }
+.atp-fair__table { overflow-x: auto; margin: .75rem 0; }
+table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+th, td { white-space: nowrap; padding: .65rem; text-align: right; border-bottom: 1px solid var(--bb-border); }
+th:first-child { text-align: left; }
+summary { cursor: pointer; font-weight: 700; padding: .75rem 0; }
+.atp-fair__buttons { display: flex; gap: .4rem; }
+@media (max-width: 600px) { .atp-fair { padding: .8rem; } .atp-fair__cards { grid-template-columns: 1fr; } .atp-fair__chart { height: 270px; } }

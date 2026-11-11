@@ -1,0 +1,134 @@
+<section class="discussion" [attr.aria-label]="'discussions.title' | translate" [attr.aria-busy]="state.loading() || state.busy()">
+  <div class="discussion-toolbar">
+    <p>{{ 'discussions.intro' | translate }}</p>
+    <button type="button" *ngIf="state.api.canCompose" [attr.aria-pressed]="state.following()"
+      [disabled]="state.busy() || state.loading() || !!state.error()" (click)="state.toggleFollow()">
+      {{ (state.following() ? 'discussions.following' : 'discussions.follow') | translate }}
+    </button>
+    <button type="button" [disabled]="state.loading() || state.busy()" (click)="state.refresh()">{{ 'discussions.refresh' | translate }}</button>
+  </div>
+  <p class="discussion-note">{{ 'discussions.noEmail' | translate }}</p>
+  <p *ngIf="linkedCommentUnavailable()" class="discussion-note discussion-linked-unavailable" role="status">{{ 'commentLink.unavailable' | translate }}</p>
+  <div class="discussion-new-navigation" *ngIf="state.canJumpNew() || state.rangeAfter() > 0">
+    <span *ngIf="state.rangeAfter() > 0" class="discussion-note">{{ (commentTarget && state.rangeAfter() === commentTarget.sequence - 1 ? 'commentLink.range' : 'discussions.newRange') | translate }}</span>
+    <button *ngIf="state.canJumpNew()" type="button" class="discussion-go-new" [attr.aria-controls]="formId + '-comments'"
+      [disabled]="state.loading() || state.busy()" (click)="jumpToNew()">{{ 'discussions.goToNew' | translate }}</button>
+    <button *ngIf="state.rangeAfter() > 0" type="button" class="discussion-earlier" [disabled]="state.loading() || state.busy()"
+      (click)="showEarlier()">{{ 'discussions.earlierComments' | translate }}</button>
+  </div>
+  <div *ngIf="state.error()" class="discussion-error" role="alert">
+    {{ state.error() | translate }} <button type="button" [disabled]="state.busy() || state.loading()" (click)="state.retry()">{{ 'discussions.retry' | translate }}</button>
+  </div>
+  <div *ngIf="state.actionError()" class="discussion-error" role="alert">
+    {{ 'discussions.actionFailed' | translate }}
+    <button type="button" [disabled]="state.busy()" (click)="retryMutation()">{{ 'discussions.retry' | translate }}</button>
+  </div>
+  <div *ngIf="state.readError()" class="discussion-error" role="status">
+    {{ (state.readNeedsReload() ? 'discussions.readReload' : 'discussions.readFailed') | translate }}
+    <button type="button" [disabled]="state.loading() || state.busy()" (click)="state.markRead()">{{ 'discussions.retry' | translate }}</button>
+  </div>
+  <p *ngIf="!state.loading() && !state.error() && !state.comments().length && !linkedCommentUnavailable()">{{ (state.api.canCompose ? 'discussions.empty' : 'discussions.emptyReadOnly') | translate }}</p>
+  <ol class="discussion-comments" [id]="formId + '-comments'">
+    <li *ngFor="let comment of state.comments(); let index = index; trackBy: trackComment" #commentRow [attr.data-comment-id]="comment.id" tabindex="-1"
+      [class.discussion-comment-highlight]="highlighted().has(comment.id) || linkedCommentId() === comment.id"
+      [class.discussion-comment-linked]="linkedCommentId() === comment.id"
+      [attr.aria-label]="linkedCommentId() === comment.id ? ('commentLink.found' | translate) : null">
+      <app-message-day-divider [dateTime]="comment.createdAt" [previousDateTime]="state.comments()[index - 1]?.createdAt"></app-message-day-divider>
+      <div *ngIf="state.firstNewId() === comment.id" class="discussion-new-divider" role="separator"
+        [attr.aria-label]="'discussions.newComments' | translate"><span>{{ 'discussions.newComments' | translate }}</span></div>
+      <article class="discussion-comment-card" [class.discussion-comment-own]="!!comment.author?.id && comment.author?.id === state.api.user()?._id && !comment.deleted && !comment.hidden">
+        <header class="discussion-comment-header">
+          <div class="discussion-author">
+            <span class="discussion-avatar-slot"><span class="discussion-avatar" aria-hidden="true">
+              <img *ngIf="avatar(comment) as url; else defaultAvatar" [src]="url" alt="" width="30" height="30" loading="lazy" decoding="async" referrerpolicy="no-referrer" (error)="avatarFailed(comment)">
+              <ng-template #defaultAvatar><app-initials-avatar [identity]="comment.author?.id" [nickname]="comment.author?.nickname" [neutral]="comment.deleted || comment.hidden"></app-initials-avatar></ng-template>
+            </span><app-user-presence [userId]="comment.author?.id" [matchTPId]="matchTPId" [enabled]="!comment.deleted && !comment.hidden"></app-user-presence></span>
+            <strong>{{ (!comment.deleted && !comment.hidden && comment.author?.nickname) || ('discussions.removedUser' | translate) }}</strong>
+          </div>
+          <div class="discussion-comment-meta">
+            <time [attr.datetime]="comment.createdAt" [title]="regional.dateTime(comment.createdAt, 'utc') + ' · ' + regional.timeZone()">{{ regional.dateTime(comment.createdAt, 'utc') }}</time>
+            <button *ngIf="canCopyComment(comment)" type="button" class="discussion-copy-link"
+              [disabled]="commentLinks.busy()" [attr.aria-busy]="commentLinks.busy()"
+              [attr.aria-label]="'commentLink.copy' | translate" [title]="'commentLink.copy' | translate"
+              (click)="copyComment(comment)"><span class="bi bi-link-45deg" aria-hidden="true"></span></button>
+          </div>
+        </header>
+        <div class="discussion-comment-content">
+        <app-discussion-reply-preview *ngIf="!comment.deleted && !comment.hidden && comment.replyTo" [context]="comment.replyTo"></app-discussion-reply-preview>
+        <p class="discussion-body" *ngIf="!comment.deleted && !comment.hidden">{{ comment.body }}</p>
+        <p class="discussion-note" *ngIf="comment.deleted || comment.hidden">{{ (comment.deleted ? 'discussions.deleted' : 'discussions.hidden') | translate }}</p>
+        <ng-container *ngIf="canCopyComment(comment) && commentLinks.targetId() === comment.id">
+          <p *ngIf="commentLinks.failed()" class="discussion-note" role="status">{{ 'commentLink.prepareFailed' | translate }}</p>
+          <app-manual-copy *ngIf="commentLinks.manualLink() as link" [value]="link" [label]="'matchLink.manual' | translate" [accessibleLabel]="'commentLink.copy' | translate"></app-manual-copy>
+        </ng-container>
+        <div class="discussion-actions" *ngIf="state.api.canCompose">
+          <button type="button" *ngIf="!comment.deleted && !comment.hidden && privateMessages.canContact(comment.author)" [disabled]="state.busy()"
+            (click)="privateMessages.openUser(comment.author!)">{{ 'privateMessages.sendPrivate' | translate }}</button>
+          <button type="button" *ngIf="state.api.canCompose && !comment.deleted && !comment.hidden" [disabled]="state.busy()"
+            (click)="replyTo(comment)">{{ 'discussions.reply' | translate }}</button>
+          <button type="button" *ngIf="comment.canDelete && !comment.deleted" [disabled]="state.busy()"
+            (click)="confirm = {comment: comment, action: 'delete'}">{{ 'discussions.delete' | translate }}</button>
+          <button type="button" *ngIf="!comment.canDelete && !comment.deleted && !comment.hidden && !state.reported().has(comment.id)" [disabled]="state.busy()"
+            (click)="confirm = {comment: comment, action: 'report'}">{{ 'discussions.report' | translate }}</button>
+          <span *ngIf="state.reported().has(comment.id)" role="status">{{ 'discussions.reported' | translate }}</span>
+          <button type="button" *ngIf="comment.canHide && !comment.deleted" [disabled]="state.busy()"
+            (click)="confirm = {comment: comment, action: 'hide'}">{{ (comment.hidden ? 'discussions.unhide' : 'discussions.hide') | translate }}</button>
+        </div>
+        <div class="discussion-confirm" *ngIf="confirm?.comment?.id === comment.id">
+          <p>{{ ('discussions.confirm' + confirm!.action) | translate }}</p>
+          <label *ngIf="confirm?.action === 'report'">{{ 'discussions.reason' | translate }}
+            <textarea [(ngModel)]="reason" rows="2" [attr.maxlength]="maxReasonCodeUnits" [attr.aria-describedby]="formId + '-reason-limit'"></textarea>
+            <span class="discussion-note" [id]="formId + '-reason-limit'">{{ 'discussions.remaining' | translate:{count: regional.number(reasonRemaining, 0)} }}</span>
+            <span *ngIf="!reasonWithinLimit" class="discussion-note" role="alert">{{ 'discussions.lengthExceeded' | translate:{count: regional.number(500, 0)} }}</span>
+          </label>
+          <button type="button" (click)="perform()" [disabled]="state.busy() || !reasonWithinLimit">{{ 'discussions.confirm' | translate }}</button>
+          <button type="button" (click)="confirm = null; reason = ''">{{ 'discussions.cancel' | translate }}</button>
+        </div>
+        </div>
+      </article>
+    </li>
+  </ol>
+  <div class="discussion-pagination" *ngIf="state.comments().length">
+    <span class="discussion-note" role="status">{{ 'discussions.loaded' | translate:{shown: regional.number(state.comments().length, 0), total: regional.number(state.total(), 0)} }}</span>
+    <button type="button" *ngIf="state.hasMore()" [disabled]="state.loading() || state.busy()" (click)="state.load(true)">{{ 'discussions.more' | translate }}</button>
+  </div>
+  <p class="discussion-note" *ngIf="state.hasMore()">{{ 'discussions.moreHint' | translate }}</p>
+  <app-discussion-loading *ngIf="state.showLoading()" [label]="(state.busy() ? 'discussions.saving' : 'common.loading') | translate"></app-discussion-loading>
+  <form class="discussion-composer" *ngIf="state.api.canCompose; else composeGate" (ngSubmit)="submit()">
+    <div *ngIf="reply" class="discussion-reply-composer"><app-discussion-reply-preview [context]="replyPreview"></app-discussion-reply-preview>
+      <button type="button" (click)="cancelReply()">{{ 'discussions.cancelReply' | translate }}</button></div>
+    <label>{{ 'discussions.write' | translate }}<span class="bb-message-input"><textarea #composer name="comment" [(ngModel)]="body" (ngModelChange)="bodyChanged($event)" rows="4" [attr.maxlength]="maxBodyCodeUnits"
+      cdkTextareaAutosize appMessageAutosize cdkAutosizeMinRows="4" cdkAutosizeMaxRows="8"
+      [appDraftUnloadGuard]="body"
+      appSubmitShortcut [submitShortcutDisabled]="state.busy() || state.loading() || !!state.error() || !body.trim() || !bodyWithinLimit" (submitShortcut)="submit()"
+      (keydown)="undoDraftShortcut($event)" [attr.aria-keyshortcuts]="canUndoDraft ? 'Control+Z Meta+Z' : null"
+      [title]="('common.sendShortcut' | translate) + (canUndoDraft ? ' · ' + ('discussions.undoDraftShortcut' | translate) : '')"
+      [attr.aria-describedby]="formId + '-body-limit' + (hasDraft ? ' ' + formId + '-draft-note' : '') + (canUndoDraft ? ' ' + formId + '-undo-note' : '')" [disabled]="state.busy()" required></textarea></span></label>
+    <span *ngIf="canUndoDraft" class="discussion-undo-help" [id]="formId + '-undo-note'">{{ 'discussions.undoDraftShortcut' | translate }}</span>
+    <div class="discussion-emoji-row">
+      <div class="discussion-emojis" role="group" [attr.aria-label]="'discussions.emoji.title' | translate">
+        <button *ngFor="let emoji of emojis" type="button" [disabled]="state.busy()" (click)="insertEmoji(emoji.value)"
+          [title]="('discussions.emoji.' + emoji.label) | translate" [attr.aria-label]="('discussions.emoji.' + emoji.label) | translate"><span aria-hidden="true">{{ emoji.value }}</span></button>
+      </div>
+      <span class="discussion-note" [id]="formId + '-body-limit'">{{ 'discussions.remaining' | translate:{count: regional.number(bodyRemaining, 0)} }}</span>
+    </div>
+    <p *ngIf="emojiLimitReached" class="discussion-note" role="status">{{ 'discussions.emoji.limit' | translate }}</p>
+    <p *ngIf="!bodyWithinLimit" class="discussion-note" role="alert">{{ 'discussions.lengthExceeded' | translate:{count: regional.number(1000, 0)} }}</p>
+    <p class="discussion-note">{{ 'discussions.plainText' | translate }}</p>
+    <p *ngIf="hasDraft" class="discussion-note discussion-draft-note" [id]="formId + '-draft-note'">
+      <span *ngIf="restoredDraft" role="status">{{ 'discussions.draftRestored' | translate }} </span>{{ 'discussions.draftHint' | translate }}
+    </p>
+    <div class="discussion-composer-actions">
+      <button type="submit" [disabled]="!body.trim() || !bodyWithinLimit || state.busy() || state.loading() || !!state.error()">{{ 'discussions.post' | translate }}</button>
+      <button *ngIf="hasDraft" type="button" class="discussion-discard-draft" [disabled]="state.busy()" (click)="discardDraft()">{{ 'discussions.discardDraft' | translate }}</button>
+    </div>
+    <p *ngIf="state.posted()" role="status">{{ 'discussions.posted' | translate }}</p>
+  </form>
+  <ng-template #composeGate>
+    <div class="discussion-compose-gate">
+      <p class="discussion-note" [id]="formId + '-sign-in-note'">{{ (state.api.signedIn ? 'discussions.verify' : 'discussions.signIn') | translate }}</p>
+      <button *ngIf="!state.api.signedIn" type="button" class="discussion-sign-in"
+        [attr.aria-describedby]="formId + '-sign-in-note'" (click)="requestLogin.emit()">{{ 'login' | translate }}</button>
+    </div>
+  </ng-template>
+</section>

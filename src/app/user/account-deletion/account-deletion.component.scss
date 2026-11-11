@@ -1,0 +1,9 @@
+.deletion-content { line-height: 1.5; font-size: 13px; }
+.deletion-content p { margin: 10px 0; }
+.deletion-content select { width: 100%; padding: 8px; color: var(--bb-text); background: var(--bb-control-bg); border: 1px solid var(--bb-control-border); border-radius: 8px; }
+.deletion-agreement { display: flex; gap: 10px; align-items: flex-start; margin: 14px 0; }
+.deletion-agreement input { width: 18px; height: 18px; flex-shrink: 0; }
+.deletion-content .deletion-danger { border-color: #d46a6a; }
+.deletion-proof { margin-top: 12px; }
+.deletion-content .bb-actions { flex-wrap: wrap; }
+.deletion-content .bb-hint { font-size: 12px; color: var(--bb-text-muted); }

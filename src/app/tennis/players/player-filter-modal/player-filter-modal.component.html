@@ -1,0 +1,69 @@
+<app-bb-modal-shell [title]="'catalog.playerFilter' | translate" [closeLabel]="'common.close' | translate" modalClass="bb-filter-modal bb-catalog-filter-modal" (closed)="close()">
+  <div class="bb-section">
+    <div class="bb-section-head"><span class="bb-section-title">{{ 'details.country' | translate }}</span></div>
+    <select class="bb-filter-select" [(ngModel)]="draft.countryISO3" [attr.aria-label]="'catalog.playerCountry' | translate">
+      <option value="">{{ 'catalog.allCountries' | translate }}</option>
+      <option *ngFor="let country of countries" [value]="country.iso3">
+        {{ country.name }} ({{ country.iso3 }})
+      </option>
+    </select>
+  </div>
+
+  <div class="bb-hr"></div>
+
+  <div class="bb-section">
+    <div class="bb-section-head"><span class="bb-section-title">{{ 'catalog.minimumMatches' | translate }}</span></div>
+    <div class="bb-chip-row">
+      <label class="bb-chip" *ngFor="let value of [0, 10, 50, 100]">
+        <input type="radio" name="minimumMatches" [value]="value" [(ngModel)]="draft.minimumMatches" />
+        <span>{{ value === 0 ? ('catalog.any' | translate) : value + '+' }}</span>
+      </label>
+    </div>
+  </div>
+
+  <div class="bb-hr"></div>
+
+  <div class="bb-section">
+    <div class="bb-section-head"><span class="bb-section-title">{{ 'catalog.tsData' | translate }}</span></div>
+    <div class="bb-chip-row">
+      <label class="bb-chip">
+        <input type="radio" name="playerTs" value="all" [(ngModel)]="draft.tsAvailability" />
+        <span>{{ 'common.all' | translate }}</span>
+      </label>
+      <label class="bb-chip">
+        <input type="radio" name="playerTs" value="with" [(ngModel)]="draft.tsAvailability" />
+        <span>{{ 'catalog.withTs' | translate }}</span>
+      </label>
+      <label class="bb-chip">
+        <input type="radio" name="playerTs" value="without" [(ngModel)]="draft.tsAvailability" />
+        <span>{{ 'catalog.withoutTs' | translate }}</span>
+      </label>
+    </div>
+  </div>
+
+  <div class="bb-hr"></div>
+
+  <div class="bb-section">
+    <div class="bb-section-head"><span class="bb-section-title">{{ 'catalog.activity' | translate }}</span></div>
+    <div class="bb-chip-row">
+      <label class="bb-chip">
+        <input type="radio" name="activity" [value]="null" [(ngModel)]="draft.activityMonths" />
+        <span>{{ 'catalog.any' | translate }}</span>
+      </label>
+      <label class="bb-chip">
+        <input type="radio" name="activity" [value]="12" [(ngModel)]="draft.activityMonths" />
+        <span>{{ regional.plural('catalog.lastMonths', 12) }}</span>
+      </label>
+      <label class="bb-chip">
+        <input type="radio" name="activity" [value]="24" [(ngModel)]="draft.activityMonths" />
+        <span>{{ regional.plural('catalog.lastMonths', 24) }}</span>
+      </label>
+    </div>
+    <div class="bb-hint">{{ 'catalog.activityHint' | translate }}</div>
+  </div>
+
+  <div bbActions class="bb-actions">
+    <button type="button" class="oauth-btn" (click)="reset()">{{ 'common.reset' | translate }}</button>
+    <button type="button" class="oauth-btn oauth-btn-primary" (click)="apply()">{{ 'common.apply' | translate }}</button>
+  </div>
+</app-bb-modal-shell>

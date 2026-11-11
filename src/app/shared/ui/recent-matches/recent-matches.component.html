@@ -1,0 +1,27 @@
+<p *ngIf="loading" class="recent-status" role="status">{{ 'recent.loading' | translate }}</p>
+<p *ngIf="error" class="recent-status" role="status">{{ 'recent.error' | translate }}</p>
+<section *ngIf="!loading && !error && matches.length" [attr.aria-label]="'recent.title' | translate">
+  <h3>{{ heading }}</h3>
+  <div class="recent-scroll" tabindex="0" role="region" [attr.aria-label]="'recent.table' | translate">
+    <table class="match-table recent-table">
+      <thead><tr><th scope="col">{{ 'common.date' | translate }}</th><th scope="col" *ngIf="scope === 'player'">{{ 'common.tournament' | translate }}</th><th scope="col" *ngIf="scope === 'tournament'">{{ 'common.round' | translate }}</th><th scope="col">{{ 'common.matchup' | translate }}</th><th scope="col">{{ 'common.result' | translate }}</th></tr></thead>
+      <tbody><tr *ngFor="let match of matches">
+        <td class="recent-date">{{ regional.matchDateTime(match.dateTime, match.sourceTimePrecision, true) }}</td>
+        <td *ngIf="scope === 'tournament'" class="recent-round" [title]="(match.roundName || '') | uppercase">{{ roundLabel(match.roundName) | uppercase }}</td>
+        <td *ngIf="scope === 'player'" class="recent-tournament">
+          <span class="fi fi-{{ flag(match.tournamentEventCountryISO2, match.tournamentEventCountryFull) }}" [title]="match.tournamentEventCountryFull"></span>
+          {{ match.tournamentEventName || '—' }}
+          <small>{{ match.roundName | uppercase }} · <span class="recent-surface"><span
+            class="surface-indicator surface-indicator--{{ surfaceLabel(match.surface) }}"
+            role="img" [attr.aria-label]="('details.surface' | translate) + ': ' + ('surfaces.' + surfaceLabel(match.surface) | translate | uppercase)"
+            [title]="'surfaces.' + surfaceLabel(match.surface) | translate | uppercase"></span>{{ 'surfaces.' + surfaceLabel(match.surface) | translate | uppercase }}</span></small>
+        </td>
+        <td class="recent-matchup">
+          <div [class.selected-player]="isHighlightedPlayer(match, 1)"><span class="fi fi-{{ flag(match.player1CountryISO2) }}" [title]="match.player1CountryFull"></span> {{ match.player1Name || '—' }}</div>
+          <div [class.selected-player]="isHighlightedPlayer(match, 2)"><span class="fi fi-{{ flag(match.player2CountryISO2) }}" [title]="match.player2CountryFull"></span> {{ match.player2Name || '—' }}</div>
+        </td>
+        <td class="recent-result"><strong>{{ result(match.result) }}</strong></td>
+      </tr></tbody>
+    </table>
+  </div>
+</section>

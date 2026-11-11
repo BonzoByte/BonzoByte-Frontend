@@ -1,0 +1,112 @@
+.players-page {
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(0, 0, 0, 0.52)),
+        repeating-linear-gradient(90deg,
+            rgba(255, 255, 255, 0.02) 0px,
+            rgba(255, 255, 255, 0.02) 1px,
+            transparent 1px,
+            transparent 4px),
+        #0f0f0f;
+}
+.players-page .details-cell {
+    text-align: center;
+    vertical-align: middle;
+}
+
+.players-page .match-table .col-rank {
+    width: 52px !important;
+    min-width: 52px !important;
+    max-width: 52px !important;
+    text-align: right !important;
+    color: rgba(226, 236, 242, 0.68);
+    font-variant-numeric: tabular-nums;
+}
+
+.players-page .match-table .col-player {
+    min-width: 294px !important;
+    max-width: 294px !important;
+}
+
+.players-page .match-table .col-win-pct {
+    // Fit "100.00 %" and the localized sorted header, with padding and borders.
+    width: 84px !important;
+    min-width: 84px !important;
+    max-width: 84px !important;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+
+.players-page .details-icon-btn {
+    width: 16px;
+    height: 16px;
+    padding: 0;
+    margin: 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    background: rgba(255, 255, 255, 0.06);
+    color: #fff;
+
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.players-page .date-nav-sticky::after {
+    content: "";
+    position: absolute;
+    right: 0;
+    bottom: -2px;
+    left: 0;
+    height: 2px;
+    background: var(--bb-datebar-bg);
+    pointer-events: none;
+}
+
+.players-page .details-icon-btn:focus {
+    outline: none;
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.34);
+}
+
+.players-page .table-wrapper {
+    min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
+    justify-content: flex-start;
+    padding-top: 0;
+    padding-right: 16px;
+    padding-bottom: 12px;
+    padding-left: 16px;
+    overflow: auto;
+    overscroll-behavior-inline: contain;
+}
+
+.players-page .match-table {
+    flex: 0 0 auto;
+    max-width: none;
+    margin-right: auto;
+    margin-left: auto;
+    // Match the main grid's collapsed-border seam compensation.
+    margin-top: -1px;
+}
+
+.players-page .match-table thead th {
+    top: -1px;
+}
+
+.matches-page-wrapper.players-page {
+    height: calc(100dvh - var(--header-h) - var(--datebar-h) - var(--footer-h));
+    min-height: 0;
+    overflow: hidden;
+}
+
+.matches-page-wrapper.players-page > .players-page,
+.matches-page-wrapper.players-page .matches-content,
+.matches-page-wrapper.players-page .table-wrapper {
+    min-height: 0;
+}

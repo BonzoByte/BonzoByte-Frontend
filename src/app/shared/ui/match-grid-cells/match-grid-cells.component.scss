@@ -1,0 +1,19 @@
+:host { display: block; min-width: 0; }
+.shared-entity-link { padding: 0; border: 0; border-radius: 2px; background: none; color: inherit; font: inherit; cursor: pointer; text-align: inherit; }
+.shared-entity-link:hover { color: var(--bb-theme-accent); text-decoration: underline; }
+.shared-entity-link:focus-visible { outline: 2px solid var(--bb-theme-accent); outline-offset: 2px; }
+.shared-matchup { display: flex; flex-direction: column; align-items: stretch; gap: 2px; min-width: 0; }
+.shared-player { display: inline-flex; width: max-content; max-width: 100%; min-width: 0; align-items: center; gap: 5px; padding: 3px 4px; border-radius: 4px; }
+.shared-player .fi { flex: 0 0 auto; }
+.shared-player .shared-entity-link, .shared-player-text { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: left; }
+.shared-full { display: inline; }.shared-compact { display: none; }
+.is-selected { background: color-mix(in srgb, var(--bb-theme-accent) 10%, transparent); }
+.shared-tournament { text-align: center; line-height: 1.3; }
+.shared-tournament-name { white-space: normal; overflow-wrap: anywhere; }
+.shared-tournament-name .fi { margin-right: 3px; }
+.shared-tournament-meta { display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 4px; min-height: 14px; }
+.shared-surface { display: inline-block; width: 11px; height: 11px; flex: 0 0 11px; border: 1px solid #ffffff61; border-radius: 2px; box-shadow: inset 0 0 0 1px #0002; }
+.shared-surface--clay { background: #a95f3b; }.shared-surface--grass { background: #4f8f58; }.shared-surface--hard { background: #667987; }.shared-surface--carpet { background: #725b86; }.shared-surface--unknown { background: #4d5359; border-style: dashed; }
+.shared-result { display: flex; flex-direction: column; align-items: center; gap: 2px; width: 100%; line-height: 1.15; text-align: center; }
+.shared-result-main { font-weight: 650; }.shared-result-sets { opacity: .9; font-size: 11px; white-space: normal; }
+@media (max-width: 1180px) { .shared-full { display: none; }.shared-compact { display: inline; } }

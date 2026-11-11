@@ -1,0 +1,4 @@
+User-agent: *
+# Crawlers must be able to read noindex on the public beta entry page.
+# Private content is protected by server-side authorization, not this file.
+Allow: /

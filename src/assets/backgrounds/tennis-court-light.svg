@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="760" viewBox="0 0 960 760" fill="none">
+  <defs><clipPath id="racket-strings"><ellipse cx="490" cy="367" rx="35" ry="49"/></clipPath></defs>
+  <g stroke="#38566b" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+    <g opacity=".065" transform="rotate(-18 246 335)">
+      <path d="M132 88H360V582H132Z M160 88V582 M332 88V582 M160 202H332 M160 468H332 M246 202V468 M125 335H367 M246 88V94 M246 576V582"/>
+    </g>
+    <g opacity=".060" transform="rotate(22 700 190)">
+      <circle cx="700" cy="190" r="52"/>
+      <path d="M670 147C696 168 696 212 670 233 M730 147C704 168 704 212 730 233"/>
+    </g>
+    <g opacity=".040" transform="rotate(14 721 579)">
+      <path d="M664 455H778V703H664Z M678 455V703 M764 455V703 M678 512H764 M678 646H764 M721 512V646 M660 579H782"/>
+    </g>
+    <g opacity=".075" transform="translate(85 0) rotate(28 490 435)">
+      <ellipse cx="490" cy="367" rx="40" ry="54"/>
+      <ellipse cx="490" cy="367" rx="35" ry="49" opacity=".65"/>
+      <g clip-path="url(#racket-strings)" stroke-width="1" opacity=".5"><path d="M466 313V421 M478 313V421 M490 313V421 M502 313V421 M514 313V421 M450 335H530 M450 349H530 M450 363H530 M450 377H530 M450 391H530 M450 405H530"/></g>
+      <path d="M467 408L484 446 M513 408L496 446 M484 446H496"/>
+      <rect x="482" y="446" width="16" height="100" rx="3"/>
+      <path d="M482 466L498 458 M482 482L498 474 M482 498L498 490 M482 514L498 506 M482 530L498 522 M481 542H499" opacity=".65"/>
+    </g>
+    <g opacity=".050">
+      <path d="M110 630Q230 580 338 644 M145 668Q250 624 342 658"/>
+      <circle cx="388" cy="676" r="26"/>
+      <path d="M373 655C386 665 386 687 373 697 M403 655C390 665 390 687 403 697"/>
+    </g>
+  </g>
+</svg>

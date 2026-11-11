@@ -1,0 +1,1378 @@
+<!-- MATCH DETAILS MODAL (Shell version) -->
+<app-bb-modal-shell *ngIf="isOpen" [title]="'matchDetails.title' | translate" [closeLabel]="'common.close' | translate" modalClass="bb-modal--match-details" (closed)="close()">
+    <p *ngIf="isPreview" class="bb-hint" role="note">{{ 'popularity.previewNotice' | translate }}</p>
+    <app-copy-match-link *ngIf="!isPreview" [matchTPId]="discussionMatchId" [matchId]="canonicalMatchId" [view]="activeTab === 'discussions' ? 'discussion' : 'details'"></app-copy-match-link>
+    <!-- =================================================================================================
+       REUSABLE TEMPLATES
+    ================================================================================================== -->
+
+    <!-- Players header (2-column card) used on most tabs -->
+    <ng-template #playersHeader let-v="v">
+        <div class="bb-players-2col">
+            <!-- PLAYER 1 -->
+            <div class="bb-player">
+                <div class="bb-player-head">
+                    <span class="bb-flag-wrap" *ngIf="flagIso2OrEmpty(v.p1.iso2) as iso" [title]="v.p1.countryName">
+                        <span class="fi fi-{{ iso }} bb-flag-sm"></span>
+                    </span>
+
+                    <div class="bb-player-name">
+                        <span class="bb-dot bb-dot-red bb-dot-inline" aria-hidden="true"></span>
+                        {{ v.p1.name }}
+                        <span *ngIf="v.p1.iso3">({{ v.p1.iso3 }})</span>
+                        <span class="bb-meta" *ngIf="v.p1.rank">#{{ v.p1.rank }}</span>
+                        <span class="bb-meta" *ngIf="v.p1.seed">({{ v.p1.seed }})</span>
+                    </div>
+                </div>
+
+                <div class="bb-player-body">
+                    <div class="bb-avatar">
+                        <img [src]="playerAvatarUrlById(v.p1.playerTPId)" (error)="onAvatarError($event)"
+                            [alt]="'details.playerAvatar' | translate" loading="lazy" />
+                    </div>
+
+                    <div class="bb-kv">
+                        <div class="bb-kv-row" *ngIf="v.p1.born">
+                            <div class="bb-k">{{ 'details.born' | translate }}</div>
+                            <div class="bb-v">{{ v.p1.born }}</div>
+                        </div>
+
+                        <div class="bb-kv-row" *ngIf="v.p1.plays">
+                            <div class="bb-k">{{ 'plays.label' | translate }}</div>
+                            <div class="bb-v">{{ playsKey(v.p1.plays) | translate }}</div>
+                        </div>
+
+                        <div class="bb-kv-row" *ngIf="v.p1.height">
+                            <div class="bb-k">{{ 'details.height' | translate }}</div>
+                            <div class="bb-v">{{ v.p1.height }}</div>
+                        </div>
+
+                        <div class="bb-kv-row" *ngIf="v.p1.weight">
+                            <div class="bb-k">{{ 'details.weight' | translate }}</div>
+                            <div class="bb-v">{{ v.p1.weight }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PLAYER 2 -->
+            <div class="bb-player">
+                <div class="bb-player-head">
+                    <span class="bb-flag-wrap" *ngIf="flagIso2OrEmpty(v.p2.iso2) as iso" [title]="v.p2.countryName">
+                        <span class="fi fi-{{ iso }} bb-flag-sm"></span>
+                    </span>
+
+                    <div class="bb-player-name">
+                        <span class="bb-dot bb-dot-blue bb-dot-inline" aria-hidden="true"></span>
+                        {{ v.p2.name }}
+                        <span *ngIf="v.p2.iso3">({{ v.p2.iso3 }})</span>
+                        <span class="bb-meta" *ngIf="v.p2.rank">#{{ v.p2.rank }}</span>
+                        <span class="bb-meta" *ngIf="v.p2.seed">({{ v.p2.seed }})</span>
+                    </div>
+                </div>
+
+                <div class="bb-player-body">
+                    <div class="bb-avatar">
+                        <img [src]="playerAvatarUrlById(v.p2.playerTPId)" (error)="onAvatarError($event)"
+                            [alt]="'details.playerAvatar' | translate" loading="lazy" />
+                    </div>
+
+                    <div class="bb-kv">
+                        <div class="bb-kv-row" *ngIf="v.p2.born">
+                            <div class="bb-k">{{ 'details.born' | translate }}</div>
+                            <div class="bb-v">{{ v.p2.born }}</div>
+                        </div>
+
+                        <div class="bb-kv-row" *ngIf="v.p2.plays">
+                            <div class="bb-k">{{ 'plays.label' | translate }}</div>
+                            <div class="bb-v">{{ playsKey(v.p2.plays) | translate }}</div>
+                        </div>
+
+                        <div class="bb-kv-row" *ngIf="v.p2.height">
+                            <div class="bb-k">{{ 'details.height' | translate }}</div>
+                            <div class="bb-v">{{ v.p2.height }}</div>
+                        </div>
+
+                        <div class="bb-kv-row" *ngIf="v.p2.weight">
+                            <div class="bb-k">{{ 'details.weight' | translate }}</div>
+                            <div class="bb-v">{{ v.p2.weight }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </ng-template>
+
+    <!-- TrueSkill / chart selectors -->
+    <ng-template #tsControls>
+        <div class="bb-ts-controls">
+            <div class="bb-ts-group">
+                <div class="bb-ts-group-title">{{ 'matchDetails.granularity' | translate }}</div>
+
+                <label class="bb-radio-pill">
+                    <input type="radio" name="RatingMode" [value]="'M'" [(ngModel)]="RatingMode"
+                        (ngModelChange)="onTsSelectorsChanged()" />
+                    <span>{{ 'matchDetails.match' | translate }}</span>
+                </label>
+
+                <label class="bb-radio-pill">
+                    <input type="radio" name="RatingMode" [value]="'SM'" [(ngModel)]="RatingMode"
+                        (ngModelChange)="onTsSelectorsChanged()" />
+                    <span>{{ 'matchDetails.setMatch' | translate }}</span>
+                </label>
+
+                <label class="bb-radio-pill">
+                    <input type="radio" name="RatingMode" [value]="'GSM'" [(ngModel)]="RatingMode"
+                        (ngModelChange)="onTsSelectorsChanged()" />
+                    <span>{{ 'matchDetails.gameSetMatch' | translate }}</span>
+                </label>
+            </div>
+
+            <div class="bb-ts-group">
+                <div class="bb-ts-group-title">{{ 'details.surface' | translate }}</div>
+
+                <label class="bb-radio-pill">
+                    <input type="radio" name="SurfaceScope" [value]="'ALL'" [(ngModel)]="SurfaceScope"
+                        (ngModelChange)="onTsSelectorsChanged()" />
+                    <span>{{ 'matchDetails.allSurfaces' | translate }}</span>
+                </label>
+
+                <label class="bb-radio-pill">
+                    <input type="radio" name="SurfaceScope" [value]="'S1'" [(ngModel)]="SurfaceScope"
+                        (ngModelChange)="onTsSelectorsChanged()" />
+                    <span>{{ 'surfaces.carpet' | translate }}<span class="bb-hint" *ngIf="isCurrentSurface('S1')">{{ 'matchDetails.current' | translate }}</span></span>
+                </label>
+
+                <label class="bb-radio-pill">
+                    <input type="radio" name="SurfaceScope" [value]="'S2'" [(ngModel)]="SurfaceScope"
+                        (ngModelChange)="onTsSelectorsChanged()" />
+                    <span>{{ 'surfaces.clay' | translate }}<span class="bb-hint" *ngIf="isCurrentSurface('S2')">{{ 'matchDetails.current' | translate }}</span></span>
+                </label>
+
+                <label class="bb-radio-pill">
+                    <input type="radio" name="SurfaceScope" [value]="'S3'" [(ngModel)]="SurfaceScope"
+                        (ngModelChange)="onTsSelectorsChanged()" />
+                    <span>{{ 'surfaces.grass' | translate }}<span class="bb-hint" *ngIf="isCurrentSurface('S3')">{{ 'matchDetails.current' | translate }}</span></span>
+                </label>
+
+                <label class="bb-radio-pill">
+                    <input type="radio" name="SurfaceScope" [value]="'S4'" [(ngModel)]="SurfaceScope"
+                        (ngModelChange)="onTsSelectorsChanged()" />
+                    <span>{{ 'surfaces.hard' | translate }}<span class="bb-hint" *ngIf="isCurrentSurface('S4')">{{ 'matchDetails.current' | translate }}</span></span>
+                </label>
+            </div>
+        </div>
+    </ng-template>
+
+    <!-- Pinned tooltip summary -->
+    <ng-template #pinnedTooltipSummary let-tip="tip">
+        <div class="bb-chart-tooltip bb-tooltip-summary">
+            <div class="bb-summary-date">{{ chartDate(tip) }}</div>
+
+            <div class="bb-summary-player bb-summary-p1">
+                <span class="bb-dot bb-dot-red"></span>
+                <span class="bb-summary-name">{{ tip.p1Label }}</span>
+                <span class="bb-summary-metric"><b>μ</b> {{ tip.mu1 | number:'1.2-2':regional.locale() }}</span>
+                <span class="bb-summary-metric"><b>σ</b> {{ tip.sd1 | number:'1.2-2':regional.locale() }}</span>
+                <span class="bb-summary-metric"><b>WP</b> {{ tip.wp1 * 100 | number:'1.1-1':regional.locale() }}%</span>
+            </div>
+
+            <div class="bb-summary-player bb-summary-p2">
+                <span class="bb-dot bb-dot-blue"></span>
+                <span class="bb-summary-name">{{ tip.p2Label }}</span>
+                <span class="bb-summary-metric"><b>μ</b> {{ tip.mu2 | number:'1.2-2':regional.locale() }}</span>
+                <span class="bb-summary-metric"><b>σ</b> {{ tip.sd2 | number:'1.2-2':regional.locale() }}</span>
+                <span class="bb-summary-metric"><b>WP</b> {{ tip.wp2 * 100 | number:'1.1-1':regional.locale() }}%</span>
+            </div>
+        </div>
+    </ng-template>
+
+    <ng-template #correctScoreBlock>
+        <div class="bb-odds-table-wrap" *ngIf="correctScoreRows.length">
+            <table class="bb-odds-table">
+                <thead>
+                    <tr>
+                        <th>{{ 'matchDetails.bookie' | translate }}</th>
+                        <th class="bb-odds-num">2:0</th>
+                        <th class="bb-odds-num">2:1</th>
+                        <th class="bb-odds-num">0:2</th>
+                        <th class="bb-odds-num">1:2</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let r of correctScoreRows">
+                        <td class="bb-odds-bookie">{{ r.bookieName }}</td>
+                        <td class="bb-odds-num bb-pl">{{ oddsNum(r.score20) }}</td>
+                        <td class="bb-odds-num bb-pl">{{ oddsNum(r.score21) }}</td>
+                        <td class="bb-odds-num bb-pl">{{ oddsNum(r.score02) }}</td>
+                        <td class="bb-odds-num bb-pl">{{ oddsNum(r.score12) }}</td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="bb-placeholder" *ngIf="!correctScoreRows.length">
+                {{ 'matchDetails.noOdds' | translate }}
+            </div>
+        </div>
+    </ng-template>
+    <!-- Hover tooltip -->
+    <ng-template #hoverTooltipCard let-tip="tip">
+        <div class="bb-chart-tooltip" [class.bb-tooltip-show]="true" [style.left.px]="tip.leftPx"
+            [style.top.px]="tip.topPx">
+            <div class="bb-chart-tooltip-title">{{ chartDate(tip) }}</div>
+
+            <div class="bb-tt-grid">
+                <div class="bb-tt-col">
+                    <div class="bb-tt-player">
+                        <span class="bb-dot bb-dot-red"></span>
+                        <span class="bb-tt-player-name">{{ tip.p1Label }}</span>
+                    </div>
+
+                    <div class="bb-tt-metrics">
+                        <div class="bb-tt-row">
+                            <span class="bb-tt-k">{{ 'matchDetails.mean' | translate }}</span>
+                            <span class="bb-tt-v"><b>μ {{ tip.mu1 | number:'1.2-2':regional.locale() }}</b></span>
+                        </div>
+                        <div class="bb-tt-row">
+                            <span class="bb-tt-k">{{ 'matchDetails.sd' | translate }}</span>
+                            <span class="bb-tt-v">σ {{ tip.sd1 | number:'1.2-2':regional.locale() }}</span>
+                        </div>
+                        <div class="bb-tt-row">
+                            <span class="bb-tt-k">WP</span>
+                            <span class="bb-tt-v">{{ (tip.wp1 * 100) | number:'1.1-1':regional.locale() }}%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bb-tt-col">
+                    <div class="bb-tt-player">
+                        <span class="bb-dot bb-dot-blue"></span>
+                        <span class="bb-tt-player-name">{{ tip.p2Label }}</span>
+                    </div>
+
+                    <div class="bb-tt-metrics">
+                        <div class="bb-tt-row">
+                            <span class="bb-tt-k">{{ 'matchDetails.mean' | translate }}</span>
+                            <span class="bb-tt-v"><b>μ {{ tip.mu2 | number:'1.2-2':regional.locale() }}</b></span>
+                        </div>
+                        <div class="bb-tt-row">
+                            <span class="bb-tt-k">{{ 'matchDetails.sd' | translate }}</span>
+                            <span class="bb-tt-v">σ {{ tip.sd2 | number:'1.2-2':regional.locale() }}</span>
+                        </div>
+                        <div class="bb-tt-row">
+                            <span class="bb-tt-k">WP</span>
+                            <span class="bb-tt-v">{{ (tip.wp2 * 100) | number:'1.1-1':regional.locale() }}%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </ng-template>
+
+    <!-- TrueSkill snapshot -->
+    <ng-template #tsSnapshot let-v="v">
+        <div class="bb-ts-snapshot">
+            <div class="bb-compare bb-compare-ts">
+                <div class="bb-comp-row">
+                    <div class="bb-comp-left">{{ tsNum(tsMean('p1')) }}</div>
+                    <div class="bb-comp-mid">{{ 'details.tsMean' | translate }}</div>
+                    <div class="bb-comp-right">{{ tsNum(tsMean('p2')) }}</div>
+                </div>
+
+                <div class="bb-comp-row">
+                    <div class="bb-comp-left">{{ tsNum(tsSd('p1')) }}</div>
+                    <div class="bb-comp-mid">{{ 'matchDetails.tsSd' | translate }}</div>
+                    <div class="bb-comp-right">{{ tsNum(tsSd('p2')) }}</div>
+                </div>
+
+                <div class="bb-comp-row">
+                    <div class="bb-comp-left">{{ wpPct(tsWp('p1')) }}</div>
+                    <div class="bb-comp-mid">{{ 'matchDetails.winProbability' | translate }}</div>
+                    <div class="bb-comp-right">{{ wpPct(tsWp('p2')) }}</div>
+                </div>
+            </div>
+        </div>
+    </ng-template>
+
+    <!-- =================================================================================================
+       HEADER LINE (subtitle area in shell)
+       - We'll render the tournament meta line at the top of the content.
+       - Later we can move this into shell "subtitle" input if we want.
+    ================================================================================================== -->
+
+    <div class="bb-header-line" *ngIf="vm as v">
+        <span class="bb-pill bb-pill--title">
+            <span class="bb-flag-wrap" *ngIf="flagIso2OrEmpty(v.header.iso2) as iso"
+                [title]="v.header.countryName || ('matchDetails.world' | translate)">
+                <span class="fi fi-{{ iso }} bb-flag-sm"></span>
+            </span>
+
+            {{ tourTypeLabel(raw) }}
+            {{ v.header.name }}<span *ngIf="v.header.iso3"> ({{ v.header.iso3 }})</span>
+        </span>
+
+        <span
+          class="bb-pill"
+          *ngIf="v.header.round && v.header.round.toLowerCase() !== 'unknown'"
+        >
+          {{ v.header.round | uppercase }}
+        </span>
+        <span class="bb-pill">{{ surfaceLabel(v.header.surface) | uppercase }}</span>
+        <span class="bb-pill" [title]="regional.timeZone()">{{ v.header.dateText }}</span>
+
+        <span class="bb-pill" *ngIf="v.header.prizeText !== '—'">{{ 'details.prize' | translate }}: {{ v.header.prizeText }}</span>
+
+        <span class="bb-pill bb-pill-strength" *ngIf="tournamentStrengthTs(raw) as ts">
+            {{ 'matchDetails.tournamentStrength' | translate }}:
+            <span class="strength-cell" [title]="'TS: ' + (ts | number:'1.2-2':regional.locale())">
+                <span class="stars">
+                    <span *ngFor="let s of stars" class="star" [ngClass]="starClass(s, tsToStars(ts))"></span>
+                </span>
+            </span>
+        </span>
+    </div>
+
+    <!-- =================================================================================================
+       TABS
+  ================================================================================================== -->
+
+    <div *ngIf="!isPreview" class="bb-tabs">
+        <button class="bb-tab" [class.active]="activeTab==='overview'"
+            (click)="onTabClick('overview')">{{ 'details.overview' | translate }}</button>
+        <button class="bb-tab" [class.active]="activeTab==='tsBreakdown'" (click)="onTabClick('tsBreakdown')">{{ 'matchDetails.tsBreakdown' | translate }}</button>
+        <button class="bb-tab" [class.active]="activeTab==='wpBreakdown'" (click)="onTabClick('wpBreakdown')">{{ 'matchDetails.wpBreakdown' | translate }}</button>
+        <button class="bb-tab" [class.active]="activeTab==='performance'"
+            (click)="setTab('performance')">{{ 'details.performance' | translate }}</button>
+        <button class="bb-tab" [class.active]="activeTab==='form'" (click)="setTab('form')">{{ 'matchDetails.form' | translate }}</button>
+        <button class="bb-tab" [class.active]="activeTab==='roleStats'" (click)="setTab('roleStats')">{{ 'matchDetails.roleStats' | translate }}</button>
+        <button class="bb-tab" [class.active]="activeTab==='odds'" (click)="setTab('odds')">{{ 'matches.odds' | translate }}</button>
+        <button class="bb-tab" [class.active]="activeTab==='h2h'" (click)="setTab('h2h')">H2H</button>
+        <button class="bb-tab" [class.active]="activeTab==='nn'" (click)="setTab('nn')">NN</button>
+        <button type="button" class="bb-tab" [class.active]="activeTab==='discussions'"
+            [attr.aria-pressed]="activeTab==='discussions'" (click)="setTab('discussions')">{{ 'discussions.title' | translate }}</button>
+    </div>
+
+    <!-- =================================================================================================
+       BODY (loading / error / content)
+    ================================================================================================== -->
+
+    <div class="bb-body">
+        <app-discussion-thread *ngIf="!isPreview && activeTab==='discussions'" [matchTPId]="discussionMatchId" (requestLogin)="openLogin()"></app-discussion-thread>
+        <div class="bb-loading" *ngIf="loading && activeTab!=='discussions'">{{ 'common.loading' | translate }}</div>
+
+        <!-- LOCKED / ERROR state (single block, no duplicates) -->
+        <div class="bb-error" *ngIf="!loading && error && activeTab!=='discussions'">
+            <div class="bb-error-title">{{ (isLocked ? 'matchDetails.lockedTitle' : 'matchDetails.loadError') | translate }}</div>
+            <div class="bb-error-msg" *ngIf="isLocked">{{ errorMessage }}</div>
+
+            <div class="bb-actions" *ngIf="isLocked; else genericErr">
+                <button class="bb-btn" (click)="close()">{{ 'common.close' | translate }}</button>
+
+                <ng-container *ngIf="!isLoggedIn; else loggedInLocked">
+                    <button class="bb-btn" (click)="openLogin()">{{ 'login' | translate }}</button>
+                    <button class="bb-btn" (click)="openRegister()">{{ 'register' | translate }}</button>
+                </ng-container>
+
+                <ng-template #loggedInLocked>
+                    <button class="bb-btn" (click)="openUpgrade()">{{ 'matchDetails.unlock' | translate }}</button>
+                </ng-template>
+            </div>
+
+            <ng-template #genericErr>
+                <button class="bb-btn" (click)="load()">{{ 'matchDetails.retry' | translate }}</button>
+            </ng-template>
+        </div>
+
+        <!-- Main content -->
+        <ng-container *ngIf="activeTab!=='discussions' && !loading && !error && vm as v">
+            <!-- OVERVIEW -->
+            <section *ngIf="activeTab==='overview'" class="bb-panel">
+                <ng-container *ngTemplateOutlet="playersHeader; context: { v: v }"></ng-container>
+
+                <div class="bb-result-row" *ngIf="v.finished">
+                    <div class="bb-result">
+                        <div class="bb-result-main">{{ v.scoreMain }}</div>
+                        <div class="bb-result-sets">{{ v.scoreSets }}</div>
+                    </div>
+                </div>
+
+                <div class="bb-compare">
+                    <div class="bb-comp-row">
+                        <div class="bb-comp-left">
+                            <span class="strength-cell" [title]="p1StrengthTooltip(raw)">
+                                <span class="stars">
+                                    <span *ngFor="let s of stars" class="star"
+                                        [ngClass]="starClass(s, p1StrengthStars(raw))"></span>
+                                </span>
+                            </span>
+                        </div>
+                        <div class="bb-comp-mid">{{ 'matchDetails.strength' | translate }}</div>
+                        <div class="bb-comp-right">
+                            <span class="strength-cell" [title]="p2StrengthTooltip(raw)">
+                                <span class="stars">
+                                    <span *ngFor="let s of stars" class="star"
+                                        [ngClass]="starClass(s, p2StrengthStars(raw))"></span>
+                                </span>
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="bb-comp-row">
+                        <div class="bb-comp-left">{{ nnPct(v.p1.nnProb) }}</div>
+                        <div class="bb-comp-mid">{{ 'matchDetails.winProbability' | translate }}</div>
+                        <div class="bb-comp-right">{{ nnPct(v.p2.nnProb) }}</div>
+                    </div>
+
+                    <div class="bb-comp-row">
+                        <div class="bb-comp-left">{{ oddsText(v.p1.odds) }}</div>
+                        <div class="bb-comp-mid">{{ 'matches.odds' | translate }}</div>
+                        <div class="bb-comp-right">{{ oddsText(v.p2.odds) }}</div>
+                    </div>
+
+                    <div class="bb-comp-row">
+                        <div class="bb-comp-left">{{ edgeText(v.edgeP1) }}</div>
+                        <div class="bb-comp-mid">{{ 'matchDetails.edge' | translate }}</div>
+                        <div class="bb-comp-right">{{ edgeText(v.edgeP2) }}</div>
+                    </div>
+
+                    <div class="bb-comp-row">
+                        <div class="bb-comp-left">
+                            <span *ngIf="v.betSide === 'p1'" class="bb-bet-icon" [title]="'matchDetails.valueBet' | translate">✓</span>
+                        </div>
+                        <div class="bb-comp-mid">{{ 'matchDetails.who2Bet' | translate }}</div>
+                        <div class="bb-comp-right">
+                            <span *ngIf="v.betSide === 'p2'" class="bb-bet-icon" [title]="'matchDetails.valueBet' | translate">✓</span>
+                        </div>
+                    </div>
+
+                    <div class="bb-comp-row">
+                        <div class="bb-comp-left">
+                            <span *ngIf="v.pl !== undefined && v.pl > 0" class="bb-pl bb-pl-positive">+{{
+                                v.pl | number:'1.2-2':regional.locale() }}</span>
+                        </div>
+                        <div class="bb-comp-mid">{{ 'matchDetails.pl' | translate }}</div>
+                        <div class="bb-comp-right">
+                            <span *ngIf="v.pl !== undefined && v.pl < 0" class="bb-pl bb-pl-negative">{{ v.pl |
+                                number:'1.2-2':regional.locale() }}</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TS BREAKDOWN -->
+            <section *ngIf="activeTab==='tsBreakdown'" class="bb-panel">
+                <ng-container *ngTemplateOutlet="playersHeader; context: { v: v }"></ng-container>
+                <ng-container *ngTemplateOutlet="tsControls"></ng-container>
+                <ng-container *ngTemplateOutlet="tsSnapshot; context: { v: v }"></ng-container>
+
+                <div *ngIf="tsBreakdownLoading" class="bb-loading">{{ 'matchDetails.loadingTs' | translate }}</div>
+                <div *ngIf="!tsBreakdownLoading && tsBreakdownError" class="bb-error">{{ tsBreakdownError | translate }}</div>
+
+                <ng-container *ngIf="!tsBreakdownLoading && !tsBreakdownError">
+                    <ng-container *ngIf="getTsChartModel() as cm; else noTsChart">
+                        <div class="bb-chart-wrap">
+                            <svg [attr.viewBox]="'0 0 ' + chartWidth + ' ' + chartHeight"
+                                style="width:100%; height:auto; display:block;"
+                                (mousemove)="onTsChartMouseMove($event, cm)" (mouseleave)="onTsChartMouseLeave()">
+                                <g *ngFor="let yt of cm.yTicks">
+                                    <line [attr.x1]="chartPad" [attr.x2]="chartWidth-chartPad" [attr.y1]="yt.y"
+                                        [attr.y2]="yt.y" stroke="rgba(255,255,255,0.08)"></line>
+                                    <text [attr.x]="6" [attr.y]="yt.y+4" font-size="11" fill="rgba(255,255,255,0.65)">{{
+                                        yt.label }}</text>
+                                </g>
+
+                                <g *ngFor="let xt of cm.xTicks">
+                                    <line [attr.x1]="xt.x" [attr.x2]="xt.x" [attr.y1]="chartHeight-chartPad"
+                                        [attr.y2]="chartHeight-chartPad+6" stroke="rgba(255,255,255,0.25)"></line>
+                                    <text [attr.x]="xt.x" [attr.y]="chartHeight-6" text-anchor="middle" font-size="11"
+                                        fill="rgba(255,255,255,0.65)">{{ xt.label }}</text>
+                                </g>
+
+                                <line [attr.x1]="chartPad" [attr.x2]="chartPad" [attr.y1]="chartPad"
+                                    [attr.y2]="chartHeight-chartPad" stroke="rgba(255,255,255,0.25)"></line>
+                                <line [attr.x1]="chartPad" [attr.x2]="chartWidth-chartPad"
+                                    [attr.y1]="chartHeight-chartPad" [attr.y2]="chartHeight-chartPad"
+                                    stroke="rgba(255,255,255,0.25)"></line>
+
+                                <line *ngIf="cm.matchX !== null" [attr.x1]="cm.matchX" [attr.x2]="cm.matchX"
+                                    [attr.y1]="chartPad" [attr.y2]="20 + chartHeight-chartPad"
+                                    stroke="rgba(255,255,255,0.22)" stroke-dasharray="4 4"></line>
+
+                                <g *ngIf="cm.matchX !== null">
+                                    <text [attr.x]="cm.matchX" [attr.y]="20 + chartPad - 8" text-anchor="middle"
+                                        font-size="14" fill="rgba(255,255,255,0.75)">
+                                        {{ 'matchDetails.matchDate' | translate }}
+                                    </text>
+                                </g>
+
+                                <path [attr.d]="cm.p1Path" fill="none" stroke="#ff4d4d" stroke-width="2.2"
+                                    opacity="0.95"></path>
+                                <path [attr.d]="cm.p2Path" fill="none" stroke="#4da3ff" stroke-width="2.2"
+                                    opacity="0.95"></path>
+
+                                <path *ngIf="cm.p1TrendPath" [attr.d]="cm.p1TrendPath" fill="none" stroke="#ff4d4d"
+                                    stroke-width="1.8" opacity="0.55" stroke-dasharray="6 6"></path>
+                                <path *ngIf="cm.p2TrendPath" [attr.d]="cm.p2TrendPath" fill="none" stroke="#4da3ff"
+                                    stroke-width="1.8" opacity="0.55" stroke-dasharray="6 6"></path>
+
+                                <g *ngIf="cm.hoverX !== null">
+                                    <line [attr.x1]="cm.hoverX" [attr.x2]="cm.hoverX" [attr.y1]="chartPad"
+                                        [attr.y2]="chartHeight-chartPad" stroke="rgba(255,255,255,0.20)"></line>
+                                    <circle [attr.cx]="cm.hoverX" [attr.cy]="cm.hoverY1" r="4.5" fill="#ff4d4d"
+                                        opacity="0.95"></circle>
+                                    <circle [attr.cx]="cm.hoverX" [attr.cy]="cm.hoverY2" r="4.5" fill="#4da3ff"
+                                        opacity="0.95"></circle>
+                                </g>
+                            </svg>
+                        </div>
+                    </ng-container>
+
+                    <ng-template #noTsChart>
+                        <div class="bb-error">{{ 'matchDetails.noChart' | translate }}</div>
+                    </ng-template>
+                </ng-container>
+            </section>
+
+            <!-- ========================================================================================
+             WP BREAKDOWN TAB (WP step chart)
+            ========================================================================================= -->
+            <section *ngIf="activeTab==='wpBreakdown'" class="bb-panel">
+                <ng-container *ngTemplateOutlet="playersHeader; context: { v: v }"></ng-container>
+                <ng-container *ngTemplateOutlet="tsControls"></ng-container>
+                <ng-container *ngTemplateOutlet="tsSnapshot; context: { v: v }"></ng-container>
+
+                <!-- Pinned summary tooltip -->
+                <ng-container *ngIf="pinnedTooltip as tip">
+                    <ng-container *ngTemplateOutlet="pinnedTooltipSummary; context: { tip: tip }"></ng-container>
+                </ng-container>
+
+                <div *ngIf="tsBreakdownLoading" class="bb-loading">{{ 'matchDetails.loadingTs' | translate }}</div>
+                <div *ngIf="!tsBreakdownLoading && tsBreakdownError" class="bb-error">{{ tsBreakdownError | translate }}</div>
+
+                <ng-container *ngIf="!tsBreakdownLoading && !tsBreakdownError">
+                    <ng-container *ngIf="getWpChartModel() as cm; else noWpChart">
+                        <!-- Chart -->
+                        <div class="bb-chart-wrap">
+                            <svg [attr.viewBox]="'0 0 ' + chartWidth + ' ' + chartHeight"
+                                style="width:100%; height:auto; display:block;"
+                                (mousemove)="onWpChartMouseMove($event, cm)" (mouseleave)="onWpChartMouseLeave()">
+                                <!-- Grid + Y labels -->
+                                <g *ngFor="let yt of cm.yTicks">
+                                    <line [attr.x1]="chartPad" [attr.x2]="chartWidth-chartPad" [attr.y1]="yt.y"
+                                        [attr.y2]="yt.y" stroke="rgba(255,255,255,0.08)"></line>
+                                    <text [attr.x]="6" [attr.y]="yt.y+4" font-size="11" fill="rgba(255,255,255,0.65)">
+                                        {{ yt.label }}
+                                    </text>
+                                </g>
+
+                                <!-- X ticks -->
+                                <g *ngFor="let xt of cm.xTicks">
+                                    <line [attr.x1]="xt.x" [attr.x2]="xt.x" [attr.y1]="chartHeight-chartPad"
+                                        [attr.y2]="chartHeight-chartPad+6" stroke="rgba(255,255,255,0.25)"></line>
+                                    <text [attr.x]="xt.x" [attr.y]="chartHeight-6" text-anchor="middle" font-size="11"
+                                        fill="rgba(255,255,255,0.65)">
+                                        {{ xt.label }}
+                                    </text>
+                                </g>
+
+                                <!-- Axis -->
+                                <line [attr.x1]="chartPad" [attr.x2]="chartPad" [attr.y1]="chartPad"
+                                    [attr.y2]="chartHeight-chartPad" stroke="rgba(255,255,255,0.25)"></line>
+                                <line [attr.x1]="chartPad" [attr.x2]="chartWidth-chartPad"
+                                    [attr.y1]="chartHeight-chartPad" [attr.y2]="chartHeight-chartPad"
+                                    stroke="rgba(255,255,255,0.25)"></line>
+
+                                <!-- Match date line -->
+                                <line *ngIf="cm.matchX !== null" [attr.x1]="cm.matchX" [attr.x2]="cm.matchX"
+                                    [attr.y1]="chartPad" [attr.y2]="chartHeight-chartPad"
+                                    stroke="rgba(255,255,255,0.22)" stroke-dasharray="4 4"></line>
+                                <g *ngIf="cm.matchX !== null">
+                                    <text [attr.x]="cm.matchX" [attr.y]="chartPad - 8" text-anchor="middle"
+                                        font-size="14" fill="rgba(255,255,255,0.75)">
+                                        {{ 'matchDetails.matchDate' | translate }}
+                                    </text>
+                                </g>
+                                <!-- Series paths -->
+                                <path [attr.d]="cm.wp1Path" fill="none" stroke="#ff4d4d" stroke-width="2.2"
+                                    opacity="0.95"></path>
+                                <path *ngIf="cm.wp2Path" [attr.d]="cm.wp2Path" fill="none" stroke="#4da3ff"
+                                    stroke-width="2.2" opacity="0.75"></path>
+
+                                <!-- Hover marker -->
+                                <g *ngIf="cm.hoverX !== null">
+                                    <line [attr.x1]="cm.hoverX" [attr.x2]="cm.hoverX" [attr.y1]="chartPad"
+                                        [attr.y2]="chartHeight-chartPad" stroke="rgba(255,255,255,0.20)"></line>
+                                    <circle [attr.cx]="cm.hoverX" [attr.cy]="cm.hoverY1" r="4.5" fill="#ff4d4d"
+                                        opacity="0.95"></circle>
+                                    <circle *ngIf="cm.hoverY2 !== null" [attr.cx]="cm.hoverX" [attr.cy]="cm.hoverY2"
+                                        r="4.5" fill="#4da3ff" opacity="0.85"></circle>
+                                </g>
+                            </svg>
+
+                            <!-- Hover tooltip -->
+                            <ng-container *ngIf="hoverTooltip as tip">
+                                <ng-container
+                                    *ngTemplateOutlet="hoverTooltipCard; context: { tip: tip }"></ng-container>
+                            </ng-container>
+                        </div>
+                    </ng-container>
+
+                    <ng-template #noWpChart>
+                        <div class="bb-error">{{ 'matchDetails.noChart' | translate }}</div>
+                    </ng-template>
+                </ng-container>
+            </section>
+
+            <!-- ========================================================================================
+            PERFORMANCE TAB
+            ========================================================================================= -->
+            <section *ngIf="activeTab === 'performance'" class="bb-panel">
+                <ng-container *ngTemplateOutlet="playersHeader; context: { v: v }"></ng-container>
+
+                <!-- Controls (unit/time/surface) -->
+                <!-- Controls (scope / period / surface) -->
+                <div class="bb-perf-controls">
+
+                    <!-- Scope -->
+                    <div class="bb-perf-group">
+                        <span class="bb-perf-label">{{ 'matchDetails.scope' | translate }}</span>
+
+                        <button *ngFor="let opt of perfUnitOptions" type="button" class="bb-pill"
+                            [class.active]="activePerfUnit === opt.value" (click)="setPerfUnit(opt.value)">
+                            {{ opt.label | translate }}
+                        </button>
+                    </div>
+
+                    <!-- Period -->
+                    <div class="bb-perf-group">
+                        <span class="bb-perf-label">{{ 'matchDetails.period' | translate }}</span>
+
+                        <button *ngFor="let opt of perfTimeOptions" type="button" class="bb-pill"
+                            [class.active]="activePerfTime === opt.value" (click)="setPerfTime(opt.value)">
+                            {{ opt.label | translate }}
+                        </button>
+                    </div>
+
+                    <!-- Surface -->
+                    <div class="bb-perf-group">
+                        <span class="bb-perf-label">{{ 'details.surface' | translate }}</span>
+
+                        <button *ngFor="let opt of perfSurfaceOptions" type="button" class="bb-pill"
+                            [class.active]="activePerfSurface === opt.value" (click)="setPerfSurface(opt.value)">
+                            {{ surfaceLabel(opt.value) | uppercase }}
+                        </button>
+                    </div>
+
+                </div>
+
+                <!-- Results -->
+                <div class="bb-compare bb-compare-ts">
+                    <div class="bb-comp-row">
+                        <div class="bb-comp-left">{{ fmtStat(getW(1)) }}</div>
+                        <div class="bb-comp-mid">{{ 'matchDetails.wins' | translate }}</div>
+                        <div class="bb-comp-right">{{ fmtStat(getW(2)) }}</div>
+                    </div>
+
+                    <div class="bb-comp-row">
+                        <div class="bb-comp-left">{{ fmtStat(getL(1)) }}</div>
+                        <div class="bb-comp-mid">{{ 'matchDetails.losses' | translate }}</div>
+                        <div class="bb-comp-right">{{ fmtStat(getL(2)) }}</div>
+                    </div>
+
+                    <div class="bb-comp-row">
+                        <div class="bb-comp-left">{{ fmtStat(getWinPct(1), true) }}</div>
+                        <div class="bb-comp-mid">{{ 'details.winPercent' | translate }}</div>
+                        <div class="bb-comp-right">{{ fmtStat(getWinPct(2), true) }}</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ========================================================================================
+            FORM TAB
+            ========================================================================================= -->
+            <section *ngIf="activeTab === 'form'" class="bb-panel">
+                <ng-container *ngTemplateOutlet="playersHeader; context: { v: v }"></ng-container>
+
+                <!-- Surface selector -->
+                <div class="bb-ts-controls">
+                    <div class="bb-ts-control-row">
+                        <div class="bb-ts-label">{{ 'details.surface' | translate }}</div>
+                        <div class="bb-ts-buttons">
+                            <button *ngFor="let opt of perfSurfaceOptions" type="button" class="bb-pill"
+                                [class.active]="activeFormSurface === opt.value"
+                                (click)="activeFormSurface = opt.value">
+                                {{ surfaceLabel(opt.value) | uppercase }}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Form stats -->
+                <div class="bb-compare bb-compare-ts">
+                    <div class="bb-comp-row">
+                        <div class="bb-comp-left">{{ fmtDays(getDaysSinceLastMatch(1, activeFormSurface)) }}</div>
+                        <div class="bb-comp-mid">{{ 'matchDetails.daysLast' | translate }}</div>
+                        <div class="bb-comp-right">{{ fmtDays(getDaysSinceLastMatch(2, activeFormSurface)) }}</div>
+                    </div>
+
+                    <div class="bb-comp-row">
+                        <div class="bb-comp-left">
+                            <span class="bb-tag" [ngClass]="{
+            'bb-tag-win': getMoreRecentWas(1, activeFormSurface) === 'WIN',
+            'bb-tag-loss': getMoreRecentWas(1, activeFormSurface) === 'LOSS',
+            'bb-tag-na': getMoreRecentWas(1, activeFormSurface) === 'N/A'
+          }">
+                                {{ resultLabel(getMoreRecentWas(1, activeFormSurface)) }}
+                            </span>
+                        </div>
+
+                        <div class="bb-comp-mid">{{ 'matchDetails.lastResult' | translate }}</div>
+
+                        <div class="bb-comp-right">
+                            <span class="bb-tag" [ngClass]="{
+            'bb-tag-win': getMoreRecentWas(2, activeFormSurface) === 'WIN',
+            'bb-tag-loss': getMoreRecentWas(2, activeFormSurface) === 'LOSS',
+            'bb-tag-na': getMoreRecentWas(2, activeFormSurface) === 'N/A'
+          }">
+                                {{ resultLabel(getMoreRecentWas(2, activeFormSurface)) }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="bb-comp-row">
+                        <div class="bb-comp-left">{{ fmtDays(getDaysSinceLastWin(1, activeFormSurface)) }}</div>
+                        <div class="bb-comp-mid">{{ 'matchDetails.daysWin' | translate }}</div>
+                        <div class="bb-comp-right">{{ fmtDays(getDaysSinceLastWin(2, activeFormSurface)) }}</div>
+                    </div>
+
+                    <div class="bb-comp-row">
+                        <div class="bb-comp-left">{{ fmtDays(getDaysSinceLastLoss(1, activeFormSurface)) }}</div>
+                        <div class="bb-comp-mid">{{ 'matchDetails.daysLoss' | translate }}</div>
+                        <div class="bb-comp-right">{{ fmtDays(getDaysSinceLastLoss(2, activeFormSurface)) }}</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ========================================================================================
+            ROLE STATS TAB
+            ========================================================================================= -->
+            <section *ngIf="activeTab === 'roleStats'" class="bb-panel">
+                <ng-container *ngTemplateOutlet="playersHeader; context: { v: v }"></ng-container>
+
+                <!-- Time selector -->
+                <div class="bb-perf-controls">
+                    <div class="bb-perf-group">
+                        <span class="bb-perf-label">{{ 'matchDetails.period' | translate }}</span>
+
+                        <button *ngFor="let opt of roleTimeOptions" type="button" class="bb-pill"
+                            [class.active]="activeRoleTime === opt.value" (click)="activeRoleTime = opt.value">
+                            {{ opt.label | translate }}
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Favourite block -->
+                <div class="bb-compare bb-compare-ts">
+                    <div class="bb-comp-row">
+                        <div class="bb-comp-left bb-pl">{{ fmtStat(getRoleCount('WINS', 1, 'FAV')) }}</div>
+                        <div class="bb-comp-mid">{{ 'matchDetails.favWins' | translate }}</div>
+                        <div class="bb-comp-right bb-pl">{{ fmtStat(getRoleCount('WINS', 2, 'FAV')) }}</div>
+                    </div>
+
+                    <div class="bb-comp-row">
+                        <div class="bb-comp-left bb-pl">{{ fmtStat(getRoleCount('LOSSES', 1, 'FAV')) }}</div>
+                        <div class="bb-comp-mid">{{ 'matchDetails.favLosses' | translate }}</div>
+                        <div class="bb-comp-right bb-pl">{{ fmtStat(getRoleCount('LOSSES', 2, 'FAV')) }}</div>
+                    </div>
+
+                    <div class="bb-comp-row">
+                        <div class="bb-comp-left">{{ wpPct01(getRoleAvg('AVG_WP_WON', 1, 'FAV')) }}</div>
+                        <div class="bb-comp-mid">{{ 'matchDetails.favAvgWon' | translate }}</div>
+                        <div class="bb-comp-right">{{ wpPct01(getRoleAvg('AVG_WP_WON', 2, 'FAV')) }}</div>
+                    </div>
+
+                    <div class="bb-comp-row">
+                        <div class="bb-comp-left">{{ wpPct01(getRoleAvg('AVG_WP_LOST', 1, 'FAV')) }}</div>
+                        <div class="bb-comp-mid">{{ 'matchDetails.favAvgLost' | translate }}</div>
+                        <div class="bb-comp-right">{{ wpPct01(getRoleAvg('AVG_WP_LOST', 2, 'FAV')) }}</div>
+                    </div>
+
+                    <div class="bb-comp-row">
+                        <div class="bb-comp-left bb-pl">{{ fmtStat(getRoleMatches(1, 'FAV')) }}</div>
+                        <div class="bb-comp-mid">{{ 'matchDetails.favMatches' | translate }}</div>
+                        <div class="bb-comp-right bb-pl">{{ fmtStat(getRoleMatches(2, 'FAV')) }}</div>
+                    </div>
+
+                    <div class="bb-comp-row">
+                        <div class="bb-comp-left">{{ fmtStat(getRoleWinPct(1, 'FAV'), true) }}</div>
+                        <div class="bb-comp-mid">{{ 'matchDetails.favWinPct' | translate }}</div>
+                        <div class="bb-comp-right">{{ fmtStat(getRoleWinPct(2, 'FAV'), true) }}</div>
+                    </div>
+                </div>
+
+                <!-- Underdog block -->
+                <div class="bb-compare bb-compare-ts">
+                    <div class="bb-comp-row">
+                        <div class="bb-comp-left bb-pl">{{ fmtStat(getRoleCount('WINS', 1, 'DOG')) }}</div>
+                        <div class="bb-comp-mid">{{ 'matchDetails.dogWins' | translate }}</div>
+                        <div class="bb-comp-right bb-pl">{{ fmtStat(getRoleCount('WINS', 2, 'DOG')) }}</div>
+                    </div>
+
+                    <div class="bb-comp-row">
+                        <div class="bb-comp-left bb-pl">{{ fmtStat(getRoleCount('LOSSES', 1, 'DOG')) }}</div>
+                        <div class="bb-comp-mid">{{ 'matchDetails.dogLosses' | translate }}</div>
+                        <div class="bb-comp-right bb-pl">{{ fmtStat(getRoleCount('LOSSES', 2, 'DOG')) }}</div>
+                    </div>
+
+                    <div class="bb-comp-row">
+                        <div class="bb-comp-left">{{ wpPct01(getRoleAvg('AVG_WP_WON', 1, 'DOG')) }}</div>
+                        <div class="bb-comp-mid">{{ 'matchDetails.dogAvgWon' | translate }}</div>
+                        <div class="bb-comp-right">{{ wpPct01(getRoleAvg('AVG_WP_WON', 2, 'DOG')) }}</div>
+                    </div>
+
+                    <div class="bb-comp-row">
+                        <div class="bb-comp-left">{{ wpPct01(getRoleAvg('AVG_WP_LOST', 1, 'DOG')) }}</div>
+                        <div class="bb-comp-mid">{{ 'matchDetails.dogAvgLost' | translate }}</div>
+                        <div class="bb-comp-right">{{ wpPct01(getRoleAvg('AVG_WP_LOST', 2, 'DOG')) }}</div>
+                    </div>
+
+                    <div class="bb-comp-row">
+                        <div class="bb-comp-left bb-pl">{{ fmtStat(getRoleMatches(1, 'DOG')) }}</div>
+                        <div class="bb-comp-mid">{{ 'matchDetails.dogMatches' | translate }}</div>
+                        <div class="bb-comp-right bb-pl">{{ fmtStat(getRoleMatches(2, 'DOG')) }}</div>
+                    </div>
+
+                    <div class="bb-comp-row">
+                        <div class="bb-comp-left">{{ fmtStat(getRoleWinPct(1, 'DOG'), true) }}</div>
+                        <div class="bb-comp-mid">{{ 'matchDetails.dogWinPct' | translate }}</div>
+                        <div class="bb-comp-right">{{ fmtStat(getRoleWinPct(2, 'DOG'), true) }}</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ========================================================================================
+            H2H TAB
+        ========================================================================================= -->
+            <section *ngIf="activeTab === 'h2h'" class="bb-panel">
+                <ng-container *ngTemplateOutlet="playersHeader; context: { v: v }"></ng-container>
+
+                <!-- Controls -->
+                <div class="bb-ts-controls">
+                    <div class="bb-ts-control-row">
+                        <div class="bb-ts-label">{{ 'matchDetails.mode' | translate }}</div>
+                        <div class="bb-ts-buttons">
+                            <button *ngFor="let opt of h2hModeOptions" type="button" class="bb-pill"
+                                [class.active]="activeH2HMode === opt.value" (click)="activeH2HMode = opt.value">
+                                {{ modeLabel(opt.value) }}
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="bb-ts-control-row">
+                        <div class="bb-ts-label">{{ 'details.surface' | translate }}</div>
+                        <div class="bb-ts-buttons">
+                            <button *ngFor="let opt of h2hSurfaceOptions" type="button" class="bb-pill"
+                                [class.active]="activeH2HSurface === opt.value" (click)="activeH2HSurface = opt.value">
+                                {{ surfaceLabel(opt.value) | uppercase }}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- H2H record -->
+                <div class="bb-compare bb-compare-ts">
+                    <div class="bb-comp-row">
+                        <div class="bb-comp-left bb-pl">{{ getH2HWins(1, activeH2HSurface, false) }}</div>
+                        <div class="bb-comp-mid">{{ 'matchDetails.h2hWins' | translate }}</div>
+                        <div class="bb-comp-right bb-pl">{{ getH2HWins(2, activeH2HSurface, false) }}</div>
+                    </div>
+
+                    <div class="bb-comp-row">
+                        <div class="bb-comp-left">{{ getH2HWins(1, activeH2HSurface, true) }}</div>
+                        <div class="bb-comp-mid">{{ 'matchDetails.h2hWinsOld' | translate }}</div>
+                        <div class="bb-comp-right">{{ getH2HWins(2, activeH2HSurface, true) }}</div>
+                    </div>
+                </div>
+
+                <!-- H2H TS/WP -->
+                <div class="bb-compare bb-compare-ts">
+                    <div class="bb-comp-row">
+                        <div class="bb-comp-left">
+                            {{
+                            activeH2HSurface === 'ALL'
+                            ? tsNum(getH2HTsMu(activeH2HMode, 1, false))
+                            : tsNum(getH2HSurfaceTsMu(activeH2HMode, activeH2HSurface, 1, false))
+                            }}
+                        </div>
+                        <div class="bb-comp-mid">{{ 'matchDetails.h2hMean' | translate }}</div>
+                        <div class="bb-comp-right">
+                            {{
+                            activeH2HSurface === 'ALL'
+                            ? tsNum(getH2HTsMu(activeH2HMode, 2, false))
+                            : tsNum(getH2HSurfaceTsMu(activeH2HMode, activeH2HSurface, 2, false))
+                            }}
+                        </div>
+                    </div>
+
+                    <div class="bb-comp-row">
+                        <div class="bb-comp-left">
+                            {{
+                            activeH2HSurface === 'ALL'
+                            ? tsNum(getH2HTsSd(activeH2HMode, 1, false))
+                            : tsNum(getH2HSurfaceTsSd(activeH2HMode, activeH2HSurface, 1, false))
+                            }}
+                        </div>
+                        <div class="bb-comp-mid">{{ 'matchDetails.h2hSd' | translate }}</div>
+                        <div class="bb-comp-right">
+                            {{
+                            activeH2HSurface === 'ALL'
+                            ? tsNum(getH2HTsSd(activeH2HMode, 2, false))
+                            : tsNum(getH2HSurfaceTsSd(activeH2HMode, activeH2HSurface, 2, false))
+                            }}
+                        </div>
+                    </div>
+
+                    <div class="bb-comp-row">
+                        <div class="bb-comp-left">{{ wpPct01(getH2HWinProbP1(activeH2HMode, activeH2HSurface)) }}
+                        </div>
+                        <div class="bb-comp-mid">{{ 'matchDetails.h2hProbability' | translate }}</div>
+                        <div class="bb-comp-right">{{ wpPct01(1 - getH2HWinProbP1(activeH2HMode, activeH2HSurface))
+                            }}</div>
+                    </div>
+
+                    <div class="bb-comp-row">
+                        <div class="bb-comp-left">
+                            {{
+                            activeH2HSurface === 'ALL'
+                            ? tsNum(getH2HTsMu(activeH2HMode, 1, true))
+                            : tsNum(getH2HSurfaceTsMu(activeH2HMode, activeH2HSurface, 1, true))
+                            }}
+                        </div>
+                        <div class="bb-comp-mid">{{ 'matchDetails.h2hMeanOld' | translate }}</div>
+                        <div class="bb-comp-right">
+                            {{
+                            activeH2HSurface === 'ALL'
+                            ? tsNum(getH2HTsMu(activeH2HMode, 2, true))
+                            : tsNum(getH2HSurfaceTsMu(activeH2HMode, activeH2HSurface, 2, true))
+                            }}
+                        </div>
+                    </div>
+
+                    <div class="bb-comp-row">
+                        <div class="bb-comp-left">
+                            {{
+                            activeH2HSurface === 'ALL'
+                            ? tsNum(getH2HTsSd(activeH2HMode, 1, true))
+                            : tsNum(getH2HSurfaceTsSd(activeH2HMode, activeH2HSurface, 1, true))
+                            }}
+                        </div>
+                        <div class="bb-comp-mid">{{ 'matchDetails.h2hSdOld' | translate }}</div>
+                        <div class="bb-comp-right">
+                            {{
+                            activeH2HSurface === 'ALL'
+                            ? tsNum(getH2HTsSd(activeH2HMode, 2, true))
+                            : tsNum(getH2HSurfaceTsSd(activeH2HMode, activeH2HSurface, 2, true))
+                            }}
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ========================================================================================
+            ODDS TAB
+            ========================================================================================= -->
+            <section *ngIf="activeTab === 'odds'" class="bb-panel">
+                <ng-container *ngTemplateOutlet="playersHeader; context: { v: v }"></ng-container>
+
+                <!-- Controls -->
+                <div class="bb-ts-controls bb-odds-controls">
+                    <div class="bb-ts-control-row" *ngIf="availableOddsMarkets.length > 1">
+                        <div class="bb-ts-label">{{ 'matchDetails.market' | translate }}</div>
+                        <div class="bb-ts-buttons">
+                            <button *ngFor="let market of availableOddsMarkets" type="button" class="bb-pill"
+                                [class.active]="activeOddsMarket === market" (click)="setOddsMarket(market)">
+                                {{
+                                ('matchDetails.' + market) | translate
+                                }}
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="bb-ts-control-row"
+                        *ngIf="activeOddsMarket !== 'winner' && availableOddsScopes.length > 1">
+                        <div class="bb-ts-label">{{ 'matchDetails.scope' | translate }}</div>
+                        <div class="bb-ts-buttons">
+                            <button *ngFor="let scope of availableOddsScopes" type="button" class="bb-pill"
+                                [class.active]="activeOddsScope === scope" (click)="setOddsScope(scope)">
+                                {{ ('matchDetails.' + scope) | translate }}
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="bb-ts-control-row"
+                        *ngIf="activeOddsMarket !== 'winner' && availableOddsLines.length > 1">
+                        <div class="bb-ts-label">{{ 'matchDetails.line' | translate }}</div>
+                        <div class="bb-ts-buttons">
+                            <select id="odds-line-select" class="bb-odds-select" [ngModel]="activeOddsLine"
+                                (ngModelChange)="setOddsLine($event)">
+                                <option *ngFor="let line of availableOddsLines" [ngValue]="line">
+                                    {{ oddsLineLabel(line) }}
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Active market description -->
+                <div class="bb-muted-sm bb-odds-active-market">
+                    {{ activeOddsDescription }}
+                </div>
+
+                <ng-container *ngIf="activeOddsMarket !== 'correctScore'; else correctScoreBlock">
+                    <!-- Summary -->
+                    <div class="bb-odds-summary">
+                        <!-- Best odds -->
+                        <div class="bb-compare bb-compare-ts">
+                            <div class="bb-comp-row">
+                                <div class="bb-comp-left">
+                                    <span class="bb-pl">{{ oddsNum(bestOddsP1Row?.o05) }}</span>
+                                    <span class="bb-muted-sm" *ngIf="bestOddsP1Row as b">({{ b.o02 }})</span>
+                                </div>
+                                <div class="bb-comp-mid">{{ oddsSummaryMidLabel }}</div>
+                                <div class="bb-comp-right">
+                                    <span class="bb-pl">{{ oddsNum(bestOddsP2Row?.o06) }}</span>
+                                    <span class="bb-muted-sm" *ngIf="bestOddsP2Row as b">({{ b.o02 }})</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Market summary (min/max/median) -->
+                        <div class="bb-compare bb-compare-ts">
+                            <div class="bb-comp-row">
+                                <div class="bb-comp-left">
+                                    <span class="bb-muted-sm">Min:</span>&nbsp;<span class="bb-pl">{{
+                                        oddsNum(marketMinP1()
+                                        || 0) }}</span>
+                                    &nbsp;&nbsp;<span class="bb-muted-sm">Med:</span>&nbsp;<span class="bb-pl">{{
+                                        oddsNum(marketMedP1() || 0) }}</span>
+                                    &nbsp;&nbsp;<span class="bb-muted-sm">Max:</span>&nbsp;<span class="bb-pl">{{
+                                        oddsNum(marketMaxP1() || 0) }}</span>
+                                </div>
+                                <div class="bb-comp-mid">{{ 'matchDetails.market' | translate }}</div>
+                                <div class="bb-comp-right">
+                                    <span class="bb-muted-sm">Min:</span>&nbsp;<span class="bb-pl">{{
+                                        oddsNum(marketMinP2()
+                                        || 0) }}</span>
+                                    &nbsp;&nbsp;<span class="bb-muted-sm">Med:</span>&nbsp;<span class="bb-pl">{{
+                                        oddsNum(marketMedP2() || 0) }}</span>
+                                    &nbsp;&nbsp;<span class="bb-muted-sm">Max:</span>&nbsp;<span class="bb-pl">{{
+                                        oddsNum(marketMaxP2() || 0) }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Odds table -->
+                    <div class="bb-odds-table-wrap" *ngIf="latestOddsByBookie.length; else noOdds">
+                        <table class="bb-odds-table">
+                            <thead>
+                                <tr>
+                                    <th>{{ 'matchDetails.bookie' | translate }}</th>
+                                    <th class="bb-odds-num">{{ 'matchDetails.oddsFor' | translate:{side: oddsLeftLabel} }}</th>
+                                    <th class="bb-odds-num">{{ 'matchDetails.oddsFor' | translate:{side: oddsRightLabel} }}</th>
+                                    <th class="bb-odds-num">{{ 'matchDetails.impliedFor' | translate:{side: oddsLeftLabel} }}</th>
+                                    <th class="bb-odds-num">{{ 'matchDetails.impliedFor' | translate:{side: oddsRightLabel} }}</th>
+                                    <th class="bb-odds-num">{{ 'matchDetails.margin' | translate }}</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                <ng-container *ngFor="let r of latestOddsByBookie">
+                                    <tr>
+                                        <td class="bb-odds-bookie">{{ r.o02 }}</td>
+                                        <td class="bb-odds-num bb-pl">{{ oddsNum(r.o05) }}</td>
+                                        <td class="bb-odds-num bb-pl">{{ oddsNum(r.o06) }}</td>
+                                        <td class="bb-odds-num">{{ oddsPct01(oddsImplied(r.o05)) }}</td>
+                                        <td class="bb-odds-num">{{ oddsPct01(oddsImplied(r.o06)) }}</td>
+                                        <td class="bb-odds-num">{{ overroundPct(r) }}</td>
+                                    </tr>
+                                </ng-container>
+                            </tbody>
+                        </table>
+                    </div>
+                </ng-container>
+
+                <ng-template #noOdds>
+                    <div class="bb-placeholder">{{ 'matchDetails.noOdds' | translate }}</div>
+                </ng-template>
+            </section>
+
+            <!-- ========================================================================================
+            NN TAB
+            ========================================================================================= -->
+            <section *ngIf="activeTab === 'nn'" class="bb-tab-panel">
+                <ng-container *ngTemplateOutlet="playersHeader; context: { v: v }"></ng-container>
+                <ng-container *ngIf="vm.nn as nn; else nnUnavailable">
+                    <div class="nn-shell">
+                        <div class="bb-ts-controls nn-subtabs">
+                            <div class="bb-ts-control-row">
+                                <div class="bb-ts-buttons">
+                                    <button *ngFor="let tab of nnSectionTabs" type="button" class="bb-pill"
+                                        [class.active]="isActiveNnSection(tab.id)" (click)="setActiveNnSection(tab.id)">
+                                        {{ tab.title }}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <section *ngIf="activeNnSection === 'overview'" class="bb-section nn-overview-section">
+                            <h3>{{ 'matchDetails.nnOverview' | translate }}</h3>
+
+                            <div class="nn-overview-meta">
+                                <div class="nn-meta-row">
+                                    <div class="nn-meta-label">{{ 'matchDetails.model' | translate }}</div>
+                                    <div class="nn-meta-value">{{ nn.modelFamily }}</div>
+                                </div>
+
+                                <div class="nn-meta-row">
+                                    <div class="nn-meta-label">{{ 'matchDetails.version' | translate }}</div>
+                                    <div class="nn-meta-value">{{ nn.version }}</div>
+                                </div>
+
+                                <div class="nn-meta-row">
+                                    <div class="nn-meta-label">{{ 'matchDetails.h2hIncluded' | translate }}</div>
+                                    <div class="nn-meta-value">{{ (nn.includeH2h ? 'matchDetails.yes' : 'matchDetails.no') | translate }}</div>
+                                </div>
+
+                                <div class="nn-meta-row">
+                                    <div class="nn-meta-label">
+                                        {{ (nn.featureSnapshotComplete ? 'matchDetails.groups' : 'matchDetails.archivedGroups') | translate }}
+                                    </div>
+                                    <div class="nn-meta-value">{{ nn.groupCount }}</div>
+                                </div>
+
+                                <div class="nn-meta-row">
+                                    <div class="nn-meta-label">
+                                        {{ (nn.featureSnapshotComplete ? 'matchDetails.features' : 'matchDetails.modelFeatures') | translate }}
+                                    </div>
+                                    <div class="nn-meta-value">{{ nn.modelFeatureCount }}</div>
+                                </div>
+
+                                <div *ngIf="!nn.featureSnapshotComplete" class="nn-meta-row">
+                                    <div class="nn-meta-label">{{ 'matchDetails.archivedValues' | translate }}</div>
+                                    <div class="nn-meta-value">{{ nn.featureCount }}</div>
+                                </div>
+                            </div>
+
+                            <div class="nn-overview-copy">
+                                <p *ngIf="nn.inputPerspective">{{ nn.inputPerspective }}</p>
+                                <p *ngIf="nn.provenance">{{ nn.provenance }}</p>
+                                <section class="nn-copy-block">
+                                    <h4>{{ 'nn.headings.purpose' | translate }}</h4>
+                                    <p>{{ 'nn.body.overviewPurpose' | translate }}</p>
+                                    <p>{{ 'nn.body.overviewMethod' | translate }}</p>
+                                </section>
+
+                                <section class="nn-copy-block">
+                                    <h4>{{ 'nn.headings.reading' | translate }}</h4>
+                                    <p>{{ 'nn.body.overviewReading' | translate }}</p>
+                                    <p>{{ 'nn.body.overviewInterpretation' | translate }}</p>
+                                </section>
+
+                                <section class="nn-copy-block">
+                                    <h4>{{ 'nn.headings.notes' | translate }}</h4>
+                                    <p>{{ 'nn.body.overviewNotes' | translate }}</p>
+                                </section>
+                            </div>
+                        </section>
+
+                        <section *ngIf="activeNnSection !== 'overview' && activeNnGroup as group"
+                            class="bb-section nn-group-section">
+                            <h3>{{ group.title }}</h3>
+
+                            <div class="nn-group-copy" *ngIf="activeNnSection === 'c'">
+                                <section class="nn-copy-block">
+                                    <h4>{{ 'nn.headings.meaning' | translate }}</h4>
+                                    <p>{{ 'nn.body.contextMeaning' | translate }}</p>
+                                    <p>{{ 'nn.body.contextPurpose' | translate }}</p>
+                                </section>
+
+                                <section class="nn-copy-block">
+                                    <h4>{{ 'nn.headings.values' | translate }}</h4>
+                                    <p>{{ 'nn.body.contextReading' | translate }}</p>
+                                </section>
+                            </div>
+
+                            <div class="nn-group-copy" *ngIf="activeNnSection === 'w'">
+                                <section class="nn-copy-block">
+                                    <h4>{{ 'nn.headings.meaning' | translate }}</h4>
+                                    <p>{{ 'nn.body.wpMeaning' | translate }}</p>
+                                    <p>{{ 'nn.body.wpPurpose' | translate }}</p>
+                                </section>
+
+                                <section class="nn-copy-block">
+                                    <h4>{{ 'nn.headings.values' | translate }}</h4>
+                                    <p>{{ 'nn.body.wpReading' | translate }}</p>
+                                </section>
+                            </div>
+
+                            <div class="nn-group-copy" *ngIf="activeNnSection === 'r'">
+                                <section class="nn-copy-block">
+                                    <h4>{{ 'nn.headings.meaning' | translate }}</h4>
+                                    <p>{{ 'nn.body.rawMeaning' | translate }}</p>
+                                    <p>{{ 'nn.body.rawPurpose' | translate }}</p>
+                                </section>
+
+                                <section class="nn-copy-block">
+                                    <h4>{{ 'nn.headings.values' | translate }}</h4>
+                                    <p>{{ 'nn.body.rawReading' | translate }}</p>
+                                </section>
+                            </div>
+
+                            <div class="nn-group-copy" *ngIf="activeNnSection === 'z'">
+                                <section class="nn-copy-block">
+                                    <h4>{{ 'nn.headings.meaning' | translate }}</h4>
+                                    <p>{{ 'nn.body.normalizedMeaning' | translate }}</p>
+                                    <p>{{ 'nn.body.normalizedPurpose' | translate }}</p>
+                                </section>
+
+                                <section class="nn-copy-block">
+                                    <h4>{{ 'nn.headings.values' | translate }}</h4>
+                                    <p>{{ 'nn.body.normalizedReading' | translate }}</p>
+                                </section>
+                            </div>
+
+                            <div class="nn-group-copy" *ngIf="activeNnSection === 'd'">
+                                <section class="nn-copy-block">
+                                    <h4>{{ 'nn.headings.meaning' | translate }}</h4>
+                                    <p>{{ 'nn.body.derivedMeaning' | translate }}</p>
+                                    <p>{{ 'nn.body.derivedPurpose' | translate }}</p>
+                                </section>
+
+                                <section class="nn-copy-block">
+                                    <h4>{{ 'nn.headings.values' | translate }}</h4>
+                                    <p>{{ 'nn.body.derivedReading' | translate }}</p>
+                                </section>
+                            </div>
+
+                            <div class="nn-group-copy" *ngIf="activeNnSection === 'h'">
+                                <section class="nn-copy-block">
+                                    <h4>{{ 'nn.headings.meaning' | translate }}</h4>
+                                    <p>{{ 'nn.body.h2hMeaning' | translate }}</p>
+                                    <p>{{ 'nn.body.h2hPurpose' | translate }}</p>
+                                </section>
+
+                                <section class="nn-copy-block">
+                                    <h4>{{ 'nn.headings.values' | translate }}</h4>
+                                    <p>{{ 'nn.body.h2hReading' | translate }}</p>
+                                </section>
+                            </div>
+
+                            <ng-container *ngIf="nnGroupColumns(group) as columns">
+                                <div *ngIf="!shouldSplitNnGroup(group)" class="table-wrap">
+                                    <table class="stats-table nn-table">
+                                        <thead>
+                                            <tr>
+                                                <th>{{ 'matchDetails.feature' | translate }}</th>
+                                                <th>{{ 'matchDetails.value' | translate }}</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr *ngFor="let item of columns.left">
+                                                <td class="nn-feature-cell">
+                                                    <span class="nn-feature-label" [attr.title]="item.featureName">{{ item.label }}</span>
+                                                    <button *ngIf="hasNnFeatureHelp(item.featureName)" type="button"
+                                                        class="nn-feature-help"
+                                                        [attr.title]="getNnFeatureHelpText(item.featureName)"
+                                                        [attr.aria-label]="'nn.helpFor' | translate:{ feature: item.label }">
+                                                        i
+                                                    </button>
+                                                </td>
+                                                <td class="nn-value-cell">{{ item.displayValue }}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <div *ngIf="shouldSplitNnGroup(group)" class="nn-table-grid">
+                                    <div class="table-wrap">
+                                        <table class="stats-table nn-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>{{ 'matchDetails.feature' | translate }}</th>
+                                                    <th>{{ 'matchDetails.value' | translate }}</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr *ngFor="let item of columns.left">
+                                                    <td class="nn-feature-cell">
+                                                        <span class="nn-feature-label" [attr.title]="item.featureName">{{ item.label }}</span>
+                                                        <button *ngIf="hasNnFeatureHelp(item.featureName)" type="button"
+                                                            class="nn-feature-help"
+                                                            [attr.title]="getNnFeatureHelpText(item.featureName)"
+                                                            [attr.aria-label]="'nn.helpFor' | translate:{ feature: item.label }">
+                                                            i
+                                                        </button>
+                                                    </td>
+                                                    <td class="nn-value-cell">{{ item.displayValue }}</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                    <div class="table-wrap" *ngIf="columns.right.length">
+                                        <table class="stats-table nn-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>{{ 'matchDetails.feature' | translate }}</th>
+                                                    <th>{{ 'matchDetails.value' | translate }}</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr *ngFor="let item of columns.right">
+                                                    <td class="nn-feature-cell">
+                                                        <span class="nn-feature-label" [attr.title]="item.featureName">{{ item.label }}</span>
+                                                        <button *ngIf="hasNnFeatureHelp(item.featureName)" type="button"
+                                                            class="nn-feature-help"
+                                                            [attr.title]="getNnFeatureHelpText(item.featureName)"
+                                                            [attr.aria-label]="'nn.helpFor' | translate:{ feature: item.label }">
+                                                            i
+                                                        </button>
+                                                    </td>
+                                                    <td class="nn-value-cell">{{ item.displayValue }}</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </ng-container>
+                        </section>
+                    </div>
+                </ng-container>
+
+                <ng-template #nnUnavailable>
+                    <div class="bb-alert">
+                        {{ (predictionAllowed ? 'matchDetails.nnUnavailable' : 'matchDetails.qualityHold') | translate }}
+                    </div>
+                </ng-template>
+            </section>
+
+            <!-- ========================================================================================
+     PLACEHOLDER (safety net)
+     If a new tab is introduced but not implemented in template yet,
+     this prevents accidental "empty page" confusion.
+    ========================================================================================= -->
+            <div *ngIf="
+    activeTab !== 'overview' &&
+    activeTab !== 'tsBreakdown' &&
+    activeTab !== 'wpBreakdown' &&
+    activeTab !== 'performance' &&
+    activeTab !== 'form' &&
+    activeTab !== 'roleStats' &&
+    activeTab !== 'odds' &&
+    activeTab !== 'h2h'&&
+    activeTab !== 'nn'
+  "></div>
+
+        </ng-container>
+    </div>
+</app-bb-modal-shell>

@@ -1,0 +1,75 @@
+.bb-modal.bb-modal--billing {
+    width: min(900px, calc(100vw - 24px));
+    max-height: calc(100dvh - 24px);
+    padding: 16px;
+    scrollbar-width: thin;
+
+    .bb-modal-title { white-space: normal; overflow-wrap: anywhere; padding-inline: 22px; }
+
+    .bb-billing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); gap: 16px; align-items: start; }
+    .bb-billing-grid > * { min-width: 0; }
+    .bb-plan-list { margin-top: 0; gap: 6px; }
+    .bb-plan { padding: 9px 10px; gap: 8px; background: var(--bb-surface-2); color: var(--bb-text); border-color: var(--bb-control-border); }
+    .bb-plan.active { border-color: var(--bb-theme-accent); background: var(--bb-surface-3); }
+    .bb-plan-title { gap: 5px; font-size: 13px; }
+    .bb-plan-meta { gap: 4px; margin-top: 3px; }
+    .bb-badge { margin-left: 0; padding: 2px 5px; font-size: 11px; }
+    .bb-muted { color: var(--bb-text-muted); font-size: 12px; }
+    .bb-dot { margin: 0 2px; color: var(--bb-text-muted); }
+    .bb-paypal-sandbox { margin-top: 10px; }
+    .bb-paypal-sandbox p { margin: 6px 0; }
+    .bb-paypal-sandbox button { max-width: 100%; white-space: normal; }
+    .bb-actions { margin-top: 10px; }
+    button:focus-visible, input:focus-visible { outline: 2px solid var(--bb-theme-accent); outline-offset: 2px; }
+}
+
+.bb-modal.bb-modal--billing .bb-referral-preview {
+    display: grid;
+    gap: 10px;
+    padding: 12px;
+    border: 1px dashed var(--bb-control-border);
+    border-radius: 12px;
+    background: var(--bb-surface-2);
+
+    > * { min-width: 0; }
+    h3 { margin: 0; font-size: 14px; line-height: 1.35; }
+    p { margin: 6px 0 0; font-size: 12px; line-height: 1.4; color: var(--bb-text-muted); }
+    button { max-width: 100%; white-space: normal; }
+    button:disabled { cursor: not-allowed; opacity: 0.6; }
+    .bb-referral-balances { display: flex; flex-wrap: wrap; column-gap: 16px; }
+    .bb-referral-remaining { font-weight: 700; color: var(--bb-text); }
+    .bb-referral-form { width: 100%; display: grid; gap: 7px; }
+    .bb-referral-form > input { width: 100%; padding: 8px; border-radius: 8px;
+        border: 1px solid var(--bb-control-border); background: var(--bb-surface-2); color: var(--bb-text); }
+    .bb-referral-consent { display: flex; align-items: flex-start; gap: 8px; font-size: 12px; line-height: 1.4; cursor: pointer; }
+    .bb-referral-consent input[type='checkbox'] { flex: 0 0 15px; width: 15px; height: 15px; padding: 0; margin: 1px 0 0; accent-color: var(--bb-theme-accent); }
+    .bb-referral-consent span { min-width: 0; }
+    .bb-referral-verification { padding-top: 8px; border-top: 1px solid var(--bb-control-border); }
+    .bb-referral-verification-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+    .bb-referral-verification-actions button { flex: 1 1 140px; }
+}
+
+@media (max-width: 700px) {
+    .bb-modal.bb-modal--billing .bb-billing-grid { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+}
+
+.bb-modal.bb-modal--billing-lab {
+    width: min(620px, calc(100vw - 24px));
+    .bb-billing-grid--lab { display: block; }
+    .bb-lab-instructions { margin-bottom: 10px; font-size: 12px; }
+    summary { cursor: pointer; }
+    .bb-plan-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .bb-plan { min-width: 0; }
+}
+
+.bb-modal.bb-modal--refund-confirmation {
+    width: min(460px, calc(100vw - 24px));
+    padding: 20px;
+    p { overflow-wrap: anywhere; }
+    .bb-hint { font-size: 12px; color: var(--bb-text-muted); }
+    .bb-actions { margin-top: 16px; }
+}
+
+@media (max-width: 380px) {
+    .bb-modal.bb-modal--billing-lab .bb-plan-list { grid-template-columns: minmax(0, 1fr); }
+}

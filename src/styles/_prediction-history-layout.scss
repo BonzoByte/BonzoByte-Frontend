@@ -1,0 +1,27 @@
+// One geometry definition for the personal prediction grid and its surrounding page.
+// The extra pixel is the outer collapsed table border.
+$columns: (
+    number: 36px,
+    submitted: 84px,
+    date: 84px,
+    type: 50px,
+    tournament: 150px,
+    matchup: 280px,
+    result: 100px,
+    odds: 58px,
+    market: 218px,
+    pick: 92px,
+    status: 46px,
+    units: 76px,
+    details: 44px
+);
+$width: 1px;
+@each $name, $size in $columns {
+    $width: $width + $size;
+}
+
+@mixin columns {
+    @each $name, $size in $columns {
+        .c-#{$name} { width: $size; }
+    }
+}

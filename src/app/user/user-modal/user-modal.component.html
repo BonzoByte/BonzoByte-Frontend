@@ -1,0 +1,279 @@
+<!-- eslint-disable @angular-eslint/template/label-has-associated-control -->
+
+<app-bb-modal-shell
+  [title]="'profile.title' | translate"
+  modalClass="bb-modal--user"
+  [closeLabel]="'common.close' | translate"
+  [closeDisabled]="isSaving"
+  (closed)="close()"
+>
+  <ng-container *ngIf="!confirmDiscard; else discardPrompt">
+  <div class="bb-alert bb-alert--error" *ngIf="errorMessage">
+    {{ errorMessage | translate }}
+  </div>
+
+  <form #profileForm *ngIf="userForm" [formGroup]="userForm" (ngSubmit)="onSubmit()" autocomplete="off" (input)="refreshUnloadGuard()" (change)="refreshUnloadGuard()">
+    <nav #profileTabs class="bb-profile-tabs" role="tablist" [attr.aria-label]="'profile.sections' | translate" (keydown)="tabKey($event)">
+      <button *ngFor="let tab of tabs" type="button" class="oauth-btn" role="tab" [id]="tabIdPrefix + '-tab-' + tab"
+        [attr.aria-controls]="tabIdPrefix + '-panel-' + tab" [attr.aria-selected]="activeTab === tab"
+        [attr.tabindex]="activeTab === tab ? 0 : -1" [disabled]="isSaving" (click)="selectTab(tab)">
+        {{ ('profile.tabs.' + tab) | translate }}
+        <span *ngIf="tab === 'account' && nickname?.invalid && (nickname?.touched || submitted)" class="bb-profile-tab-error"
+          [attr.aria-label]="'profile.fixErrors' | translate" [title]="'profile.fixErrors' | translate">!</span>
+      </button>
+    </nav>
+    <div #profilePanels class="bb-profile-panels">
+      <section class="bb-profile-panel" role="tabpanel" tabindex="0" [id]="tabIdPrefix + '-panel-account'"
+        [attr.aria-labelledby]="tabIdPrefix + '-tab-account'" [hidden]="activeTab !== 'account'">
+        <div class="form-row bb-profile-field">
+          <label for="email">{{ 'auth.email' | translate }}</label>
+          <input
+            id="email"
+            type="email"
+            formControlName="email"
+            readonly
+            autocomplete="email"
+          />
+        </div>
+
+        <div class="form-row bb-profile-field">
+          <label for="nickname">{{ 'profile.username' | translate }}</label>
+          <input
+            id="nickname"
+            formControlName="nickname"
+            autocomplete="username"
+            [class.invalid]="
+              (nickname?.invalid && (nickname?.touched || submitted)) ||
+              !!nickname?.errors?.['nicknameTaken']
+            "
+          />
+
+          <p class="error" *ngIf="nickname?.errors?.['nicknameTaken']">
+            {{ 'auth.nicknameExists' | translate }}
+          </p>
+
+          <p
+            class="error"
+            *ngIf="nickname?.errors?.['minlength'] && (nickname?.touched || submitted)"
+          >
+            {{ 'profile.minNickname' | translate }}
+          </p>
+
+          <p
+            class="error"
+            *ngIf="nickname?.errors?.['maxlength'] && (nickname?.touched || submitted)"
+          >
+            {{ 'profile.maxNickname' | translate }}
+          </p>
+        </div>
+
+        <div class="form-row bb-avatar-row">
+          <label>{{ 'common.avatar' | translate }}</label>
+
+          <div class="bb-avatar-block">
+            <app-account-avatar
+              [identity]="currentUser._id"
+              [nickname]="currentUser.nickname"
+              [imageUrl]="previewUrl || currentUser.avatarUrl"
+              [alt]="'profile.avatarPreview' | translate"
+              class="bb-avatar"
+              style="--bb-avatar-letter-size:26px;--bb-avatar-icon-size:36px"
+            ></app-account-avatar>
+
+            <div class="bb-avatar-actions">
+              <button
+                type="button"
+                class="oauth-btn"
+                appAccessibleClick
+                (accessibleClick)="fileInput.click()"
+              >
+                {{ 'profile.changeAvatar' | translate }}
+              </button>
+
+              <input
+                type="file"
+                #fileInput
+                hidden
+                (change)="onFileSelected($event)"
+                accept="image/jpeg,image/png,image/webp"
+                [attr.aria-label]="'profile.selectAvatar' | translate"
+              />
+
+              <button
+                *ngIf="isLocalAccount"
+                type="button"
+                class="oauth-btn"
+                appAccessibleClick
+                (accessibleClick)="changePassword()"
+                [disabled]="isSendingReset"
+              >
+                {{ (isSendingReset ? 'profile.sending' : 'profile.changePassword') | translate }}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-row bb-pricing-row">
+          <label class="bb-preference-toggle" for="share-settled-picks">
+            <input id="share-settled-picks" type="checkbox" formControlName="shareSettledPicks" aria-describedby="share-settled-hint" />
+            <span><strong>{{ 'competition.shareLabel' | translate }}</strong><small>{{ 'competition.shareHint' | translate }}</small></span>
+          </label>
+          <small id="share-settled-hint" class="bb-field-hint">{{ 'competition.shareStorage' | translate }}</small>
+          <small *ngIf="!currentUser.isVerified" class="bb-field-hint">{{ 'competition.verify' | translate }}</small>
+        </div>
+
+        <div class="form-row bb-pricing-row">
+          <label class="bb-preference-toggle" for="show-online-status">
+            <input id="show-online-status" type="checkbox" formControlName="showOnlineStatus" aria-describedby="online-status-hint" />
+            <span><strong>{{ 'presence.share' | translate }}</strong><small>{{ 'presence.hint' | translate }}</small></span>
+          </label>
+          <small id="online-status-hint" class="bb-field-hint">{{ 'presence.storage' | translate }}</small>
+        </div>
+        <div class="form-row bb-preference-row bb-profile-danger">
+          <button type="button" class="oauth-btn" [disabled]="isSaving" (click)="requestDeletion()">{{ 'accountDeletion.delete' | translate }}</button>
+          <small class="bb-field-hint">{{ 'accountDeletion.entryHint' | translate }}</small>
+        </div>
+      </section>
+      <section class="bb-profile-panel" role="tabpanel" tabindex="0" [id]="tabIdPrefix + '-panel-display'"
+        [attr.aria-labelledby]="tabIdPrefix + '-tab-display'" [hidden]="activeTab !== 'display'">
+        <div class="form-row bb-theme-row">
+          <label for="visual-theme">{{ 'profile.theme' | translate }}</label>
+          <select
+            id="visual-theme"
+            class="bb-theme-select"
+            [value]="selectedTheme"
+            (change)="changeTheme($any($event.target).value)"
+          >
+            <option
+              *ngFor="let theme of themes"
+              [value]="theme.id"
+              [selected]="theme.id === selectedTheme"
+            >
+              {{ ('profile.themes.' + theme.id) | translate }}
+            </option>
+          </select>
+          <small class="bb-field-hint">
+            {{ 'profile.themeHint' | translate }}
+          </small>
+        </div>
+
+        <div class="form-row bb-preference-row">
+          <label class="bb-preference-toggle" for="prediction-overview-visible">
+            <input
+              id="prediction-overview-visible"
+              type="checkbox"
+              formControlName="predictionOverviewVisible"
+            />
+            <span>
+              <strong>{{ 'profile.overview' | translate }}</strong>
+              <small>{{ 'profile.overviewHint' | translate }}</small>
+            </span>
+          </label>
+          <small class="bb-field-hint">
+            {{ 'profile.overviewStorage' | translate }}
+          </small>
+        </div>
+
+        <div class="form-row bb-preference-row" *ngIf="adDisplayPreference.demoAvailable">
+          <label class="bb-preference-toggle" for="hide-ads">
+            <input id="hide-ads" type="checkbox" formControlName="hideAds" />
+            <span>
+              <strong>{{ 'demoAds.hideAll' | translate }}</strong>
+              <small>{{ 'demoAds.hideHint' | translate }}</small>
+            </span>
+          </label>
+          <small class="bb-field-hint">
+            {{ (adDisplayPreference.canHide(membershipUser) ? 'demoAds.preferenceHint' : 'demoAds.memberHint') | translate }}
+          </small>
+        </div>
+
+        <div class="form-row bb-preference-row">
+          <label class="bb-preference-toggle" for="time-zone-notice-visible">
+            <input id="time-zone-notice-visible" type="checkbox" formControlName="timeZoneNoticeVisible" />
+            <span>
+              <strong>{{ 'timeZone.noticeTitle' | translate }}</strong>
+              <small>{{ 'timeZone.noticeHint' | translate }}</small>
+            </span>
+          </label>
+          <small class="bb-field-hint">{{ 'timeZone.noticeStorage' | translate }}</small>
+        </div>
+
+        <div class="form-row bb-preference-row">
+          <label>{{ 'profile.shortcuts' | translate }}</label>
+          <div class="bb-preference-grid" [attr.aria-label]="'profile.shortcuts' | translate">
+            <label class="bb-preference-toggle" for="quick-filter-odds">
+              <input id="quick-filter-odds" type="checkbox" formControlName="quickFilterOdds" />
+              <span><strong>{{ 'profile.odds' | translate }}</strong><small>{{ 'profile.oddsHint' | translate }}</small></span>
+            </label>
+            <label class="bb-preference-toggle" for="quick-filter-value">
+              <input id="quick-filter-value" type="checkbox" formControlName="quickFilterValue" />
+              <span><strong>{{ 'profile.value' | translate }}</strong><small>{{ 'profile.valueHint' | translate }}</small></span>
+            </label>
+            <label class="bb-preference-toggle" for="quick-filter-status">
+              <input id="quick-filter-status" type="checkbox" formControlName="quickFilterStatus" />
+              <span><strong>{{ 'profile.final' | translate }}</strong><small>{{ 'profile.finalHint' | translate }}</small></span>
+            </label>
+          </div>
+          <small class="bb-field-hint">
+            {{ 'profile.shortcutsHint' | translate }}
+          </small>
+        </div>
+        <div class="form-row bb-preference-row">
+          <button type="button" class="oauth-btn" [id]="tabIdPrefix + '-reset-display'" [disabled]="isSaving" (click)="restoreDisplayDefaults()"
+            [attr.aria-describedby]="tabIdPrefix + '-reset-hint'">{{ 'profile.restoreDisplayDefaults' | translate }}</button>
+          <small class="bb-field-hint" [id]="tabIdPrefix + '-reset-hint'">{{ 'profile.restoreDisplayDefaultsHint' | translate }}</small>
+        </div>
+      </section>
+      <section class="bb-profile-panel" role="tabpanel" tabindex="0" [id]="tabIdPrefix + '-panel-membership'"
+        [attr.aria-labelledby]="tabIdPrefix + '-tab-membership'" [hidden]="activeTab !== 'membership'">
+        <section class="form-row bb-preference-row bb-membership-summary" [attr.aria-label]="'membership.title' | translate">
+          <strong>{{ 'membership.title' | translate }}: {{ membershipKey | translate }}</strong>
+          <small class="bb-field-hint" *ngIf="membershipExpiry as expiry">
+            {{ 'membership.until' | translate:{ date: regional.dateTime(expiry, 'utc') } }}
+          </small>
+          <small class="bb-field-hint bb-saved-trial" *ngIf="savedTrial as balance">
+            {{ 'membership.savedTrial' | translate:{ days: regional.number(balance.days, 0), hours: regional.number(balance.hours, 0), minutes: regional.number(balance.minutes, 0) } }}
+          </small>
+          <small class="bb-field-hint">{{ 'membership.rule' | translate }}</small>
+          <small class="bb-field-hint">{{ 'referral.rules' | translate }}</small>
+        </section>
+        <div class="form-row bb-pricing-row">
+          <label>{{ 'profile.pricing' | translate }}</label>
+          <button
+            type="button"
+            class="oauth-btn"
+            appAccessibleClick
+            (accessibleClick)="openPricing()"
+          >
+            {{ 'profile.viewPricing' | translate }}
+          </button>
+          <small class="bb-field-hint">
+            {{ 'profile.pricingHint' | translate }}
+          </small>
+        </div>
+      </section>
+    </div>
+    <div bbActions class="bb-actions bb-profile-save">
+      <button
+        type="submit"
+        class="oauth-btn"
+        [disabled]="
+          userForm.invalid ||
+          userForm.pristine ||
+          userForm.pending ||
+          isSaving
+        "
+      >
+        {{ (isSaving ? 'profile.saving' : 'profile.save') | translate }}
+      </button>
+    </div>
+  </form>
+  </ng-container>
+  <ng-template #discardPrompt>
+    <div role="alert"><h5>{{ 'profile.discardTitle' | translate }}</h5><p class="bb-hint">{{ 'profile.discardHint' | translate }}</p></div>
+    <div class="bb-actions">
+      <button #keepEditingButton type="button" class="oauth-btn oauth-btn-primary" (click)="keepEditing()">{{ 'profile.keepEditing' | translate }}</button>
+      <button type="button" class="oauth-btn" (click)="discardChanges()">{{ 'profile.discardChanges' | translate }}</button>
+    </div>
+  </ng-template>
+</app-bb-modal-shell>

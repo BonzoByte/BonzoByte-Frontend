@@ -1,0 +1,55 @@
+<app-bb-modal-shell
+  title="Forgot password"
+  subtitle="Enter your email and we will send you a password reset link."
+  (closed)="close()"
+>
+  <form [formGroup]="emailForm" (ngSubmit)="requestReset()" autocomplete="off" novalidate>
+  <!-- Verification success and error state. -->
+    <div class="bb-alert bb-alert--success" *ngIf="successMessage">
+      {{ successMessage }}
+    </div>
+
+    <div class="bb-alert bb-alert--error" *ngIf="errorMessage">
+      {{ errorMessage }}
+    </div>
+
+    <div class="form-row">
+      <label for="email">Email address:</label>
+      <input
+        id="email"
+        formControlName="email"
+        type="email"
+        placeholder="Enter your email"
+        autocomplete="email"
+        [class.invalid]="emailForm.get('email')?.invalid && (emailForm.get('email')?.touched || submitted)"
+      />
+
+      <div class="error-placeholder">
+        <p
+          class="error"
+          *ngIf="emailForm.get('email')?.hasError('required') && (emailForm.get('email')?.touched || submitted)"
+        >
+          Required
+        </p>
+        <p
+          class="error"
+          *ngIf="emailForm.get('email')?.hasError('email') && (emailForm.get('email')?.touched || submitted)"
+        >
+          Enter a valid email address.
+        </p>
+      </div>
+    </div>
+
+    <div bbActions class="bb-actions">
+      <button type="button" class="oauth-btn" (click)="close()">Cancel</button>
+
+      <button
+        type="submit"
+        class="oauth-btn oauth-btn-primary"
+        [disabled]="emailForm.invalid || submitting"
+      >
+        {{ submitting ? 'Sending…' : 'Send reset link' }}
+      </button>
+    </div>
+  </form>
+</app-bb-modal-shell>

@@ -1,0 +1,3822 @@
+﻿/* eslint-disable @typescript-eslint/consistent-type-definitions */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
+import {
+    Component,
+    EventEmitter,
+    Input,
+    Inject,
+    Optional,
+    Output,
+    OnChanges,
+    OnInit,
+    OnDestroy,
+    ElementRef,
+    QueryList,
+    ViewChildren,
+} from '@angular/core';
+import {
+    MatchDetailsRaw,
+    BetTypeGroupDTOv2,
+    BookieOfferDTOv2,
+} from 'src/app/core/models/match-details.model';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { StaticArchivesService } from '../../../core/services/static-archives.service';
+import { Observable, of } from 'rxjs';
+import { map, switchMap, catchError } from 'rxjs/operators';
+import { Match, MatchDetailsNeuralNetworkDTO } from 'src/app/core/models/tennis.model';
+import { ChangeDetectorRef } from '@angular/core';
+import { Subscription } from 'rxjs';
+import { AuthService } from '@app/core/services/auth.service';
+import { BbModalShellComponent } from "@app/shared/ui/bb-modal-shell.component/bb-modal-shell.component";
+import { NN_FEATURE_GROUPS, NnFeatureGroupVm, NnFeatureItemVm, NnGroupId, NnTabVm } from './match-details-vm';
+import { NN_FEATURE_HELP, NnFeatureHelpEntry } from 'src/app/localization/nn/match-details-nn-help';
+import { TranslateModule } from '@ngx-translate/core';
+import { RegionalSettingsService } from '../../../core/services/regional-settings.service';
+import { PopularityService } from '../../../core/services/popularity.service';
+import { sourceCalendarDate } from '../../../core/i18n/regional-format';
+import { playsTranslationKey } from '../../../core/helpers/plays-translation';
+import { DiscussionThreadComponent } from '../../../discussions/discussion-thread.component';
+import { CopyMatchLinkComponent } from '../../../shared/ui/copy-match-link/copy-match-link.component';
+import { environment } from '@env/environment';
+import { localUiPreviewAllowed as popularPreviewAllowed } from '../../../core/helpers/local-ui-preview';
+import { DetailTabMemoryService, MATCH_DETAIL_TABS, PUBLIC_MATCH_DETAIL_TABS } from '../../../core/services/detail-tab-memory.service';
+import { archiveSetTokens, archiveSetText, archiveSetGames } from '../../../core/helpers/reviewed-details-compat';
+
+// =================================================================================================
+// TYPES (UI tabs, selectors, DTO-ish rows)
+// =================================================================================================
+
+type Tab =
+    | 'overview'
+    | 'trueskill'
+    | 'tsBreakdown'
+    | 'wpBreakdown'
+    | 'performance'
+    | 'form'
+    | 'roleStats'
+    | 'odds'
+    | 'h2h'
+    | 'raw'
+    | 'discussions'
+    | 'nn';
+
+type PerfUnit = 'MATCH' | 'SET' | 'GAME';
+type TimeScope = 'ALL' | 'YEAR' | 'MONTH' | 'WEEK';
+type SurfaceScope = 'ALL' | 'S1' | 'S2' | 'S3' | 'S4';
+type WlMetric = 'W' | 'L';
+type RoleTimeScope = 'ALL' | 'YEAR' | 'MONTH' | 'WEEK';
+type RoleSide = 'FAV' | 'DOG';
+type RoleMetric = 'WINS' | 'LOSSES' | 'AVG_WP_WON' | 'AVG_WP_LOST';
+type RatingMode = 'M' | 'SM' | 'GSM';
+type RatingMetric = 'Mean' | 'SD' | 'WP';
+type LastResult = 'WIN' | 'LOSS';
+type H2HSurface = 'ALL' | 'S1' | 'S2' | 'S3' | 'S4';
+type H2HMode = 'M' | 'SM' | 'GSM';
+
+type RoleOption<T extends string> = { value: T; label: string };
+type PerfOption<T extends string> = { value: T; label: string };
+
+// =================================================================================================
+// ODDS helpers (latest per bookie + full history on expand)
+// =================================================================================================
+
+type OddsRow = {
+    o01: number;   // bookieId
+    o02: string;   // bookieName
+    o03?: string;  // oddsDateTime
+    o04: number;   // seriesOrdinal
+    o05: number;   // player1Odds
+    o06: number;   // player2Odds
+    o07: boolean;  // isSuspicious
+    o08: boolean;  // isLikelySwitched
+    o09: number;   // suspiciousMask
+    o10?: string;  // ingestedAt / fallback
+};
+
+type CorrectScoreRow = {
+    bookieId: number;
+    bookieName: string;
+    score20?: number;
+    score21?: number;
+    score02?: number;
+    score12?: number;
+};
+
+type OddsMarket = 'winner' | 'totals' | 'handicap' | 'correctScore';
+type OddsScope = 'games' | 'sets';
+
+type ChartTooltip = {
+    leftPx: number;
+    topPx: number;
+    dateLabel: string;
+    time?: number;
+    p1Label: string;
+    p2Label: string;
+    mu1: number;
+    sd1: number;
+    wp1: number;
+    mu2: number;
+    sd2: number;
+    wp2: number;
+};
+
+type DetailsLockedError = {
+    status: 'error';
+    code: 'DETAILS_LOCKED';
+    lockHours: number;
+    reason?: string;
+    expectedStartUtc: string | null;
+    unlocksAt: string | null;
+    message?: string;
+};
+
+const TS_DEFAULT_MU = 25;
+const TS_DEFAULT_SD = 8.3333333333;
+
+// =================================================================================================
+// PURE HELPERS (safe reads + minified key generators)
+// -------------------------------------------------------------------------------------------------
+// These are outside the component to keep them easily testable and independent from UI state.
+// =================================================================================================
+
+/** Safe numeric read from minified details object (returns 0 if missing). */
+function getNumber(details: MatchDetailsRaw | null | undefined, key: string): number {
+    const v = details?.[key];
+    return typeof v === 'number' && Number.isFinite(v) ? v : 0;
+}
+
+/** Safe numeric read that preserves null (returns null if missing/invalid). */
+function getNullableNumber(details: MatchDetailsRaw | null | undefined, key: string): number | null {
+    const v = details?.[key];
+    return typeof v === 'number' && Number.isFinite(v) ? v : null;
+}
+
+// ------------------------------------
+// PERFORMANCE (minified DTO indexing)
+// ------------------------------------
+
+const PERF_BASE_START: Record<PerfUnit, number> = {
+    MATCH: 158,
+    SET: 238,
+    GAME: 318,
+};
+
+// DTO layout constants (document the minified scheme)
+const PERF_FIELDS_PER_TIME = 2;  // W/L
+const PERF_FIELDS_PER_PLAYER = 8;  // 4 time scopes * 2 (W/L)
+const PERF_FIELDS_PER_SURFACE = 16; // 2 players * 8
+
+const TIME_INDEX: Record<TimeScope, number> = { ALL: 0, YEAR: 1, MONTH: 2, WEEK: 3 };
+const SURFACE_INDEX: Record<SurfaceScope, number> = { ALL: 0, S1: 1, S2: 2, S3: 3, S4: 4 };
+
+function playerOffset(player: 1 | 2): number {
+    return player === 1 ? 0 : PERF_FIELDS_PER_PLAYER;
+}
+
+function wlOffset(m: WlMetric): number {
+    return m === 'W' ? 0 : 1;
+}
+
+/**
+ * Builds minified perf key for Win/Loss counts.
+ *
+ * Layout:
+ * - unit block starts at PERF_BASE_START[unit]
+ * - then surface block (ALL/S1..S4)
+ * - then player block (P1/P2)
+ * - then time block (ALL/YEAR/MONTH/WEEK)
+ * - then W/L offset
+ */
+function perfKey(
+    unit: PerfUnit,
+    player: 1 | 2,
+    time: TimeScope,
+    surface: SurfaceScope,
+    metric: WlMetric
+): string {
+    const base = PERF_BASE_START[unit];
+    const s = SURFACE_INDEX[surface] * PERF_FIELDS_PER_SURFACE;
+    const p = playerOffset(player);
+    const t = TIME_INDEX[time] * PERF_FIELDS_PER_TIME;
+    const w = wlOffset(metric);
+    const idx = base + s + p + t + w;
+
+    return `m${String(idx).padStart(3, '0')}`;
+}
+
+/**
+ * Days since last win/loss key generator.
+ *
+ * Base:
+ * - WIN => 398
+ * - LOSS => 408
+ *
+ * Surface offsets:
+ * - ALL=0, S1=2, S2=4, S3=6, S4=8
+ *
+ * Player offset:
+ * - P1=0, P2=1
+ */
+function daysSinceKey(player: 1 | 2, last: LastResult, surface: SurfaceScope): string {
+    const base = last === 'WIN' ? 398 : 408;
+
+    // ALL=0, S1=2, S2=4, S3=6, S4=8
+    const sIdx = SURFACE_INDEX[surface];
+    const surfaceOffset = sIdx === 0 ? 0 : sIdx * 2;
+
+    const pOffset = player === 1 ? 0 : 1;
+    const idx = base + surfaceOffset + pOffset;
+
+    return `m${String(idx).padStart(3, '0')}`;
+}
+
+// ------------------------------------
+// TRUE SKILL (minified match keys)
+// ------------------------------------
+
+type TsKey = `${1 | 2}_${RatingMetric}_${'Old' | 'New'}_${RatingMode}_${SurfaceScope}`;
+
+type TsPoint = {
+    m: number; // matchTPId
+    d: string; // ISO day ("YYYY-MM-DD")
+    mu: number; // mean (json "t")
+    sd: number; // sigma (json "s")
+};
+
+type TsMergedPoint = {
+    time: number; // day timestamp (ms)
+    p1mu: number;
+    p1sd: number;
+    p2mu: number;
+    p2sd: number;
+    wp1: number; // 0..1
+    matchId?: number; // optional for tooltip/link
+};
+
+// -------------------------------------------------------------------------------------
+// MINIFIED MATCH DETAILS KEYS (m001..mNNN)
+// -------------------------------------------------------------------------------------
+// Our MatchDetails archives use minified keys to keep payload small.
+// TS_MIN_MAP translates:
+//   (player, metric, Old/New, rating mode, surface scope) => concrete "mXYZ" key.
+//
+// Old/New convention:
+// - If the match is finished (raw.m656 === true) we show the "New" ratings.
+// - Otherwise we show the "Old" ratings (pre-match snapshot).
+// -------------------------------------------------------------------------------------
+
+const TS_MIN_MAP: Partial<Record<TsKey, string>> = {
+    '1_Mean_New_M_ALL': 'm023',
+    '1_SD_New_M_ALL': 'm024',
+    '2_Mean_New_M_ALL': 'm025',
+    '2_SD_New_M_ALL': 'm026',
+    '1_Mean_Old_M_ALL': 'm027',
+    '1_SD_Old_M_ALL': 'm028',
+    '2_Mean_Old_M_ALL': 'm029',
+    '2_SD_Old_M_ALL': 'm030',
+    '1_WP_New_M_ALL': 'm031',
+
+    '1_Mean_New_SM_ALL': 'm032',
+    '1_SD_New_SM_ALL': 'm033',
+    '2_Mean_New_SM_ALL': 'm034',
+    '2_SD_New_SM_ALL': 'm035',
+    '1_Mean_Old_SM_ALL': 'm036',
+    '1_SD_Old_SM_ALL': 'm037',
+    '2_Mean_Old_SM_ALL': 'm038',
+    '2_SD_Old_SM_ALL': 'm039',
+    '1_WP_New_SM_ALL': 'm040',
+
+    '1_Mean_New_GSM_ALL': 'm041',
+    '1_SD_New_GSM_ALL': 'm042',
+    '2_Mean_New_GSM_ALL': 'm043',
+    '2_SD_New_GSM_ALL': 'm044',
+    '1_Mean_Old_GSM_ALL': 'm045',
+    '1_SD_Old_GSM_ALL': 'm046',
+    '2_Mean_Old_GSM_ALL': 'm047',
+    '2_SD_Old_GSM_ALL': 'm048',
+    '1_WP_New_GSM_ALL': 'm049',
+
+    '1_Mean_New_M_S1': 'm050',
+    '1_SD_New_M_S1': 'm051',
+    '2_Mean_New_M_S1': 'm052',
+    '2_SD_New_M_S1': 'm053',
+    '1_Mean_Old_M_S1': 'm054',
+    '1_SD_Old_M_S1': 'm055',
+    '2_Mean_Old_M_S1': 'm056',
+    '2_SD_Old_M_S1': 'm057',
+    '1_WP_New_M_S1': 'm058',
+
+    '1_Mean_New_SM_S1': 'm059',
+    '1_SD_New_SM_S1': 'm060',
+    '2_Mean_New_SM_S1': 'm061',
+    '2_SD_New_SM_S1': 'm062',
+    '1_Mean_Old_SM_S1': 'm063',
+    '1_SD_Old_SM_S1': 'm064',
+    '2_Mean_Old_SM_S1': 'm065',
+    '2_SD_Old_SM_S1': 'm066',
+    '1_WP_New_SM_S1': 'm067',
+
+    '1_Mean_New_GSM_S1': 'm068',
+    '1_SD_New_GSM_S1': 'm069',
+    '2_Mean_New_GSM_S1': 'm070',
+    '2_SD_New_GSM_S1': 'm071',
+    '1_Mean_Old_GSM_S1': 'm072',
+    '1_SD_Old_GSM_S1': 'm073',
+    '2_Mean_Old_GSM_S1': 'm074',
+    '2_SD_Old_GSM_S1': 'm075',
+    '1_WP_New_GSM_S1': 'm076',
+
+    '1_Mean_New_M_S2': 'm077',
+    '1_SD_New_M_S2': 'm078',
+    '2_Mean_New_M_S2': 'm079',
+    '2_SD_New_M_S2': 'm080',
+    '1_Mean_Old_M_S2': 'm081',
+    '1_SD_Old_M_S2': 'm082',
+    '2_Mean_Old_M_S2': 'm083',
+    '2_SD_Old_M_S2': 'm084',
+    '1_WP_New_M_S2': 'm085',
+
+    '1_Mean_New_SM_S2': 'm086',
+    '1_SD_New_SM_S2': 'm087',
+    '2_Mean_New_SM_S2': 'm088',
+    '2_SD_New_SM_S2': 'm089',
+    '1_Mean_Old_SM_S2': 'm090',
+    '1_SD_Old_SM_S2': 'm091',
+    '2_Mean_Old_SM_S2': 'm092',
+    '2_SD_Old_SM_S2': 'm093',
+    '1_WP_New_SM_S2': 'm094',
+
+    '1_Mean_New_GSM_S2': 'm095',
+    '1_SD_New_GSM_S2': 'm096',
+    '2_Mean_New_GSM_S2': 'm097',
+    '2_SD_New_GSM_S2': 'm098',
+    '1_Mean_Old_GSM_S2': 'm099',
+    '1_SD_Old_GSM_S2': 'm100',
+    '2_Mean_Old_GSM_S2': 'm101',
+    '2_SD_Old_GSM_S2': 'm102',
+    '1_WP_New_GSM_S2': 'm103',
+
+    '1_Mean_New_M_S3': 'm104',
+    '1_SD_New_M_S3': 'm105',
+    '2_Mean_New_M_S3': 'm106',
+    '2_SD_New_M_S3': 'm107',
+    '1_Mean_Old_M_S3': 'm108',
+    '1_SD_Old_M_S3': 'm109',
+    '2_Mean_Old_M_S3': 'm110',
+    '2_SD_Old_M_S3': 'm111',
+    '1_WP_New_M_S3': 'm112',
+
+    '1_Mean_New_SM_S3': 'm113',
+    '1_SD_New_SM_S3': 'm114',
+    '2_Mean_New_SM_S3': 'm115',
+    '2_SD_New_SM_S3': 'm116',
+    '1_Mean_Old_SM_S3': 'm117',
+    '1_SD_Old_SM_S3': 'm118',
+    '2_Mean_Old_SM_S3': 'm119',
+    '2_SD_Old_SM_S3': 'm120',
+    '1_WP_New_SM_S3': 'm121',
+
+    '1_Mean_New_GSM_S3': 'm122',
+    '1_SD_New_GSM_S3': 'm123',
+    '2_Mean_New_GSM_S3': 'm124',
+    '2_SD_New_GSM_S3': 'm125',
+    '1_Mean_Old_GSM_S3': 'm126',
+    '1_SD_Old_GSM_S3': 'm127',
+    '2_Mean_Old_GSM_S3': 'm128',
+    '2_SD_Old_GSM_S3': 'm129',
+    '1_WP_New_GSM_S3': 'm130',
+
+    '1_Mean_New_M_S4': 'm131',
+    '1_SD_New_M_S4': 'm132',
+    '2_Mean_New_M_S4': 'm133',
+    '2_SD_New_M_S4': 'm134',
+    '1_Mean_Old_M_S4': 'm135',
+    '1_SD_Old_M_S4': 'm136',
+    '2_Mean_Old_M_S4': 'm137',
+    '2_SD_Old_M_S4': 'm138',
+    '1_WP_New_M_S4': 'm139',
+
+    '1_Mean_New_SM_S4': 'm140',
+    '1_SD_New_SM_S4': 'm141',
+    '2_Mean_New_SM_S4': 'm142',
+    '2_SD_New_SM_S4': 'm143',
+    '1_Mean_Old_SM_S4': 'm144',
+    '1_SD_Old_SM_S4': 'm145',
+    '2_Mean_Old_SM_S4': 'm146',
+    '2_SD_Old_SM_S4': 'm147',
+    '1_WP_New_SM_S4': 'm148',
+
+    '1_Mean_New_GSM_S4': 'm149',
+    '1_SD_New_GSM_S4': 'm150',
+    '2_Mean_New_GSM_S4': 'm151',
+    '2_SD_New_GSM_S4': 'm152',
+    '1_Mean_Old_GSM_S4': 'm153',
+    '1_SD_Old_GSM_S4': 'm154',
+    '2_Mean_Old_GSM_S4': 'm155',
+    '2_SD_Old_GSM_S4': 'm156',
+    '1_WP_New_GSM_S4': 'm157',
+};
+
+// =================================================================================================
+// VIEW MODELS (VM) - UI-oriented shapes so template doesn't depend on many DTO variants.
+// =================================================================================================
+
+interface VmPlayer {
+    playerTPId: number;
+    name: string;
+    iso2: string; // for flag-icons
+    iso3: string; // (ITA)
+    countryName: string; // tooltip full
+    rank?: number;
+    seed?: string;
+
+    born?: string; // formatted + (age)
+    plays?: string;
+    height?: string;
+    weight?: string;
+
+    tsMean?: number; // trueSkillMean (player summary)
+    odds?: number;
+    nnProb?: number; // 0..1
+}
+
+interface VmTournamentHeader {
+    name: string;
+    iso2: string;
+    iso3: string;
+    countryName: string;
+
+    round: string;
+    surface: string;
+    dateText: string;
+    prizeText: string; // "30000" or "—"
+}
+
+interface Vm {
+    header: VmTournamentHeader;
+    p1: VmPlayer;
+    p2: VmPlayer;
+
+    // result
+    finished: boolean;
+    scoreMain: string; // "2 : 0"
+    scoreSets: string; // "6:4 6:3"
+
+    // compare
+    edgeP1?: number; // decimal (0.12 / -0.05)
+    edgeP2?: number;
+
+    betSide: 'p1' | 'p2' | null;
+    pl?: number; // profit/loss for stake=1
+
+    nn: NnTabVm | null;
+}
+
+// =================================================================================================
+// COMPONENT
+// =================================================================================================
+
+@Component({
+    selector: 'app-match-details-modal',
+    standalone: true,
+    imports: [CommonModule, FormsModule, BbModalShellComponent, TranslateModule, DiscussionThreadComponent, CopyMatchLinkComponent],
+    templateUrl: './match-details-modal.component.html',
+    styleUrls: ['./match-details-modal.component.scss'],
+})
+export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy {
+    // -----------------------------------------------------------------------------------------------
+    // Inputs / Outputs / View children
+    // -----------------------------------------------------------------------------------------------
+
+    @Input() isOpen = false;
+    @Input() matchTPId!: number;
+    @Input() genderHint!: 'M' | 'W';
+    @Input() match!: Partial<Match> & Pick<Match, 'matchTPId'>;
+    @Input() previewDetails: MatchDetailsRaw | null = null;
+    get isPreview(): boolean {
+        const id = this.match?.matchTPId;
+        return Number.isSafeInteger(id) && id < 0 && this.previewDetails?.m001 === id &&
+            popularPreviewAllowed(environment, typeof location === 'undefined' ? '' : location.hostname);
+    }
+    @Output() closed = new EventEmitter<void>();
+    @Output() requestLogin = new EventEmitter<void>();
+    @Output() requestRegister = new EventEmitter<void>();
+    @Output() requestUpgrade = new EventEmitter<void>();
+
+    /**
+     * Tooltip element reference(s).
+     * Note: we mostly use a fixed width assumption for clamping, but keeping this allows future
+     * improvement with actual element measurement.
+     */
+    @ViewChildren('chartTip') private chartTipRefs!: QueryList<ElementRef<HTMLElement>>;
+
+    // -----------------------------------------------------------------------------------------------
+    // UI state: tabs + selectors
+    // -----------------------------------------------------------------------------------------------
+
+    activeTab: Tab = 'overview';
+    get discussionMatchId(): number { return this.match?.matchTPId || this.matchTPId; }
+    get canonicalMatchId(): number | null { return this.match?.matchId ?? this.raw?.q?.matchId ?? null; }
+
+    // Performance tab selectors (must have strict defaults)
+    activePerfUnit: PerfUnit = 'MATCH';
+    activePerfTime: TimeScope = 'ALL';
+    activePerfSurface: SurfaceScope = 'ALL';
+
+    // Form tab selectors
+    activeFormSurface: SurfaceScope = 'ALL';
+
+    // Role tab selectors
+    activeRoleTime: RoleTimeScope = 'ALL';
+
+    // H2H tab selectors
+    activeH2HMode: H2HMode = 'M';
+    activeH2HSurface: H2HSurface = 'ALL';
+
+    // TS selectors (used by TS/WP breakdown tabs)
+    RatingMode: RatingMode = 'M';
+    SurfaceScope: SurfaceScope = 'ALL';
+
+    // Odds tab selectors
+    activeOddsSeries = 0;
+    showSuspiciousOnly = false;
+    activeOddsMarket: OddsMarket = 'winner';
+    activeOddsScope: OddsScope | null = null;
+    activeOddsLine: string | null = null;
+
+
+    isLocked = false;
+    locked: DetailsLockedError | null = null;
+    lockedPayload: any | null = null;
+
+    // -----------------------------------------------------------------------------------------------
+    // UI option lists (label is for UI, value is for logic)
+    // -----------------------------------------------------------------------------------------------
+
+    perfUnitOptions: PerfOption<PerfUnit>[] = [
+        { value: 'MATCH', label: 'matchDetails.match' },
+        { value: 'SET', label: 'matchDetails.set' },
+        { value: 'GAME', label: 'matchDetails.game' },
+    ];
+
+    perfTimeOptions: PerfOption<TimeScope>[] = [
+        { value: 'ALL', label: 'common.all' },
+        { value: 'YEAR', label: 'matchDetails.year' },
+        { value: 'MONTH', label: 'matchDetails.month' },
+        { value: 'WEEK', label: 'matchDetails.week' },
+    ];
+
+    perfSurfaceOptions: PerfOption<SurfaceScope>[] = [
+        { value: 'ALL', label: 'common.all' },
+        { value: 'S1', label: 'S1' },
+        { value: 'S2', label: 'S2' },
+        { value: 'S3', label: 'S3' },
+        { value: 'S4', label: 'S4' },
+    ];
+
+    roleTimeOptions: RoleOption<RoleTimeScope>[] = [
+        { value: 'ALL', label: 'common.all' },
+        { value: 'YEAR', label: 'matchDetails.year' },
+        { value: 'MONTH', label: 'matchDetails.month' },
+        { value: 'WEEK', label: 'matchDetails.week' },
+    ];
+
+    h2hModeOptions: RoleOption<H2HMode>[] = [
+        { value: 'M', label: 'M' },
+        { value: 'SM', label: 'SM' },
+        { value: 'GSM', label: 'GSM' },
+    ];
+
+    h2hSurfaceOptions: RoleOption<H2HSurface>[] = [
+        { value: 'ALL', label: 'common.all' },
+        { value: 'S1', label: 'S1' },
+        { value: 'S2', label: 'S2' },
+        { value: 'S3', label: 'S3' },
+        { value: 'S4', label: 'S4' },
+    ];
+
+    // -----------------------------------------------------------------------------------------------
+    // Data state
+    // -----------------------------------------------------------------------------------------------
+
+    loading = false;
+    error: string | null = null;
+
+    raw: MatchDetailsRaw | null = null;
+    vm: Vm | null = null;
+
+    private _details: MatchDetailsRaw | null = null;
+    allOdds: OddsRow[] | undefined;
+
+    get details(): MatchDetailsRaw | null {
+        return this._details;
+    }
+
+    public get hasDetails(): boolean {
+        return !!this._details;
+    }
+
+    private detailsSub?: Subscription;
+    private cancelDetailWatch?: () => void;
+    private destroyed = false;
+    private tabScope = 0;
+    private tsHistorySub?: Subscription;
+
+    readonly stars = [1, 2, 3, 4, 5];
+
+    get oddsLabelP1(): string {
+        const d: any = this._details as any;
+        return d?.p1?.p01 ?? d?.p1?.name ?? 'P1';
+    }
+
+    get oddsLabelP2(): string {
+        const d: any = this._details as any;
+        return d?.p2?.p01 ?? d?.p2?.name ?? 'P2';
+    }
+
+    get oddsLeftLabel(): string {
+        switch (this.activeOddsMarket) {
+            case 'winner':
+                return 'P1';
+            case 'totals':
+                return this.regional.text('matchDetails.over');
+            case 'handicap':
+                return 'P1';
+            case 'correctScore':
+                return '';
+            default:
+                return 'P1';
+        }
+    }
+
+    get oddsRightLabel(): string {
+        switch (this.activeOddsMarket) {
+            case 'winner':
+                return 'P2';
+            case 'totals':
+                return this.regional.text('matchDetails.under');
+            case 'handicap':
+                return 'P2';
+            case 'correctScore':
+                return '';
+            default:
+                return 'P2';
+        }
+    }
+
+    get oddsSummaryMidLabel(): string {
+        switch (this.activeOddsMarket) {
+            case 'winner':
+                return this.regional.text('matchDetails.winner');
+            case 'totals':
+                return this.regional.text('matchDetails.totals');
+            case 'handicap':
+                return this.regional.text('matchDetails.handicap');
+            case 'correctScore':
+                return this.regional.text('matchDetails.correctScore');
+            default:
+                return this.regional.text('matchDetails.winner');
+        }
+    }
+
+    get nestedOddsGroups(): BetTypeGroupDTOv2[] {
+        const rawOdds = (this._details as any)?.o;
+        if (!Array.isArray(rawOdds) || !rawOdds.length) return [];
+        return this.isNestedOddsArray(rawOdds) ? rawOdds : [];
+    }
+
+    get correctScoreRows(): CorrectScoreRow[] {
+        const rawOdds = (this._details as any)?.o;
+        if (!Array.isArray(rawOdds) || !rawOdds.length) return [];
+        if (!this.isNestedOddsArray(rawOdds)) return [];
+
+        const group = rawOdds.find(g => g?.i === 4);
+        if (!group?.m?.length) return [];
+
+        const market = group.m[0];
+        if (!market?.x?.length) return [];
+
+        const sel20 = market.x.find(s => s?.k === '2:0');
+        const sel21 = market.x.find(s => s?.k === '2:1');
+        const sel02 = market.x.find(s => s?.k === '0:2');
+        const sel12 = market.x.find(s => s?.k === '1:2');
+
+        const map20 = this.buildLatestOddsMapByBookie(Array.isArray(sel20?.o) ? sel20.o : []);
+        const map21 = this.buildLatestOddsMapByBookie(Array.isArray(sel21?.o) ? sel21.o : []);
+        const map02 = this.buildLatestOddsMapByBookie(Array.isArray(sel02?.o) ? sel02.o : []);
+        const map12 = this.buildLatestOddsMapByBookie(Array.isArray(sel12?.o) ? sel12.o : []);
+
+        const allBookieIds = new Set<number>([
+            ...map20.keys(),
+            ...map21.keys(),
+            ...map02.keys(),
+            ...map12.keys(),
+        ]);
+
+        const rows: CorrectScoreRow[] = [];
+
+        for (const bookieId of allBookieIds) {
+            rows.push({
+                bookieId,
+                bookieName: this.getBookieName(bookieId),
+                score20: map20.get(bookieId),
+                score21: map21.get(bookieId),
+                score02: map02.get(bookieId),
+                score12: map12.get(bookieId),
+            });
+        }
+
+        return rows.sort((a, b) => a.bookieName.localeCompare(b.bookieName));
+    }
+
+    private authSub?: Subscription;
+    private regionalSub?: Subscription;
+
+    // -----------------------------------------------------------------------------------------------
+    // TS history state (cached + merged for charts)
+    // -----------------------------------------------------------------------------------------------
+
+    private tsHistCache = new Map<number, any>();
+
+    tsBreakdownLoading = false;
+    tsBreakdownError: string | null = null;
+
+    p1Series: TsPoint[] = [];
+    p2Series: TsPoint[] = [];
+    mergedSeries: TsMergedPoint[] = [];
+
+    // -----------------------------------------------------------------------------------------------
+    // TS / WP SVG chart state
+    // -----------------------------------------------------------------------------------------------
+
+    chartWidth = 980;
+    chartHeight = 320;
+    chartPad = 28;
+
+    showTrend = true;
+
+    hoverIdx: number | null = null;
+    hoverTooltip: ChartTooltip | null = null;
+
+    // Chart-selected point (mousemove). Used to drive the snapshot numbers above the chart.
+    private activeChartPoint: TsMergedPoint | null = null;
+    // Default point (match date) for currently selected mode/surface.
+    private defaultChartPoint: TsMergedPoint | null = null;
+    pinnedTooltip: ChartTooltip | null = null;
+
+    private pinnedDefaultTooltip: ChartTooltip | null = null;
+    private isChartHovering = false;
+
+    // -----------------------------------------------------------------------------------------------
+    // Constructor / lifecycle
+    // -----------------------------------------------------------------------------------------------
+
+    constructor(public staticArchives: StaticArchivesService, private auth: AuthService, private cdr: ChangeDetectorRef,
+        public regional: RegionalSettingsService,
+        @Optional() @Inject(PopularityService) private popularity: PopularityService | null = null,
+        @Optional() @Inject(DetailTabMemoryService) private tabMemory: DetailTabMemoryService | null = null) {
+        this.tabScope = tabMemory?.scopeVersion ?? 0;
+    }
+
+    ngOnInit(): void {
+        this.regionalSub = this.regional.changes.subscribe(() => this.refreshLocalizedView());
+        let lastAccessKey: string | undefined;
+        this.authSub = this.auth.user$.subscribe(user => {
+            const key = JSON.stringify([user?._id ?? '', !!user?.isAdmin,
+                !!user?.entitlements?.isPremium, !!user?.entitlements?.hasTrial]);
+            const first = lastAccessKey === undefined;
+            const changed = key !== lastAccessKey;
+            lastAccessKey = key;
+            // The initial request already uses the current account. Subsequent
+            // logout/account/rights changes must clear and recheck private details.
+            if (!first && this.isOpen && this.match?.matchTPId && (changed || this.isLocked)) {
+                this.load();
+            }
+        });
+    }
+
+    ngOnChanges(): void {
+        if (this.isOpen && this.match?.matchTPId) {
+            this.load();
+        } else {
+            this.stopDetailWatch();
+            this.cancelTsHistory(true);
+            this.detailsSub?.unsubscribe();
+            this.detailsSub = undefined;
+        }
+    }
+
+    ngOnDestroy(): void {
+        this.destroyed = true;
+        this.cancelTsHistory(true);
+        this.stopDetailWatch();
+        this.detailsSub?.unsubscribe();
+        this.authSub?.unsubscribe();
+        this.regionalSub?.unsubscribe();
+    }
+
+    // =================================================================================================
+    // PUBLIC UI ACTIONS
+    // =================================================================================================
+
+    close(): void {
+        this.stopDetailWatch();
+        this.cancelTsHistory(true);
+        console.log('[DETAILS] close emit');
+        this.isOpen = false;
+        this.loading = false;
+        this.error = null;
+        this.isLocked = false;
+        this.locked = null;
+        this.raw = null;
+        this.vm = null;
+        this._details = null;
+        this.closed.emit();
+        this.detailsSub?.unsubscribe();
+        this.detailsSub = undefined;
+    }
+
+    dbg(tag: string) {
+        console.log('[DETAILS]', tag, {
+            isLocked: this.isLocked,
+            isLoggedIn: this.isLoggedIn,
+            hasTrial: this.hasTrial,
+            isPremium: this.isPremium
+        });
+    }
+
+    onTabClick(tab: Tab): void {
+        console.log('[UI] tab click', tab);
+        this.setTab(tab);
+    }
+
+    setTab(tab: Tab): void {
+        this.activateTab(tab,true);
+    }
+
+    private activateTab(tab: Tab, remember: boolean): void {
+        if (this.isPreview && tab !== 'overview') return;
+        this.activeTab = tab;
+        if (remember && this.isOpen && !this.isPreview) this.tabMemory?.remember('match',this.match?.matchTPId,tab,this.tabScope);
+        if (tab !== 'tsBreakdown' && tab !== 'wpBreakdown') this.cancelTsHistory();
+
+        // TS/WP breakdown tabs share same underlying mergedSeries building.
+        if (tab === 'tsBreakdown' || tab === 'wpBreakdown') {
+            if (!this.raw) {
+                console.log('[TS] tab clicked but raw is null yet');
+                return;
+            }
+            this.loadTsHistoryAndBuildSeries();
+        }
+    }
+
+    onTsSelectorsChanged(): void {
+        // Rebuild series when selectors change (mode/surface) if we are on a TS/WP tab.
+        if (this.activeTab === 'tsBreakdown' || this.activeTab === 'wpBreakdown') {
+            this.loadTsHistoryAndBuildSeries();
+        }
+    }
+
+    rawJson(): string {
+        try {
+            return JSON.stringify(this.raw, null, 2);
+        } catch {
+            return '';
+        }
+    }
+
+    // =================================================================================================
+    // LOAD DETAILS + BUILD VM
+    // =================================================================================================
+
+    private readonly DEV_FORCE_LOCK_DETAILS = false;
+
+    private stopDetailWatch(): void {
+        this.cancelDetailWatch?.();
+        this.cancelDetailWatch = undefined;
+    }
+
+    load(): void {
+        this.stopDetailWatch();
+        this.cancelTsHistory(true);
+        this.detailsSub?.unsubscribe();
+        this.detailsSub = undefined;
+
+        const match = this.match;
+        const matchId = match?.matchTPId;
+        if (this.destroyed || !this.isOpen || !matchId) return;
+
+        this.tabScope = this.tabMemory?.scopeVersion ?? 0;
+        this.activeTab = 'overview';
+        this.raw = null; this.vm = null; this._details = null;
+        this.locked = null;
+        this.isLocked = false;
+
+        if (this.DEV_FORCE_LOCK_DETAILS) {
+            this.loading = false;
+            this.isLocked = true;
+            this.error = 'matchDetails.locked';
+            this.locked = {
+                code: 'DETAILS_LOCKED',
+                status: 'error',
+                message: 'DEV FORCE LOCK',
+                expectedStartUtc: new Date().toISOString(),
+                lockHours: 1,
+                unlocksAt: new Date(Date.now() + 60 * 60 * 1000).toISOString(), // +1h
+            } as any;
+
+            this.cdr.markForCheck();
+            return;
+        }
+
+        // reset state
+        this.loading = true;
+        this.error = null;
+        this.raw = null;
+        this.vm = null;
+        this.cdr.markForCheck();
+
+        // fetch
+        this.detailsSub = (this.isPreview ? of(this.previewDetails!) : this.staticArchives.getDetailsGuarded(match)).subscribe({
+            next: (details) => {
+                if (this.destroyed || !this.isOpen || this.match?.matchTPId !== matchId) return;
+                this.stopDetailWatch();
+                console.log('[DETAILS] loaded', details);
+
+                this.raw = details;
+                this._details = details;
+                this.syncOddsSelection();
+
+                this.genderHint = this.tourTypeLabel(details) === 'WTA' ? 'W' : 'M';
+
+                this.vm = this.buildVm(details);
+
+                this.activeNnSection = 'overview';
+
+                this.loading = false;
+                this.restoreRememberedTab();
+                this.cdr.markForCheck();
+
+                const visible = () => !this.destroyed && this.isOpen && this.match?.matchTPId === matchId &&
+                    !this.loading && !this.error && !this.isLocked && !!this.raw && !!this.vm;
+                if (visible() && !this.isPreview) {
+                    this.cancelDetailWatch = this.popularity?.watchDetail('match', matchId, visible);
+                }
+            },
+            error: (err) => {
+                if (this.destroyed || !this.isOpen || this.match?.matchTPId !== matchId) return;
+                this.stopDetailWatch();
+                this.loading = false;
+
+    // StaticArchivesService often forwards err.error as the top-level error,
+    // Keep payload normalization defensive across interceptor configurations.
+                const payload = (err && typeof err === 'object' && 'error' in err) ? (err as any).error : err;
+
+                console.log('[DETAILS ERROR PAYLOAD]', { err, payload });
+
+                if (payload?.code === 'DETAILS_LOCKED') {
+                    this.isLocked = true;
+                    this.locked = payload as DetailsLockedError;
+
+                    this.error = 'matchDetails.locked';
+                    this.raw = null; this.vm = null; this._details = null;
+                    this.cancelTsHistory(true);
+                    this.restoreRememberedTab();
+
+                    this.cdr.markForCheck();
+                    return;
+                }
+
+                // fallback
+                this.isLocked = false;
+                this.locked = null;
+                this.error = 'matchDetails.loadError';
+                this.raw = null; this.vm = null; this._details = null;
+                this.cancelTsHistory(true);
+                this.restoreRememberedTab();
+                this.cdr.markForCheck();
+                console.error(err);
+            }
+        });
+    }
+
+    private restoreRememberedTab(): void {
+        if (this.isPreview) { this.activeTab = 'overview'; return; }
+        if (!this.tabMemory) return;
+        const available = this.raw && this.vm && !this.loading && !this.error && !this.isLocked
+            ? MATCH_DETAIL_TABS : PUBLIC_MATCH_DETAIL_TABS;
+        this.activateTab(this.tabMemory.restore('match',this.match?.matchTPId,available,this.tabScope),false);
+    }
+
+    private cancelTsHistory(clear = false): void {
+        this.tsHistorySub?.unsubscribe(); this.tsHistorySub = undefined; this.tsBreakdownLoading = false;
+        if (!clear) return;
+        this.tsBreakdownError = null; this.p1Series = []; this.p2Series = []; this.mergedSeries = [];
+        this.activeChartPoint = this.defaultChartPoint = null;
+        this.pinnedTooltip = this.pinnedDefaultTooltip = null; this.hoverTooltip = null; this.hoverIdx = null;
+    }
+
+    // =================================================================================================
+    // UI HELPERS (formatting, display-only)
+    // =================================================================================================
+
+    safeText(v: unknown, fallback = '—'): string {
+        const s = (v ?? '').toString().trim();
+        return s.length ? s : fallback;
+    }
+
+    capitalizeDisplayLabel(value: unknown): string {
+        const label = this.safeText(value);
+        return label === '—'
+            ? label
+            : `${label.charAt(0).toLocaleUpperCase()}${label.slice(1)}`;
+    }
+
+    flagIso2OrEmpty(iso2: string): string {
+        const v = (iso2 || '').trim().toLowerCase();
+        return v;
+    }
+
+    // stars rendering
+    starClass(starIndex: number, rating: number): string {
+        if (rating >= starIndex) return 'full';
+        if (rating >= starIndex - 0.5) return 'half';
+        return '';
+    }
+
+    tsToStars(ts: number | undefined): number {
+        if (typeof ts !== 'number' || !isFinite(ts)) return 0;
+        const min = 18;
+        const max = 32;
+        const t = (ts - min) / (max - min);
+        const clamped = Math.min(1, Math.max(0, t));
+        const stars = clamped * 5;
+        return Math.round(stars * 2) / 2;
+    }
+
+    tsTooltip(ts: number | undefined): string {
+        return `TS: ${typeof ts === 'number' && isFinite(ts) ? this.regional.number(ts, 2) : '-'}`;
+    }
+
+    edgeText(edge: number | undefined): string {
+        if (typeof edge !== 'number' || !isFinite(edge)) return '—';
+        return this.regional.number(edge, 2);
+    }
+
+    nnPct(prob01: number | undefined): string {
+        if (typeof prob01 !== 'number' || !isFinite(prob01)) return '—';
+        return `${this.regional.number(prob01 * 100, 0)}%`;
+    }
+
+    oddsText(odds: number | undefined): string {
+        if (typeof odds !== 'number' || !isFinite(odds) || odds <= 0) return '—';
+        return this.regional.number(odds, 2);
+    }
+
+    who2BetText(vm: Vm, side: 'p1' | 'p2'): string {
+        return vm.betSide === side ? 'kvacica' : '';
+    }
+
+    plLeft(vm: Vm): string {
+        if (typeof vm.pl !== 'number' || !isFinite(vm.pl)) return '';
+        return vm.pl > 0 ? `+${this.regional.number(vm.pl, 2)}` : '';
+    }
+
+    plRight(vm: Vm): string {
+        if (typeof vm.pl !== 'number' || !isFinite(vm.pl)) return '';
+        return vm.pl < 0 ? this.regional.number(vm.pl, 2) : '';
+    }
+
+    lockedUntilText(): string {
+        const iso = this.locked?.unlocksAt;
+        if (!iso) return '';
+        try {
+            return this.regional.dateTime(iso, 'utc') + ' ' + this.regional.timeZone();
+        } catch { return iso; }
+    }
+
+    openPricing(): void {
+        // kasnije: otvori pricing modal ili route /pricing
+        alert(this.regional.text('matchDetails.pricingSoon'));
+    }
+
+    private unwrapHttpError(err: any): any {
+        if (!err) return null;
+
+    // An interceptor may already have unwrapped the response payload.
+        if (typeof err === 'object' && err.code) return err;
+
+        // Angular HttpErrorResponse shape: err.error je server payload
+        const maybeError = (err && typeof err === 'object' && 'error' in err) ? (err as any).error : null;
+        if (maybeError) return maybeError;
+
+    // Some legacy endpoints return a plain string.
+        if (typeof err === 'string') return { message: err };
+
+        return err;
+    }
+
+    // =================================================================================================
+    // VM BUILDING (single source of truth for template)
+    // =================================================================================================
+
+    private buildVm(d: any): Vm {
+        const header: VmTournamentHeader = {
+            name: this.safeText(d?.t?.t02),
+            iso2: this.safeText(d?.t?.t05, ''),
+            iso3: this.safeText(d?.t?.t04, ''),
+            countryName: this.safeText(d?.t?.t06, ''),
+            round: this.safeText(d?.m022),
+            surface: this.safeText(d?.m020),
+            dateText: this.formatMatchDate(d?.m003),
+            prizeText: this.formatPrize(d),
+        };
+
+        const p1 = this.mapPlayer(d?.p1, d, 'p1');
+        const p2 = this.mapPlayer(d?.p2, d, 'p2');
+
+        // finished + scores
+        const scoreMainRaw = this.safeText(d?.m010, '');
+        const m011Raw = this.safeText(d?.m011, '');
+
+        const setTokens = this.parseSetTokensFromM011(m011Raw, scoreMainRaw);
+        const scoreSets = this.formatSetsFromTokens(setTokens);
+
+        // main score from sets if possible, else fallback to m010
+        const mainFromSets = this.formatMainFromSets(setTokens);
+        const scoreMain = this.predictionAllowed
+            ? mainFromSets ?? this.formatMainScore(scoreMainRaw)
+            : this.formatMainScore(scoreMainRaw);
+
+        // finished: best-effort
+        const finished = this.isFinished(d, scoreMain, scoreSets);
+
+        // NN prob: m655 = P1 % (0..100)
+        const p1Pct = typeof d?.m655 === 'number' ? d.m655 : NaN;
+        if (this.predictionAllowed && isFinite(p1Pct)) {
+            p1.nnProb = Math.min(1, Math.max(0, p1Pct / 100));
+            p2.nnProb = 1 - p1.nnProb;
+        }
+
+        // NN
+        const nn = this.predictionAllowed ? this.buildNnVm(d?.n) : null;
+
+        // Odds: m012/m013
+        const bestP1 = this.bestOddsP1Row;
+        const bestP2 = this.bestOddsP2Row;
+
+        p1.odds = this.numOrUndef(d?.m012) ?? this.numOrUndef(bestP1?.o05);
+        p2.odds = this.numOrUndef(d?.m013) ?? this.numOrUndef(bestP2?.o06);
+
+        // Edge = NNprob - impliedProb
+        const edgeP1 = this.edge(p1.nnProb, p1.odds);
+        const edgeP2 = this.edge(p2.nnProb, p2.odds);
+
+        // Bet side: threshold 0.03, only one side
+        const thr = 0.03;
+        const ok1 = typeof edgeP1 === 'number' && edgeP1 >= thr;
+        const ok2 = typeof edgeP2 === 'number' && edgeP2 >= thr;
+        const betSide: Vm['betSide'] = ok1 && !ok2 ? 'p1' : ok2 && !ok1 ? 'p2' : null;
+
+        // PL: for finished match, assume P1 is winner per original rule
+        let pl: number | undefined = undefined;
+        if (finished && betSide) {
+            if (betSide === 'p1' && typeof p1.odds === 'number' && p1.odds > 0) pl = p1.odds - 1;
+            else if (betSide === 'p2') pl = -1;
+        }
+
+        return {
+            header,
+            p1,
+            p2,
+            finished,
+            scoreMain: finished ? scoreMain || '—' : '—',
+            scoreSets: finished ? scoreSets : '',
+            edgeP1,
+            edgeP2,
+            betSide,
+            pl,
+            nn,
+        };
+    }
+
+    private mapPlayer(p: any, d: any, side: 'p1' | 'p2'): VmPlayer {
+        // Rank/seed from minified match keys
+        const rank = this.numOrUndef(side === 'p1' ? d?.m006 : d?.m007);
+        const seed = this.safeText(side === 'p1' ? d?.m008 : d?.m009, '');
+        const pid = side === 'p1' ? d?.m004 : d?.m005;
+        return {
+            playerTPId: pid,
+            name: this.safeText(p?.p02),
+            iso2: this.safeText(p?.p05, ''),
+            iso3: this.safeText(p?.p04, ''),
+            countryName: this.safeText(p?.p06, 'World'),
+            rank,
+            seed: seed || undefined,
+
+            born: this.formatBornWithAge(p?.p09),
+            plays: this.safeText(p?.p14, ''),
+            height: this.numOrUndef(p?.p10) ? `${Number(p.p10)} cm` : '',
+            weight: this.numOrUndef(p?.p11) ? `${Number(p.p11)} kg` : '',
+
+            // summary TS mean for player (if present)
+            tsMean: this.numOrUndef(p?.trueSkillMean),
+        };
+    }
+
+    // =================================================================================================
+    // NN TAB
+    // ================================================================================================= 
+    get predictionAllowed(): boolean {
+        const status = this.match?.qualityStatus;
+        const detailsQuality = this.raw?.q;
+        if (detailsQuality && (detailsQuality.predictionEligible !== true ||
+            !['Validated', 'Incomplete'].includes(detailsQuality.status))) return false;
+        // Shared links start with a narrow public summary. Only the guarded
+        // details response may supply its missing eligibility assessment.
+        const eligible = this.match?.predictionEligible ??
+            (detailsQuality?.status === status ? detailsQuality?.predictionEligible : undefined);
+        return eligible !== false &&
+            (!status || eligible === true) &&
+            (!status || ['Validated', 'Incomplete'].includes(status));
+    }
+
+    private buildNnVm(nn?: MatchDetailsNeuralNetworkDTO | null): NnTabVm | null {
+        if (!nn?.f) {
+            return null;
+        }
+
+        // These are the actual annual model inputs, on its authenticated left/right
+        // axis. Do not reinterpret P1/P2 input names as the winner-first grid order.
+        if (String(nn.v ?? '').startsWith('annual-161-v1:')) {
+            const values = nn.f.a;
+            if (!values || nn.c !== 161 || !nn.axis) return null;
+            const items = Object.entries(values).map(([featureName, value]) => ({
+                minifiedKey: featureName, featureName, label: featureName,
+                value, displayValue: this.formatNnFeatureValue(value),
+            }));
+            const playerName = (id: number) => {
+                const data = this.raw;
+                if (data?.m004 === id) return String(data.p1?.p02 ?? id);
+                if (data?.m005 === id) return String(data.p2?.p02 ?? id);
+                return String(id);
+            };
+            return {
+                version: String(nn.v), modelFamily: nn.m ?? 'LightGBM',
+                includeH2h: items.some(item => item.featureName.includes('H2H') || item.featureName.startsWith('TS5L_H_')),
+                groupCount: 1, featureCount: items.length, modelFeatureCount: nn.c,
+                featureSnapshotComplete: items.length === nn.c,
+                groups: [{ id: 'a', title: this.nnText('nn.annual.inputs', 'Model inputs'), items, visible: true }],
+                inputPerspective: this.nnText('nn.annual.axis', 'Input axis (P1 / P2):') + ' ' +
+                    playerName(nn.axis.leftPlayerTPId) + ' / ' + playerName(nn.axis.rightPlayerTPId),
+                provenance: nn.warning,
+            };
+        }
+
+        const groups: NnFeatureGroupVm[] = NN_FEATURE_GROUPS.map(groupDef => {
+            const rawGroup = nn.f?.[groupDef.id] as Record<string, unknown> | undefined;
+
+            const items: NnFeatureItemVm[] = groupDef.definitions
+                .filter(def => rawGroup && Object.prototype.hasOwnProperty.call(rawGroup, def.key))
+                .map(def => {
+                    const value = rawGroup?.[def.key];
+
+                    return {
+                        minifiedKey: def.key,
+                        featureName: def.featureName,
+                        label: this.nnText('nn.features.' + def.featureName + '.label', def.label),
+                        value,
+                        displayValue: this.formatNnFeatureValue(value),
+                    };
+                });
+
+            return {
+                id: groupDef.id,
+                title: this.nnText('nn.groups.' + groupDef.id, groupDef.title),
+                items,
+                visible: items.length > 0,
+            };
+        }).filter(g => g.visible);
+
+        const featureCount = groups.reduce((sum, group) => sum + group.items.length, 0);
+        const modelFeatureCount = this.resolveNnModelFeatureCount(nn, featureCount);
+
+        return {
+            version: String(nn.v ?? '—'),
+            modelFamily: nn.m ?? '—',
+            includeH2h: nn.h === true || nn.h === 1,
+            groupCount: groups.length,
+            featureCount,
+            modelFeatureCount,
+            featureSnapshotComplete: featureCount === modelFeatureCount,
+            groups,
+        };
+    }
+
+    private resolveNnModelFeatureCount(
+        nn: MatchDetailsNeuralNetworkDTO,
+        archivedFeatureCount: number,
+    ): number {
+        const version = String(nn.v ?? '').toLowerCase();
+        const family = String(nn.m ?? '').toLowerCase();
+
+        return version.startsWith('phase5m-atp-') ||
+            version.startsWith('phase5n-atp-') ||
+            family === 'p5m-q6' ||
+            family === 'p5n-q6r'
+            ? 119
+            : archivedFeatureCount;
+    }
+
+    private formatNnFeatureValue(value: unknown): string {
+        if (value === null || value === undefined) {
+            return '—';
+        }
+
+        if (typeof value === 'boolean') {
+            return this.regional.text(value ? 'matchDetails.yes' : 'matchDetails.no');
+        }
+
+        if (typeof value === 'number') {
+            if (Number.isInteger(value)) {
+                return String(value);
+            }
+
+            const abs = Math.abs(value);
+
+            if (abs >= 100) {
+                return this.regional.number(value, 2);
+            }
+
+            if (abs >= 1) {
+                return this.regional.number(value, 4);
+            }
+
+            if (abs >= 0.01) {
+                return this.regional.number(value, 6);
+            }
+
+            return this.regional.number(value, 8);
+        }
+
+        return String(value);
+    }
+
+    public activeNnSection: 'overview' | NnGroupId = 'overview';
+
+    public setActiveNnSection(section: 'overview' | NnGroupId): void {
+        this.activeNnSection = section;
+    }
+
+    public isActiveNnSection(section: 'overview' | NnGroupId): boolean {
+        return this.activeNnSection === section;
+    }
+
+    public get nnSectionTabs(): { id: 'overview' | NnGroupId; title: string }[] {
+        const groups = this.vm?.nn?.groups ?? [];
+
+        return [
+            { id: 'overview', title: this.regional.text('details.overview') },
+            ...groups.map(group => ({
+                id: group.id,
+                title: group.title,
+            })),
+        ];
+    }
+
+    public get activeNnGroup(): NnFeatureGroupVm | null {
+        if (!this.vm?.nn || this.activeNnSection === 'overview') {
+            return null;
+        }
+
+        return this.vm.nn.groups.find(group => group.id === this.activeNnSection) ?? null;
+    }
+
+    // =================================================================================================
+    // AVATARS
+    // =================================================================================================
+
+    playerAvatarUrlById(tpId?: number): string {
+        if (!tpId || this.isPreview) return this.staticArchives.getDefaultPlayerPhotoUrl(this.genderHint);
+    // Send a gender hint so the backend can choose the correct default image.
+        return this.staticArchives.getPlayerPhotoUrl(tpId, this.genderHint);
+    }
+
+    onAvatarError(ev: Event): void {
+        const img = ev.target as HTMLImageElement;
+        img.src = this.staticArchives.getDefaultPlayerPhotoUrl(this.genderHint === 'W' ? 'W' : 'M');
+    }
+
+
+    // =================================================================================================
+    // PERFORMANCE TAB (W/L metrics)
+    // =================================================================================================
+
+    /** Expose perfKey builder to template. */
+    public perfKey(
+        unit: PerfUnit,
+        player: 1 | 2,
+        time: TimeScope,
+        surface: SurfaceScope,
+        metric: WlMetric
+    ): string {
+        return perfKey(unit, player, time, surface, metric);
+    }
+
+    /** Expose daysSince key builder to template. */
+    public daysSinceKey(player: 1 | 2, last: LastResult, surface: SurfaceScope): string {
+        return daysSinceKey(player, last, surface);
+    }
+
+    // click handlers (state receives option.value only)
+    setPerfUnit(v: PerfUnit) {
+        this.activePerfUnit = v;
+    }
+    setPerfTime(v: TimeScope) {
+        this.activePerfTime = v;
+    }
+    setPerfSurface(v: SurfaceScope) {
+        this.activePerfSurface = v;
+    }
+
+    getW(player: 1 | 2): number {
+        const k = perfKey(this.activePerfUnit, player, this.activePerfTime, this.activePerfSurface, 'W');
+        return getNullableNumber(this._details, k) ?? NaN;
+    }
+
+    getL(player: 1 | 2): number {
+        const k = perfKey(this.activePerfUnit, player, this.activePerfTime, this.activePerfSurface, 'L');
+        return getNullableNumber(this._details, k) ?? NaN;
+    }
+
+    getWinPct(player: 1 | 2): number {
+        const w = this.getW(player);
+        const l = this.getL(player);
+        const total = w + l;
+        return Number.isFinite(total) && total > 0 ? (w / total) * 100 : NaN;
+    }
+
+    // =================================================================================================
+    // FORM TAB (days since last win/loss + derived last result)
+    // =================================================================================================
+
+    getDaysSinceLastWin(player: 1 | 2, surface: SurfaceScope): number {
+        const k = daysSinceKey(player, 'WIN', surface);
+        return getNullableNumber(this._details, k) ?? NaN;
+    }
+
+    getDaysSinceLastLoss(player: 1 | 2, surface: SurfaceScope): number {
+        const k = daysSinceKey(player, 'LOSS', surface);
+        return getNullableNumber(this._details, k) ?? NaN;
+    }
+
+    /**
+     * Last result heuristic:
+     * - if daysSinceWin < daysSinceLoss => last was WIN
+     * - if one missing => assume the other exists
+     */
+    getLastResult(player: 1 | 2, surface: SurfaceScope = 'ALL'): 'WIN' | 'LOSS' | 'N/A' {
+        const w = this.getDaysSinceLastWin(player, surface);
+        const l = this.getDaysSinceLastLoss(player, surface);
+
+        if (!Number.isFinite(w) && !Number.isFinite(l)) return 'N/A';
+        if (!Number.isFinite(w)) return 'LOSS';
+        if (!Number.isFinite(l)) return 'WIN';
+        if (w === l) return 'N/A';
+
+        return w <= l ? 'WIN' : 'LOSS';
+    }
+
+    fmtDays(v: number): string {
+        return Number.isFinite(v) && v >= 0 ? `${v}` : '—';
+    }
+
+    fmtStat(v: number, percent = false): string {
+        if (!Number.isFinite(v)) return '—';
+        return this.regional.number(v, percent ? 1 : 0) + (percent ? '%' : '');
+    }
+
+    getDaysSinceLastMatch(player: 1 | 2, surface: SurfaceScope): number {
+        const w = this.getDaysSinceLastWin(player, surface);
+        const l = this.getDaysSinceLastLoss(player, surface);
+
+        if (!Number.isFinite(w) && !Number.isFinite(l)) return NaN;
+        if (!Number.isFinite(w)) return l;
+        if (!Number.isFinite(l)) return w;
+
+        return Math.min(w, l);
+    }
+
+    getMoreRecentWas(player: 1 | 2, surface: SurfaceScope): 'WIN' | 'LOSS' | 'N/A' {
+        return this.getLastResult(player, surface);
+    }
+
+    // =================================================================================================
+    // ROLE STATS TAB (minified key mapping)
+    // =================================================================================================
+
+    private roleKey(metric: RoleMetric, player: 1 | 2, side: RoleSide, time: RoleTimeScope): string {
+        // Base starts per time window
+        const baseByTime: Record<RoleTimeScope, number> = {
+            ALL: 418,
+            YEAR: 434,
+            MONTH: 450,
+            WEEK: 466,
+        };
+
+        const base = baseByTime[time];
+
+        // Order inside each time block:
+        // 0..7   => counts (wins fav/dog, losses fav/dog) for P1/P2 interleaved by player (as per DTO)
+        // 8..15  => avgs (wp at won fav/dog, wp at loss fav/dog) for P1/P2 interleaved by player
+        const isAvg = metric === 'AVG_WP_WON' || metric === 'AVG_WP_LOST';
+        const offsetBase = isAvg ? 8 : 0;
+
+        // player offset: P1 is even keys, P2 is odd keys (m418 P1, m419 P2, ...)
+        const playerOffset = player === 1 ? 0 : 1;
+
+        // side offsets within (fav,dog) pair
+        const sideOffset = side === 'FAV' ? 0 : 2;
+
+        // counts: wins keys start at base+0 (fav) and base+2 (dog), losses at base+4/+6
+        const countOutcomeOffset =
+            metric === 'WINS' ? 0 : metric === 'LOSSES' ? 4 : 0;
+
+        // avgs: AVG_WP_WON at offsets 0(fav)/2(dog), AVG_WP_LOST at offsets 4(fav)/6(dog)
+        const avgOutcomeOffset =
+            metric === 'AVG_WP_WON' ? 0 : metric === 'AVG_WP_LOST' ? 4 : 0;
+
+        const outcomeOffset = isAvg ? avgOutcomeOffset : countOutcomeOffset;
+
+        const idx = base + offsetBase + outcomeOffset + sideOffset + playerOffset;
+        return `m${String(idx).padStart(3, '0')}`;
+    }
+
+    getRoleCount(metric: 'WINS' | 'LOSSES', player: 1 | 2, side: RoleSide): number {
+        const k = this.roleKey(metric, player, side, this.activeRoleTime);
+        return getNullableNumber(this._details, k) ?? NaN;
+    }
+
+    getRoleAvg(metric: 'AVG_WP_WON' | 'AVG_WP_LOST', player: 1 | 2, side: RoleSide): number {
+        const k = this.roleKey(metric, player, side, this.activeRoleTime);
+        return getNullableNumber(this._details, k) ?? NaN;
+    }
+
+    getRoleMatches(player: 1 | 2, side: RoleSide): number {
+        const w = this.getRoleCount('WINS', player, side);
+        const l = this.getRoleCount('LOSSES', player, side);
+        return w + l;
+    }
+
+    getRoleWinPct(player: 1 | 2, side: RoleSide): number {
+        const w = this.getRoleCount('WINS', player, side);
+        const l = this.getRoleCount('LOSSES', player, side);
+        const total = w + l;
+        return Number.isFinite(total) && total > 0 ? (w / total) * 100 : NaN;
+    }
+
+    getRoleSharePct(player: 1 | 2, side: RoleSide): number {
+        const fav = this.getRoleMatches(player, 'FAV');
+        const dog = this.getRoleMatches(player, 'DOG');
+        const total = fav + dog;
+        const part = side === 'FAV' ? fav : dog;
+        return Number.isFinite(total) && total > 0 ? (part / total) * 100 : NaN;
+    }
+
+    wpPct01(v: number): string {
+        if (!Number.isFinite(v)) return '—';
+        return `${this.regional.number(v * 100, 1)}%`;
+    }
+
+    // =================================================================================================
+    // H2H TAB
+    // =================================================================================================
+
+    /** H2H record (wins/losses) keys. */
+    private h2hRecordKey(player: 1 | 2, surface: H2HSurface, isOld: boolean): string {
+        // current: m482..m491 (ALL,S1..S4)
+        // old:     m492..m501
+        const base = isOld ? 492 : 482;
+        const sIdx = surface === 'ALL' ? 0 : Number(surface.substring(1)); // S1->1
+        const offset = sIdx * 2 + (player === 1 ? 0 : 1);
+        const idx = base + offset;
+        return `m${String(idx).padStart(3, '0')}`;
+    }
+
+    getH2HWins(player: 1 | 2, surface: H2HSurface, isOld = false): number {
+        return getNumber(this._details, this.h2hRecordKey(player, surface, isOld));
+    }
+
+    // ---------- H2H TS (ALL surface only, for M/SM/GSM) ----------
+    private h2hTsKey(mode: H2HMode, player: 1 | 2, metric: 'MU' | 'SD', isOld: boolean): string {
+        // M:
+        //  current P1 mu m502 sd m503 | P2 mu m504 sd m505
+        //  old     P1 mu m506 sd m507 | P2 mu m508 sd m509
+        //  wp P1 = m510
+        //
+        // SM:
+        //  current P1 mu m511 sd m512 | P2 mu m513 sd m514
+        //  old     P1 mu m515 sd m516 | P2 mu m517 sd m518
+        //  wp P1 = m519
+        //
+        // GSM:
+        //  current P1 mu m520 sd m521 | P2 mu m522 sd m523
+        //  old     P1 mu m524 sd m525 | P2 mu m526 sd m527
+        //  wp P1 = m528
+
+        const map: Record<H2HMode, { curBase: number; oldBase: number }> = {
+            M: { curBase: 502, oldBase: 506 },
+            SM: { curBase: 511, oldBase: 515 },
+            GSM: { curBase: 520, oldBase: 524 },
+        };
+
+        const base = isOld ? map[mode].oldBase : map[mode].curBase;
+        const playerOffset = player === 1 ? 0 : 2;
+        const metricOffset = metric === 'MU' ? 0 : 1;
+        const idx = base + playerOffset + metricOffset;
+
+        return `m${String(idx).padStart(3, '0')}`;
+    }
+
+    getH2HTsMu(mode: H2HMode, player: 1 | 2, isOld = false): number {
+        return getNullableNumber(this._details, this.h2hTsKey(mode, player, 'MU', isOld)) ?? 0;
+    }
+
+    getH2HTsSd(mode: H2HMode, player: 1 | 2, isOld = false): number {
+        return getNullableNumber(this._details, this.h2hTsKey(mode, player, 'SD', isOld)) ?? 0;
+    }
+
+    private h2hWpKey(mode: H2HMode, surface: H2HSurface): string | null {
+        // WP exists for ALL + per-surface blocks:
+        // ALL: M m510, SM m519, GSM m528
+        if (surface === 'ALL') {
+            const map: Record<H2HMode, number> = { M: 510, SM: 519, GSM: 528 };
+            return `m${String(map[mode]).padStart(3, '0')}`;
+        }
+
+        // per surface:
+        // MS1 wp m537, MS2 m564, MS3 m591, MS4 m618
+        // SMS1 wp m546, SMS2 m573, SMS3 m600, SMS4 m627
+        // GSMS1 wp m555, GSMS2 m582, GSMS3 m609, GSMS4 m636
+        const s = Number(surface.substring(1)); // 1..4
+
+        const wpByMode: Record<H2HMode, number[]> = {
+            M: [537, 564, 591, 618],
+            SM: [546, 573, 600, 627],
+            GSM: [555, 582, 609, 636],
+        };
+
+        return `m${String(wpByMode[mode][s - 1]).padStart(3, '0')}`;
+    }
+
+    getH2HWinProbP1(mode: H2HMode, surface: H2HSurface): number {
+        const k = this.h2hWpKey(mode, surface);
+        return k ? (getNullableNumber(this._details, k) ?? 0) : 0;
+    }
+
+    // ---------- H2H TS per-surface (M/SM/GSM) ----------
+    private h2hSurfaceTsKey(
+        mode: H2HMode,
+        surface: Exclude<H2HSurface, 'ALL'>,
+        player: 1 | 2,
+        metric: 'MU' | 'SD',
+        isOld: boolean
+    ): string {
+        const s = Number(surface.substring(1)); // 1..4
+
+        // Base per surface groups:
+        // M:   MS1 529..536, MS2 556..563, MS3 583..590, MS4 610..617
+        // SM:  SMS1 538..545, SMS2 565..572, SMS3 592..599, SMS4 619..626
+        // GSM: GSMS1 547..554, GSMS2 574..581, GSMS3 601..608, GSMS4 628..635
+        const bases: Record<H2HMode, number[]> = {
+            M: [529, 556, 583, 610],
+            SM: [538, 565, 592, 619],
+            GSM: [547, 574, 601, 628],
+        };
+
+        const base = bases[mode][s - 1];
+
+        // ordering: P1 cur mu/sd (0/1), P2 cur mu/sd (2/3), P1 old mu/sd (4/5), P2 old mu/sd (6/7), wp (8)
+        const playerOffset = player === 1 ? 0 : 2;
+        const oldOffset = isOld ? 4 : 0;
+        const metricOffset = metric === 'MU' ? 0 : 1;
+
+        const idx = base + oldOffset + playerOffset + metricOffset;
+        return `m${String(idx).padStart(3, '0')}`;
+    }
+
+    getH2HSurfaceTsMu(
+        mode: H2HMode,
+        surface: Exclude<H2HSurface, 'ALL'>,
+        player: 1 | 2,
+        isOld = false
+    ): number {
+        return getNullableNumber(this._details, this.h2hSurfaceTsKey(mode, surface, player, 'MU', isOld)) ?? 0;
+    }
+
+    getH2HSurfaceTsSd(
+        mode: H2HMode,
+        surface: Exclude<H2HSurface, 'ALL'>,
+        player: 1 | 2,
+        isOld = false
+    ): number {
+        return getNullableNumber(this._details, this.h2hSurfaceTsKey(mode, surface, player, 'SD', isOld)) ?? 0;
+    }
+
+    // =================================================================================================
+    // ODDS helpers (latest per bookie + full history on expand)
+    // ================================================================================================
+
+    private toNum(v: any): number | null {
+        const n = Number(v);
+        return Number.isFinite(n) ? n : null;
+    }
+
+    /** Pretty number for odds cells */
+    oddsNum(v: any): string {
+        const n = this.toNum(v);
+        if (n === null || n <= 0) return '—';
+        return this.regional.number(n, 2);
+    }
+
+    /** Convert odds to implied probability (0..1) */
+    oddsImplied(odds: any): number | null {
+        const o = this.toNum(odds);
+        if (o === null || o <= 0) return null;
+        return 1 / o;
+    }
+
+    /** Render 0..1 as percent text */
+    oddsPct01(p01: any): string {
+        const p = this.toNum(p01);
+        if (p === null) return '—';
+        return `${this.regional.number(p * 100, 1)}%`;
+    }
+
+    /** Bookmaker margin (overround) from a row */
+    overroundPct(r: OddsRow): string {
+        const p1 = this.oddsImplied(r?.o05);
+        const p2 = this.oddsImplied(r?.o06);
+        if (p1 === null || p2 === null) return '—';
+        const over = (p1 + p2 - 1) * 100;
+        return `${this.regional.number(over, 2)}%`;
+    }
+
+    /** Best odds rows */
+    get bestOddsP1Row(): OddsRow | null {
+        let best: OddsRow | null = null;
+        let bestVal = -Infinity;
+
+        for (const r of this.oddsRows) {
+            if (!this.isCleanOddsRow(r)) continue;
+            const v = this.toNum(r?.o05);
+            if (v !== null && v > bestVal) {
+                bestVal = v;
+                best = r;
+            }
+        }
+
+        return best;
+    }
+
+    get bestOddsP2Row(): OddsRow | null {
+        let best: OddsRow | null = null;
+        let bestVal = -Infinity;
+
+        for (const r of this.oddsRows) {
+            if (!this.isCleanOddsRow(r)) continue;
+            const v = this.toNum(r?.o06);
+            if (v !== null && v > bestVal) {
+                bestVal = v;
+                best = r;
+            }
+        }
+
+        return best;
+    }
+
+    /** Market summary (min/median/max) */
+    private marketSummary(side: 'p1' | 'p2'): { min: number | null; med: number | null; max: number | null } {
+        const key = side === 'p1' ? 'o05' : 'o06';
+
+        const vals = this.oddsRows
+            .filter(r => this.isCleanOddsRow(r))
+            .map(r => this.toNum((r as any)?.[key]))
+            .filter((n): n is number => n !== null && n > 0)
+            .sort((a, b) => a - b);
+
+        if (!vals.length) return { min: null, med: null, max: null };
+
+        const min = vals[0];
+        const max = vals[vals.length - 1];
+        const mid = Math.floor(vals.length / 2);
+        const med = vals.length % 2 === 1 ? vals[mid] : (vals[mid - 1] + vals[mid]) / 2;
+
+        return { min, med, max };
+    }
+
+    marketMinP1(): number | null { return this.marketSummary('p1').min; }
+    marketMedP1(): number | null { return this.marketSummary('p1').med; }
+    marketMaxP1(): number | null { return this.marketSummary('p1').max; }
+
+    marketMinP2(): number | null { return this.marketSummary('p2').min; }
+    marketMedP2(): number | null { return this.marketSummary('p2').med; }
+    marketMaxP2(): number | null { return this.marketSummary('p2').max; }
+
+    expandedBookieId: number | null = null;
+
+    toggleBookie(bookieId: number): void {
+        this.expandedBookieId = this.expandedBookieId === bookieId ? null : bookieId;
+    }
+
+    get oddsRows(): OddsRow[] {
+        const rawOdds = (this._details as any)?.o;
+        if (!Array.isArray(rawOdds) || !rawOdds.length) return [];
+
+        // The legacy format always identifies the winner.
+        if (this.isLegacyOddsArray(rawOdds)) {
+            return this.activeOddsMarket === 'winner' ? rawOdds : [];
+        }
+
+        if (!this.isNestedOddsArray(rawOdds)) return [];
+
+        switch (this.activeOddsMarket) {
+            case 'winner':
+                return this.buildWinnerOddsRowsFromNested(rawOdds);
+
+            case 'totals':
+                return this.buildTotalsOddsRowsFromNested(rawOdds);
+
+            case 'handicap':
+                return this.buildHandicapOddsRowsFromNested(rawOdds);
+            case 'correctScore':
+                return [];
+            default:
+                return [];
+        }
+    }
+
+    private isLegacyOddsArray(value: any[]): value is OddsRow[] {
+        return !!value.length && typeof value[0]?.o01 === 'number';
+    }
+
+    private isNestedOddsArray(value: any[]): value is BetTypeGroupDTOv2[] {
+        return !!value.length && typeof value[0]?.i === 'number' && Array.isArray(value[0]?.m);
+    }
+
+    private buildWinnerOddsRowsFromNested(groups: BetTypeGroupDTOv2[]): OddsRow[] {
+        const winnerGroup = groups.find(g => g?.i === 1);
+        if (!winnerGroup?.m?.length) return [];
+
+        const market = winnerGroup.m[0];
+        if (!market?.x?.length) return [];
+
+        const p1Selection =
+            market.x.find(s => s?.p === this._details?.['m004']) ??
+            market.x.find(s => s?.k?.toLowerCase?.() === 'p1');
+
+        const p2Selection =
+            market.x.find(s => s?.p === this._details?.['m005']) ??
+            market.x.find(s => s?.k?.toLowerCase?.() === 'p2');
+
+        if (!p1Selection || !p2Selection) return [];
+
+        const p1Offers = Array.isArray(p1Selection.o) ? p1Selection.o : [];
+        const p2Offers = Array.isArray(p2Selection.o) ? p2Selection.o : [];
+
+        return this.buildPairedOddsRows(p1Offers, p2Offers);
+    }
+
+    private buildTotalsOddsRowsFromNested(groups: BetTypeGroupDTOv2[]): OddsRow[] {
+        const totalsGroup = groups.find(g => g?.i === 2);
+        if (!totalsGroup?.m?.length) return [];
+
+        const market = this.getActiveNestedMarket();
+        if (!market?.x?.length) return [];
+
+        const overSelection =
+            market.x.find(s => s?.k?.toLowerCase?.() === 'over');
+
+        const underSelection =
+            market.x.find(s => s?.k?.toLowerCase?.() === 'under');
+
+        if (!overSelection || !underSelection) return [];
+
+        const overOffers = Array.isArray(overSelection.o) ? overSelection.o : [];
+        const underOffers = Array.isArray(underSelection.o) ? underSelection.o : [];
+
+        return this.buildPairedOddsRows(overOffers, underOffers);
+    }
+
+    private buildHandicapOddsRowsFromNested(groups: BetTypeGroupDTOv2[]): OddsRow[] {
+        const handicapGroup = groups.find(g => g?.i === 3);
+        if (!handicapGroup?.m?.length) return [];
+
+        const market = this.getActiveNestedMarket();
+        if (!market?.x?.length) return [];
+
+        const p1Selection =
+            market.x.find(s => s?.p === this._details?.['m004']) ??
+            market.x.find(s => s?.k?.toLowerCase?.() === 'p1');
+
+        const p2Selection =
+            market.x.find(s => s?.p === this._details?.['m005']) ??
+            market.x.find(s => s?.k?.toLowerCase?.() === 'p2');
+
+        if (!p1Selection || !p2Selection) return [];
+
+        const p1Offers = Array.isArray(p1Selection.o) ? p1Selection.o : [];
+        const p2Offers = Array.isArray(p2Selection.o) ? p2Selection.o : [];
+
+        return this.buildPairedOddsRows(p1Offers, p2Offers);
+    }
+
+    private toUnifiedOddsRow(
+        left?: BookieOfferDTOv2,
+        right?: BookieOfferDTOv2
+    ): OddsRow | null {
+        if (!left || !right) return null;
+
+        const o01 = Number(left.b);
+        const o05 = Number(left.q);
+        const o06 = Number(right.q);
+
+        if (!Number.isFinite(o01) || !Number.isFinite(o05) || !Number.isFinite(o06)) {
+            return null;
+        }
+
+        const leftSeries = Number(left.r ?? 0);
+        const rightSeries = Number(right.r ?? 0);
+
+        return {
+            o01,
+            o02: this.getBookieName(o01),
+            o03: left.d ?? right.d,
+            o04: Math.max(leftSeries, rightSeries),
+            o05,
+            o06,
+            o07: false,
+            o08: false,
+            o09: 0,
+            o10: left.d ?? right.d,
+        };
+    }
+
+    private pickLatestOfferForBookie(offers: BookieOfferDTOv2[], bookieId: number): BookieOfferDTOv2 | undefined {
+        const rows = offers
+            .filter(x => Number(x?.b) === Number(bookieId))
+            .slice()
+            .sort((a, b) => {
+                const tb = this.offerTimeMs(b) ?? -1;
+                const ta = this.offerTimeMs(a) ?? -1;
+                if (tb !== ta) return tb - ta;
+                return Number(b?.r ?? 0) - Number(a?.r ?? 0);
+            });
+
+        return rows[0];
+    }
+
+    private readonly bookieNames: Record<number, string> = {
+        1: '10Bet',
+        2: 'bet-at-home',
+        3: 'bet365',
+        4: 'Betfair',
+        5: 'Betsafe',
+        6: 'Betsson',
+        7: 'BetVictor',
+        8: 'Betway',
+        9: 'bwin',
+        10: 'Interwetten',
+        11: 'Ladbrokes',
+        12: 'Pinnacle',
+        13: 'Unibet',
+        14: 'William Hill',
+        15: 'BoyleSports',
+        16: '1xBet',
+        17: 'Coral',
+        18: 'ComeOn',
+        // IDs mirror dbo.Bookie because the nested v2 odds archive stores persisted BookieId values.
+    };
+
+    private getBookieName(bookieId: number): string {
+        return this.bookieNames[bookieId] ?? `Bookie #${bookieId}`;
+    }
+
+    private offerTimeMs(o?: BookieOfferDTOv2): number | null {
+        if (!o?.d) return null;
+        const ms = new Date(o.d).getTime();
+        return Number.isFinite(ms) ? ms : null;
+    }
+
+    private isCleanOddsRow(r: OddsRow): boolean {
+        const suspicious = !!r.o07 || !!r.o08 || ((r.o09 ?? 0) !== 0);
+        return !suspicious && (r.o05 ?? 0) > 0 && (r.o06 ?? 0) > 0;
+    }
+
+    private oddsTimeMs(r: OddsRow): number | null {
+      const v: unknown = r.o03; // Keep the value unknown before narrowing with instanceof.
+        if (!v) return null;
+
+        const d = (v instanceof Date) ? v : new Date(v as any);
+        const ms = d.getTime();
+        return Number.isFinite(ms) ? ms : null;
+    }
+
+    private seriesOrdinal(r: OddsRow): number {
+        return Number.isFinite(r.o04 as number) ? Number(r.o04) : 0;
+    }
+
+  /** Returns every clean odds item without filtering by series. */
+    get cleanOddsRows(): OddsRow[] {
+        return this.oddsRows.filter(r => this.isCleanOddsRow(r));
+    }
+
+  /** Returns the latest row per bookmaker by time, falling back to seriesOrdinal. */
+    get latestOddsByBookie(): OddsRow[] {
+        const best = new Map<number, OddsRow>();
+
+        for (const r of this.cleanOddsRows) {
+            const id = Number(r.o01);
+            const cur = best.get(id);
+            if (!cur) { best.set(id, r); continue; }
+
+            const tA = this.oddsTimeMs(r) ?? -1;
+            const tB = this.oddsTimeMs(cur) ?? -1;
+
+            if (tA !== tB) {
+                if (tA > tB) best.set(id, r);
+                continue;
+            }
+
+      // Fall back to seriesOrdinal, where larger values are newer.
+            if (this.seriesOrdinal(r) > this.seriesOrdinal(cur)) {
+                best.set(id, r);
+            }
+        }
+
+        return Array.from(best.values()).sort((a, b) => (a.o02 ?? '').localeCompare(b.o02 ?? ''));
+    }
+
+  /** Returns a bookmaker's full history newest-first, with a seriesOrdinal fallback. */
+    bookieHistory(bookieId: number): OddsRow[] {
+        const id = Number(bookieId);
+
+        const rows = this.oddsRows
+            .filter(r => Number(r?.o01) === id)
+            .filter(r => this.isCleanOddsRow(r))
+            .slice();
+
+        rows.sort((a, b) => {
+            const tb = this.oddsTimeMs(b) ?? -1;
+            const ta = this.oddsTimeMs(a) ?? -1;
+            if (tb !== ta) return tb - ta;
+
+            const sb = this.seriesOrdinal(b);
+            const sa = this.seriesOrdinal(a);
+            return sb - sa;
+        });
+
+        return rows;
+    }
+
+    private getOddsBetTypeId(market: OddsMarket): number {
+        switch (market) {
+            case 'winner': return 1;
+            case 'totals': return 2;
+            case 'handicap': return 3;
+            case 'correctScore': return 4;
+            default: return 1;
+        }
+    }
+
+    private normalizeScope(scope: unknown): OddsScope | null {
+        const s = String(scope ?? '').trim().toLowerCase();
+        if (s === 'games') return 'games';
+        if (s === 'sets') return 'sets';
+        return null;
+    }
+
+    get availableOddsMarkets(): OddsMarket[] {
+        const rawOdds = (this._details as any)?.o;
+
+        if (Array.isArray(rawOdds) && rawOdds.length && this.isLegacyOddsArray(rawOdds)) {
+            return ['winner'];
+        }
+
+        const groups = this.nestedOddsGroups;
+        const result: OddsMarket[] = [];
+
+        if (groups.some(g => g?.i === 1 && Array.isArray(g.m) && g.m.length > 0)) result.push('winner');
+        if (groups.some(g => g?.i === 2 && Array.isArray(g.m) && g.m.length > 0)) result.push('totals');
+        if (groups.some(g => g?.i === 3 && Array.isArray(g.m) && g.m.length > 0)) result.push('handicap');
+        if (groups.some(g => g?.i === 4 && Array.isArray(g.m) && g.m.length > 0)) result.push('correctScore');
+        return result;
+    }
+
+    get activeOddsGroup(): BetTypeGroupDTOv2 | null {
+        const betTypeId = this.getOddsBetTypeId(this.activeOddsMarket);
+        return this.nestedOddsGroups.find(g => g?.i === betTypeId) ?? null;
+    }
+
+    get availableOddsScopes(): OddsScope[] {
+        if (this.activeOddsMarket === 'winner') return [];
+
+        const group = this.activeOddsGroup;
+        if (!group?.m?.length) return [];
+
+        const scopes = new Set<OddsScope>();
+
+        for (const market of group.m) {
+            const scope = this.normalizeScope(market?.s);
+            if (scope) scopes.add(scope);
+        }
+
+        return Array.from(scopes.values());
+    }
+
+    get availableOddsLines(): string[] {
+        if (this.activeOddsMarket === 'winner') return [];
+
+        const group = this.activeOddsGroup;
+        if (!group?.m?.length) return [];
+
+        const lines = new Set<string>();
+
+        for (const market of group.m) {
+            const scope = this.normalizeScope(market?.s);
+
+            if (this.activeOddsScope && scope !== this.activeOddsScope) continue;
+            if (market?.l === null || market?.l === undefined) continue;
+
+            lines.add(String(market.l));
+        }
+
+        return Array.from(lines.values()).sort((a, b) => Number(a) - Number(b));
+    }
+
+    private syncOddsSelection(): void {
+        const availableMarkets = this.availableOddsMarkets;
+
+        if (!availableMarkets.includes(this.activeOddsMarket)) {
+            this.activeOddsMarket = availableMarkets[0] ?? 'winner';
+        }
+
+        if (this.activeOddsMarket === 'winner' || this.activeOddsMarket === 'correctScore') {
+            this.activeOddsScope = null;
+            this.activeOddsLine = null;
+            return;
+        }
+
+        const availableScopes = this.availableOddsScopes;
+
+        if (!availableScopes.length) {
+            this.activeOddsScope = null;
+        } else if (!this.activeOddsScope || !availableScopes.includes(this.activeOddsScope)) {
+            this.activeOddsScope = availableScopes[0];
+        }
+
+        const availableLines = this.availableOddsLines;
+
+        if (!availableLines.length) {
+            this.activeOddsLine = null;
+        } else if (!this.activeOddsLine || !availableLines.includes(this.activeOddsLine)) {
+            this.activeOddsLine = availableLines[0];
+        }
+    }
+
+    setOddsMarket(market: OddsMarket): void {
+        if (this.activeOddsMarket === market) return;
+        this.activeOddsMarket = market;
+        this.syncOddsSelection();
+    }
+
+    setOddsScope(scope: OddsScope): void {
+        if (this.activeOddsScope === scope) return;
+        this.activeOddsScope = scope;
+        this.syncOddsSelection();
+    }
+
+    setOddsLine(line: string | null): void {
+        this.activeOddsLine = line;
+        this.syncOddsSelection();
+    }
+
+    get activeOddsMarketLabel(): string {
+        switch (this.activeOddsMarket) {
+            case 'winner': return this.regional.text('matchDetails.winner');
+            case 'totals': return this.regional.text('matchDetails.totals');
+            case 'handicap': return this.regional.text('matchDetails.handicap');
+            case 'correctScore': return this.regional.text('matchDetails.correctScore');
+            default: return this.regional.text('matchDetails.winner');
+        }
+    }
+
+    get activeOddsDescription(): string {
+        if (this.activeOddsMarket === 'winner') return this.regional.text('matchDetails.showing', { market: this.activeOddsMarketLabel });
+
+        const parts = [this.activeOddsMarketLabel];
+
+        if (this.activeOddsScope) {
+            parts.push(this.regional.text('matchDetails.' + this.activeOddsScope));
+        }
+
+        if (this.activeOddsLine) {
+            parts.push(this.oddsLineLabel(this.activeOddsLine));
+        }
+
+        return this.regional.text('matchDetails.showing', { market: parts.join(' · ') });
+    }
+
+    private getActiveNestedMarket() {
+        const group = this.activeOddsGroup;
+        if (!group?.m?.length) return null;
+
+        if (this.activeOddsMarket === 'winner') {
+            return group.m[0] ?? null;
+        }
+
+        return group.m.find(m => {
+            const scope = this.normalizeScope(m?.s);
+            const line = m?.l !== null && m?.l !== undefined ? String(m.l) : null;
+
+            if (this.activeOddsScope && scope !== this.activeOddsScope) return false;
+            if (this.activeOddsLine && line !== this.activeOddsLine) return false;
+
+            return true;
+        }) ?? null;
+    }
+
+    private buildPairedOddsRows(
+        leftOffers: BookieOfferDTOv2[],
+        rightOffers: BookieOfferDTOv2[]
+    ): OddsRow[] {
+        const rows: OddsRow[] = [];
+        const seen = new Set<string>();
+
+        for (const left of leftOffers) {
+            const matches = rightOffers.filter(right =>
+                Number(right?.b) === Number(left?.b) &&
+                Number(right?.r ?? 0) === Number(left?.r ?? 0)
+            );
+
+            for (const right of matches) {
+                const row = this.toUnifiedOddsRow(left, right);
+                if (!row) continue;
+
+                const key = `${row.o01}|${row.o04}|${row.o03 ?? ''}|${row.o05}|${row.o06}`;
+                if (seen.has(key)) continue;
+                seen.add(key);
+
+                rows.push(row);
+            }
+        }
+
+        if (!rows.length) {
+            const bookieIds = new Set<number>([
+                ...leftOffers.map(x => Number(x.b)),
+                ...rightOffers.map(x => Number(x.b)),
+            ]);
+
+            for (const bookieId of bookieIds) {
+                const left = this.pickLatestOfferForBookie(leftOffers, bookieId);
+                const right = this.pickLatestOfferForBookie(rightOffers, bookieId);
+                const row = this.toUnifiedOddsRow(left, right);
+                if (row) rows.push(row);
+            }
+        }
+
+        return rows;
+    }
+
+    private buildLatestOddsMapByBookie(offers: BookieOfferDTOv2[]): Map<number, number> {
+        const bookieIds = new Set<number>(offers.map(x => Number(x.b)));
+        const result = new Map<number, number>();
+
+        for (const bookieId of bookieIds) {
+            const latest = this.pickLatestOfferForBookie(offers, bookieId);
+            const q = Number(latest?.q);
+            if (Number.isFinite(q) && q > 0) {
+                result.set(bookieId, q);
+            }
+        }
+
+        return result;
+    }
+
+    historyFirstColLabel = 'Time';
+
+    // =================================================================================================
+    // TRUE SKILL SUMMARY (minified match keys in details archive)
+    // =================================================================================================
+
+    isFinishedNow(): boolean {
+        return this.raw?.['m656'] === true;
+    }
+
+    isCurrentSurface(s: 'S1' | 'S2' | 'S3' | 'S4'): boolean {
+        const rawSurface = String(this.raw?.['m020'] ?? '').toUpperCase();
+        return rawSurface.includes(s);
+    }
+
+    private tsMinKey(side: 'p1' | 'p2', metric: RatingMetric): string | undefined {
+        const player = side === 'p1' ? 1 : 2;
+        const oldNew: 'Old' | 'New' = this.raw?.['m656'] === true ? 'New' : 'Old';
+        const surf: SurfaceScope = this.SurfaceScope;
+
+        // e.g. "1_Mean_New_M_S3"
+        const key = `${player}_${metric}_${oldNew}_${this.RatingMode}_${surf}` as TsKey;
+        return TS_MIN_MAP[key];
+    }
+
+    private getSnapshotPoint(): TsMergedPoint | null {
+        // Only chart tabs should drive the snapshot from the time series.
+        if (this.activeTab !== 'tsBreakdown' && this.activeTab !== 'wpBreakdown') return null;
+        return this.activeChartPoint ?? this.defaultChartPoint;
+    }
+
+    private tsMinValue(side: 'p1' | 'p2', metric: RatingMetric): number | undefined {
+        const mk = this.tsMinKey(side, metric);
+        if (!mk) return undefined;
+        return this.numOrUndef(this.raw?.[mk]);
+    }
+
+    tsMean(who: 'p1' | 'p2'): number {
+        const tip = this.hoverTooltip ?? this.pinnedTooltip;
+        if (tip) {
+            const v = who === 'p1' ? tip.mu1 : tip.mu2;
+            return v ?? TS_DEFAULT_MU;
+        }
+
+        return this.tsMinValue(who, 'Mean') ?? TS_DEFAULT_MU;
+    }
+
+    tsSd(who: 'p1' | 'p2'): number {
+        const tip = this.hoverTooltip ?? this.pinnedTooltip;
+        if (tip) {
+            const v = who === 'p1' ? tip.sd1 : tip.sd2;
+            return v ?? TS_DEFAULT_SD;
+        }
+
+        return this.tsMinValue(who, 'SD') ?? TS_DEFAULT_SD;
+    }
+
+    /**
+     * Reads only P1 WP key and derives P2 as (1 - P1).
+     * WP is normalized to 0..1 (some sources might store 0..100).
+     */
+    tsWp(who: 'p1' | 'p2'): number {
+        const tip = this.hoverTooltip ?? this.pinnedTooltip;
+        if (tip) {
+            const v = who === 'p1' ? tip.wp1 : tip.wp2;
+            return typeof v === 'number' && Number.isFinite(v) && v >= 0 && v <= 1 ? v : NaN;
+        }
+
+        // WP is always a PRE-match estimate, stored once on the P1 axis.
+        // "New" is the compact map's WP slot, not a post-result probability.
+        const key = `1_WP_New_${this.RatingMode}_${this.SurfaceScope}` as TsKey;
+        const mk = TS_MIN_MAP[key];
+        const raw = mk ? this.raw?.[mk] : undefined;
+        if (typeof raw !== 'number' || !Number.isFinite(raw) || raw < 0 || raw > 100) return NaN;
+        const p1 = raw > 1 ? raw / 100 : raw;
+        return who === 'p1' ? p1 : 1 - p1;
+    }
+
+    tsNum(v: number | undefined): string {
+        if (typeof v !== 'number' || !isFinite(v)) return '—';
+        return this.regional.number(v, 2);
+    }
+
+    wpPct(v: number | undefined): string {
+        if (typeof v !== 'number' || !isFinite(v)) return '—';
+        return `${this.regional.number(v * 100, 2)}%`;
+    }
+
+    // =================================================================================================
+    // TRUE SKILL BREAKDOWN (TS + WP charts)
+    // -------------------------------------------------------------------------------------------------
+    // Data source:
+    // - staticArchives.getTsHistory(playerTPId) returns a JSON like:
+    //   { p: <playerId>, s: { "M_ALL": [{ m, d, t, s }, ...], "M_S1": [...], ... } }
+    //     - m: matchTPId
+    //     - d: ISO date string (we normalize to day-only)
+    //     - t: mean (mu)
+    //     - s: sigma (sd)
+    //
+    // Timeline strategy (why mergedSeries length stays stable):
+    // - We always render both players on the SAME day-level timeline (shared X-axis).
+    // - If SurfaceScope === 'ALL':
+    //     timeline = union of P1 ALL days + P2 ALL days (+ match day).
+    // - If SurfaceScope === 'S1'..'S4':
+    //     timeline is still based on ALL-days,
+    //     but surface values update only on days where a surface match exists.
+    //     Other days forward-fill the last known surface rating.
+    //     This prevents "forest of vertical bars" artifacts.
+    //
+    // Debug sanity metric ("changes"):
+    // - Number of day steps where either player's mean changes vs previous point.
+    //   ALL surface typically has lots of changes, rare surfaces much fewer.
+    // =================================================================================================
+
+    /**
+     * Selects a TS history series for given rating mode and surface scope.
+     *
+     * Key in archive:
+     * - `${mode}_${surface}` => e.g. "M_ALL", "M_S4"
+     *
+     * Normalization steps:
+     * 1) Normalize date to day-only (YYYY-MM-DD)
+     * 2) Dedupe in archive order (the producer's logical player chronology).
+     * 3) Sort the resulting days => stable "one point per day".
+     * Match IDs are identities, not a within-day chronology.
+     */
+    public selectTsSeries(archive: any, mode: RatingMode, surface: SurfaceScope): TsPoint[] {
+        const key = `${mode}_${surface}`; // "M_ALL", "M_S4"...
+        const arr = archive?.s?.[key];
+        if (!Array.isArray(arr)) return [];
+
+        // Normalize everything to day-level and keep only valid points.
+        const parsed = arr
+            .map((x: any) => {
+                const dRaw = String(x?.d ?? '');
+                const day = dRaw.slice(0, 10); // normalize to YYYY-MM-DD
+                return {
+                    m: Number(x?.m),
+                    d: day,
+                    mu: Number(x?.t),
+                    sd: Number(x?.s),
+                } as TsPoint;
+            })
+            .filter(
+                (p) =>
+                    Number.isFinite(p.m) &&
+                    p.d.length === 10 &&
+                    Number.isFinite(Date.parse(`${p.d}T00:00:00.000Z`)) &&
+                    Number.isFinite(p.mu) &&
+                    Number.isFinite(p.sd)
+            );
+
+        // Keep the last logical update of each day, not the largest external ID.
+        // This avoids multiple points on the same date causing vertical spikes in the SVG path.
+        const byDay = new Map<string, TsPoint>();
+        for (const p of parsed) byDay.set(p.d, p);
+
+        return [...byDay.values()].sort((a, b) => Date.parse(a.d) - Date.parse(b.d));
+    }
+
+    private unwrapTsResponse(resp: any): any {
+        // backend: { ok, playerTPId, data: { p, s } }
+        if (resp && typeof resp === 'object') {
+            if (resp.data && resp.data.s) return resp.data;
+            if (resp.s) return resp; // already unwrapped
+        }
+        return null;
+    }
+
+    private getTsHistoryCached$(playerId: number): Observable<any> {
+        const cached = this.tsHistCache.get(playerId);
+        if (cached) return of(cached);
+
+        return this.staticArchives.getTsHistory(playerId).pipe(
+            map((resp: any) => {
+                const data = this.unwrapTsResponse(resp);
+
+    // Retain this diagnostic snapshot while archive-shape compatibility is under review.
+                console.log('[TS] getTsHistoryCached$ resp keys', Object.keys(resp ?? {}));
+                console.log('[TS] getTsHistoryCached$ unwrapped has s?', !!data?.s);
+
+                if (!data?.s) return null;
+
+                this.tsHistCache.set(playerId, data);
+                return data;
+            }),
+            catchError((err) => {
+                console.error('[TS] getTsHistoryCached$ failed', playerId, err);
+                return of(null);
+            })
+        );
+    }
+
+    private loadTsHistoryAndBuildSeries(): void {
+        this.cancelTsHistory();
+        if (this.isPreview || this.destroyed || !this.isOpen || this.isLocked || this.loading || this.error || !this.raw) return;
+        const matchId = this.match?.matchTPId, scope = this.tabScope;
+        const p1Id = Number(this.raw?.['m004']);
+        const p2Id = Number(this.raw?.['m005']);
+
+        if (!Number.isFinite(p1Id) || !Number.isFinite(p2Id)) {
+            this.tsBreakdownError = 'matchDetails.missingPlayer';
+            return;
+        }
+
+        console.log('[TS] loadTsHistoryAndBuildSeries', {
+            p1Id,
+            p2Id,
+            mode: this.RatingMode,
+            surface: this.SurfaceScope,
+        });
+
+        this.tsBreakdownLoading = true;
+        this.tsBreakdownError = null;
+
+        this.tsHistorySub = this.getTsHistoryCached$(p1Id)
+            .pipe(
+                switchMap((a1) => this.getTsHistoryCached$(p2Id).pipe(map((a2) => ({ a1, a2 })))),
+                map(({ a1, a2 }) => {
+                    if (this.destroyed || !this.isOpen || this.match?.matchTPId !== matchId || this.tabScope !== scope) return false;
+                    if (!a1 || !a2) {
+                        this.tsBreakdownError = 'matchDetails.missingTs';
+                        this.p1Series = [];
+                        this.p2Series = [];
+                        this.mergedSeries = [];
+                        return false;
+                    }
+
+                    // Always compute ALL series because we use it as master timeline for surface-specific modes.
+                    const p1All = this.selectTsSeries(a1, this.RatingMode, 'ALL');
+                    const p2All = this.selectTsSeries(a2, this.RatingMode, 'ALL');
+
+                    console.log('[TS] p1All sample', p1All.slice(0, 3));
+                    console.log('[TS] p2All sample', p2All.slice(0, 3));
+
+                    const p1Surf = this.selectTsSeries(a1, this.RatingMode, this.SurfaceScope);
+                    const p2Surf = this.selectTsSeries(a2, this.RatingMode, this.SurfaceScope);
+
+                    this.p1Series = p1Surf;
+                    this.p2Series = p2Surf;
+
+                    if (this.SurfaceScope === 'ALL') {
+                        this.mergedSeries = this.mergeForwardFillWithDefaults(p1All, p2All);
+                    } else {
+                        this.mergedSeries = this.mergeSurfaceOnAllTimelineWithDefaults(p1All, p2All, p1Surf, p2Surf);
+                    }
+
+                    // Debug sanity metric: count how many steps actually change.
+                    const changes = this.mergedSeries.reduce((acc, p, i, arr) => {
+                        if (i === 0) return 0;
+                        return acc + (arr[i - 1].p1mu !== p.p1mu || arr[i - 1].p2mu !== p.p2mu ? 1 : 0);
+                    }, 0);
+
+                    console.log('[TS] merged stats', {
+                        surface: this.SurfaceScope,
+                        points: this.mergedSeries.length,
+                        changes,
+                        p1SurfPoints: p1Surf.length,
+                        p2SurfPoints: p2Surf.length,
+                    });
+
+                    // Reset tooltips on rebuild.
+                    this.pinnedTooltip = null;
+
+                    // Pin tooltip near match date (or last point fallback).
+                    const matchMs = Date.parse(String(this.raw?.['m003'] ?? ''));
+                    if (this.mergedSeries.length) {
+
+                        this.pinnedDefaultTooltip = null;
+                        this.pinnedTooltip = null;
+                        this.isChartHovering = false;
+                        if (this.mergedSeries.length) {
+                            let idx = this.mergedSeries.length - 1;
+
+                            if (Number.isFinite(matchMs)) {
+                                idx = this.nearestIndexByTime(this.mergedSeries, matchMs);
+                            }
+
+                            const base: ChartTooltip = {
+                                leftPx: 0,
+                                topPx: 0,
+                                ...this.buildTooltipFromMerged(this.mergedSeries[idx]),
+                            };
+
+                            this.defaultChartPoint = this.mergedSeries[idx];
+                            this.activeChartPoint = null;
+
+                            this.pinnedDefaultTooltip = base;
+    this.pinnedTooltip = base; // Render only the normalized summary.
+                        }
+                    }
+
+                    return true;
+                }),
+                catchError((err: any) => {
+                    console.error('[TS] load failed', err);
+                    this.tsBreakdownError = 'matchDetails.tsError';
+                    return of(false);
+                })
+            )
+            .subscribe({
+                next: () => {
+                    this.tsBreakdownLoading = false;
+                },
+                error: () => {
+                    this.tsBreakdownLoading = false;
+                },
+            });
+    }
+
+    // =================================================================================================
+    // SVG TOOLTIP HELPERS
+    // =================================================================================================
+
+    private buildTooltipFromMerged(p: TsMergedPoint): Omit<ChartTooltip, 'leftPx' | 'topPx'> {
+        return {
+            dateLabel: this.formatDateShort(p.time),
+            time: p.time,
+            p1Label: this.playerLabel('p1'),
+            p2Label: this.playerLabel('p2'),
+            mu1: p.p1mu,
+            sd1: p.p1sd,
+            wp1: p.wp1,
+            mu2: p.p2mu,
+            sd2: p.p2sd,
+            wp2: 1 - p.wp1,
+        };
+    }
+
+    private playerLabel(player: 'p1' | 'p2'): string {
+        const p = player === 'p1' ? this.vm?.p1 : this.vm?.p2;
+        const name = p?.name ?? (player === 'p1' ? 'P1' : 'P2');
+        const iso3 = (p?.iso3 ?? '').trim();
+        return iso3 ? `${name} (${iso3})` : name;
+    }
+
+    private getChartTipEl(): HTMLElement | null {
+        const el = this.chartTipRefs?.first?.nativeElement;
+        return el ?? null;
+    }
+
+    // =================================================================================================
+    // WP SVG CHART MODEL + EVENTS (based on mergedSeries.wp1)
+    // =================================================================================================
+
+    getWpChartModel(): {
+        tMin: number;
+        tMax: number;
+        vMin: number;
+        vMax: number;
+
+        wp1Path: string;
+        wp2Path: string | null;
+
+        xTicks: { x: number; label: string }[];
+        yTicks: { y: number; label: string }[];
+
+        matchX: number | null;
+
+        hoverX: number | null;
+        hoverY1: number | null;
+        hoverY2: number | null;
+    } | null {
+        const full = this.mergedSeries;
+        if (!Array.isArray(full) || full.length < 2) return null;
+
+        // draw-series: collapse to 1 point/day (keep last)
+        const data = this.collapseMergedByDayKeepLast(full);
+        if (data.length < 2) return null;
+
+        const tMin = data[0].time;
+        const tMax = data[data.length - 1].time;
+
+        // WP always fixed 0..1
+        const vMin = 0;
+        const vMax = 1;
+
+        const wp1Points = data.map((x) => ({
+            time: x.time,
+            value: Math.min(1, Math.max(0, Number(x.wp1))),
+        }));
+
+        const wp2Points = data.map((x) => ({
+            time: x.time,
+            value: 1 - Math.min(1, Math.max(0, Number(x.wp1))),
+        }));
+
+        const wp1Path = this.buildStepPath(wp1Points, tMin, tMax, vMin, vMax);
+        const wp2Path = this.buildStepPath(wp2Points, tMin, tMax, vMin, vMax);
+
+        // X ticks
+        const xTicks: { x: number; label: string }[] = [];
+        const xCount = 5;
+        for (let i = 0; i < xCount; i++) {
+            const tt = tMin + ((tMax - tMin) * i) / (xCount - 1);
+            xTicks.push({ x: this.scaleX(tt, tMin, tMax), label: this.formatDateShort(tt) });
+        }
+
+        // Y ticks
+        const yTicks: { y: number; label: string }[] = [];
+        const ySteps = [0, 0.25, 0.5, 0.75, 1];
+        for (const vv of ySteps) {
+            yTicks.push({ y: this.scaleY(vv, vMin, vMax), label: `${Math.round(vv * 100)}%` });
+        }
+
+        // Match vertical line
+        let matchX: number | null = null;
+        const matchMs = Date.parse(String(this.raw?.['m003'] ?? ''));
+        if (Number.isFinite(matchMs) && matchMs >= tMin && matchMs <= tMax) {
+            matchX = this.scaleX(matchMs, tMin, tMax);
+        }
+
+        // Hover remains based on full mergedSeries indexing
+        let hoverX: number | null = null;
+        let hoverY1: number | null = null;
+        let hoverY2: number | null = null;
+
+        if (this.hoverIdx != null && this.hoverIdx >= 0 && this.hoverIdx < full.length) {
+            const p = full[this.hoverIdx];
+            const wp1 = Math.min(1, Math.max(0, Number(p.wp1)));
+            const wp2 = 1 - wp1;
+
+            const t = Math.min(Math.max(p.time, tMin), tMax);
+            hoverX = this.scaleX(t, tMin, tMax);
+            hoverY1 = this.scaleY(wp1, vMin, vMax);
+            hoverY2 = this.scaleY(wp2, vMin, vMax);
+        }
+
+        return {
+            tMin,
+            tMax,
+            vMin,
+            vMax,
+            wp1Path,
+            wp2Path,
+            xTicks,
+            yTicks,
+            matchX,
+            hoverX,
+            hoverY1,
+            hoverY2,
+        };
+    }
+
+    onWpChartMouseMove(ev: MouseEvent, cm: any): void {
+        const data = this.mergedSeries;
+        if (!data?.length) return;
+
+        const svg = ev.currentTarget as SVGElement;
+        const { rect, sx } = this.getSvgViewport(svg);
+
+        // mouse X in real pixels
+        const xPx = ev.clientX - rect.left;
+
+        // convert to virtual X (so invScaleX works in chart coordinate system)
+        const xVirtual = xPx / sx;
+        const t = this.invScaleX(xVirtual, cm.tMin, cm.tMax);
+
+        const idx = this.nearestIndexByTime(data, t);
+        this.hoverIdx = idx;
+
+        const p = data[idx];
+
+        this.activeChartPoint = p;
+
+        this.isChartHovering = true;
+
+        this.pinnedTooltip = {
+            leftPx: 0,
+            topPx: 0,
+            ...this.buildTooltipFromMerged(p),
+        };
+    }
+
+    onWpChartMouseLeave(): void {
+        this.hoverIdx = null;
+        this.isChartHovering = false;
+        this.pinnedTooltip = this.pinnedDefaultTooltip;
+        this.activeChartPoint = null;
+    }
+
+    // =================================================================================================
+    // TS SVG CHART MODEL + EVENTS (TS mean lines + optional regression trend)
+    // =================================================================================================
+
+    getTsChartModel(): {
+        tMin: number;
+        tMax: number;
+        vMin: number;
+        vMax: number;
+
+        p1Path: string;
+        p2Path: string;
+
+        p1TrendPath: string | null;
+        p2TrendPath: string | null;
+
+        xTicks: { x: number; label: string }[];
+        yTicks: { y: number; label: string }[];
+
+        matchX: number | null;
+
+        hoverX: number | null;
+        hoverY1: number | null;
+        hoverY2: number | null;
+    } | null {
+        const full = this.mergedSeries;
+        if (!Array.isArray(full) || full.length < 2) return null;
+
+        const isPercent = this.activeTab === 'wpBreakdown';
+        const useStep = isPercent; // WP => step, TS => line
+
+        // draw-series: collapse to 1 point/day (keep last)
+        const data = this.collapseMergedByDayKeepLast(full);
+        if (data.length < 2) return null;
+
+        const tMin = data[0].time;
+        const tMax = data[data.length - 1].time;
+
+        // ---- extent values ----
+        const vals: number[] = [];
+        for (const p of data) {
+            if (isPercent) {
+                const wp1 = Number(p.wp1);
+                if (Number.isFinite(wp1)) vals.push(wp1, 1 - wp1);
+            } else {
+                const a = Number(p.p1mu);
+                const b = Number(p.p2mu);
+                if (Number.isFinite(a)) vals.push(a);
+                if (Number.isFinite(b)) vals.push(b);
+            }
+        }
+
+        const { min, max } = this.extent(vals);
+        const range = Math.max(1e-9, max - min);
+        const eps = range * 0.05;
+
+        let vMin = min - eps;
+        let vMax = max + eps;
+
+        if (isPercent) {
+            vMin = Math.max(0, vMin);
+            vMax = Math.min(1, vMax);
+        }
+
+        // ---- points ----
+        const p1Points: { time: number; value: number }[] = [];
+        const p2Points: { time: number; value: number }[] = [];
+
+        for (const p of data) {
+            const pair = this.getChartValuePair(p);
+            p1Points.push({ time: p.time, value: pair.y1 });
+            p2Points.push({ time: p.time, value: pair.y2 });
+        }
+
+        // ---- paths ----
+        const p1Path = useStep
+            ? this.buildStepPath(p1Points, tMin, tMax, vMin, vMax)
+            : this.buildLinePath(p1Points, tMin, tMax, vMin, vMax);
+
+        const p2Path = useStep
+            ? this.buildStepPath(p2Points, tMin, tMax, vMin, vMax)
+            : this.buildLinePath(p2Points, tMin, tMax, vMin, vMax);
+
+        // ---- trend lines (TS only; no sense for WP) ----
+        let p1TrendPath: string | null = null;
+        let p2TrendPath: string | null = null;
+
+        if (this.showTrend && !isPercent) {
+            const r1 = this.linearRegressionLine(p1Points, tMin, tMax);
+            const r2 = this.linearRegressionLine(p2Points, tMin, tMax);
+
+            if (r1) {
+                const x1 = this.scaleX(tMin, tMin, tMax);
+                const x2 = this.scaleX(tMax, tMin, tMax);
+                const y1 = this.scaleY(r1.yAtMin, vMin, vMax);
+                const y2 = this.scaleY(r1.yAtMax, vMin, vMax);
+                p1TrendPath = `M ${x1} ${y1} L ${x2} ${y2}`;
+            }
+
+            if (r2) {
+                const x1 = this.scaleX(tMin, tMin, tMax);
+                const x2 = this.scaleX(tMax, tMin, tMax);
+                const y1 = this.scaleY(r2.yAtMin, vMin, vMax);
+                const y2 = this.scaleY(r2.yAtMax, vMin, vMax);
+                p2TrendPath = `M ${x1} ${y1} L ${x2} ${y2}`;
+            }
+        }
+
+        // ---- ticks ----
+        const xTicks: { x: number; label: string }[] = [];
+        const xCount = 5;
+        for (let i = 0; i < xCount; i++) {
+            const tt = tMin + ((tMax - tMin) * i) / (xCount - 1);
+            xTicks.push({ x: this.scaleX(tt, tMin, tMax), label: this.formatDateShort(tt) });
+        }
+
+        const yTicks: { y: number; label: string }[] = [];
+        const yCount = 5;
+        for (let i = 0; i < yCount; i++) {
+            const vv = vMin + ((vMax - vMin) * i) / (yCount - 1);
+            yTicks.push({
+                y: this.scaleY(vv, vMin, vMax),
+                label: isPercent ? `${Math.round(vv * 100)}%` : this.regional.number(vv, 1),
+            });
+        }
+
+        // ---- match vertical line ----
+        let matchX: number | null = null;
+        const matchMs = Date.parse(String(this.raw?.['m003'] ?? ''));
+        if (Number.isFinite(matchMs) && matchMs >= tMin && matchMs <= tMax) {
+            matchX = this.scaleX(matchMs, tMin, tMax);
+        }
+
+        // ---- hover (based on full mergedSeries index) ----
+        let hoverX: number | null = null;
+        let hoverY1: number | null = null;
+        let hoverY2: number | null = null;
+
+        if (this.hoverIdx != null && this.hoverIdx >= 0 && this.hoverIdx < full.length) {
+            const p = full[this.hoverIdx];
+            const t = Math.min(Math.max(p.time, tMin), tMax);
+            hoverX = this.scaleX(t, tMin, tMax);
+
+            const pair = this.getChartValuePair(p);
+            hoverY1 = this.scaleY(pair.y1, vMin, vMax);
+            hoverY2 = this.scaleY(pair.y2, vMin, vMax);
+        }
+
+        return {
+            tMin,
+            tMax,
+            vMin,
+            vMax,
+            p1Path,
+            p2Path,
+            p1TrendPath,
+            p2TrendPath,
+            xTicks,
+            yTicks,
+            matchX,
+            hoverX,
+            hoverY1,
+            hoverY2,
+        };
+    }
+
+    onTsChartMouseMove(ev: MouseEvent, cm: any): void {
+        const data = this.mergedSeries;
+        if (!data?.length) return;
+
+        const svg = ev.currentTarget as SVGElement;
+        const { rect, sx, sy } = this.getSvgViewport(svg);
+
+        // mouse X in real pixels
+        const xPx = ev.clientX - rect.left;
+
+        // convert to virtual X so invScaleX works properly
+        const xVirtual = xPx / sx;
+        const t = this.invScaleX(xVirtual, cm.tMin, cm.tMax);
+
+        const idx = this.nearestIndexByTime(data, t);
+        this.hoverIdx = idx;
+
+        const p = data[idx];
+
+        // virtual anchor points
+        const hoverXVirtual = this.scaleX(p.time, cm.tMin, cm.tMax);
+        const anchorYVirtual = this.scaleY(p.p1mu, cm.vMin, cm.vMax);
+
+        // real pixels for tooltip positioning
+        const hoverXPx = hoverXVirtual * sx;
+        const anchorYPx = anchorYVirtual * sy;
+
+        const tipW = 360;
+        const tipH = 95;
+        const pad = 10;
+
+        const left = this.clamp(hoverXPx - tipW / 2, pad, rect.width - tipW - pad);
+        const top = this.clamp(anchorYPx - tipH - 10, pad, rect.height - tipH - pad);
+
+        this.hoverTooltip = {
+            leftPx: left,
+            topPx: top,
+            dateLabel: this.formatDateShort(p.time),
+            time: p.time,
+
+            p1Label: this.playerLabel('p1'),
+            p2Label: this.playerLabel('p2'),
+
+            mu1: p.p1mu,
+            sd1: p.p1sd,
+            wp1: p.wp1,
+
+            mu2: p.p2mu,
+            sd2: p.p2sd,
+            wp2: 1 - p.wp1,
+        };
+    }
+
+    onTsChartMouseLeave(): void {
+        this.hoverIdx = null;
+        this.hoverTooltip = null;
+        this.activeChartPoint = null;
+        this.pinnedTooltip = this.pinnedDefaultTooltip;
+    }
+
+    private getChartValuePair(p: TsMergedPoint): { y1: number; y2: number; isPercent: boolean } {
+        if (this.activeTab === 'wpBreakdown') {
+            const wp1 = p.wp1;
+            const wp2 = 1 - p.wp1;
+            return { y1: wp1, y2: wp2, isPercent: true };
+        }
+
+        // default: TS Breakdown => mean
+        return { y1: p.p1mu, y2: p.p2mu, isPercent: false };
+    }
+
+    // =================================================================================================
+    // TRUE SKILL MERGING (forward-fill + defaults)
+    // =================================================================================================
+
+    private mergeForwardFillWithDefaults(p1: TsPoint[], p2: TsPoint[]): TsMergedPoint[] {
+        if (!p1.length && !p2.length) return [];
+
+        // Forward-fill strategy:
+        // - If a player has no rating yet, start from TrueSkill defaults (mu=25, sd=8.33).
+        // - For each day on the unified timeline, advance pointers and keep last known mu/sd.
+        // - This produces a smooth "evolution over time" series.
+        const p1d = p1
+            .map((x) => ({ ...x, _t: Date.parse(`${x.d}T00:00:00.000Z`) }))
+            .filter((x) => Number.isFinite((x as any)._t))
+            .sort((a: any, b: any) => a._t - b._t);
+
+        const p2d = p2
+            .map((x) => ({ ...x, _t: Date.parse(`${x.d}T00:00:00.000Z`) }))
+            .filter((x) => Number.isFinite((x as any)._t))
+            .sort((a: any, b: any) => a._t - b._t);
+
+        if (!p1d.length && !p2d.length) return [];
+
+        // Timeline = union of all DAY timestamps
+        const ts = new Set<number>();
+        for (const x of p1d as any[]) ts.add(x._t);
+        for (const x of p2d as any[]) ts.add(x._t);
+
+        // Include match day (pinned/vertical line), normalized to day-only UTC
+        const matchIso = String(this.raw?.['m003'] ?? '');
+        const matchDayMs = Date.parse(`${matchIso.slice(0, 10)}T00:00:00.000Z`);
+        if (Number.isFinite(matchDayMs)) ts.add(matchDayMs);
+
+        const timeline = [...ts].sort((a, b) => a - b);
+        if (timeline.length < 2) return [];
+
+        let i1 = 0,
+            i2 = 0;
+        let lastMu1 = TS_DEFAULT_MU,
+            lastSd1 = TS_DEFAULT_SD;
+        let lastMu2 = TS_DEFAULT_MU,
+            lastSd2 = TS_DEFAULT_SD;
+
+        const out: TsMergedPoint[] = [];
+
+        for (const time of timeline) {
+            while (i1 < p1d.length && (p1d as any)[i1]._t <= time) {
+                lastMu1 = p1d[i1].mu;
+                lastSd1 = p1d[i1].sd;
+                i1++;
+            }
+
+            while (i2 < p2d.length && (p2d as any)[i2]._t <= time) {
+                lastMu2 = p2d[i2].mu;
+                lastSd2 = p2d[i2].sd;
+                i2++;
+            }
+
+            const wp1 = this.calcWp1TrueSkill(lastMu1, lastSd1, lastMu2, lastSd2);
+
+            out.push({
+                time,
+                p1mu: lastMu1,
+                p1sd: lastSd1,
+                p2mu: lastMu2,
+                p2sd: lastSd2,
+                wp1,
+            });
+        }
+
+        return out;
+    }
+
+    private mergeSurfaceOnAllTimelineWithDefaults(
+        p1All: TsPoint[],
+        p2All: TsPoint[],
+        p1Surf: TsPoint[],
+        p2Surf: TsPoint[]
+    ): TsMergedPoint[] {
+        const TS_DEFAULT_MU = 25;
+        const TS_DEFAULT_SD = 8.3333333333;
+
+        if (!p1All.length && !p2All.length) return [];
+
+        // Surface-on-ALL timeline:
+        // - Timeline comes from ALL-days history (shared X-axis).
+        // - Surface values only update on days where a surface match exists.
+        // - Other days forward-fill last known surface rating values.
+        const p1SurfByDay = new Map(p1Surf.map((p) => [p.d.slice(0, 10), p]));
+        const p2SurfByDay = new Map(p2Surf.map((p) => [p.d.slice(0, 10), p]));
+
+        // timeline = ALL days
+        const days = new Set<string>();
+        for (const p of p1All) days.add(p.d.slice(0, 10));
+        for (const p of p2All) days.add(p.d.slice(0, 10));
+
+        const timeline = [...days].sort();
+
+        let lastMu1 = TS_DEFAULT_MU;
+        let lastSd1 = TS_DEFAULT_SD;
+        let lastMu2 = TS_DEFAULT_MU;
+        let lastSd2 = TS_DEFAULT_SD;
+
+        const out: TsMergedPoint[] = [];
+
+        for (const day of timeline) {
+            const s1 = p1SurfByDay.get(day);
+            const s2 = p2SurfByDay.get(day);
+
+            if (s1) {
+                lastMu1 = s1.mu;
+                lastSd1 = s1.sd;
+            }
+            if (s2) {
+                lastMu2 = s2.mu;
+                lastSd2 = s2.sd;
+            }
+
+            const wp1 = this.calcWp1TrueSkill(lastMu1, lastSd1, lastMu2, lastSd2);
+            const time = Date.parse(day);
+
+            out.push({
+                time,
+                p1mu: lastMu1,
+                p1sd: lastSd1,
+                p2mu: lastMu2,
+                p2sd: lastSd2,
+                wp1,
+            });
+        }
+
+        return out;
+    }
+
+    // =================================================================================================
+    // TRUESKILL -> WP MATH (Normal CDF approximation)
+    // =================================================================================================
+
+    private readonly TS_BETA = 4.1666666667;
+
+    private erfApprox(x: number): number {
+        const sign = x < 0 ? -1 : 1;
+        x = Math.abs(x);
+        const a1 = 0.254829592,
+            a2 = -0.284496736,
+            a3 = 1.421413741,
+            a4 = -1.453152027,
+            a5 = 1.061405429;
+        const p = 0.3275911;
+        const t = 1.0 / (1.0 + p * x);
+        const y =
+            1.0 -
+            (((((a5 * t + a4) * t + a3) * t + a2) * t + a1) * t) * Math.exp(-x * x);
+        return sign * y;
+    }
+
+    private normalCdf(z: number): number {
+        return 0.5 * (1 + this.erfApprox(z / Math.SQRT2));
+    }
+
+    private calcWp1TrueSkill(p1mu: number, p1sd: number, p2mu: number, p2sd: number): number {
+        const denom = Math.sqrt(2 * this.TS_BETA * this.TS_BETA + p1sd * p1sd + p2sd * p2sd);
+        const z = (p1mu - p2mu) / denom;
+        return this.normalCdf(z);
+    }
+
+    // =================================================================================================
+    // MISC: TS strength helpers (stars + tooltips)
+    // =================================================================================================
+
+    private numOrNull(v: any): number | null {
+        const n = Number(v);
+        return Number.isFinite(n) ? n : null;
+    }
+
+    private avg3(a: number | null, b: number | null, c: number | null): number | null {
+        if (a == null || b == null || c == null) return null;
+        return (a + b + c) / 3;
+    }
+
+    // P1: (m027 + m036 + m045) / 3
+    p1StrengthTs(d: any): number | null {
+        return this.avg3(this.numOrNull(d?.m027), this.numOrNull(d?.m036), this.numOrNull(d?.m045));
+    }
+
+    // P2: (m029 + m038 + m047) / 3
+    p2StrengthTs(d: any): number | null {
+        return this.avg3(this.numOrNull(d?.m029), this.numOrNull(d?.m038), this.numOrNull(d?.m047));
+    }
+
+    p1StrengthStars(d: any): number {
+        const ts = this.p1StrengthTs(d);
+        return ts == null ? 0 : this.tsToStars(ts);
+    }
+
+    p2StrengthStars(d: any): number {
+        const ts = this.p2StrengthTs(d);
+        return ts == null ? 0 : this.tsToStars(ts);
+    }
+
+    p1StrengthTooltip(d: any): string {
+        const ts = this.p1StrengthTs(d);
+        return `TS: ${ts == null ? '-' : this.regional.number(ts, 2)}`;
+    }
+
+    p2StrengthTooltip(d: any): string {
+        const ts = this.p2StrengthTs(d);
+        return `TS: ${ts == null ? '-' : this.regional.number(ts, 2)}`;
+    }
+
+    // =================================================================================================
+    // TOURNAMENT META (type labels, prize, strength)
+    // =================================================================================================
+
+    tourTypeLabel(d: any): 'ATP' | 'WTA' | '' {
+        // The compact contract stores type at t12/t13; t03 is the country ID.
+        // Loaded archive metadata also supersedes a stale hint from another match.
+        for (const value of [d?.t?.t13, d?.tournamentTypeName, d?.tournamentType]) {
+            const label = String(value ?? '').trim().toUpperCase();
+            if (label === 'WTA' || label === 'ATP') return label;
+        }
+        const type = Number(d?.t?.t12 ?? d?.tournamentTypeId);
+        if (type === 2) return 'WTA';
+        if (type === 1) return 'ATP';
+        const parent = String(this.match?.tournamentTypeName ?? '').trim().toUpperCase();
+        if (parent === 'WTA' || parent === 'ATP') return parent;
+        // Older standalone previews used a textual t03, never a numeric country.
+        const legacy = String(d?.t?.t03 ?? '').trim().toUpperCase();
+        if (legacy === 'WTA' || legacy === 'ATP') return legacy;
+        if (this.genderHint === 'W') return 'WTA';
+        if (this.genderHint === 'M') return 'ATP';
+        return '';
+    }
+
+    formatUsdDots(amount: number | undefined): string {
+        if (typeof amount !== 'number' || !isFinite(amount)) return '—';
+        return this.regional.usd(amount);
+    }
+
+    private formatPrize(details: any): string {
+        const amount = details?.t?.t14 ?? details?.t14;
+        return amount ? this.formatUsdDots(amount) : '—';
+    }
+
+    tournamentStrengthTs(d: any): number | undefined {
+        const n = Number(d?.t?.t17);
+        return Number.isFinite(n) ? n : undefined;
+    }
+
+    // =================================================================================================
+    // SCORE PARSING / FORMATTING
+    // =================================================================================================
+
+    formatMainScore(raw: string): string {
+        if (!raw) return '—';
+
+        if (raw.includes(':')) {
+            const [a, b] = raw.split(':');
+            return `${a.trim()} : ${b.trim()}`;
+        }
+
+        // fallback: "20" -> "2 : 0"
+        if (raw.length === 2) {
+            return `${raw[0]} : ${raw[1]}`;
+        }
+
+        return raw;
+    }
+
+    private parseSetTokensFromM011(m011: string, m010Raw?: string): string[] {
+        return archiveSetTokens(m011, m010Raw);
+    }
+
+    private formatSetsFromTokens(tokens: string[]): string {
+        return archiveSetText(tokens);
+    }
+
+    private normalizeSetTokenToGames(token: string): { a: number; b: number } | null {
+        return archiveSetGames(token);
+    }
+
+    private calcMainFromSets(tokens: string[]): { p1: number; p2: number } | null {
+        if (!tokens.length) return null;
+
+        let p1 = 0,
+            p2 = 0;
+        for (const t of tokens) {
+            const g = this.normalizeSetTokenToGames(t);
+            if (!g) continue;
+
+            if (g.a > g.b) p1++;
+            else if (g.b > g.a) p2++;
+        }
+
+        if (p1 === 0 && p2 === 0) return null;
+        return { p1, p2 };
+    }
+
+    private formatMainFromSets(tokens: string[]): string | null {
+        const res = this.calcMainFromSets(tokens);
+        if (!res) return null;
+        return `${res.p1} : ${res.p2}`;
+    }
+
+    private isFinished(d: any, scoreMain: string, scoreSets: string): boolean {
+        // Best effort: if archive includes a flag, use it; otherwise fallback to score presence
+        const flag = d?.IsFinished ?? d?.isFinished ?? d?.mIsFinished;
+        if (flag === 1 || flag === true) return true;
+
+        const hasScore = (scoreMain || '').trim().length > 0 || (scoreSets || '').trim().length > 0;
+        return hasScore;
+    }
+
+    // =================================================================================================
+    // DATE FORMATTING
+    // =================================================================================================
+
+    private formatMatchDate(iso: any): string {
+        return this.regional.matchDateTime(typeof iso === 'string' ? iso : '', this.match?.sourceTimePrecision);
+    }
+
+    private formatBornWithAge(birthIso: any): string {
+        const date = this.regional.date(typeof birthIso === 'string' ? birthIso : '');
+        if (!date) return '';
+        const age = this.ageNow(birthIso);
+        return age != null ? `${date} (${age})` : date;
+    }
+
+    private ageNow(birthIso: any): number | null {
+        const day = sourceCalendarDate(birthIso);
+        if (!day) return null;
+        const b = new Date(+day.slice(0, 4), +day.slice(5, 7) - 1, +day.slice(8, 10));
+        const now = new Date();
+        if (isNaN(b.getTime())) return null;
+
+        let age = now.getFullYear() - b.getFullYear();
+        const m = now.getMonth() - b.getMonth();
+        if (m < 0 || (m === 0 && now.getDate() < b.getDate())) age--;
+        return age >= 0 && age < 120 ? age : null;
+    }
+
+    private formatDateShort(ms: number): string {
+        return Number.isFinite(ms) ? this.regional.date(new Date(ms).toISOString().slice(0, 10)) : '—';
+    }
+
+    // =================================================================================================
+    // NUM HELPERS (local)
+    // =================================================================================================
+
+    private numOrUndef(v: any): number | undefined {
+        if (v === null || v === undefined || typeof v === 'boolean' || (typeof v === 'string' && !v.trim())) return undefined;
+        const n = Number(v);
+        return Number.isFinite(n) ? n : undefined;
+    }
+
+    private num(v: number): number {
+        const n = Number(v);
+        return n;
+    }
+    private impliedProb(odds: number | undefined): number | undefined {
+        if (typeof odds !== 'number' || !isFinite(odds) || odds <= 0) return undefined;
+        return 1 / odds;
+    }
+
+    private edge(nnProb01: number | undefined, odds: number | undefined): number | undefined {
+        const imp = this.impliedProb(odds);
+        if (typeof nnProb01 !== 'number' || !isFinite(nnProb01) || typeof imp !== 'number') return undefined;
+        return nnProb01 - imp;
+    }
+
+    // =================================================================================================
+    // GEOMETRY + PATH BUILDERS (SVG math)
+    // =================================================================================================
+
+    private extent(vals: number[]): { min: number; max: number } {
+        let min = Number.POSITIVE_INFINITY;
+        let max = Number.NEGATIVE_INFINITY;
+        for (const v of vals) {
+            if (!Number.isFinite(v)) continue;
+            if (v < min) min = v;
+            if (v > max) max = v;
+        }
+        if (!Number.isFinite(min) || !Number.isFinite(max)) return { min: 0, max: 1 };
+        if (min === max) return { min: min - 1, max: max + 1 };
+        return { min, max };
+    }
+
+    private scaleX(t: number, tMin: number, tMax: number): number {
+        const w = this.chartWidth - this.chartPad * 2;
+        if (tMax === tMin) return this.chartPad;
+        return this.chartPad + ((t - tMin) / (tMax - tMin)) * w;
+    }
+
+    private invScaleX(x: number, tMin: number, tMax: number): number {
+        const w = this.chartWidth - this.chartPad * 2;
+        if (w <= 0) return tMin;
+        const u = (x - this.chartPad) / w;
+        const clamped = Math.min(1, Math.max(0, u));
+        return tMin + clamped * (tMax - tMin);
+    }
+
+    private scaleY(v: number, vMin: number, vMax: number): number {
+        const h = this.chartHeight - this.chartPad * 2;
+        if (vMax === vMin) return this.chartPad + h / 2;
+        return this.chartPad + (1 - (v - vMin) / (vMax - vMin)) * h;
+    }
+
+    private buildStepPath(
+        points: { time: number; value: number }[],
+        tMin: number,
+        tMax: number,
+        vMin: number,
+        vMax: number
+    ): string {
+        if (!points.length) return '';
+
+        let d = '';
+        for (let i = 0; i < points.length; i++) {
+            const p = points[i];
+            const x = this.scaleX(p.time, tMin, tMax);
+            const y = this.scaleY(p.value, vMin, vMax);
+
+            if (i === 0) {
+                d += `M ${x} ${y}`;
+                continue;
+            }
+
+            const prev = points[i - 1];
+            const py = this.scaleY(prev.value, vMin, vMax);
+
+            // step: horizontal to x at previous y, then vertical to current y
+            d += ` L ${x} ${py} L ${x} ${y}`;
+        }
+        return d;
+    }
+
+    /** Simple LINE path (no steps). Skips non-finite points. */
+    private buildLinePath(
+        points: { time: number; value: number }[],
+        tMin: number,
+        tMax: number,
+        vMin: number,
+        vMax: number
+    ): string {
+        let d = '';
+        let started = false;
+
+        for (const p of points) {
+            if (!p) continue;
+            if (!Number.isFinite(p.time) || !Number.isFinite(p.value)) continue;
+
+            const x = this.scaleX(p.time, tMin, tMax);
+            const y = this.scaleY(p.value, vMin, vMax);
+
+            if (!Number.isFinite(x) || !Number.isFinite(y)) continue;
+
+            if (!started) {
+                d += `M ${x} ${y}`;
+                started = true;
+            } else {
+                d += ` L ${x} ${y}`;
+            }
+        }
+
+        return d;
+    }
+
+    private linearRegressionLine(
+        points: { time: number; value: number }[],
+        tMin: number,
+        tMax: number
+    ): { yAtMin: number; yAtMax: number } | null {
+        // y = a + b*x (x=time)
+        const n = points.length;
+        if (n < 2) return null;
+
+        let sumX = 0,
+            sumY = 0,
+            sumXY = 0,
+            sumXX = 0;
+        for (const p of points) {
+            const x = p.time;
+            const y = p.value;
+            sumX += x;
+            sumY += y;
+            sumXY += x * y;
+            sumXX += x * x;
+        }
+
+        const denom = n * sumXX - sumX * sumX;
+        if (!Number.isFinite(denom) || denom === 0) return null;
+
+        const b = (n * sumXY - sumX * sumY) / denom;
+        const a = (sumY - b * sumX) / n;
+
+        const yAtMin = a + b * tMin;
+        const yAtMax = a + b * tMax;
+        if (!Number.isFinite(yAtMin) || !Number.isFinite(yAtMax)) return null;
+
+        return { yAtMin, yAtMax };
+    }
+
+    private nearestIndexByTime(data: { time: number }[], t: number): number {
+        // binary search closest
+        let lo = 0;
+        let hi = data.length - 1;
+
+        while (lo < hi) {
+            const mid = (lo + hi) >> 1;
+            if (data[mid].time < t) lo = mid + 1;
+            else hi = mid;
+        }
+
+        const i = lo;
+        if (i <= 0) return 0;
+        if (i >= data.length) return data.length - 1;
+
+        const a = data[i - 1].time;
+        const b = data[i].time;
+        return Math.abs(t - a) <= Math.abs(b - t) ? i - 1 : i;
+    }
+
+    private clamp(v: number, min: number, max: number): number {
+        return Math.min(Math.max(v, min), max);
+    }
+
+    /**
+     * SVG is rendered responsively (CSS controls real pixel size).
+     * We keep chart math in a fixed "virtual" coordinate system (chartWidth/chartHeight),
+     * then convert to real pixels via sx/sy for correct tooltip positioning & clamping.
+     */
+    private getSvgViewport(svg: SVGElement) {
+        const rect = svg.getBoundingClientRect();
+        const sx = rect.width / this.chartWidth;
+        const sy = rect.height / this.chartHeight;
+        return { rect, sx, sy };
+    }
+
+    private collapseMergedByDayKeepLast(series: TsMergedPoint[]): TsMergedPoint[] {
+        if (!Array.isArray(series) || series.length === 0) return [];
+
+        // series is already sorted by time; overwrite => keep last point of that UTC day
+        const byDay = new Map<string, TsMergedPoint>();
+
+        for (const p of series) {
+            if (!Number.isFinite(p?.time)) continue;
+            const day = new Date(p.time).toISOString().slice(0, 10); // YYYY-MM-DD in UTC
+            byDay.set(day, p);
+        }
+
+        return Array.from(byDay.values()).sort((a, b) => a.time - b.time);
+    }
+
+    get p1HeaderName(): string {
+        const d: any = this._details as any;
+
+        // try name-ish properties first (adjust if you know exact key)
+        const name =
+            d?.p1?.name ||
+            d?.p1?.fullName ||
+            d?.p1?.p02 ||   // common pattern for "name" in minified DTOs
+            d?.p1?.p03;
+
+        if (typeof name === 'string' && name.trim().length) return name.trim();
+
+        // fallback that NEVER exposes IDs
+        return 'P1';
+    }
+
+    get p2HeaderName(): string {
+        const d: any = this._details as any;
+
+        const name =
+            d?.p2?.name ||
+            d?.p2?.fullName ||
+            d?.p2?.p02 ||
+            d?.p2?.p03;
+
+        if (typeof name === 'string' && name.trim().length) return name.trim();
+
+        return 'P2';
+    }
+
+    bookieSeriesHistory(bookieId: number): OddsRow[] {
+    // Keep clean odds for this bookmaker, newest series first.
+        return this.oddsRows
+            .filter((x: OddsRow) => x.o01 === bookieId)
+            .filter((x: OddsRow) => !x.o07 && !x.o08 && (x.o09 ?? 0) === 0)
+            .slice()
+            .sort((a: OddsRow, b: OddsRow) => (b.o04 ?? 0) - (a.o04 ?? 0));
+    }
+
+    private getCurrentUser(): any | null {
+    // Read the current user through the AuthService public contract.
+        try {
+            const fn: any = (this.auth as any)?.getUser;
+            if (typeof fn === 'function') return fn.call(this.auth);
+        } catch { /* empty */ }
+        return null;
+    }
+
+    get entitlements(): any | null {
+        return this.getCurrentUser()?.entitlements ?? null;
+    }
+
+    openLogin(): void { this.requestLogin.emit(); }
+    openRegister(): void { this.requestRegister.emit(); }
+    openUpgrade(): void {
+        console.log('[DETAILS] emit requestUpgrade');
+        this.closed.emit();
+        window.dispatchEvent(new CustomEvent('openBilling'));
+    }
+
+    get user() {
+        return this.auth.getUser();
+    }
+
+    get isLoggedIn(): boolean {
+        return this.auth.isLoggedIn();
+    }
+
+    get ent() {
+        return this.auth.getEntitlements();
+    }
+
+    get hasTrial(): boolean {
+        return !!this.ent?.hasTrial;
+    }
+
+    get isPremium(): boolean {
+        return !!this.ent?.isPremium;
+    }
+
+    testClick(): void {
+        console.log('[DETAILS] upgrade clicked');
+        this.openUpgrade();
+    }
+
+    private readonly DEV_FORCE_SHOW_BILLING_BTN = true;
+    get showBillingBtn(): boolean {
+        if (this.DEV_FORCE_SHOW_BILLING_BTN) return this.isLoggedIn;
+        return this.isLoggedIn && !this.hasTrial && !this.isPremium;
+    }
+
+    surfaceLabel(val: string): string {
+        const normalized = val.trim().toLowerCase();
+        const key: Record<string, string> = {
+            all: 'matchDetails.allSurfaces', s1: 'surfaces.carpet', s2: 'surfaces.clay',
+            s3: 'surfaces.grass', s4: 'surfaces.hard', carpet: 'surfaces.carpet',
+            clay: 'surfaces.clay', grass: 'surfaces.grass', hard: 'surfaces.hard',
+            indoor: 'surfaces.carpet', indoors: 'surfaces.carpet', unknown: 'surfaces.unknown'
+        };
+        return key[normalized] ? this.regional.text(key[normalized]) : val;
+    }
+
+    modeLabel(val: string): string {
+        const key: Record<string, string> = { M: 'matchDetails.match', SM: 'matchDetails.setMatch', GSM: 'matchDetails.gameSetMatch' };
+        return key[val] ? this.regional.text(key[val]) : val;
+    }
+
+    readonly playsKey = (name: string): string => playsTranslationKey(null, name);
+
+    resultLabel(result: 'WIN' | 'LOSS' | 'N/A'): string {
+        return this.regional.text(result === 'WIN' ? 'matchDetails.win' : result === 'LOSS' ? 'matchDetails.loss' : 'matchDetails.na');
+    }
+
+    chartDate(tip: ChartTooltip): string {
+        return tip.time == null ? tip.dateLabel : this.formatDateShort(tip.time);
+    }
+
+    oddsLineLabel(line: string): string {
+        // Localize only a numeric label, never the selected market's canonical key.
+        if (!/^[+-]?\d+(?:\.\d+)?$/.test(line)) return line;
+        const digits = line.split('.')[1]?.length ?? 0;
+        const value = this.regional.number(Number(line), digits);
+        return line.startsWith('+') ? '+' + value : value;
+    }
+
+    get errorMessage(): string {
+        const date = this.isLocked ? this.lockedUntilText() : '';
+        return date ? this.regional.text('matchDetails.lockedUntil', { date }) : this.regional.text(this.error ?? '');
+    }
+
+    private refreshLocalizedView(): void {
+        // Reformat cached presentation only. No fetch, eligibility decision or model calculation.
+        if (this.raw && this.vm) {
+            this.vm = {
+                ...this.vm,
+                header: { ...this.vm.header, dateText: this.formatMatchDate(this.raw.m003),
+                    prizeText: this.formatPrize(this.raw) },
+                p1: { ...this.vm.p1, born: this.formatBornWithAge(this.raw.p1?.p09) },
+                p2: { ...this.vm.p2, born: this.formatBornWithAge(this.raw.p2?.p09) },
+                nn: this.vm.nn ? this.buildNnVm(this.raw.n) : null
+            };
+        }
+        this.cdr.markForCheck();
+    }
+
+    public shouldSplitNnGroup(group: NnFeatureGroupVm | null): boolean {
+        if (!group) {
+            return false;
+        }
+    
+        return group.id === 'c' || group.id === 'r';
+    }
+
+    public getNnGroupColumns(group: NnFeatureGroupVm | null): { left: NnFeatureItemVm[]; right: NnFeatureItemVm[] } {
+        if (!group?.items?.length) {
+            return { left: [], right: [] };
+        }
+    
+        if (!this.shouldSplitNnGroup(group)) {
+            return { left: group.items, right: [] };
+        }
+    
+        const midpoint = Math.ceil(group.items.length / 2);
+    
+        return {
+            left: group.items.slice(0, midpoint),
+            right: group.items.slice(midpoint),
+        };
+    }
+
+    public nnGroupColumns(group: NnFeatureGroupVm | null): { left: NnFeatureItemVm[]; right: NnFeatureItemVm[] } {
+        if (!group?.items?.length) {
+            return { left: [], right: [] };
+        }
+    
+        if (!this.shouldSplitNnGroup(group)) {
+            return { left: group.items, right: [] };
+        }
+    
+        const midpoint = Math.ceil(group.items.length / 2);
+    
+        return {
+            left: group.items.slice(0, midpoint),
+            right: group.items.slice(midpoint),
+        };
+    }
+
+    // =================================================================================================
+    // Localization
+    // =================================================================================================
+    private nnText(key: string, fallback: string): string {
+        const translated = this.regional.text(key);
+        return translated === key ? fallback : translated;
+    }
+
+    public readonly nnFeatureHelp = NN_FEATURE_HELP;
+
+    public getNnFeatureHelp(featureName: string | null | undefined): NnFeatureHelpEntry | null {
+        if (!featureName) {
+            return null;
+        }
+    
+        if (!Object.prototype.hasOwnProperty.call(this.nnFeatureHelp, featureName)) return null;
+        const fallback = this.nnFeatureHelp[featureName];
+        return {
+            ...fallback,
+            shortDescription: this.nnText('nn.features.' + featureName + '.shortDescription', fallback.shortDescription)
+        };
+    }
+
+    public hasNnFeatureHelp(featureName: string | null | undefined): boolean {
+        return !!featureName && Object.prototype.hasOwnProperty.call(this.nnFeatureHelp, featureName);
+    }
+
+    public getNnFeatureHelpText(featureName: string | null | undefined): string {
+        const help = this.getNnFeatureHelp(featureName);
+        return help ? `${featureName}\n\n${help.shortDescription}` : '';
+    }
+    
+}
+
+export interface PlayerTsHistoryPointRaw {
+    m: number; // MatchTPId
+    d: string; // DateTime
+    t: number; // Mean
+    s: number; // SD
+  }
+  
+  export type PlayerTsHistorySeriesKey =
+    | 'M_ALL' | 'M_S1' | 'M_S2' | 'M_S3' | 'M_S4'
+    | 'SM_ALL' | 'SM_S1' | 'SM_S2' | 'SM_S3' | 'SM_S4'
+    | 'GSM_ALL' | 'GSM_S1' | 'GSM_S2' | 'GSM_S3' | 'GSM_S4';
+  
+  export interface PlayerTsHistoryRaw {
+    p: number;
+    s: Partial<Record<PlayerTsHistorySeriesKey, PlayerTsHistoryPointRaw[]>>;
+  }
+  
+  export interface PlayerTsChartPointVm {
+    matchTPId: number;
+    date: string;
+    mean: number;
+    sd: number;
+  }

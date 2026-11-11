@@ -1,0 +1,13 @@
+<div class="bb-backdrop" (click)="onBackdropClick()">
+    <div [class]="modalClassList" role="dialog" aria-modal="true" [attr.aria-labelledby]="titleId" appTrapFocus [onEscape]="onEscape" [lockBackgroundScroll]="lockBodyScroll"
+        (click)="$event.stopPropagation()">
+        <div class="bb-modal-heading">
+            <button class="close-button" type="button" [disabled]="closeDisabled" (click)="close()"
+                [attr.aria-label]="closeLabel">×</button>
+            <h4 [id]="titleId" class="bb-modal-title">{{ title }}</h4>
+            <div *ngIf="subtitle" class="bb-hint bb-modal-subtitle">{{ subtitle }}</div>
+        </div>
+        <ng-content select=":not([bbActions])"></ng-content>
+        <ng-content select="[bbActions]"></ng-content>
+    </div>
+</div>

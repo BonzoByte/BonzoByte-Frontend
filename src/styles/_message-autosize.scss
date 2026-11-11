@@ -1,0 +1,20 @@
+// Grid stretch preserves full-width fields with content-box sizing. The CDK's
+// row limits then measure text rows, without counting padding as part of them.
+.bb-message-input {
+    display: grid;
+    min-width: 0;
+}
+
+.bb-message-input > textarea.cdk-textarea-autosize {
+    box-sizing: content-box;
+    width: auto;
+    min-width: 0;
+    resize: none;
+    overflow-x: hidden;
+    overflow-y: auto;
+    line-height: 1.5;
+    // Keep wrapping width constant while the CDK temporarily measures padding.
+    padding-inline: 12px !important;
+    // Eight 1.5em text rows, including fractional font sizes and emoji fallback.
+    max-height: 12em !important;
+}

@@ -1,0 +1,179 @@
+// Shared presentation for live matches and saved personal predictions.
+@mixin cells($scope) {
+    #{$scope} .prediction-cell {
+        padding: 5px 8px;
+        white-space: normal;
+    }
+
+    .prediction-cell__topline,
+    .prediction-cell__meta {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+    }
+
+    .prediction-cell__topline {
+        color: #f3faf7;
+        font-size: 10px;
+    }
+
+    .prediction-cell__topline strong {
+        flex: 0 0 auto;
+        color: var(--prediction-accent, #8ed8c0);
+        font-family: var(--font-mono);
+        font-size: 13px;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .prediction-cell__player {
+        overflow: hidden;
+        font-weight: 700;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .prediction-cell__bar {
+        height: 3px;
+        margin: 4px 0 3px;
+        overflow: hidden;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.1);
+    }
+
+    .prediction-cell__bar span {
+        display: block;
+        height: 100%;
+        border-radius: inherit;
+        background: var(--prediction-accent, #8ed8c0);
+    }
+
+    .prediction-cell__meta {
+        flex-wrap: wrap;
+        white-space: normal;
+        color: rgba(224, 235, 231, 0.55);
+        font-size: 8px;
+        font-weight: 650;
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
+    }
+
+    .prediction-cell__market {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 7px;
+        margin-top: 4px;
+        padding-top: 4px;
+        border-top: 1px solid color-mix(in srgb, var(--bb-border) 72%, transparent);
+        color: var(--bb-text-muted);
+        font-size: 8.5px;
+        font-variant-numeric: tabular-nums;
+        line-height: 1.1;
+        white-space: nowrap;
+    }
+
+    .prediction-cell__market-copy {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .prediction-cell__market-copy small {
+        color: inherit;
+        font-size: inherit;
+    }
+
+    .prediction-cell__gap {
+        flex: 0 0 auto;
+        border: 1px solid var(--bb-border);
+        border-radius: 999px;
+        padding: 2px 5px;
+        background: var(--bb-surface-3);
+        color: var(--bb-text-muted);
+        font-size: 8.5px;
+        font-weight: 700;
+        letter-spacing: 0.015em;
+    }
+
+    // Translated market labels may wrap; keep the numeric pair together.
+    .prediction-cell__market--muted {
+        flex-wrap: wrap;
+        white-space: normal;
+        justify-content: flex-start;
+        opacity: 0.72;
+    }
+
+    .prediction-cell__market--muted strong {
+        white-space: nowrap;
+        color: var(--bb-text-muted);
+        font-size: inherit;
+        font-weight: 650;
+    }
+
+    .prediction-cell--lean {
+        --prediction-accent: #8aa9c8;
+    }
+
+    .prediction-cell--clear {
+        --prediction-accent: #d5b65d;
+    }
+
+    .prediction-cell--high {
+        --prediction-accent: #75d6ad;
+    }
+
+    .prediction-cell--very-high {
+        --prediction-accent: #46e0a7;
+        background: rgba(70, 224, 167, 0.045);
+    }
+
+    .prediction-cell--correct {
+        --prediction-outcome-color: #58d69b;
+        background:
+            linear-gradient(90deg, rgba(35, 166, 108, 0.15), rgba(35, 166, 108, 0.035));
+    }
+
+    .prediction-cell--incorrect {
+        --prediction-outcome-color: #f08b96;
+        background:
+            linear-gradient(90deg, rgba(196, 65, 81, 0.14), rgba(196, 65, 81, 0.03));
+    }
+
+    .prediction-cell--correct .prediction-cell__outcome,
+    .prediction-cell--incorrect .prediction-cell__outcome {
+        color: var(--prediction-outcome-color);
+        font-weight: 800;
+        letter-spacing: 0.06em;
+    }
+
+
+
+    .prediction-cell--incomplete {
+        background:
+            linear-gradient(90deg, rgba(207, 151, 61, 0.13), rgba(207, 151, 61, 0.025));
+    }
+
+    .prediction-cell--incomplete .prediction-cell__outcome {
+        color: #d8a856;
+        font-weight: 750;
+        letter-spacing: 0.04em;
+    }
+
+    .prediction-cell--not-played .prediction-cell__outcome {
+        color: var(--bb-text-muted);
+        font-weight: 700;
+        letter-spacing: 0.035em;
+    }
+
+    .prediction-cell--pending .prediction-cell__outcome {
+        color: var(--bb-text-muted);
+        font-weight: 700;
+        letter-spacing: 0.05em;
+    }
+
+    .prediction-cell__unavailable {
+        color: rgba(220, 230, 226, 0.42);
+        font-size: 10px;
+    }
+}

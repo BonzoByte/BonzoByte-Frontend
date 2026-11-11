@@ -1,0 +1,42 @@
+:host { display: block; --study-profit: #3fd18b; --study-loss: #ff7b85; }
+:host-context([data-bb-theme='light']) { --study-profit: #087443; --study-loss: #b42335; }
+.sql-study { width: min(1380px, calc(100% - 2rem)); margin: 0 auto; padding: 1rem 0 5rem; color: var(--bb-text); }
+h1 { font-size: clamp(1.8rem, 4vw, 3rem); color: var(--bb-text-strong); }
+h2 { font-size: 1.15rem; color: var(--bb-text-strong); }
+p { line-height: 1.6; }
+.sql-study__local { color: var(--bb-text-muted); font-weight: 700; }
+.sql-study__disclosure, .sql-study__controls, .sql-study__panel, article {
+  padding: 1rem; border: 1px solid var(--bb-border); border-radius: 16px;
+  background: var(--bb-surface-1); margin: 1rem 0;
+}
+.sql-study__disclosure { border-left: 4px solid var(--bb-theme-accent); }
+.sql-study__disclosure p { margin: .4rem 0; }
+.sql-study__window { color: var(--bb-text-strong); }
+.sql-study__controls { display: flex; align-items: end; gap: 1rem; flex-wrap: wrap; }
+.sql-study__controls p { flex-basis: 100%; margin: 0; color: var(--bb-text-muted); }
+label { display: flex; flex-direction: column; gap: .4rem; font-weight: 600; }
+select, button {
+  min-height: 44px; padding: .6rem .9rem; border: 1px solid var(--bb-control-border);
+  border-radius: 8px; color: var(--bb-control-text); background: var(--bb-control-bg);
+}
+button:focus-visible, select:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--bb-theme-accent); outline-offset: 3px; }
+button.is-active { border-color: var(--bb-theme-accent); background: color-mix(in srgb, var(--bb-theme-accent) 18%, var(--bb-control-bg)); font-weight: 800; }
+select:disabled { opacity: .55; }
+.sql-study__buttons { display: flex; gap: .4rem; flex-wrap: wrap; }
+.sql-study__cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: .8rem; }
+article { margin: 0; display: flex; flex-direction: column; gap: .5rem; }
+article strong { font-size: 1.6rem; color: var(--bb-text-strong); }
+article small, article span { color: var(--bb-text-muted); }
+.sql-study__chart { position: relative; height: 330px; }
+.sql-study__table { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+th, td { padding: .7rem; text-align: right; white-space: nowrap; border-bottom: 1px solid var(--bb-border); }
+th:first-child { text-align: left; }
+.sql-study__loss, article strong.sql-study__loss { color: var(--study-loss); }
+.sql-study__gain, article strong.sql-study__gain { color: var(--study-profit); }
+.sql-study__table tr.sql-study__gain, .sql-study__table tr.sql-study__loss { color: var(--bb-text); }
+.sql-study__table tr.sql-study__gain td:nth-last-child(-n+2) { color: var(--study-profit); }
+.sql-study__table tr.sql-study__loss td:nth-last-child(-n+2) { color: var(--study-loss); }
+.sql-study__methodology { color: var(--bb-text-muted); overflow-wrap: anywhere; }
+summary { cursor: pointer; color: var(--bb-text-strong); font-weight: 700; padding: .3rem; }
+@media (max-width: 600px) { .sql-study__cards { grid-template-columns: repeat(2, minmax(0, 1fr)); } .sql-study__chart { height: 260px; } }

@@ -1,0 +1,66 @@
+:host { display: block; min-width: 0; }
+.discussion { color: var(--bb-text); min-width: 0; }
+.discussion-toolbar, .discussion-actions { display: flex; align-items: center; flex-wrap: wrap; gap: .6rem; }
+.discussion-toolbar p { flex: 1 1 220px; margin: 0; }
+.discussion-note, time, .discussion-reply { color: var(--bb-text-muted, #9fa9b5); font-size: .85rem; }
+.discussion-comments { list-style: none; padding: 0; margin: 1rem 0; display: grid; gap: 10px; }
+.discussion-comments li { min-width: 0; }
+.discussion-new-navigation { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin: .6rem 0; }
+.discussion-new-navigation .discussion-note { flex: 1 1 220px; overflow-wrap: anywhere; }
+.discussion-new-divider { display: flex; align-items: center; gap: 10px; color: var(--bb-accent, #80d5ff); font-size: .85rem; font-weight: 600; margin: 5px 0 10px; }
+.discussion-new-divider span { min-width: 0; overflow-wrap: anywhere; }
+.discussion-new-divider::before, .discussion-new-divider::after { content: ''; flex: 1; min-width: 10px; border-top: 1px solid var(--bb-accent, #80d5ff); }
+.discussion-comment-highlight .discussion-comment-card { border-color: var(--bb-accent, #80d5ff); box-shadow: inset 3px 0 var(--bb-accent, #80d5ff); }
+.discussion-comments li:focus-visible { outline: 2px solid var(--bb-accent, #80d5ff); outline-offset: 2px; border-radius: 8px; }
+.discussion-pagination { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
+.discussion-emoji-row { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 6px 12px; }
+.discussion-emojis { display: flex; flex-wrap: wrap; gap: 2px; }
+.discussion-emojis button { display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box; width: 32px; min-width: 32px; padding: 3px; background: transparent; border-color: transparent; font-size: 20px; line-height: 1; }
+.discussion-emojis button:hover:not(:disabled) { background: var(--bb-control-bg); border-color: var(--bb-border); }
+.discussion-comment-card { border: 1px solid var(--bb-border, #526071); border-radius: 8px; background: var(--bb-table-row-even); overflow: hidden; }
+.discussion-comment-header { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 8px 12px;
+    padding: 8px 12px; border-bottom: 1px solid var(--bb-border, #526071); background: var(--bb-table-head-bg); }
+.discussion-comment-card.discussion-comment-own {
+    background: color-mix(in srgb, var(--bb-surface-2) 94%, var(--bb-accent, #80d5ff) 6%);
+    border-color: color-mix(in srgb, var(--bb-border) 70%, var(--bb-accent, #80d5ff) 30%);
+}
+.discussion-comment-own .discussion-comment-header {
+    background: color-mix(in srgb, var(--bb-table-head-bg) 90%, var(--bb-accent, #80d5ff) 10%);
+}
+.discussion-comment-own time { color: var(--bb-text); }
+.discussion-author { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.discussion-author strong { min-width: 0; overflow-wrap: anywhere; }
+.discussion-avatar-slot { position: relative; display: inline-flex; flex: 0 0 30px; width: 30px; height: 30px; }
+.discussion-avatar { flex: 0 0 30px; width: 30px; height: 30px; border-radius: 50%; overflow: hidden; display: inline-flex;
+    align-items: center; justify-content: center; background: var(--bb-control-bg, #202b34); color: var(--bb-text-muted); }
+.discussion-avatar img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.discussion-avatar .bi { font-size: 23px; line-height: 1; }
+.discussion-comment-content { padding: 6px 12px 10px; }
+.discussion-comment-header time { text-align: right; justify-self: end; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.discussion-comment-meta { display: flex; align-items: center; justify-content: flex-end; gap: 6px; min-width: 0; flex-wrap: wrap; }
+.discussion-comment-meta .discussion-copy-link { display: inline-flex; align-items: center; justify-content: center; width: 30px; min-height: 30px; padding: 3px; border-color: transparent; background: transparent; }
+.discussion-comment-meta .discussion-copy-link:hover:not(:disabled) { border-color: var(--bb-border); }
+.discussion-comment-linked { scroll-margin-block-start: 110px; scroll-margin-block-end: 20px; }
+.discussion-body { white-space: pre-wrap; overflow-wrap: anywhere; margin: .6rem 0; }
+.discussion-reply { overflow-wrap: anywhere; }
+.discussion-reply { border-left: 3px solid var(--bb-border, #526071); padding-left: .6rem; margin: .6rem 0; }
+button { background: var(--bb-surface-2, #202b34); color: var(--bb-text, #fff); border: 1px solid var(--bb-border, #526071); border-radius: 6px; padding: .45rem .65rem; min-height: 36px; cursor: pointer; }
+button:disabled { opacity: .5; cursor: default; }
+button[aria-pressed=true] { border-color: var(--bb-accent, #80d5ff); }
+button:focus-visible, textarea:focus-visible { outline: 2px solid var(--bb-accent, #80d5ff); outline-offset: 2px; }
+.discussion-actions button { font-size: .8rem; }
+.discussion-composer, .discussion-confirm { margin-top: 1rem; }
+.discussion-composer-actions { display: flex; align-items: center; flex-wrap: wrap; gap: .6rem; }
+.discussion-draft-note { overflow-wrap: anywhere; }
+.discussion-undo-help { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+.discussion-compose-gate { margin-top: 1rem; display: flex; align-items: center; flex-wrap: wrap; gap: .6rem 1rem; }
+.discussion-compose-gate p { flex: 1 1 250px; margin: 0; }
+.discussion-sign-in { border-color: var(--bb-accent, #80d5ff); flex: 0 0 auto; }
+label { display: block; width: 100%; }
+textarea { display: block; width: 100%; box-sizing: border-box; resize: vertical; color: var(--bb-text); background: var(--bb-surface-2, #202b34); border: 1px solid var(--bb-border, #526071); border-radius: 6px; margin: .5rem 0; padding: .65rem; }
+.discussion-error { padding: .7rem; border: 1px solid var(--bb-border, #526071); border-radius: 6px; margin: .6rem 0; }
+@media (max-width: 480px) {
+    .discussion-comment-header { grid-template-columns: minmax(0, 1fr); gap: 4px; padding: 8px 10px; }
+    .discussion-comment-content { padding: 6px 10px 10px; }
+}

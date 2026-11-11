@@ -1,0 +1,443 @@
+﻿:host {
+    display: block;
+}
+
+.custom-header .favourites-trigger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    min-width: 44px;
+    min-height: 32px;
+    padding: 4px 7px;
+    border: 1px solid var(--bb-header-btn-border, rgba(255, 255, 255, .3));
+    border-radius: 7px;
+    font-size: 12px;
+    flex: 0 0 auto;
+    font-variant-numeric: tabular-nums;
+    .favourites-star { color: #f2ca64; font-size: 17px; line-height: 1; }
+    &:hover, &.is-current { background: rgba(148, 213, 245, .13); border-color: #94d5f5; }
+    &:focus-visible { outline: 2px solid #94d5f5; outline-offset: 3px; }
+}
+@media (max-width: 600px) { .custom-header .favourites-trigger { min-height: 40px; } }
+
+.custom-header .popular-trigger { background: transparent; border: 0; padding: 0; font: inherit; cursor: pointer; }
+.custom-header .predictions-trigger { display:inline-flex;align-items:center;justify-content:center;min-width:30px;min-height:32px;
+    border:1px solid var(--bb-header-btn-border,rgba(255,255,255,.3));border-radius:7px;font-size:20px; }
+.custom-header .predictions-trigger:hover,.custom-header .predictions-trigger.is-current {border-color:#94d5f5;background:rgba(148,213,245,.13);}
+.custom-header .predictions-trigger:focus-visible {outline:2px solid #94d5f5;outline-offset:3px;}
+.custom-header .popular-trigger:focus-visible { outline: 2px solid #94d5f5; outline-offset: 4px; }
+.custom-header .popular-trigger.is-current { color: var(--bb-theme-accent); text-decoration: underline; text-underline-offset: 4px; }
+
+.language-picker {
+    position: relative;
+    flex: 0 0 auto;
+
+    summary {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 5px 8px;
+        border: 1px solid var(--bb-header-btn-border, rgba(255, 255, 255, 0.3));
+        border-radius: 6px;
+        color: var(--bb-header-text, #fff);
+        cursor: pointer;
+        list-style: none;
+        font-size: 12px;
+    }
+
+    summary::-webkit-details-marker { display: none; }
+    summary::after { content: '▾'; }
+    summary:focus-visible, button:focus-visible {
+        outline: 2px solid #94d5f5;
+        outline-offset: 2px;
+    }
+}
+
+.time-zone-notice-toggle {
+    display: flex;
+    align-items: flex-start;
+    gap: 7px;
+    cursor: pointer;
+    input { flex: 0 0 auto; margin-top: 2px; accent-color: #75e2bd; }
+}
+
+
+.language-options {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    z-index: 1100;
+    width: 280px;
+    max-width: calc(100vw - 24px);
+    // Show the whole list when it fits; only scroll on genuinely short screens.
+    max-height: calc(100vh - 80px);
+    max-height: calc(100dvh - 80px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 6px;
+    background: var(--bb-header-bg, #111);
+    border: 1px solid var(--bb-header-btn-border, rgba(255, 255, 255, 0.3));
+    border-radius: 8px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+}
+
+.language-note {
+    white-space: normal;
+    font-size: 11px;
+    line-height: 1.4;
+    opacity: 0.8;
+    margin: 8px;
+}
+
+.time-zone-label { display: block; margin-bottom: 4px; }
+.time-zone-select {
+    display: block;
+    width: calc(100% - 16px);
+    margin: 0 8px;
+    padding: 6px;
+    border: 1px solid var(--bb-header-btn-border, #555);
+    border-radius: 4px;
+    background: var(--bb-header-bg, #111);
+    color: var(--bb-header-text, #fff);
+    font-size: 12px;
+}
+
+.custom-header .language-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 8px;
+    border: 0;
+    text-align: left;
+
+    &.is-current { background: rgba(148, 213, 245, 0.12); }
+    &:disabled { opacity: 0.6; cursor: not-allowed; }
+    .fi { flex: 0 0 auto; }
+    [lang] { white-space: normal; overflow-wrap: anywhere; }
+    small { margin-left: auto; font-size: 10px; }
+}
+
+.custom-header {
+    min-height: var(--header-h);
+}
+
+.custom-header>div {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 8px;
+    padding: 0 8px;
+    min-height: var(--header-h);
+    min-width: 0;
+}
+
+.nav-separator {
+    width: 1px;
+    height: 22px;
+    margin: 0 0.35rem;
+    background: rgba(255, 255, 255, 0.18);
+    border-radius: 999px;
+    display: inline-block;
+    flex: 0 0 auto;
+  }
+
+.custom-header>div .navbar-nav {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    white-space: nowrap;
+    min-width: 0;
+}
+
+.custom-header>div .navbar-nav:first-of-type {
+    justify-self: start;
+}
+
+.custom-header>div .brand-title {
+    justify-self: center;
+    text-align: center;
+    white-space: nowrap;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.custom-header>div .brand-title .main-title {
+    margin: 0;
+    font-family: var(--bb-brand-font, 'Orbitron', system-ui, sans-serif);
+    font-size: xx-large;
+}
+
+.custom-header>div .brand-title .main-title::after {
+    content: "";
+    margin-top: 4px;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(to right, transparent, currentColor, transparent);
+    display: block;
+}
+
+.custom-header>div .navbar-nav:last-of-type {
+    justify-self: end;
+}
+
+/* Links + buttons share header foreground */
+.custom-header a,
+.custom-header button,
+.custom-header span,
+.custom-header .main-title {
+    color: var(--bb-header-text, #fff);
+}
+
+.custom-header a {
+    text-decoration: none;
+}
+
+.custom-header .logreg {
+    cursor: pointer;
+}
+
+.nav-group {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    flex: 0 0 auto;
+}
+
+/* Header buttons */
+.custom-header button {
+    background: none;
+    border: 1px solid var(--bb-header-btn-border, rgba(255, 255, 255, 0.3));
+    padding: 4px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+/* User block */
+.user-block {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  
+  .custom-header .user-avatar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    overflow: hidden;
+    --bb-avatar-letter-size: 16px;
+    --bb-avatar-icon-size: 24px;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    object-fit: cover;
+    cursor: pointer;
+    flex: 0 0 auto;
+
+    app-account-avatar { width: 100%; height: 100%; border-radius: inherit; }
+    &:focus-visible { outline: 2px solid var(--bb-accent, #86d7ff); outline-offset: 3px; }
+  }
+  
+  .user-meta {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-width: 110px;
+    line-height: 1.15;
+    cursor: pointer;
+    align-items: center;
+  }
+  
+  .user-name {
+    font-size: 15px;
+    font-weight: 700;
+    color: #f3f3f3;
+    white-space: nowrap;
+  }
+  
+  .user-tier {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 4px;
+    font-size: 11px;
+    font-weight: 500;
+    opacity: 0.9;
+    white-space: nowrap;
+  }
+  
+  .user-tier-icon {
+    font-size: 11px;
+    line-height: 1;
+  }
+
+  .trial-countdown {
+    margin-top: 3px;
+    font-size: 10px;
+    line-height: 1.2;
+    color: var(--bb-header-text, #eaeaea);
+    opacity: 0.85;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  .custom-header .trial-extend {
+    font-size: 10px;
+    line-height: 1.2;
+    padding: 2px 5px;
+    color: inherit;
+  }
+  
+  .user-block .nav-separator {
+    margin: 0 2px 0 4px;
+  }
+
+/* Header chrome background (themeable) */
+.custom-header {
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(0, 0, 0, 0.35)),
+        repeating-linear-gradient(90deg,
+            rgba(255, 255, 255, 0.025) 0px,
+            rgba(255, 255, 255, 0.025) 1px,
+            transparent 1px,
+            transparent 4px),
+        var(--bb-header-bg, #111);
+
+    box-shadow: 0 1px 0 var(--bb-header-border, rgba(255, 255, 255, 0.08));
+}
+
+/*
+ * Once the three-column desktop header becomes tight, move navigation to its
+ * own row. This preserves the centered brand and keeps every nav group intact
+ * without changing the regular wide-screen layout.
+ */
+@media (min-width: 801px) and (max-width: 1480px) {
+    .custom-header>div {
+        grid-template-columns: 1fr auto 1fr;
+        grid-template-rows: 54px 42px;
+        gap: 0 8px;
+        padding: 0 8px;
+    }
+
+    .custom-header>div .brand-title {
+        grid-column: 2;
+        grid-row: 1;
+    }
+
+    .custom-header>div .navbar-nav:first-of-type {
+        grid-column: 1 / -1;
+        grid-row: 2;
+        justify-self: center;
+        max-width: 100%;
+        overflow-x: auto;
+        overflow-y: hidden;
+        padding: 0 4px 4px;
+        scrollbar-width: none;
+        overscroll-behavior-inline: contain;
+    }
+
+    .custom-header>div .navbar-nav:first-of-type::-webkit-scrollbar {
+        display: none;
+    }
+
+    .custom-header>div .navbar-nav:last-of-type {
+        grid-column: 3;
+        grid-row: 1;
+    }
+}
+
+// Keep the new personal shortcut from pushing the account area over the brand.
+@media (min-width: 801px) and (max-width: 1080px) {
+    .custom-header>div { grid-template-columns: minmax(0, 1fr) auto; }
+    .custom-header>div .brand-title { grid-column: 1; justify-self: start; }
+    .custom-header>div .navbar-nav:last-of-type { grid-column: 2; }
+}
+
+@media (max-width: 800px) {
+    .custom-header>div {
+        grid-template-columns: minmax(0, 1fr) auto;
+        grid-template-rows: 46px 40px;
+        gap: 0 6px;
+        height: var(--header-h);
+        padding: 0 6px;
+    }
+
+    .custom-header>div .brand-title {
+        grid-column: 1;
+        grid-row: 1;
+        justify-self: start;
+    }
+
+    .custom-header>div .brand-title .main-title {
+        font-size: 22px;
+    }
+
+    .custom-header>div .brand-title .main-title::after {
+        margin-top: 2px;
+    }
+
+    .custom-header>div .navbar-nav:first-of-type {
+        grid-column: 1 / -1;
+        grid-row: 2;
+        justify-self: stretch;
+        max-width: 100%;
+        overflow-x: auto;
+        overflow-y: hidden;
+        gap: 12px;
+        padding: 0 2px 4px;
+        scrollbar-width: none;
+        overscroll-behavior-inline: contain;
+    }
+
+    .nav-group {
+        gap: 12px;
+    }
+
+    .custom-header>div .navbar-nav:first-of-type::-webkit-scrollbar {
+        display: none;
+    }
+
+    .custom-header>div .navbar-nav:last-of-type {
+        grid-column: 2;
+        grid-row: 1;
+        gap: 6px;
+        position: relative;
+
+        // Anchor the expanded menu to the whole account area, not its first
+        // (language) button, so longer translated login labels cannot push it left.
+        .language-picker { position: static; }
+    }
+
+    .custom-header>div .navbar-nav:last-of-type .nav-separator,
+    .custom-header>div .navbar-nav:last-of-type .user-meta {
+        display: none;
+    }
+
+    .user-block {
+        gap: 6px;
+    }
+
+    .custom-header .user-avatar {
+        width: 30px;
+        height: 30px;
+        --bb-avatar-letter-size: 13px;
+        --bb-avatar-icon-size: 20px;
+    }
+}
+
+@media (max-width: 440px) {
+    .custom-header>div .brand-title .main-title { font-size: 18px; }
+    .language-picker summary .fi { display: none; }
+}
+@media (max-width: 360px) {
+    .custom-header>div .brand-title .main-title { font-size: 14px; }
+    .language-picker summary {padding:5px 4px;}
+    .custom-header .user-avatar {width:26px;height:26px;--bb-avatar-letter-size:12px;--bb-avatar-icon-size:18px;}
+    .custom-header .favourites-trigger {min-width:36px;padding:4px;}
+    .custom-header>div .navbar-nav:last-of-type,.user-block {gap:4px;}
+}

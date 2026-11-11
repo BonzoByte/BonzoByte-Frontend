@@ -1,0 +1,104 @@
+<app-bb-modal-shell [title]="'register' | translate" [closeLabel]="'common.close' | translate" (closed)="close()">
+    <form [formGroup]="registerForm" (ngSubmit)="submit()">
+        <div class="bb-alert bb-alert--error" *ngIf="errorMessage" role="alert">
+            {{ errorMessage | translate }}
+        </div>
+
+        <div class="bb-alert bb-alert--success" *ngIf="successMessage" role="status">
+            {{ successMessage | translate }}
+        </div>
+
+        <div class="form-row">
+            <label for="email">{{ 'auth.email' | translate }}</label>
+            <input
+                id="email"
+                type="email"
+                formControlName="email"
+                [placeholder]="'auth.email' | translate"
+                [class.invalid]="email?.invalid && (email?.touched || submitting)" />
+            <p class="error" *ngIf="email?.hasError('required') && (email?.touched || submitting)">
+                {{ 'auth.required' | translate }}
+            </p>
+            <p class="error" *ngIf="email?.hasError('email') && (email?.touched || submitting)">
+                {{ 'auth.validEmail' | translate }}
+            </p>
+        </div>
+
+        <div class="form-row">
+            <label for="nickname">{{ 'auth.optionalNickname' | translate }}</label>
+            <input
+                id="nickname"
+                type="text"
+                formControlName="nickname"
+                [placeholder]="'auth.nickname' | translate"
+                [class.invalid]="nickname?.invalid && (nickname?.touched || submitting)" />
+            <p class="error" *ngIf="nickname?.invalid && (nickname?.touched || submitting)">
+                {{ 'auth.nicknameLength' | translate }}
+            </p>
+        </div>
+
+        <div class="form-row">
+            <label for="password">{{ 'auth.password' | translate }}</label>
+            <div class="password-wrapper">
+                <input
+                    id="password"
+                    class="password-input"
+                    [type]="showPassword ? 'text' : 'password'"
+                    formControlName="password"
+                    appCapsLock #passwordCaps="capsLock"
+                    [placeholder]="'auth.password' | translate"
+                    [class.invalid]="password?.invalid && (password?.touched || submitting)" />
+                <button
+                    type="button"
+                    class="toggle-password"
+                    appAccessibleClick
+                    (accessibleClick)="togglePasswordVisibility()"
+                    [attr.aria-label]="'auth.togglePassword' | translate">
+                    <i class="bi" [ngClass]="showPassword ? 'bi-eye-slash' : 'bi-eye'"></i>
+                </button>
+            </div>
+            <app-caps-lock-hint [field]="passwordCaps" />
+            <p class="error" *ngIf="password?.hasError('required') && (password?.touched || submitting)">
+                {{ 'auth.required' | translate }}
+            </p>
+            <p class="error" *ngIf="password?.hasError('minlength') && (password?.touched || submitting)">
+                {{ 'auth.passwordLength' | translate }}
+            </p>
+        </div>
+
+        <div class="form-row">
+            <label for="confirmPassword">{{ 'auth.confirmPassword' | translate }}</label>
+            <div class="password-wrapper">
+                <input
+                    id="confirmPassword"
+                    class="password-input"
+                    [type]="showConfirmPassword ? 'text' : 'password'"
+                    formControlName="confirmPassword"
+                    appCapsLock #confirmCaps="capsLock"
+                    [placeholder]="'auth.confirmPassword' | translate"
+                    [class.invalid]="(confirmPassword?.invalid || registerForm.errors?.['passwordsMismatch']) && (confirmPassword?.touched || submitting)" />
+                <button
+                    type="button"
+                    class="toggle-password"
+                    appAccessibleClick
+                    (accessibleClick)="toggleConfirmPasswordVisibility()"
+                    [attr.aria-label]="'auth.toggleConfirm' | translate">
+                    <i class="bi" [ngClass]="showConfirmPassword ? 'bi-eye-slash' : 'bi-eye'"></i>
+                </button>
+            </div>
+            <app-caps-lock-hint [field]="confirmCaps" />
+            <p class="error" *ngIf="confirmPassword?.hasError('required') && (confirmPassword?.touched || submitting)">
+                {{ 'auth.required' | translate }}
+            </p>
+            <p class="error" *ngIf="registerForm.errors?.['passwordsMismatch'] && (confirmPassword?.touched || submitting)">
+                {{ 'auth.passwordMismatch' | translate }}
+            </p>
+        </div>
+
+        <div bbActions class="bb-actions">
+            <button type="submit" class="oauth-btn" [disabled]="registerForm.invalid || submitting">
+                {{ (submitting ? 'auth.registering' : 'register') | translate }}
+            </button>
+        </div>
+    </form>
+</app-bb-modal-shell>

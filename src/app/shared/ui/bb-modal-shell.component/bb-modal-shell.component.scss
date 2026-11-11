@@ -1,0 +1,11 @@
+:host {
+  display: contents;
+}
+
+// Neutral by default; individual dialog variants can opt into a persistent heading.
+.bb-modal-heading { display: contents; }
+
+/* Subtitle spacing only inside the modal shell */
+.bb-modal-subtitle {
+  margin-top: 6px;
+}

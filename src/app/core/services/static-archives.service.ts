@@ -1,0 +1,1231 @@
+/* eslint-disable @typescript-eslint/no-empty-function */
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { Injectable } from '@angular/core';
+import { Observable, map, shareReplay, catchError, of, switchMap, throwError, forkJoin } from 'rxjs';
+import { Match, PlayerIndex, TournamentIndex } from '../models/tennis.model';
+import brotliDecompress from 'brotli/decompress';
+import { decodeArchiveJson } from '../helpers/decode-archive-json';
+import { normalizeDetailsQuality } from '../helpers/reviewed-details-compat';
+import { MatchDetailsRaw } from '../models/match-details.model';
+import { PlayerDetailsRaw } from '../models/player-details.model';
+import { AuthService } from './auth.service';
+import { environment } from '../../../environments/environment';
+import { AnalyticsDashboard } from '../models/analytics.model';
+import { ModelExplainabilityReport } from '../models/model-explainability.model';
+import { PlayerTsHistoryRaw } from 'src/app/core/models/player-details.model';
+import {
+  PredictionSimulationManifest,
+  PredictionSimulationReport,
+} from '../models/prediction-simulation.model';
+import {
+  DETAILS_LOCK_HOURS,
+  evaluateClientDetailsAccess,
+  normalizeDetailsHttpError,
+} from '../helpers/match-details-access';
+import { formatDecimal } from '../helpers/localized-number';
+import { planArchiveDay } from '../i18n/archive-day-window';
+import { DailySnapshot, mergeUserDay, UserDayArchive } from '../i18n/user-day-archive';
+
+export interface DailyArchiveIndex {
+  minDate: string;
+  maxDate?: string;
+}
+
+export interface DailyManifest extends DailyArchiveIndex {
+  generatedAtUtc?: string;
+  players?: {
+    version: string;
+    url: string;
+    contentType?: string;
+  };
+}
+
+export interface DailyManifestTournaments extends DailyArchiveIndex {
+  generatedAtUtc?: string;
+  tournaments?: {
+    version: string;
+    url: string;
+    contentType?: string;
+  };
+  tournamentStrength?: {
+    min: number | null;
+    median: number | null;
+    max: number | null;
+  };
+}
+
+export interface DetailsLockedError {
+  status: 'error';
+  code: 'DETAILS_LOCKED';
+  reason?: string;
+  expectedStartUtc?: string | null;
+  unlocksAt: string | null;
+  lockHours: number;
+}
+
+interface AnalyticsManifest {
+  analytics?: {
+    url?: string;
+  };
+}
+
+@Injectable({ providedIn: 'root' })
+export class StaticArchivesService {
+  private mode = environment.archivesMode;
+  private apiBase = environment.apiBase;
+  private apiUrl = environment.apiUrl;
+  private staticBase = environment.dailyStaticBase;
+
+  private dailyStaticBase = `${this.staticBase}/daily`;
+  private detailsStaticBase = `${this.staticBase}/matches`;
+  private tsStaticBase = `${this.staticBase}/players/ts`;
+  private analyticsStaticBase = `${this.staticBase}/analytics`;
+  private simulationStaticBase = `${this.staticBase}/simulation`;
+  private playerDetailsStaticBase = `${this.staticBase}/players/details`;
+  private playerMatchesStaticBase = `${this.staticBase}/players/matches`;
+  private tournamentsMatchesStaticBase = `${this.staticBase}/tournaments/matches`;
+  private readonly playersTsStaticBase = `${this.apiBase}/players/ts`;
+
+  private readonly PHOTO_BASE = `${environment.apiBase}/players/photo`;
+
+  private readonly dailyIndex$: Observable<DailyArchiveIndex>;
+  private readonly discoveredMaxDate$: Observable<string>;
+  private readonly dailyManifest$: Observable<DailyManifest>;
+  private readonly dailyManifestTournaments$: Observable<DailyManifestTournaments>;
+
+  constructor(private http: HttpClient, private auth: AuthService) {
+    if (this.mode === 'api') {
+      // API mode routes every archive request through the backend access layer.
+      this.dailyIndex$ = this.getDateRange().pipe(
+        map(r => ({ minDate: r.minDate, maxDate: r.maxDate } as DailyArchiveIndex)),
+        shareReplay(1)
+      );
+
+      this.discoveredMaxDate$ = this.getDateRange().pipe(
+        map(r => r.maxDate),
+        shareReplay(1)
+      );
+
+      // API mode derives ranges through backend endpoints rather than static manifests.
+      this.dailyManifest$ = of({ minDate: '', maxDate: '' } as DailyManifest).pipe(shareReplay(1));
+      this.dailyManifestTournaments$ = of({ minDate: '', maxDate: '' } as DailyManifestTournaments).pipe(shareReplay(1));
+      return;
+    }
+
+    // static mode (CDN)
+    this.dailyIndex$ = this.http
+      .get<DailyArchiveIndex>(`${this.dailyStaticBase}/index.json`)
+      .pipe(shareReplay(1));
+
+    const cb = `cb=${Date.now()}`;
+
+    this.dailyManifest$ = this.http
+      .get<DailyManifest>(`${this.dailyStaticBase}/manifest.json?${cb}`)
+      .pipe(shareReplay(1));
+
+    this.dailyManifestTournaments$ = this.http
+      .get<DailyManifestTournaments>(`${this.dailyStaticBase}/manifest.tournaments.json?${cb}`)
+      .pipe(shareReplay(1));
+
+    this.discoveredMaxDate$ = this.dailyIndex$.pipe(
+      switchMap(idx => this.findLatestExistingDate(idx.minDate, this.todayISO())),
+      shareReplay(1)
+    );
+  }
+
+  /** Returns the nearest available date, or null when the archive is empty. */
+  normalizeToAvailableDate(targetISO: string): Observable<string> {
+    return this.getDailyIndex().pipe(
+      switchMap(idx =>
+        this.discoveredMaxDate$.pipe(
+          map(max => {
+            const t = this.toDayNumber(targetISO);
+            const min = this.toDayNumber(idx.minDate)!;
+            const mx = this.toDayNumber(max)!;
+
+            if (t == null) return max;
+            if (t < min) return idx.minDate;
+            if (t > mx) return max;
+            return targetISO;
+          })
+        )
+      )
+    );
+  }
+
+  getPrevAvailableDate(currentISO: string): Observable<string | null> {
+    return this.getDailyIndex().pipe(
+      map(idx => {
+        const min = idx.minDate;
+        if (this.toDayNumber(currentISO)! <= this.toDayNumber(min)!) return null;
+        return this.addDaysISO(currentISO, -1);
+      })
+    );
+  }
+
+  getNextAvailableDate(currentISO: string): Observable<string | null> {
+    return this.discoveredMaxDate$.pipe(
+      map(max => {
+        if (this.toDayNumber(currentISO)! >= this.toDayNumber(max)!) return null;
+        return this.addDaysISO(currentISO, +1);
+      })
+    );
+  }
+
+  prefetchDaily(dateKey: string): void {
+    this.getDaily(dateKey).subscribe({ error: () => { } });
+  }
+
+  prefetchAdjacentDailyWindow(centerIso: string): void {
+    const centerCompact = this.isoToCompact(centerIso);
+
+    this.prefetchDaily(centerCompact);
+
+    this.getPrevAvailableDate(centerIso).subscribe({
+      next: prevIso => {
+        if (prevIso) {
+          this.prefetchDaily(this.isoToCompact(prevIso));
+        }
+      },
+      error: () => { }
+    });
+
+    this.getNextAvailableDate(centerIso).subscribe({
+      next: nextIso => {
+        if (nextIso) {
+          this.prefetchDaily(this.isoToCompact(nextIso));
+        }
+      },
+      error: () => { }
+    });
+  }
+
+  prefetchPreviousDaily(centerIso: string): void {
+    this.getPrevAvailableDate(centerIso).subscribe({
+      next: (prevIso) => {
+        if (!prevIso) return;
+        this.getDaily(prevIso).subscribe({ error: () => { } });
+      },
+      error: () => { }
+    });
+  }
+
+  // Daily and detail archive accessors share the same decoding and mapping contracts.
+  private availableDatesCached$?: Observable<string[]>;
+  private latestDailyCached$?: Observable<{ date: string; iso: string }>;
+
+  getAvailableDates(): Observable<string[]> {
+    if (!this.availableDatesCached$) {
+      this.availableDatesCached$ = this.http
+        .get<string[]>(`${this.apiBase}/available-dates`)
+        .pipe(shareReplay(1));
+    }
+
+    return this.availableDatesCached$;
+  }
+
+  getLatestDaily(): Observable<{ date: string; iso: string }> {
+    if (!this.latestDailyCached$) {
+      this.latestDailyCached$ = this.http
+        .get<{ date: string; iso: string }>(`${this.apiBase}/latest-daily`)
+        .pipe(shareReplay(1));
+    }
+
+    return this.latestDailyCached$;
+  }
+
+  private toDayNumber(iso: string): number | null {
+    // Archive indexes use the ISO calendar format YYYY-MM-DD.
+    if (!iso || iso.length < 10) return null;
+    const y = Number(iso.slice(0, 4));
+    const m = Number(iso.slice(5, 7));
+    const d = Number(iso.slice(8, 10));
+    if (!Number.isFinite(y) || !Number.isFinite(m) || !Number.isFinite(d)) return null;
+
+    // Use a UTC day number to avoid local time-zone drift.
+    const ms = Date.UTC(y, m - 1, d);
+    return Math.floor(ms / 86400000);
+  }
+
+  private readonly dailyCacheTtlMs = 60_000;
+  private dailyCache = new Map<string, {
+    expiresAt: number;
+    request$: Observable<Match[]>;
+  }>();
+
+  getDailyIndex(): Observable<DailyArchiveIndex> {
+    return this.dailyIndex$;
+  }
+
+  getDaily(dateKey: string): Observable<Match[]> {
+    const yyyymmdd = dateKey.includes('-') ? this.isoToCompact(dateKey) : dateKey;
+
+    const cached = this.dailyCache.get(yyyymmdd);
+    if (cached && cached.expiresAt > Date.now()) return cached.request$;
+    if (cached) this.dailyCache.delete(yyyymmdd);
+
+    let request$: Observable<Match[]>;
+
+    console.log('getDaily requested:', dateKey, 'normalized:', yyyymmdd);
+
+    if (this.mode === 'api') {
+      request$ = this.http
+        .get<any>(`${this.apiBase}/daily/${yyyymmdd}`)
+        .pipe(
+          map(r => (Array.isArray(r) ? r : (r?.matches ?? []))),
+          map(arr => (arr || []).map((m: any) => this.normalizeApiMatch(m))),
+          shareReplay(1)
+        );
+    } else {
+      request$ = this.http
+        .get(`${this.dailyStaticBase}/${yyyymmdd}.br`, { responseType: 'arraybuffer' })
+        .pipe(
+          map(buf => this.decodeBrotliJson<any[]>(buf)),
+          map(rows => (rows || []).map(r => this.mapLiteRowToMatch(r))),
+          shareReplay(1)
+        );
+    }
+
+    this.dailyCache.set(yyyymmdd, {
+      expiresAt: Date.now() + this.dailyCacheTtlMs,
+      request$
+    });
+    return request$;
+  }
+
+  /** Archive keys stay Zagreb-based. This projection changes only the selected user's day. */
+  getDailyForZone(day: string, zone: string, availableSourceDays?: readonly string[]): Observable<UserDayArchive> {
+    const window = planArchiveDay(day, zone);
+    if (window.startInclusive === window.endExclusive) return of({ matches: [], unresolvedCount: 0, missingDays: [], archiveDays: [] });
+    // Include the recorded-day bucket for coarse/unknown times even in far-offset zones.
+    const days = [...new Set([...window.archiveDays, day])].sort();
+    const available = availableSourceDays?.length ? new Set(availableSourceDays) : null;
+    return forkJoin(days.map(archiveDay => {
+      if (available && !available.has(archiveDay)) return of<DailySnapshot>({ archiveDay, matches: [], missing: true });
+      return this.getDaily(archiveDay).pipe(
+        map(matches => ({ archiveDay, matches } as DailySnapshot)),
+        catchError((error: unknown) => {
+          if (error instanceof HttpErrorResponse && error.status === 404) return of<DailySnapshot>({ archiveDay, matches: [], missing: true });
+          // Never silently call a day complete after a network/decode/authorization failure.
+          return throwError(() => error);
+        })
+      );
+    })).pipe(map(snapshots => mergeUserDay(window, snapshots)));
+  }
+
+  private normalizeApiMatch(m: any): Match {
+    if (!m) return {} as Match;
+
+    // ✅ daily archive (lite/minified) payload: l01, l02, ...
+    if (m.l01 != null || m.l02 != null || m.l04 != null) {
+      return this.mapLiteRowToMatch(m);
+    }
+
+    const dt = m?.dateTime ?? m?.DateTime ?? null;
+    const dateTime =
+      (typeof dt === 'string' && dt.trim().length > 0) ? dt : null;
+
+    return {
+      ...m,
+      dateTime,
+    } as Match;
+  }
+
+  getDateRange(): Observable<{ minDate: string; maxDate: string }> {
+    return this.http.get<{ minDate: string; maxDate: string }>(`${this.apiBase}/daterange`);
+  }
+
+  getDetails(matchTPId: number | string): Observable<MatchDetailsRaw> {
+    if (this.mode === 'api') {
+      return this.http
+        .get(`${this.apiBase}/match-details/${matchTPId}`, { responseType: 'arraybuffer' as const })
+        .pipe(map(buf => normalizeDetailsQuality(this.decodeBrotliJson<MatchDetailsRaw>(buf))));
+    }
+
+    return this.http
+      .get(`${this.detailsStaticBase}/${matchTPId}.br`, { responseType: 'arraybuffer' as const })
+      .pipe(map(buf => normalizeDetailsQuality(this.decodeBrotliJson<MatchDetailsRaw>(buf))));
+  }
+
+  getDetailsGuarded(
+    match: Partial<Match> & Pick<Match, 'matchTPId'>,
+    lockHours = DETAILS_LOCK_HOURS
+  ): Observable<MatchDetailsRaw> {
+    const request$ = this.getDetails(match.matchTPId).pipe(
+      catchError((err: unknown) =>
+        throwError(() => normalizeDetailsHttpError(err))
+      )
+    );
+
+    // In API mode the backend is authoritative for both access and cache policy.
+    if (this.mode === 'api') {
+      return request$;
+    }
+
+    const access = evaluateClientDetailsAccess({
+      isFinished: match?.isFinished,
+      user: this.auth.getUser(),
+      scheduledStart: match?.dateTime,
+      lockHours,
+    });
+
+    if (access.locked) {
+      return throwError(() => ({
+        status: 'error',
+        code: 'DETAILS_LOCKED',
+        reason: access.reason,
+        expectedStartUtc:
+          typeof match?.dateTime === 'string' ? match.dateTime : null,
+        unlocksAt: access.unlocksAt,
+        lockHours,
+      } as DetailsLockedError));
+    }
+
+    return request$;
+  }
+
+  private analyticsDashboard$?: Observable<AnalyticsDashboard>;
+  private modelExplainability$?: Observable<ModelExplainabilityReport>;
+
+  getModelExplainability(): Observable<ModelExplainabilityReport> {
+    if (!this.modelExplainability$) {
+      this.modelExplainability$ = this.http
+        .get<ModelExplainabilityReport>(
+          this.mode === 'api'
+            ? `${this.apiUrl}/archives/model-insights/explainability`
+            : `${this.analyticsStaticBase}/model-explainability.v1.json`
+        )
+        .pipe(
+          map(report => {
+            if (
+              report?.schema !== 'bonzobyte.model-explainability' ||
+              report?.schemaVersion !== 1 ||
+              !Array.isArray(report.models) ||
+              report.models.length === 0
+            ) {
+              throw new Error('Model explainability payload is invalid.');
+            }
+            return report;
+          }),
+          shareReplay(1)
+        );
+    }
+    return this.modelExplainability$;
+  }
+
+  getAnalyticsDashboard(): Observable<AnalyticsDashboard> {
+    if (!this.analyticsDashboard$) {
+      const archive$ = this.mode === 'api'
+        ? this.http.get(
+            `${this.apiUrl}/archives/analytics/dashboard`,
+            { responseType: 'arraybuffer' as const }
+          )
+        : this.http
+            .get<AnalyticsManifest>(
+              `${this.analyticsStaticBase}/manifest.analytics.json?cb=${Date.now()}`
+            )
+            .pipe(
+              switchMap(manifest => {
+                const fileName = String(manifest?.analytics?.url ?? '').trim();
+                if (
+                  !/^analytics\.dashboard\.v\d{4}-\d{2}-\d{2}T\d{2}-\d{2}Z\.br$/i.test(fileName)
+                ) {
+                  return throwError(
+                    () => new Error('Analytics manifest contains an invalid archive name.')
+                  );
+                }
+
+                return this.http.get(
+                  `${this.analyticsStaticBase}/${fileName}`,
+                  { responseType: 'arraybuffer' as const }
+                );
+              })
+            );
+
+      this.analyticsDashboard$ = archive$.pipe(
+        map(buf => this.normalizeAnalyticsDashboard(
+          this.decodeBrotliJson<unknown>(buf)
+        )),
+        shareReplay(1)
+      );
+    }
+
+    return this.analyticsDashboard$;
+  }
+
+  private predictionSimulation$?: Observable<PredictionSimulationReport>;
+
+  getPredictionSimulation(): Observable<PredictionSimulationReport> {
+    if (!this.predictionSimulation$) {
+      const report$ = this.mode === 'api'
+        ? this.http.get<unknown>(
+            `${this.apiUrl}/archives/simulation/report`
+          )
+        : this.http
+            .get<PredictionSimulationManifest>(
+              `${this.simulationStaticBase}/prediction-simulation.v4.manifest.json?cb=${Date.now()}`
+            )
+            .pipe(
+              switchMap(manifest => {
+                const fileName = String(manifest?.report?.file ?? '').trim();
+                if (
+                  manifest?.schema !== 'bonzobyte.prediction-simulation.manifest' ||
+                  manifest?.schemaVersion !== 4 ||
+                  manifest?.report?.schema !== 'bonzobyte.prediction-simulation' ||
+                  manifest?.report?.schemaVersion !== 4 ||
+                  !/^prediction-simulation\.v4\.[0-9a-f]{16}\.json\.br$/i.test(fileName)
+                ) {
+                  return throwError(
+                    () => new Error('Prediction simulation manifest is invalid.')
+                  );
+                }
+
+                return this.http.get(
+                  `${this.simulationStaticBase}/${fileName}`,
+                  { responseType: 'arraybuffer' as const }
+                );
+              })
+            )
+            .pipe(
+              map(buf => this.decodeBrotliJson<unknown>(buf))
+            );
+
+      this.predictionSimulation$ = report$.pipe(
+        map(value => this.normalizePredictionSimulation(value)),
+        shareReplay(1)
+      );
+    }
+
+    return this.predictionSimulation$;
+  }
+
+  private playersIndexRows$?: Observable<PlayerIndex[]>;
+  private tournamentsIndex$?: Observable<{
+    items: TournamentIndex[];
+    strength: { min: number | null; median: number | null; max: number | null } | null;
+  }>;
+
+  private playersIndexById: Map<number, PlayerIndex> | null = null;
+  private playersIndexVersion: string | null = null;
+  private playersIndexFetchedAtMs = 0;
+
+  private tournamentsIndexVersion: string | null = null;
+  private tournamentsIndexFetchedAtMs = 0;
+
+  private readonly PLAYERS_INDEX_SOFT_TTL_MS = 60 * 60 * 1000; // 1h
+  private readonly PLAYERS_INDEX_HARD_TTL_MS = 6 * 60 * 60 * 1000; // 6h
+
+  private readonly TOURNAMENTS_INDEX_SOFT_TTL_MS = 60 * 60 * 1000;
+  private readonly TOURNAMENTS_INDEX_HARD_TTL_MS = 6 * 60 * 60 * 1000;
+
+  getPlayersIndex(forceRefresh = false): Observable<PlayerIndex[]> {
+    const now = Date.now();
+
+    if (!forceRefresh && this.playersIndexRows$ && (now - this.playersIndexFetchedAtMs) < this.PLAYERS_INDEX_SOFT_TTL_MS) {
+      return this.playersIndexRows$;
+    }
+
+    this.playersIndexRows$ = this.fetchPlayersIndex().pipe(
+      shareReplay(1)
+    );
+
+    return this.playersIndexRows$;
+  }
+
+  private fetchPlayersIndex(): Observable<PlayerIndex[]> {
+    if (this.mode === 'api') {
+      return this.http.get<DailyManifest>(`${this.apiBase}/players/manifest`).pipe(
+        switchMap(m => {
+          const url = m.players?.url;
+          if (!url) return throwError(() => new Error('players manifest missing players.url'));
+
+          const version = m.players?.version ?? null;
+          const now = Date.now();
+
+          if (
+            this.playersIndexRows$ &&
+            this.playersIndexVersion === version &&
+            (now - this.playersIndexFetchedAtMs) < this.PLAYERS_INDEX_HARD_TTL_MS
+          ) {
+            return this.playersIndexRows$;
+          }
+
+          return this.http.get(`${this.apiBase}/players/index/${url}`, { responseType: 'arraybuffer' }).pipe(
+            map(buf => this.decodeBrotliJson<PlayerIndex[]>(buf)),
+            map(rows => {
+              this.playersIndexVersion = version;
+              this.playersIndexFetchedAtMs = now;
+              this.playersIndexById = new Map((rows ?? []).map(p => [p.playerTPId, p]));
+              return rows ?? [];
+            })
+          );
+        })
+      );
+    }
+
+    return this.dailyManifest$.pipe(
+      switchMap(m => {
+        const url = m.players?.url;
+        if (!url) return throwError(() => new Error('manifest.json missing players.url'));
+
+        const version = m.players?.version ?? null;
+        const now = Date.now();
+
+        if (
+          this.playersIndexRows$ &&
+          this.playersIndexVersion === version &&
+          (now - this.playersIndexFetchedAtMs) < this.PLAYERS_INDEX_HARD_TTL_MS
+        ) {
+          return this.playersIndexRows$;
+        }
+
+        return this.http.get(`${this.dailyStaticBase}/${url}`, { responseType: 'arraybuffer' }).pipe(
+          map(buf => this.decodeBrotliJson<PlayerIndex[]>(buf)),
+          map(rows => {
+            this.playersIndexVersion = version;
+            this.playersIndexFetchedAtMs = now;
+            this.playersIndexById = new Map((rows ?? []).map(p => [p.playerTPId, p]));
+            return rows ?? [];
+          })
+        );
+      })
+    );
+  }
+
+  getPlayerTsHistory(playerTPId: number): Observable<PlayerTsHistoryRaw | null> {
+    const url = `${this.playersTsStaticBase}/${playerTPId}`;
+    console.log('🌐 getPlayerTsHistory URL:', url);
+  
+    return this.http
+      .get(url, { responseType: 'arraybuffer' })
+      .pipe(
+        map(buf => {
+          console.log('📦 raw player TS history buffer length:', buf?.byteLength ?? 0);
+          return this.decodeBrotliJson<PlayerTsHistoryRaw>(buf);
+        }),
+        map(history => {
+          console.log('📄 decoded player TS history:', {
+            playerTPId,
+            keys: Object.keys(history?.s ?? {})
+          });
+          return history;
+        }),
+        catchError((err: any) => {
+          console.error('❌ getPlayerTsHistory failed', {
+            playerTPId,
+            url,
+            status: err?.status,
+            message: err?.message,
+            err
+          });
+  
+          return of(null);
+        }),
+        shareReplay(1)
+      );
+  }
+
+  warmUpDailyWindow(): void {
+    const todayIso = this.todayISO();
+
+    this.normalizeToAvailableDate(todayIso).subscribe({
+      next: (centerIso) => {
+        this.getDaily(this.isoToCompact(centerIso)).subscribe({ error: () => { } });
+
+        this.getPrevAvailableDate(centerIso).subscribe({
+          next: (prevIso) => {
+            if (prevIso) {
+              this.getDaily(this.isoToCompact(prevIso)).subscribe({ error: () => { } });
+            }
+          },
+          error: () => { }
+        });
+
+        this.getNextAvailableDate(centerIso).subscribe({
+          next: (nextIso) => {
+            if (nextIso) {
+              this.getDaily(this.isoToCompact(nextIso)).subscribe({ error: () => { } });
+            }
+          },
+          error: () => { }
+        });
+      },
+      error: () => { }
+    });
+  }
+
+  warmUpReferenceIndexes(): void {
+    this.getPlayersIndex().subscribe({ error: () => { } });
+    this.getTournamentsIndex().subscribe({ error: () => { } });
+    this.getAvailableDates().subscribe({ error: () => { } });
+    this.warmUpDailyWindow();
+    this.getAnalyticsDashboard().subscribe({ error: () => { } });
+  }
+
+  getPlayerIndexById(playerTPId: number, forceRefresh = false): Observable<PlayerIndex | null> {
+    if (!forceRefresh && this.playersIndexById?.has(playerTPId)) {
+      return of(this.playersIndexById.get(playerTPId) ?? null);
+    }
+
+    return this.getPlayersIndex(forceRefresh).pipe(
+      map(() => this.playersIndexById?.get(playerTPId) ?? null)
+    );
+  }
+
+  private readonly utf8 = new TextDecoder('utf-8');
+
+  private decodeBrotliJson<T>(buf: ArrayBuffer): T {
+    return decodeArchiveJson<T>(buf, brotliDecompress);
+  }
+
+  private normalizeAnalyticsDashboard(value: unknown): AnalyticsDashboard {
+    const normalized = this.camelizeArchiveKeys(value) as Partial<AnalyticsDashboard> | null;
+
+    if (
+      !normalized ||
+      !normalized.overview ||
+      !normalized.matchLandscape ||
+      !normalized.tournamentInsights ||
+      !normalized.marketBehaviour ||
+      !normalized.modelInsights
+    ) {
+      throw new Error('Analytics archive has an unsupported schema.');
+    }
+
+    return {
+      ...normalized,
+      schemaVersion:
+        typeof normalized.schemaVersion === 'number'
+          ? normalized.schemaVersion
+          : 1,
+    } as AnalyticsDashboard;
+  }
+
+  private normalizePredictionSimulation(
+    value: unknown
+  ): PredictionSimulationReport {
+    const normalized = this.camelizeArchiveKeys(value) as
+      Partial<PredictionSimulationReport> | null;
+
+    if (
+      !normalized ||
+      normalized.schema !== 'bonzobyte.prediction-simulation' ||
+      normalized.schemaVersion !== 4 ||
+      !normalized.labels ||
+      !normalized.provenance ||
+      !normalized.window ||
+      !Array.isArray(normalized.models)
+    ) {
+      throw new Error('Prediction simulation archive has an unsupported schema.');
+    }
+
+    const hasInvalidModel = normalized.models.some(model =>
+      !model?.model ||
+      !model?.coverage ||
+      !Array.isArray(model?.cohorts) ||
+      model.cohorts.some(cohort =>
+        !Array.isArray(cohort?.temporalSlices) ||
+        !cohort?.trajectories ||
+        !Array.isArray(cohort.trajectories.points)
+      )
+    );
+    if (hasInvalidModel) {
+      throw new Error('Prediction simulation archive contains an invalid model.');
+    }
+
+    if (
+      normalized.productionSummary != null &&
+      !Array.isArray(normalized.productionSummary.cohorts)
+    ) {
+      throw new Error('Prediction simulation archive contains an invalid production summary.');
+    }
+
+    return {
+      ...normalized,
+      productionSummary: normalized.productionSummary ?? null,
+    } as PredictionSimulationReport;
+  }
+
+  private camelizeArchiveKeys(value: unknown): unknown {
+    if (Array.isArray(value)) {
+      return value.map(item => this.camelizeArchiveKeys(item));
+    }
+
+    if (value == null || typeof value !== 'object') {
+      return value;
+    }
+
+    return Object.fromEntries(
+      Object.entries(value as Record<string, unknown>).map(([key, nestedValue]) => [
+        key.length > 0
+          ? `${key[0].toLowerCase()}${key.slice(1)}`
+          : key,
+        this.camelizeArchiveKeys(nestedValue),
+      ])
+    );
+  }
+
+  private mapLiteRowToMatch(r: any): Match {
+    const isFinished =
+      r?.l03 === true || r?.l03 === 1 || r?.l03 === '1' || r?.l03 === 'true';
+    const predictionAllowed = r?.l41 !== false && (r?.l38 == null ||
+      (r.l41 === true && ['Validated', 'Incomplete'].includes(r.l38)));
+    const p1 = predictionAllowed && r?.l31 != null ? this.asProbabilityPercentage(r.l31, r?.l45) : null;
+    const p2 = p1 != null ? 100 - p1 : null;
+
+    const probabilityText =
+      (p1 != null && p2 != null) ? `${formatDecimal(p1, 2)} - ${formatDecimal(p2, 2)}` : null;
+
+    const o1 = this.asNum(r?.l29);
+    const o2 = this.asNum(r?.l30);
+    const max1 = this.asNum(r?.l33);
+    const max2 = this.asNum(r?.l34);
+    const fair1 = this.asNum(r?.l35);
+    const fair2 = this.asNum(r?.l36);
+    const bookieCount = this.asNum(r?.l37);
+    // l29/l30 are the persisted market medians. Newer archive contracts also
+    // carry max/fair/count metadata in l33..l37, but its absence does not turn
+    // the median pair back into legacy bookmaker odds.
+    const historicalRecoveryOdds = r?.recoveryOddsCertifiedPrematch === false;
+    const hasMedianPair = o1 != null && o1 > 1 && o2 != null && o2 > 1;
+    // Recovery verifies match/player identity, not quote availability before
+    // kickoff. Display these historical prices without admitting them to P/L.
+    const marketOddsVerified = hasMedianPair && !historicalRecoveryOdds;
+    const extendedMarketStatsAvailable =
+      bookieCount != null && bookieCount > 0;
+    const oddsText =
+      hasMedianPair ? `${formatDecimal(o1, 2)} - ${formatDecimal(o2, 2)}` : null;
+
+    return {
+      matchTPId: this.asNum(r?.l01) as any,
+      isFinished: isFinished as any,
+
+      tournamentEventName: (r?.l04 ?? '').toString(),
+      tournamentEventCountryISO2: (r?.l05 ?? '').toString(),
+      tournamentEventCountryISO3: (r?.l06 ?? '').toString(),
+      tournamentEventCountryFull: (r?.l07 ?? '').toString(),
+      surface: (r?.l08 ?? '').toString(),
+      tournamentLevelName: this.decodeLevel(r?.l09),
+      tournamentTypeName: (r?.l10 ?? '').toString().trim(),
+      tournamentStrengthMeanTS: this.asNum(r?.l11) as any,
+      roundName: (r?.l12 ?? '').toString(),
+
+      tournamentEventTPId: this.asNum(r?.l32) as any,
+
+      dateTime: r?.l02 ?? null,
+      sourceTimePrecision: r?.sourceTimePrecision ?? null,
+
+      player1TPId: this.asNum(r?.l13) as any,
+      player1Name: (r?.l14 ?? '').toString(),
+      player1CountryISO2: (r?.l15 ?? '').toString(),
+      player1CountryISO3: (r?.l16 ?? '').toString(),
+      player1CountryFull: (r?.l17 ?? '').toString(),
+      player1Rank: this.asNum(r?.l18) as any,
+      player1Seed: this.asNum(r?.l19) as any,
+
+      player2TPId: this.asNum(r?.l20) as any,
+      player2Name: (r?.l21 ?? '').toString(),
+      player2CountryISO2: (r?.l22 ?? '').toString(),
+      player2CountryISO3: (r?.l23 ?? '').toString(),
+      player2CountryFull: (r?.l24 ?? '').toString(),
+      player2Rank: this.asNum(r?.l25) as any,
+      player2Seed: this.asNum(r?.l26) as any,
+
+      result: r?.l27 ?? null,
+      resultDetails: r?.l28 ?? null,
+      qualityStatus: r?.l38 ?? null,
+      qualityReason: r?.l39 ?? null,
+      calculationEligible: typeof r?.l40 === 'boolean' ? r.l40 : null,
+      predictionEligible: typeof r?.l41 === 'boolean' ? r.l41 : null,
+      qualityPolicyVersion: r?.l42 ?? null,
+      qualityAssessmentSha256: r?.l43 ?? null,
+      matchId: r?.l44 == null ? null : this.asNum(r.l44),
+
+      player1Odds: marketOddsVerified ? o1 : null,
+      player2Odds: marketOddsVerified ? o2 : null,
+      player1MaxOdds: extendedMarketStatsAvailable ? max1 : null,
+      player2MaxOdds: extendedMarketStatsAvailable ? max2 : null,
+      player1FairOdds: extendedMarketStatsAvailable ? fair1 : null,
+      player2FairOdds: extendedMarketStatsAvailable ? fair2 : null,
+      marketBookieCount: extendedMarketStatsAvailable ? bookieCount : null,
+      marketOddsVerified,
+      legacyPlayer1Odds: historicalRecoveryOdds && hasMedianPair ? o1 : null,
+      legacyPlayer2Odds: historicalRecoveryOdds && hasMedianPair ? o2 : null,
+      recoveryOddsCertifiedPrematch: historicalRecoveryOdds ? false : undefined,
+      oddsText: oddsText as any,
+      probabilityText: probabilityText as any,
+      modelProbabilityPlayer1: p1,
+      modelProbabilityPlayer2: p2,
+    } as any as Match;
+  }
+
+  private asNum(v: any): number | null {
+    const n = Number(v);
+    return Number.isFinite(n) ? n : null;
+  }
+
+  private asProbabilityPercentage(v: any, unit?: unknown): number | null {
+    const probability = this.asNum(v);
+    if (probability == null || probability < 0 || probability > 100) return null;
+
+    // New canonical exports declare the scale: 0.5 percent must stay 0.5,
+    // not become 50 through the legacy fraction/percentage heuristic.
+    if (unit === 'percent') return probability;
+    if (unit != null) return null; // Unknown explicit contracts fail closed.
+
+    // Full player/tournament rebuilds historically wrote 0..1, while daily
+    // archive updates write 0..100. Accept both contracts during migration.
+    return probability <= 1 ? probability * 100 : probability;
+  }
+
+  private decodeLevel(v: any): string {
+    const s = (v ?? '').toString().trim();
+    return s.replace(/\u003E/g, '>').replace(/\u003C/g, '<');
+  }
+
+  private todayISO(): string {
+    const now = new Date();
+    const y = now.getUTCFullYear();
+    const m = String(now.getUTCMonth() + 1).padStart(2, '0');
+    const d = String(now.getUTCDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  }
+
+  private addDaysISO(iso: string, deltaDays: number): string {
+    const t = this.toDayNumber(iso);
+    if (t == null) return iso;
+    const ms = (t + deltaDays) * 86400000;
+    const dt = new Date(ms);
+    const y = dt.getUTCFullYear();
+    const m = String(dt.getUTCMonth() + 1).padStart(2, '0');
+    const d = String(dt.getUTCDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  }
+
+  /** Checks whether a daily archive exists, preferring HEAD with a GET fallback. */
+  private dailyExists(iso: string): Observable<boolean> {
+    const key = this.isoToCompact(iso);        // YYYYMMDD
+    const url = `${this.dailyStaticBase}/${key}.br`;
+    return this.http.head(url, { observe: 'response' }).pipe(
+      map(() => true),
+      catchError((err: HttpErrorResponse) => {
+        if (err.status === 404) return of(false);
+        return throwError(() => err);
+      })
+    );
+  }
+
+  private isoToCompact(iso: string): string {
+    return iso.replace(/-/g, '');
+  }
+
+  /** Finds the newest available date in the inclusive [minDate..upperISO] range. */
+  private findLatestExistingDate(minISO: string, upperISO: string): Observable<string> {
+    const lo0 = this.toDayNumber(minISO);
+    const hi0 = this.toDayNumber(upperISO);
+    if (lo0 == null || hi0 == null) return of(upperISO);
+    if (hi0 < lo0) return of(minISO);
+
+    // Binary search for the last available archive in the range.
+    const search = (lo: number, hi: number, best: number | null): Observable<string> => {
+      if (lo > hi) {
+    const finalDay = best ?? lo0; // Fall back to the minimum date when no archive was found.
+        const ms = finalDay * 86400000;
+        const dt = new Date(ms);
+        const y = dt.getUTCFullYear();
+        const m = String(dt.getUTCMonth() + 1).padStart(2, '0');
+        const d = String(dt.getUTCDate()).padStart(2, '0');
+        return of(`${y}-${m}-${d}`);
+      }
+
+      const mid = (lo + hi) >> 1;
+      const ms = mid * 86400000;
+      const dt = new Date(ms);
+      const iso = `${dt.getUTCFullYear()}-${String(dt.getUTCMonth() + 1).padStart(2, '0')}-${String(dt.getUTCDate()).padStart(2, '0')}`;
+
+      return this.dailyExists(iso).pipe(
+        switchMap(exists => {
+          if (exists) return search(mid + 1, hi, mid);
+          return search(lo, mid - 1, best);
+        })
+      );
+    };
+
+    return search(lo0, hi0, null);
+  }
+
+  getTournamentsIndex(forceRefresh = false): Observable<{
+    items: TournamentIndex[];
+    strength: { min: number | null; median: number | null; max: number | null } | null;
+  }> {
+    const now = Date.now();
+
+    if (
+      !forceRefresh &&
+      this.tournamentsIndex$ &&
+      (now - this.tournamentsIndexFetchedAtMs) < this.TOURNAMENTS_INDEX_SOFT_TTL_MS
+    ) {
+      return this.tournamentsIndex$;
+    }
+
+    this.tournamentsIndex$ = this.fetchTournamentsIndex().pipe(
+      shareReplay(1)
+    );
+
+    return this.tournamentsIndex$;
+  }
+
+  private fetchTournamentsIndex(): Observable<{
+    items: TournamentIndex[];
+    strength: { min: number | null; median: number | null; max: number | null } | null;
+  }> {
+    if (this.mode === 'api') {
+      return this.http.get<DailyManifestTournaments>(`${this.apiBase}/tournaments/manifest`).pipe(
+        switchMap(m => {
+          const url = m.tournaments?.url;
+          if (!url) return throwError(() => new Error('tournaments manifest missing tournaments.url'));
+
+          const version = m.tournaments?.version ?? null;
+          const now = Date.now();
+
+          if (
+            this.tournamentsIndex$ &&
+            this.tournamentsIndexVersion === version &&
+            (now - this.tournamentsIndexFetchedAtMs) < this.TOURNAMENTS_INDEX_HARD_TTL_MS
+          ) {
+            return this.tournamentsIndex$;
+          }
+
+          return this.http.get(`${this.apiBase}/tournaments/index/${url}`, { responseType: 'arraybuffer' }).pipe(
+            map(buf => {
+              const items = this.decodeBrotliJson<TournamentIndex[]>(buf) ?? [];
+              const strength = m.tournamentStrength ?? null;
+
+              this.tournamentsIndexVersion = version;
+              this.tournamentsIndexFetchedAtMs = now;
+
+              return { items, strength };
+            })
+          );
+        })
+      );
+    }
+
+    return this.dailyManifestTournaments$.pipe(
+      switchMap(m => {
+        const url = m.tournaments?.url;
+        if (!url) return throwError(() => new Error('manifest.tournaments.json missing tournaments.url'));
+
+        const version = m.tournaments?.version ?? null;
+        const now = Date.now();
+
+        if (
+          this.tournamentsIndex$ &&
+          this.tournamentsIndexVersion === version &&
+          (now - this.tournamentsIndexFetchedAtMs) < this.TOURNAMENTS_INDEX_HARD_TTL_MS
+        ) {
+          return this.tournamentsIndex$;
+        }
+
+        return this.http.get(`${this.dailyStaticBase}/${url}`, { responseType: 'arraybuffer' }).pipe(
+          map(buf => {
+            const items = this.decodeBrotliJson<TournamentIndex[]>(buf) ?? [];
+            const strength = m.tournamentStrength ?? null;
+
+            this.tournamentsIndexVersion = version;
+            this.tournamentsIndexFetchedAtMs = now;
+
+            return { items, strength };
+          })
+        );
+      })
+    );
+  }
+
+  getTsHistory(playerTPId: number | string): Observable<any> {
+    if (this.mode === 'api') {
+      return this.http
+        .get(`${this.playersTsStaticBase}/${playerTPId}`, { responseType: 'arraybuffer' as const })
+        .pipe(map(buf => this.decodeBrotliJson<any>(buf)));
+    }
+
+    return this.http
+      .get(`${this.tsStaticBase}/${playerTPId}.br`, { responseType: 'arraybuffer' as const })
+      .pipe(map(buf => this.decodeBrotliJson<any>(buf)));
+  }
+
+  // getPlayerPhotoUrl(playerTPId: number, gender?: 'M' | 'W'): string {
+  //   const g = gender ? `?g=${gender}` : '';
+  //   return `${this.apiBase}/players/photo/${playerTPId}${g}`;
+  // }
+
+  getPlayerPhotoUrl(playerTPId: number, gender?: 'M' | 'W'): string {
+    return `${this.apiBase}/players/photo/${playerTPId}`;
+  }
+
+  getDefaultPlayerPhotoUrl(gender: 'M' | 'W'): string {
+    return `/assets/userImages/default${gender}.png`;
+  }
+
+  getPlayerDetails(playerTPId: number | string): Observable<PlayerDetailsRaw | null> {
+    if (this.mode === 'api') {
+      return this.http
+        .get(`${this.apiBase}/players/details/${playerTPId}`, { responseType: 'arraybuffer' as const })
+        .pipe(map(buf => this.decodeBrotliJson<PlayerDetailsRaw>(buf)));
+    }
+
+    return this.http
+      .get(`${this.playerDetailsStaticBase}/${playerTPId}.br`, { responseType: 'arraybuffer' as const })
+      .pipe(map(buf => this.decodeBrotliJson<PlayerDetailsRaw>(buf)));
+  }
+
+  private playerMatchesCache = new Map<number, Observable<Match[]>>();
+
+  getPlayerMatches(playerTPId: number): Observable<Match[]> {
+    const cached = this.playerMatchesCache.get(playerTPId);
+    if (cached) return cached;
+  
+    let request$: Observable<Match[]>;
+  
+    if (this.mode === 'api') {
+      const url = `${this.apiBase}/players/matches/${playerTPId}`;
+      console.log('🌐 getPlayerMatches API URL:', url);
+  
+      request$ = this.http
+        .get(url, { responseType: 'arraybuffer' })
+        .pipe(
+          map(buf => {
+            console.log('📦 raw player matches buffer length:', buf?.byteLength ?? 0);
+            return this.decodeBrotliJson<any[]>(buf);
+          }),
+          map(rows => {
+            console.log('📄 decoded player matches rows:', rows?.length ?? 0, rows?.[0]);
+            return (rows || []).map(r => this.mapLiteRowToMatch(r));
+          }),
+          catchError((err: any) => {
+            console.error('❌ getPlayerMatches API failed', {
+              playerTPId,
+              url,
+              status: err?.status,
+              message: err?.message,
+              err
+            });
+  
+            if (err instanceof HttpErrorResponse && err.status === 404) return of([]);
+            return throwError(() => err);
+          }),
+          shareReplay(1)
+        );
+    } else {
+      const url = `${this.playerMatchesStaticBase}/${playerTPId}.br`;
+      console.log('🌐 getPlayerMatches static URL:', url);
+  
+      request$ = this.http
+        .get(url, { responseType: 'arraybuffer' })
+        .pipe(
+          map(buf => {
+            console.log('📦 raw player matches buffer length:', buf?.byteLength ?? 0);
+            return this.decodeBrotliJson<any[]>(buf);
+          }),
+          map(rows => {
+            console.log('📄 decoded player matches rows:', rows?.length ?? 0, rows?.[0]);
+            return (rows || []).map(r => this.mapLiteRowToMatch(r));
+          }),
+          catchError((err: any) => {
+            console.error('❌ getPlayerMatches static failed', {
+              playerTPId,
+              url,
+              status: err?.status,
+              message: err?.message,
+              err
+            });
+  
+            if (err instanceof HttpErrorResponse && err.status === 404) return of([]);
+            const msg = String(err?.message ?? '');
+            if (msg.includes('Got HTML instead of data')) return of([]);
+            return throwError(() => err);
+          }),
+          shareReplay(1)
+        );
+    }
+  
+    this.playerMatchesCache.set(playerTPId, request$);
+    return request$;
+  }
+
+  private tournamentMatchesCache = new Map<number, Observable<Match[]>>();
+
+  getTournamentMatches(tournamentEventTPId: number): Observable<Match[]> {
+    const cached = this.tournamentMatchesCache.get(tournamentEventTPId);
+    if (cached) return cached;
+  
+    let request$: Observable<Match[]>;
+  
+    if (this.mode === 'api') {
+      const url = `${this.apiBase}/tournaments/matches/${tournamentEventTPId}`;
+      console.log('🌐 getTournamentMatches API URL:', url);
+  
+      request$ = this.http
+        .get(url, { responseType: 'arraybuffer' })
+        .pipe(
+          map(buf => {
+            console.log('📦 raw tournament matches buffer length:', buf?.byteLength ?? 0);
+            return this.decodeBrotliJson<any[]>(buf);
+          }),
+          map(rows => {
+            console.log('📄 decoded tournament matches rows:', rows?.length ?? 0, rows?.[0]);
+            return (rows || []).map(r => this.mapLiteRowToMatch(r));
+          }),
+          catchError((err: any) => {
+            console.error('❌ getTournamentMatches API failed', {
+              tournamentEventTPId,
+              url,
+              status: err?.status,
+              message: err?.message,
+              err
+            });
+  
+            if (err instanceof HttpErrorResponse && err.status === 404) return of([]);
+            return throwError(() => err);
+          }),
+          shareReplay(1)
+        );
+    } else {
+      const url = `${this.tournamentsMatchesStaticBase}/${tournamentEventTPId}.br`;
+      console.log('🌐 getTournamentMatches static URL:', url);
+  
+      request$ = this.http
+        .get(url, { responseType: 'arraybuffer' })
+        .pipe(
+          map(buf => {
+            console.log('📦 raw tournament matches buffer length:', buf?.byteLength ?? 0);
+            return this.decodeBrotliJson<any[]>(buf);
+          }),
+          map(rows => {
+            console.log('📄 decoded tournament matches rows:', rows?.length ?? 0, rows?.[0]);
+            return (rows || []).map(r => this.mapLiteRowToMatch(r));
+          }),
+          catchError((err: any) => {
+            console.error('❌ getTournamentMatches static failed', {
+              tournamentEventTPId,
+              url,
+              status: err?.status,
+              message: err?.message,
+              err
+            });
+  
+            if (err instanceof HttpErrorResponse && err.status === 404) return of([]);
+            const msg = String(err?.message ?? '');
+            if (msg.includes('Got HTML instead of data')) return of([]);
+            return throwError(() => err);
+          }),
+          shareReplay(1)
+        );
+    }
+  
+    this.tournamentMatchesCache.set(tournamentEventTPId, request$);
+    return request$;
+  }
+}

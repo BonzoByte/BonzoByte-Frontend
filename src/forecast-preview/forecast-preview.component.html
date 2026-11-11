@@ -1,0 +1,55 @@
+<header class="preview-header"><span class="brand">BONZOBYTE</span><span class="local-badge">LOCAL PREVIEW · READ ONLY</span></header>
+<main>
+  <div class="eyebrow">MODEL REVIEW / ISOLATED ARCHIVE</div>
+  <h1>Forecast preview</h1>
+  <p class="intro">Verified model outputs in the BonzoByte match-grid style. Active models and public archives are unchanged.</p>
+  <div class="notice"><strong>Frozen snapshot — not a live forecast feed.</strong> These are real candidate-model estimates, not demo picks. Match schedules may have changed. No results, betting actions or guaranteed returns.</div>
+  <div *ngIf="loading" class="state" role="status">Loading and verifying the isolated Brotli archive…</div>
+  <div *ngIf="error" class="state error" role="alert">The preview archive is unavailable or failed verification. Nothing was loaded from public archives.
+    <button type="button" (click)="load()">Retry preview</button>
+  </div>
+  <ng-container *ngIf="packet as p">
+    <section class="provenance" aria-label="Snapshot provenance">
+      <div><span>Calculated</span><strong>{{ utc(p.calculatedAt) }}</strong></div>
+      <div><span>Source captured</span><strong>{{ utc(p.sourceCapturedAt) }}</strong></div>
+      <div><span>Candidate models</span><strong>LightGBM · {{ p.featureCount }} inputs each</strong></div>
+    </section>
+    <div class="toolbar">
+      <nav aria-label="Tour filter"><button *ngFor="let option of filters" type="button" (click)="filter = option" [attr.aria-pressed]="filter === option">{{ option }} <span>{{ option === 'All' ? p.rows.length : p.models[option].rows }}</span></button></nav>
+      <span class="count" role="status">Showing {{ rows.length }} of {{ p.rows.length }} verified forecasts</span>
+    </div>
+    <p class="held-note">{{ p.heldCount }} of {{ p.candidateCount }} candidates are withheld because their checks did not pass. They are not shown or replaced with older predictions.</p>
+    <div class="grid-scroll" tabindex="0" role="region" aria-label="Frozen forecast matches">
+      <table class="match-table preview-grid">
+        <caption>Source-day snapshot. P1 and P2 probabilities correspond to the two displayed players in order.</caption>
+        <colgroup><col class="c-number"><col class="c-date"><col class="c-tour"><col class="c-tournament"><col class="c-matchup"><col class="c-probabilities"><col class="c-prediction"></colgroup>
+        <thead><tr><th scope="col">#</th><th scope="col">Source day</th><th scope="col">Tour</th><th scope="col">Tournament</th><th scope="col">Matchup</th><th scope="col">P1 / P2</th><th scope="col">Model prediction</th></tr></thead>
+        <tbody><tr *ngFor="let row of rows; let i = index; trackBy: track" [attr.data-match-id]="row.canonicalMatchId">
+          <td class="number">{{ i + 1 }}</td>
+          <td class="date"><time [attr.datetime]="row.sourceDay">{{ date(row.sourceDay) }}</time><small title="Source day only; no verified exact start time">Time unverified</small></td>
+          <td class="tour">{{ row.tour }}</td>
+          <td class="tournament">{{ row.tournament }}<small>{{ row.surface }} · {{ row.round }}</small></td>
+          <td class="matchup"><div class="players"><div *ngFor="let player of row.players; let side = index" class="player" [class.preferred]="side === winner(row)">
+            <span *ngIf="player.countryISO2" class="fi" [ngClass]="'fi-' + flagCode(player.countryISO2).toLowerCase()" [title]="player.country" aria-hidden="true"></span>
+            <span class="player-name" [title]="label(player.name, player.countryISO3)">{{ label(player.name, player.countryISO3) }}</span>
+          </div></div></td>
+          <td class="probabilities"><span *ngFor="let player of row.players; let side = index" [class.preferred-value]="side === winner(row)" [title]="player.name">{{ percent(player.probability) }}%</span></td>
+          <td class="prediction-cell prediction-cell--lean">
+            <div class="prediction-cell__topline"><span class="prediction-cell__player" [title]="row.players[winner(row)].name">{{ row.players[winner(row)].name }}</span><strong>{{ percent(row.players[winner(row)].probability) }}%</strong></div>
+            <div class="prediction-cell__bar" aria-hidden="true"><span [style.width.%]="row.players[winner(row)].probability * 100"></span></div>
+            <div class="prediction-cell__meta"><span>P{{ winner(row) + 1 }}</span><span>Candidate · snapshot</span></div>
+            <div class="prediction-cell__market prediction-cell__market--muted">Verified market odds not included</div>
+          </td>
+        </tr></tbody>
+      </table>
+    </div>
+    <details class="details"><summary>Scope and verification</summary>
+      <p>The archive contains only the admitted snapshot forecasts. It does not refresh schedules, odds or results. Country labels are canonical display metadata, not historical nationality observations. No ranks, seeds or start times are invented.</p>
+      <p>No sign-in, payments, favourites, discussions, analytics or database writes run on this page. Match IDs remain in their own namespace; the rows do not open public match archives.</p>
+      <p>Source receipt <code>{{ p.sourceReceiptSha256 }}</code></p>
+      <p>ATP model <code>{{ p.models.ATP.model_sha256 }}</code></p>
+      <p>WTA model <code>{{ p.models.WTA.model_sha256 }}</code></p>
+    </details>
+  </ng-container>
+  <footer>BonzoByte research preview · Local development only · Not published</footer>
+</main>

@@ -1,0 +1,69 @@
+:host { display: flow-root; color: var(--bb-text); background: var(--bb-page-bg); min-height: calc(100dvh - var(--header-h) - var(--footer-h)); }
+.popular-page { box-sizing: border-box; width: 100%; max-width: 1017px; margin: 20px auto; padding: 0 18px 30px; }
+.popular-page--players { max-width: 1017px; }
+.popular-heading h1 { font-size: clamp(24px, 4vw, 36px); margin: 0 0 16px; }
+.popular-eyebrow { font-size: 10px; letter-spacing: .15em; color: var(--bb-text-muted); }
+button { background: var(--bb-control-bg, #212a32); color: var(--bb-control-text, #e7edf2);
+    border: 1px solid var(--bb-control-border, #46535e); border-radius: 8px; padding: 8px 12px; font: inherit; cursor: pointer; }
+button:hover { border-color: var(--bb-theme-accent, #94d5f5); }
+.popular-intro { margin: 4px 0 12px; line-height: 1.5; }
+.popular-development { padding: 8px 12px; border: 1px solid var(--bb-theme-accent, #94d5f5); border-radius: 8px; font-size: 12px; }
+.popular-preview-controls { display: flex; justify-content: flex-end; margin: 8px 0; }
+.popular-preview-toggle { font-size: 12px; }
+.popular-preview-note { padding: 8px 12px; border: 1px solid var(--bb-theme-accent); border-radius: 8px; line-height: 1.5; font-size: 12px; }
+button:disabled { cursor: default; }
+button:disabled:hover { border-color: var(--bb-control-border, #46535e); color: inherit; }
+.popular-tabs { display: flex; gap: 8px; margin: 14px 0; }
+.popular-tabs button { flex: 1; min-width: 0; padding: 10px; }
+.popular-tabs button.active { background: var(--bb-chip-on-bg, rgba(148, 213, 245, .2)); border-color: var(--bb-theme-accent, #94d5f5); box-shadow: inset 0 -2px var(--bb-theme-accent, #94d5f5); }
+.popular-results { min-height: 120px; min-width: 0; }
+.popular-state { padding: 24px 12px; text-align: center; line-height: 1.6; }
+.popular-grid-scroll { max-width: 100%; overflow-x: auto; }
+.popular-grid-scroll:focus-visible { outline: 2px solid var(--bb-theme-accent); outline-offset: -2px; }
+.popular-match-grid { width: 750px; min-width: 750px; max-width: none; margin: 0 auto; table-layout: fixed; font-size: 12px; }
+.popular-match-grid col.c-type { width: 50px; }.type-cell { text-align: center; }
+.popular-match-grid col.c-rank { width: 36px; }
+.popular-match-grid col.c-date { width: 84px; }
+.popular-match-grid col.c-tournament { width: 150px; }
+.popular-match-grid col.c-matchup { width: 280px; }
+.popular-match-grid col.c-info { width: 50px; }
+.popular-match-grid col.c-result { width: 100px; }
+.set-results { display: block; font-size: 11px; font-weight: 400; line-height: 1.4; color: var(--bb-text-muted); }
+.player-link { background: none; border: 0; border-radius: 2px; padding: 0; color: inherit; text-align: left; font: inherit; }
+.player-link:hover { text-decoration: underline; color: var(--bb-theme-accent); }
+.popular-player-grid { width: 980px; min-width: 980px; table-layout: fixed; margin: 0 auto; font-size: 12px; }
+.popular-player-grid col.p-rank { width: 36px; }
+.popular-player-grid col.p-player { width: 280px; }
+.popular-player-grid col.p-birth { width: 84px; }
+.popular-player-grid col.p-ts { width: 90px; }
+.popular-player-grid col.p-matches { width: 66px; }
+.popular-player-grid col.p-win { width: 84px; }
+.popular-player-grid col.p-last { width: 90px; }
+.popular-player-grid col.p-info { width: 50px; }
+.popular-player-grid th { position: static; white-space: normal; line-height: 1.2; padding: 5px 4px; text-align: center; }
+.popular-player-grid td { vertical-align: middle; text-align: center; padding: 5px 4px; }
+.popular-player-grid .rank-cell { text-align: right; color: var(--bb-text-muted); }
+.popular-player-grid .popular-player-name { text-align: left; }
+.popular-player-name .player-link { max-width: calc(100% - 24px); margin-left: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; vertical-align: middle; }
+.popular-player-grid .date-cell { white-space: pre-line; }
+.popular-player-grid .win-cell { white-space: nowrap; text-align: right; font-variant-numeric: tabular-nums; }
+.popular-player-grid .details-icon-btn { width: 18px; height: 18px; padding: 0; display: inline-flex; justify-content: center; align-items: center; border-radius: 50%; line-height: 1; }
+.popular-index-loading { margin: 0 0 6px; font-size: 11px; color: var(--bb-text-muted); }
+.popular-match-grid .result-cell { text-align: center; font-weight: 700; font-variant-numeric: tabular-nums; white-space: normal; overflow-wrap: anywhere; }
+.popular-match-grid th { position: static; text-align: center; white-space: normal; padding: 5px 4px; line-height: 1.2; }
+.popular-match-grid td { vertical-align: middle; }
+.popular-match-grid .rank-cell { text-align: right; padding: 5px 6px; color: var(--bb-text-muted); font-variant-numeric: tabular-nums; }
+.popular-match-grid .date-cell { text-align: center; white-space: pre-line; line-height: 1.4; font-variant-numeric: tabular-nums; }
+.popular-match-grid .tournament-cell { text-align: center; white-space: normal; overflow-wrap: anywhere; line-height: 1.3; }
+.matchup-players { display: flex; flex-direction: column; gap: 2px; }
+.matchup-player { display: flex; gap: 5px; align-items: center; padding: 3px 4px; min-width: 0; }
+.matchup-player .fi { flex: 0 0 auto; }
+.player-name { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.popular-match-grid .info-cell { text-align: center; padding: 2px; }
+.popular-match-grid .details-icon-btn { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px;
+    padding: 0; border-radius: 50%; font-size: 12px; font-weight: 700; line-height: 1; }
+.popular-method { font-size: 11px; opacity: .8; line-height: 1.55; margin: 14px 0; }
+.popular-method summary { cursor: pointer; }
+.popular-method p { margin: 8px 0; }
+.popular-actions { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+button:focus-visible { outline: 2px solid var(--bb-theme-accent, #94d5f5); outline-offset: 2px; }

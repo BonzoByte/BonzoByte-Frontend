@@ -1,0 +1,208 @@
+<app-bb-modal-shell [title]="'matchFilter.title' | translate" [closeLabel]="'common.close' | translate" modalClass="bb-filter-modal" (closed)="close()">
+    <!-- ERROR banner -->
+    <div class="bb-alert bb-alert--error" *ngIf="errorMessage">
+        {{ errorMessage | translate }}
+    </div>
+
+    <div class="bb-section">
+        <div class="bb-section-head"><span class="bb-section-title">{{ 'matchFilter.plBasis' | translate }}</span></div>
+        <div class="bb-chip-row">
+            <label class="bb-chip"><input type="radio" name="plBasis" value="fair" [(ngModel)]="selectedPlBasis" /><span>{{ 'matchFilter.fair' | translate }}</span></label>
+            <label class="bb-chip"><input type="radio" name="plBasis" value="median" [(ngModel)]="selectedPlBasis" /><span>{{ 'matchFilter.median' | translate }}</span></label>
+        </div>
+        <div class="bb-hint">{{ 'matchFilter.plHint' | translate }}</div>
+    </div>
+    <div class="bb-hr"></div>
+    <!-- MODEL CONFIDENCE -->
+    <div class="bb-section">
+        <div class="bb-section-head">
+            <span class="bb-section-title">{{ 'matchFilter.confidence' | translate }}</span>
+        </div>
+
+        <div class="bb-chip-row">
+            <label class="bb-chip">
+                <input type="radio" name="confidence" value="all" [(ngModel)]="selectedConfidence" />
+                <span>{{ 'common.all' | translate }}</span>
+            </label>
+
+            <label class="bb-chip">
+                <input type="radio" name="confidence" value="60" [(ngModel)]="selectedConfidence" />
+                <span>60%+</span>
+            </label>
+
+            <label class="bb-chip">
+                <input type="radio" name="confidence" value="70" [(ngModel)]="selectedConfidence" />
+                <span>70%+</span>
+            </label>
+
+            <label class="bb-chip">
+                <input type="radio" name="confidence" value="80" [(ngModel)]="selectedConfidence" />
+                <span>80%+</span>
+            </label>
+        </div>
+
+        <div class="bb-hint">
+            {{ 'matchFilter.confidenceHint' | translate }}
+        </div>
+    </div>
+
+    <div class="bb-hr"></div>
+
+    <!-- MATCH OUTCOME -->
+    <div class="bb-section">
+        <div class="bb-section-head">
+            <span class="bb-section-title">{{ 'matchFilter.outcome' | translate }}</span>
+        </div>
+
+        <div class="bb-chip-row">
+            <label class="bb-chip">
+                <input type="radio" name="status" value="all" [(ngModel)]="selectedStatus" />
+                <span>{{ 'common.all' | translate }}</span>
+            </label>
+
+            <label class="bb-chip">
+                <input type="radio" name="status" value="completed" [(ngModel)]="selectedStatus" />
+                <span>{{ 'matchFilter.completed' | translate }}</span>
+            </label>
+
+            <label class="bb-chip">
+                <input type="radio" name="status" value="incomplete" [(ngModel)]="selectedStatus" />
+                <span>{{ 'matchFilter.incomplete' | translate }}</span>
+            </label>
+
+            <label class="bb-chip">
+                <input type="radio" name="status" value="not-played" [(ngModel)]="selectedStatus" />
+                <span>{{ 'matchFilter.notPlayed' | translate }}</span>
+            </label>
+
+            <label class="bb-chip">
+                <input type="radio" name="status" value="pending" [(ngModel)]="selectedStatus" />
+                <span>{{ 'matchFilter.pending' | translate }}</span>
+            </label>
+        </div>
+
+        <div class="bb-hint">
+            {{ 'matchFilter.outcomeHint' | translate }}
+        </div>
+    </div>
+
+    <div class="bb-hr"></div>
+
+    <!-- ODDS -->
+    <div class="bb-section">
+        <div class="bb-section-head">
+            <span class="bb-section-title">{{ 'matchFilter.odds' | translate }}</span>
+        </div>
+
+        <div class="bb-chip-row">
+            <label class="bb-chip">
+                <input type="radio" name="odds" value="all" [(ngModel)]="selectedOdds" />
+                <span>{{ 'common.all' | translate }}</span>
+            </label>
+
+            <label class="bb-chip">
+                <input type="radio" name="odds" value="with" [(ngModel)]="selectedOdds" />
+                <span>{{ 'matchFilter.withOdds' | translate }}</span>
+            </label>
+
+            <label class="bb-chip">
+                <input type="radio" name="odds" value="without" [(ngModel)]="selectedOdds" />
+                <span>{{ 'matchFilter.withoutOdds' | translate }}</span>
+            </label>
+        </div>
+    </div>
+
+    <div class="bb-hr"></div>
+
+    <!-- VALUE (edge) -->
+    <div class="bb-section">
+        <div class="bb-section-head">
+            <span class="bb-section-title">{{ 'matchFilter.value' | translate }}</span>
+        </div>
+
+        <div class="bb-chip-row">
+            <label class="bb-chip">
+                <input type="radio" name="valueFilter" [(ngModel)]="selectedValueFilter" value="all" />
+                <span>{{ 'common.all' | translate }}</span>
+            </label>
+
+            <label class="bb-chip">
+                <input type="radio" name="valueFilter" [(ngModel)]="selectedValueFilter" value="valueOnly" />
+                <span>{{ 'matchFilter.valueOnly' | translate }}</span>
+            </label>
+        </div>
+
+        <div class="bb-hint">
+            {{ 'matchFilter.valueHint' | translate }}
+        </div>
+    </div>
+
+    <div class="bb-hr"></div>
+
+    <!-- SURFACE -->
+    <div class="bb-section">
+        <div class="bb-section-head">
+            <span class="bb-section-title">{{ 'details.surface' | translate }}</span>
+        </div>
+
+        <div class="bb-chip-row">
+            <label class="bb-chip">
+                <input type="checkbox" [checked]="areAllSurfacesSelected"
+                    [indeterminate]="areSomeSurfacesSelected" (change)="toggleAllSurfaces()" />
+                <span>{{ 'common.all' | translate }}</span>
+            </label>
+            <label class="bb-chip" *ngFor="let s of surfaces">
+                <input type="checkbox" [checked]="selectedSurfaceIds.includes(s._id)" (change)="toggleSurface(s._id)"
+                    [disabled]="isLastSelected(selectedSurfaceIds, s._id)" />
+                <span class="bb-surface-swatch" [ngClass]="'bb-surface-swatch--' + s.indicator"
+                    aria-hidden="true"></span>
+                <span>{{ s.surface | translate | uppercase }}</span>
+            </label>
+        </div>
+    </div>
+
+    <div class="bb-hr"></div>
+
+    <!-- TOURNAMENT TYPE -->
+    <div class="bb-section">
+        <div class="bb-section-head">
+            <span class="bb-section-title">{{ 'matchFilter.tournamentType' | translate }}</span>
+        </div>
+
+        <div class="bb-chip-row">
+            <label class="bb-chip" *ngFor="let t of tournamentTypes">
+                <input type="checkbox" [checked]="selectedTournamentTypeIds.includes(t._id)"
+                    (change)="toggleTournamentType(t._id)"
+                    [disabled]="isLastSelected(selectedTournamentTypeIds, t._id)" />
+                <span>{{ t.type }}</span>
+            </label>
+        </div>
+    </div>
+
+    <div class="bb-hr"></div>
+
+    <!-- TOURNAMENT STRENGTH -->
+    <div class="bb-section">
+        <div class="bb-section-head">
+            <span class="bb-section-title">{{ 'matchDetails.tournamentStrength' | translate }}</span>
+        </div>
+
+        <div class="bb-chip-row">
+            <label class="bb-chip" *ngFor="let s of strengthOptions">
+                <input type="checkbox" [checked]="selectedStrengthStars.includes(s)" (change)="toggleStrengthStar(s)"
+                    [disabled]="isLastSelected(selectedStrengthStars, s)" />
+                <span>{{ s }}★</span>
+            </label>
+        </div>
+
+        <div class="bb-hint">
+            {{ 'matchFilter.strengthHint' | translate }}
+        </div>
+    </div>
+
+    <!-- ACTIONS -->
+    <div bbActions class="bb-actions">
+        <button type="button" (click)="reset()" class="oauth-btn">{{ 'matchFilter.reset' | translate }}</button>
+        <button type="button" (click)="apply()" class="oauth-btn oauth-btn-primary">{{ 'matchFilter.apply' | translate }}</button>
+    </div>
+</app-bb-modal-shell>

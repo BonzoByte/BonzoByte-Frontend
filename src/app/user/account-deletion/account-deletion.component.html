@@ -1,0 +1,47 @@
+<app-bb-modal-shell [title]="'accountDeletion.title' | translate" modalClass="bb-modal--account-deletion"
+  [closeLabel]="'common.close' | translate" [closeOnEsc]="!busy" [closeDisabled]="busy" (closed)="close()">
+  <div class="deletion-content">
+    <div *ngIf="busy" class="bb-loading-overlay is-active" aria-live="polite">
+      <div class="bb-loading-card" role="status"><div class="bb-spinner" aria-hidden="true"></div>
+        <div class="bb-loading-text">{{ 'accountDeletion.working' | translate }}</div></div>
+    </div>
+    <ng-container *ngIf="state === 'form'; else result">
+      <p>{{ 'accountDeletion.warning' | translate }}</p>
+      <p><strong>{{ 'membership.title' | translate }}: {{ membershipKey | translate }}</strong>
+        <span *ngIf="expiry"> · {{ 'membership.until' | translate:{date: regional.dateTime(expiry, 'utc')} }}</span></p>
+      <p *ngIf="balance">{{ 'membership.savedTrial' | translate:{days: regional.number(balance.days, 0), hours: regional.number(balance.hours, 0), minutes: regional.number(balance.minutes, 0)} }}</p>
+      <p>{{ 'accountDeletion.billing' | translate }}</p>
+      <p class="bb-hint">{{ 'accountDeletion.retention' | translate }}</p>
+      <label for="deletion-reason">{{ 'accountDeletion.reason' | translate }}</label>
+      <select id="deletion-reason" [(ngModel)]="reason" [disabled]="busy">
+        <option value="">{{ 'accountDeletion.skipReason' | translate }}</option>
+        <option *ngFor="let item of reasons" [value]="item">{{ ('accountDeletion.reasons.' + item) | translate }}</option>
+      </select>
+      <p class="bb-hint">{{ 'accountDeletion.reasonHint' | translate }}</p>
+      <button class="oauth-btn" type="button" (click)="sendCode()" [disabled]="!available || busy || countdown > 0">
+        {{ (challenge ? 'accountDeletion.resend' : 'accountDeletion.sendCode') | translate }}
+        <span *ngIf="countdown > 0"> ({{ countdown }} s)</span>
+      </button>
+      <div *ngIf="challenge" class="deletion-proof">
+        <p role="status">{{ 'accountDeletion.codeSent' | translate:{date: regional.dateTime(expiresAt, 'utc')} }}</p>
+        <label for="deletion-code">{{ 'accountDeletion.code' | translate }}</label>
+        <input id="deletion-code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" [(ngModel)]="code" [disabled]="busy" />
+        <label class="deletion-agreement"><input type="checkbox" [(ngModel)]="agreed" [disabled]="busy" />
+          <span>{{ 'accountDeletion.agree' | translate }}</span></label>
+      </div>
+      <div class="bb-actions">
+        <button class="oauth-btn" type="button" (click)="close()" [disabled]="busy">{{ 'common.cancel' | translate }}</button>
+        <button class="oauth-btn deletion-danger" type="button" (click)="confirm()"
+          [disabled]="busy || !available || !agreed || code.length !== 6 || !challenge">{{ 'accountDeletion.delete' | translate }}</button>
+      </div>
+    </ng-container>
+    <ng-template #result>
+      <p role="status">{{ ('accountDeletion.states.' + state) | translate }}</p>
+      <p>{{ 'accountDeletion.retention' | translate }}</p>
+      <button *ngIf="state === 'queued' || state === 'uncertain'" class="oauth-btn" type="button" (click)="check()" [disabled]="busy">{{ 'accountDeletion.check' | translate }}</button>
+      <button class="oauth-btn" type="button" (click)="close()" [disabled]="busy">{{ 'common.close' | translate }}</button>
+    </ng-template>
+    <p *ngIf="error" class="bb-alert bb-alert--error" role="alert">{{ error | translate }}</p>
+    <p class="bb-hint">{{ 'accountDeletion.support' | translate }} <a href="mailto:info@bonzobyte.com">info&#64;bonzobyte.com</a></p>
+  </div>
+</app-bb-modal-shell>

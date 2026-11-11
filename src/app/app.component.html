@@ -1,0 +1,21 @@
+<a class="bb-skip-link" href="#bb-main-content" (click)="skipToContent($event)">{{ 'navigation.skipToContent' | translate }}</a>
+<app-header (userModalOpened)="onOpenUserModal()"></app-header>
+<app-connectivity-notice></app-connectivity-notice>
+<app-update-notice></app-update-notice>
+<aside *ngIf="billingLab" role="note" style="padding:8px 12px;border:1px solid #d6a84c;background:#302813;color:#fff3d6;font-size:12px;text-align:center">
+  {{ 'billingLab.banner' | translate }}
+</aside>
+
+<app-user-modal *ngIf="showUserModal"
+                (deletionRequested)="showUserModal = false; showAccountDeletion = true"
+                (closed)="showUserModal = false"
+                (updated)="onUserUpdated($event)">
+</app-user-modal>
+<app-account-deletion *ngIf="showAccountDeletion" (closed)="showAccountDeletion = false"></app-account-deletion>
+
+<main #mainContent id="bb-main-content" class="main-content bb-main-focus-target" tabindex="-1">
+  <router-outlet></router-outlet>
+</main>
+
+<app-footer class="app-footer"></app-footer>
+<app-privacy></app-privacy>

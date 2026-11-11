@@ -1,0 +1,196 @@
+<!-- eslint-disable @angular-eslint/template/eqeqeq -->
+<div class="matches-page-wrapper players-page main-scroll" *ngIf="!loadError"
+  [class.bb-catalog-empty]="!loading && players.length === 0">
+  <div class="players-page">
+
+    <!-- Top sticky bar (same layout as matches) -->
+    <div class="date-nav-sticky">
+      <div class="date-left">
+        <div class="catalog-result-meta" aria-live="polite">
+          <span>{{ 'catalog.range' | translate:{ start: formatInteger(resultStart), end: formatInteger(resultEnd), total: formatInteger(filteredResultCount) } }}</span>
+          <label class="catalog-page-size">
+            <span>{{ 'catalog.rows' | translate }}</span>
+            <select [ngModel]="pageSize" (ngModelChange)="setPageSize($event)" [disabled]="loading">
+              <option *ngFor="let size of pageSizeOptions" [ngValue]="size">{{ size }}</option>
+            </select>
+          </label>
+        </div>
+      </div>
+
+      <div class="pagination-center-wrapper">
+        <!-- <button (click)="jump(-5)" class="link-button" [disabled]="currentPage <= 1 || loading">-5</button> -->
+        <button (click)="previousPage()" class="link-button" [disabled]="currentPage <= 1 || loading">
+          <img src="assets/icons/left.svg" [attr.alt]="'matches.previous' | translate" class="arrow-icon" />
+        </button>
+
+        <input #pageInput type="text" class="custom-date-input date-dmy" inputmode="numeric" autocomplete="off"
+          [value]="currentPage" [attr.aria-label]="'catalog.page' | translate" (input)="onPageInputChange($event)" [disabled]="loading" />
+
+        <span style="padding:0 8px; opacity:.85;">/ {{ formatInteger(totalPages) }}</span>
+
+        <button (click)="nextPage()" class="link-button" [disabled]="currentPage >= totalPages || loading">
+          <img src="assets/icons/right.svg" [attr.alt]="'matches.next' | translate" class="arrow-icon" />
+        </button>
+        <!-- <button (click)="jump(+5)" class="link-button" [disabled]="currentPage >= totalPages || loading">+5</button> -->
+      </div>
+
+      <div class="date-right">
+        <div class="topbar-right-tools">
+          <input type="text" class="custom-date-input date-dmy topbar-search" [attr.placeholder]="'catalog.playerSearch' | translate"
+            [(ngModel)]="searchTerm" (input)="onSearchInput()" [disabled]="loading" />
+
+          <button (click)="clearSearch()" class="link-button topbar-clear" [disabled]="loading || !searchTerm">
+            {{ 'common.clear' | translate }}
+          </button>
+
+          <button (click)="openFilterModal()" class="link-button" [disabled]="loading">
+            <img src="assets/icons/filter.svg" [attr.alt]="'common.filter' | translate" class="icon icon-filter" />
+            {{ 'common.filter' | translate }} <span *ngIf="isFiltered" class="badge-on">{{ activeFilterCount }}</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONTENT (blur like matches) -->
+    <div class="matches-content" [class.is-blurred]="loading">
+
+      <div class="table-wrapper">
+
+        <!-- empty state -->
+        <div *ngIf="!loading && players.length === 0" class="bb-page-empty" role="status">
+          {{ 'catalog.noPlayers' | translate }}
+          <app-view-recovery-actions [showClear]="isFiltered || !!searchTerm" (clearFilters)="resetPlayerFilter(true)"></app-view-recovery-actions>
+        </div>
+
+        <table class="match-table" *ngIf="players.length > 0">
+          <thead>
+            <tr>
+              <th class="col-rank" [attr.title]="'catalog.position' | translate">#</th>
+
+              <th class="col-player col-center" (click)="toggleSort('playerName')">
+                {{ 'catalog.player' | translate }}
+                <span *ngIf="sortField === 'playerName'">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
+              </th>
+
+              <th class="col-birth col-center" (click)="toggleSort('playerBirthDate')">
+                {{ 'catalog.birth' | translate }}
+                <span *ngIf="sortField === 'playerBirthDate'">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
+              </th>
+
+              <th class="col-center" (click)="toggleSort('averageTSMean')">
+                {{ 'catalog.avgTs' | translate }}
+                <span *ngIf="sortField === 'averageTSMean'">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
+              </th>
+
+              <th class="col-center" (click)="toggleSort('peakTsMean')">
+                {{ 'catalog.peakTs' | translate }}
+                <span *ngIf="sortField === 'peakTsMean'">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
+              </th>
+
+              <th class="col-center" (click)="toggleSort('currentTsMean')">
+                {{ 'catalog.latestTs' | translate }}
+                <span *ngIf="sortField === 'currentTsMean'">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
+              </th>
+
+              <th class="col-center" (click)="toggleSort('numberOfMatches')">
+                {{ 'details.matches' | translate }}
+                <span *ngIf="sortField === 'numberOfMatches'">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
+              </th>
+
+              <th class="col-win-pct col-center" (click)="toggleSort('winPercentage')">
+                {{ 'details.winPercent' | translate }}
+                <span *ngIf="sortField === 'winPercentage'">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
+              </th>
+
+              <th class="col-center" (click)="toggleSort('dateOfLastMatch')">
+                {{ 'details.lastMatch' | translate }}
+                <span *ngIf="sortField === 'dateOfLastMatch'">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
+              </th>
+
+              <th class="col-center">{{ 'common.details' | translate }}</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr *ngFor="let p of players; let i = index">
+              <td class="col-rank" [attr.title]="'catalog.position' | translate">
+                {{ formatInteger(rowNumber(i)) }}.
+              </td>
+
+              <td class="col-player col-center">
+                <span class="fi fi-{{ flagCode(p.countryISO2).toLowerCase() }}"
+                  [title]="p.countryFull || ('matchDetails.world' | translate)"></span>
+
+                <span class="clickable-text" (click)="openPlayerModal(p)" style="margin-left:6px;">
+                  {{ formatPlayerLabel(p.playerName, p.countryISO3) }}
+                </span>
+              </td>
+
+              <td class="col-birth col-center">{{ formatDateMaybe(p.playerBirthDate) }}</td>
+              <td class="col-ts col-center strength-cell"
+                [title]="p.averageTSMean != null ? ('catalog.stat' | translate:{ label: ('catalog.avgTs' | translate), value: formatNum(p.averageTSMean, 2) }) : ''">
+                <span class="stars" *ngIf="p.averageTSMean != null">
+                  <span *ngFor="let s of stars" class="star"
+                    [ngClass]="starClass(s, getTSStars(p.averageTSMean))"></span>
+                </span>
+              </td>
+
+              <td class="col-m col-center strength-cell"
+                [title]="p.peakTsMean != null ? ('catalog.stat' | translate:{ label: ('catalog.peakTs' | translate), value: formatNum(p.peakTsMean, 2) }) : ''">
+                <span class="stars" *ngIf="p.peakTsMean != null">
+                  <span *ngFor="let s of stars" class="star" [ngClass]="starClass(s, getTSStars(p.peakTsMean))"></span>
+                </span>
+              </td>
+
+              <td class="col-win col-center strength-cell"
+                [title]="p.currentTsMean != null ? ('catalog.stat' | translate:{ label: ('catalog.latestTs' | translate), value: formatNum(p.currentTsMean, 2) }) : ''">
+                <span class="stars" *ngIf="p.currentTsMean != null">
+                  <span *ngFor="let s of stars" class="star"
+                    [ngClass]="starClass(s, getTSStars(p.currentTsMean))"></span>
+                </span>
+              </td>
+              <td class="col-last col-center">{{ (p.totalMatches ?? p.numberOfMatches) == null ? '' : formatInteger(p.totalMatches ?? p.numberOfMatches ?? 0) }}</td>
+              <td class="col-win-pct">{{ formatWinPct(p.winPercentage) }}</td>
+              <td class="col-last col-center">{{ regional.matchDateTime(p.dateOfLastMatch, undefined, true) }}</td>
+
+              <td class="col-det col-center details-cell">
+                <button type="button" class="details-icon-btn" (click)="openPlayerModal(p)"
+                  [attr.title]="'matchGrid.openDetails' | translate" [attr.aria-label]="'catalog.playerDetails' | translate">
+                  i
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- modals -->
+      <app-player-filter-modal *ngIf="showFilterModal" [activeFilter]="playerFilter"
+        [countries]="availableCountries" (closed)="closeFilterModal()"
+        (filterApplied)="applyPlayerFilter($event)" (resetFilter)="resetPlayerFilter()">
+      </app-player-filter-modal>
+
+      <app-player-modal
+      *ngIf="selectedPlayer"
+      [isOpen]="!!selectedPlayer"
+      [playerTPId]="selectedPlayer.playerTPId"
+      [playerIndex]="selectedPlayer"
+      (closed)="closePlayerModal()">
+    </app-player-modal>
+
+    </div>
+
+    <!-- loading overlay (same as matches) -->
+    <div class="bb-loading-overlay" [class.is-active]="loading" aria-live="polite">
+      <div class="bb-loading-card" role="status" [attr.aria-label]="'common.loading' | translate">
+        <div class="bb-spinner"></div>
+        <div class="bb-loading-text">{{ 'common.loading' | translate }}</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="bb-page-error bb-page-error--standalone" role="alert" *ngIf="!loading && loadError">
+  {{ loadError | translate }}
+  <app-view-recovery-actions [showRetry]="true" (retry)="retryRead()"></app-view-recovery-actions>
+</div>

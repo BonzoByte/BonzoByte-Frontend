@@ -1,0 +1,42 @@
+<section *ngIf="!privacy.choice() && !privacy.settingsOpen()" class="privacy-banner" role="region" [attr.aria-label]="copy.title">
+  <div class="privacy-copy"><strong>{{ copy.title }}</strong><p>{{ copy.summary }}</p>
+    <p *ngIf="!privacy.options.analyticsEnabled" class="privacy-note">{{ copy.preview }}</p></div>
+  <div class="privacy-actions">
+    <button type="button" (click)="rejectAll()">{{ copy.reject }}</button>
+    <button type="button" (click)="acceptAll()">{{ copy.accept }}</button>
+    <button type="button" (click)="open()">{{ copy.settings }}</button>
+  </div>
+</section>
+<app-bb-modal-shell *ngIf="privacy.settingsOpen()" [title]="copy.settings" [closeLabel]="'common.close' | translate"
+  modalClass="bb-modal--privacy" (closed)="privacy.close()">
+  <div class="privacy-details">
+    <p>{{ copy.summary }}</p>
+    <p *ngIf="!privacy.options.analyticsEnabled" class="privacy-preview">{{ copy.preview }}</p>
+    <label class="privacy-toggle"><input type="checkbox" name="analytics" [(ngModel)]="analytics" aria-describedby="privacy-analytics-description">
+      <strong>{{ copy.analytics }}</strong></label>
+    <p id="privacy-analytics-description">{{ copy.analyticsText }}</p>
+    <label class="privacy-toggle"><input type="checkbox" name="popularity" [(ngModel)]="popularity" aria-describedby="privacy-popularity-description">
+      <strong>{{ copy.popularity }}</strong></label>
+    <p id="privacy-popularity-description">{{ copy.popularityText }}</p>
+    <p>{{ copy.duration }}</p>
+    <details><summary>{{ copy.storageTitle }}</summary>
+      <h5>{{ copy.necessary }}</h5><p>{{ copy.necessaryText }}</p>
+      <h5>{{ copy.preferences }}</h5><p>{{ copy.preferencesText }}</p>
+      <p>{{ copy.withdraw }}</p>
+      <p>{{ copy.popularityWithdraw }}</p>
+      <p>{{ copy.storageText }}</p>
+      <p>{{ copy.externalText }}</p>
+      <p>{{ copy.referralText }}</p>
+      <p><a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer">Google Privacy Policy</a> ·
+        <a href="https://www.paypal.com/webapps/mpp/ua/privacy-full" target="_blank" rel="noopener noreferrer">PayPal Privacy Statement</a> ·
+        <a href="https://www.cloudflare.com/privacypolicy/" target="_blank" rel="noopener noreferrer">Cloudflare Privacy Policy</a></p>
+      <p>{{ copy.contact }} <a href="mailto:info@bonzobyte.com">info&#64;bonzobyte.com</a></p>
+    </details>
+    <p *ngIf="privacy.storageUnavailable()" role="status">{{ copy.storageUnavailable }}</p>
+    <div class="privacy-actions">
+      <button type="button" (click)="rejectAll()">{{ copy.reject }}</button>
+      <button type="button" (click)="acceptAll()">{{ copy.accept }}</button>
+      <button type="button" (click)="saveChoices()">{{ copy.save }}</button>
+    </div>
+  </div>
+</app-bb-modal-shell>

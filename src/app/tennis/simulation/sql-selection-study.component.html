@@ -1,0 +1,100 @@
+<main class="sql-study">
+  <header>
+    <span class="sql-study__local">{{ t('localOnly') }}</span>
+    <h1>{{ t('title') }}</h1>
+    <p>{{ t('intro') }}</p>
+    <p *ngIf="study as data" class="sql-study__window"><strong>{{ t('sourceWindow') }}: {{ p.regional.date(data.source.from) }} – {{ p.regional.date(data.source.to) }}</strong></p>
+  </header>
+
+  <p role="status" *ngIf="loading">{{ t('loading') }}</p>
+  <div class="bb-page-error" role="alert" *ngIf="unavailable">{{ t('unavailable') }}</div>
+
+  <ng-container *ngIf="study as data">
+    <section class="sql-study__disclosure" [attr.aria-label]="t('method')">
+      <p>{{ t('ruleShort') }}</p>
+      <p>{{ t('payoutShort') }}</p>
+      <p>{{ t('riskShort') }}</p>
+      <p>{{ t('demoScope') }}</p>
+    </section>
+
+    <section class="sql-study__controls" [attr.aria-label]="t('controls')">
+      <div class="sql-study__buttons" role="group" [attr.aria-label]="t('scope')">
+        <button *ngFor="let item of scopes" type="button" [class.is-active]="scope === item"
+          [attr.aria-pressed]="scope === item" (click)="scope = item">{{ p.scope(item) }}</button>
+      </div>
+      <strong>{{ t('fixedThreshold') }}</strong>
+      <p>{{ t('noOptimization') }}</p>
+    </section>
+
+    <ng-container *ngIf="selectedCohort as cohort; else missingCohort">
+      <section class="sql-study__cards" [attr.aria-label]="t('metrics')">
+        <article><span>{{ t('picks') }}</span><strong>{{ n(cohort.picks) }}</strong><small>{{ t('winLoss', {wins: n(cohort.wins), losses: n(cohort.losses)}) }}</small></article>
+        <article><span>{{ t('netUnits') }}</span><strong [class.sql-study__loss]="cohort.netUnits < 0" [class.sql-study__gain]="cohort.netUnits > 0">{{ n(cohort.netUnits, 2) }}</strong><small>{{ t('stake') }}</small></article>
+        <article><span>{{ t('roi') }}</span><strong [class.sql-study__loss]="cohort.roi !== null && cohort.roi < 0" [class.sql-study__gain]="cohort.roi !== null && cohort.roi > 0">{{ percent(cohort.roi) }}</strong><small>{{ t('recordedMedian') }}</small></article>
+        <article><span>{{ t('hitRate') }}</span><strong>{{ percent(cohort.hitRate) }}</strong></article>
+        <article><span>{{ t('coverage') }}</span><strong>{{ percent(cohort.coverage) }}</strong><small>{{ t('candidates', {count: n(cohort.candidateMatches)}) }}</small></article>
+        <article><span>{{ t('drawdown') }}</span><strong>{{ n(cohort.maxDrawdownUnits, 2) }}</strong></article>
+        <article><span>{{ t('activeDays') }}</span><strong>{{ n(cohort.activeDays) }}</strong></article>
+        <article><span>{{ t('meanPicks') }}</span><strong>{{ n(cohort.meanPicksPerActiveDay, 2) }}</strong><small>{{ t('noQuota') }}</small></article>
+      </section>
+
+      <section class="sql-study__panel">
+        <h2>{{ t('curve') }}</h2>
+        <p>{{ t('sampling') }}</p>
+        <div class="sql-study__chart" *ngIf="cohort.trajectory.length; else emptyCurve">
+          <canvas baseChart type="line" [data]="chartData" [options]="chartOptions" role="img"
+            [attr.aria-label]="t('curveDescription', {net: n(cohort.netUnits, 2), picks: n(cohort.picks)})"></canvas>
+        </div>
+        <ng-template #emptyCurve><p>{{ t('zeroPicks') }}</p></ng-template>
+      </section>
+
+      <section class="sql-study__panel">
+        <h2>{{ t('periods') }} · {{ p.scope(scope) }}</h2>
+        <p>{{ t('allPeriods') }}</p>
+        <div class="sql-study__buttons" role="group" [attr.aria-label]="t('periods')">
+          <button *ngFor="let item of granularities" type="button" [class.is-active]="granularity === item"
+            [attr.aria-pressed]="granularity === item" (click)="granularity = item">{{ t(item) }}</button>
+        </div>
+        <div class="sql-study__table" tabindex="0" role="region" [attr.aria-label]="t('periods')">
+          <table>
+            <thead><tr><th scope="col">{{ t('period') }}</th><th scope="col">{{ t('availableCandidates') }}</th><th scope="col">{{ t('picks') }}</th><th scope="col">{{ t('wins') }}</th><th scope="col">{{ t('losses') }}</th><th scope="col">{{ t('netUnits') }}</th><th scope="col">{{ t('roi') }}</th></tr></thead>
+            <tbody><tr *ngFor="let period of periods" [class.sql-study__loss]="period.netUnits < 0" [class.sql-study__gain]="period.netUnits > 0">
+              <th scope="row">{{ p.period(period.label) }} <small *ngIf="period.partial">({{ t('partial') }})</small></th><td>{{ period.candidateMatches === undefined ? '—' : n(period.candidateMatches) }}</td><td>{{ n(period.picks) }}</td><td>{{ n(period.wins) }}</td><td>{{ n(period.losses) }}</td><td>{{ n(period.netUnits, 2) }}</td><td>{{ percent(period.roi) }}</td>
+            </tr></tbody>
+          </table>
+        </div>
+        <p class="sql-study__coverage-note">{{ t('candidateCoverageNote') }}</p>
+      </section>
+    </ng-container>
+    <ng-template #missingCohort><p role="alert">{{ t('missingCohort') }}</p></ng-template>
+
+    <section class="sql-study__panel">
+      <h2>{{ t('comparison') }}</h2>
+      <p>{{ t('comparisonNote') }}</p>
+      <div class="sql-study__table" tabindex="0" role="region" [attr.aria-label]="t('comparison')">
+        <table>
+          <thead><tr><th scope="col">{{ t('rawThreshold') }}</th><th scope="col">ATP · {{ t('picks') }}</th><th scope="col">ATP · {{ t('losses') }}</th><th scope="col">ATP · {{ t('netUnits') }}</th><th scope="col">ATP · {{ t('roi') }}</th><th scope="col">WTA · {{ t('picks') }}</th><th scope="col">WTA · {{ t('losses') }}</th><th scope="col">WTA · {{ t('netUnits') }}</th><th scope="col">WTA · {{ t('roi') }}</th></tr></thead>
+          <tbody><tr *ngFor="let value of visibleThresholdsPp">
+            <th scope="row">{{ threshold(value) }}</th>
+            <ng-container *ngIf="tourCohort('ATP', value) as atp"><td>{{ n(atp.picks) }}</td><td>{{ n(atp.losses) }}</td><td [class.sql-study__loss]="atp.netUnits < 0" [class.sql-study__gain]="atp.netUnits > 0">{{ n(atp.netUnits, 2) }}</td><td [class.sql-study__loss]="atp.roi !== null && atp.roi < 0" [class.sql-study__gain]="atp.roi !== null && atp.roi > 0">{{ percent(atp.roi) }}</td></ng-container>
+            <ng-container *ngIf="tourCohort('WTA', value) as wta"><td>{{ n(wta.picks) }}</td><td>{{ n(wta.losses) }}</td><td [class.sql-study__loss]="wta.netUnits < 0" [class.sql-study__gain]="wta.netUnits > 0">{{ n(wta.netUnits, 2) }}</td><td [class.sql-study__loss]="wta.roi !== null && wta.roi < 0" [class.sql-study__gain]="wta.roi !== null && wta.roi > 0">{{ percent(wta.roi) }}</td></ng-container>
+          </tr></tbody>
+        </table>
+      </div>
+    </section>
+
+    <details class="sql-study__panel sql-study__methodology">
+      <summary>{{ t('methodSource') }}</summary>
+      <p>{{ t('rawRule') }}</p>
+      <p>{{ t('favoriteRule') }}</p>
+      <p>{{ t('payoutRule') }}</p>
+      <p>{{ t('historical') }}</p>
+      <p>{{ data.rule.disclosure }}</p>
+      <h2>{{ t('source') }}</h2>
+      <p>{{ data.source.database }} · {{ data.source.view }} · {{ t('medianRun') }} {{ data.source.medianRunId }}</p>
+      <p>{{ p.regional.date(data.source.from) }} – {{ p.regional.date(data.source.to) }} · {{ t('sourceRows', {count: n(data.source.rows)}) }}</p>
+      <p>{{ t('generated') }} {{ p.generatedAt(data.generatedAtUtc) }}</p>
+      <ul><li *ngFor="let quality of data.source.qualityCounts | keyvalue">{{ quality.key }}: {{ n(quality.value) }}</li></ul>
+    </details>
+  </ng-container>
+</main>

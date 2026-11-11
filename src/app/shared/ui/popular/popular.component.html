@@ -1,0 +1,90 @@
+<section class="popular-page" [class.popular-page--players]="tab === 'player'" [attr.aria-label]="'popularity.title' | translate">
+  <header class="popular-heading"><p class="popular-eyebrow">BONZOBYTE COMMUNITY</p><h1>{{ 'popularity.title' | translate }}</h1></header>
+  <p class="popular-intro">{{ 'popularity.intro' | translate }}</p>
+  <p *ngIf="!preview && ranking && ranking.environment !== 'production'" class="popular-development" role="note">{{ (ranking.testActivity ? 'competition.testActivityNote' : 'popularity.development') | translate }}</p>
+  <p *ngIf="preview" class="popular-preview-note" role="note">{{ 'popularity.previewNotice' | translate }}</p>
+  <div class="popular-tabs" role="tablist" [attr.aria-label]="'popularity.title' | translate" (keydown)="tabKey($event)">
+    <button id="popular-tab-match" type="button" role="tab" [attr.aria-selected]="tab === 'match'" [attr.tabindex]="tab === 'match' ? 0 : -1"
+        aria-controls="popular-results" [class.active]="tab === 'match'" (click)="chooseTab('match')">{{ 'navigation.matches' | translate }}</button>
+    <button id="popular-tab-player" type="button" role="tab" [attr.aria-selected]="tab === 'player'" [attr.tabindex]="tab === 'player' ? 0 : -1"
+        aria-controls="popular-results" [class.active]="tab === 'player'" (click)="chooseTab('player')">{{ 'navigation.players' | translate }}</button>
+  </div>
+  <div id="popular-results" class="popular-results" role="tabpanel" [attr.aria-labelledby]="'popular-tab-' + tab" [attr.aria-busy]="loading && !preview">
+    <p *ngIf="loading && !preview" class="popular-state" role="status">{{ 'popularity.loading' | translate }}</p>
+    <div *ngIf="!preview && !loading && failed" class="popular-state" role="status">
+      <p>{{ 'popularity.failed' | translate }}</p>
+      <button type="button" (click)="load()">{{ 'popularity.retry' | translate }}</button>
+    </div>
+    <ng-container *ngIf="(preview || (!loading && !failed)) && displayedRanking as data">
+      <ng-container *ngIf="tab === 'match'">
+        <p *ngIf="!data.matches.length" class="popular-state">{{ 'popularity.empty' | translate }}</p>
+        <div *ngIf="data.matches.length" class="popular-grid-scroll" tabindex="0" role="region" [attr.aria-label]="'popularity.matchesTable' | translate">
+          <table class="match-table popular-match-grid">
+            <colgroup><col class="c-rank"><col class="c-date"><col class="c-type"><col class="c-tournament"><col class="c-matchup"><col class="c-result"><col class="c-info"></colgroup>
+            <thead><tr>
+              <th scope="col" [title]="'popularity.rank' | translate" [attr.aria-label]="'popularity.rank' | translate">#</th>
+              <th scope="col">{{ 'common.date' | translate }}</th>
+              <th scope="col">{{ 'details.type' | translate }}</th>
+              <th scope="col">{{ 'common.tournament' | translate }}</th>
+              <th scope="col">{{ 'common.matchup' | translate }}</th>
+              <th scope="col">{{ 'common.result' | translate }}</th>
+              <th scope="col">Info</th>
+            </tr></thead>
+            <tbody><tr *ngFor="let item of data.matches; let i = index; trackBy: trackMatch">
+              <td class="rank-cell">{{ regional.number(i + 1, 0) }}</td>
+              <td class="date-cell">{{ matchDate(item) }}</td>
+              <td class="type-cell">{{ gridMatch(item).tournamentTypeName || '—' }}</td>
+              <td class="tournament-cell"><app-match-tournament-cell [match]="gridMatch(item)" [preview]="preview" (tournamentOpened)="openTournament(item)"></app-match-tournament-cell></td>
+              <td class="matchup-cell">
+                  <app-match-players-cell [match]="gridMatch(item)" [preview]="preview" (playerOpened)="openMatchPlayer(item, $event)"></app-match-players-cell>
+              </td>
+              <td class="result-cell"><app-match-result-cell [match]="gridMatch(item)"></app-match-result-cell></td>
+              <td class="info-cell"><button type="button" class="details-icon-btn" (click)="openMatch(item)"
+                  [title]="'matchGrid.openDetails' | translate" [attr.aria-label]="('matchGrid.openDetails' | translate) + ': ' + item.player1 + ' — ' + item.player2">i</button></td>
+            </tr></tbody>
+          </table>
+        </div>
+      </ng-container>
+      <ng-container *ngIf="tab === 'player'">
+        <p *ngIf="!data.players.length" class="popular-state">{{ 'popularity.empty' | translate }}</p>
+        <p *ngIf="playerIndexLoading && !preview" class="popular-index-loading" role="status">{{ 'common.loading' | translate }}</p>
+        <div *ngIf="data.players.length" class="popular-grid-scroll" tabindex="0" role="region" [attr.aria-label]="'navigation.players' | translate">
+          <table class="match-table popular-player-grid">
+            <colgroup><col class="p-rank"><col class="p-player"><col class="p-birth"><col class="p-ts"><col class="p-ts"><col class="p-ts"><col class="p-matches"><col class="p-win"><col class="p-last"><col class="p-info"></colgroup>
+            <thead><tr><th scope="col" [title]="'popularity.rank' | translate">#</th><th scope="col">{{ 'catalog.player' | translate }}</th>
+              <th scope="col">{{ 'catalog.birth' | translate }}</th><th scope="col" *ngFor="let column of tsColumns">{{ column.label | translate }}</th>
+              <th scope="col">{{ 'details.matches' | translate }}</th><th scope="col">{{ 'details.winPercent' | translate }}</th><th scope="col">{{ 'details.lastMatch' | translate }}</th><th scope="col">Info</th></tr></thead>
+            <tbody><ng-container *ngFor="let item of data.players; let i = index"><tr *ngIf="playerIndex(item) as p">
+              <td class="rank-cell">{{ regional.number(i + 1, 0) }}</td>
+              <td class="popular-player-name"><span *ngIf="p.countryISO2" class="fi" [ngClass]="'fi-' + flagCode(p.countryISO2).toLowerCase()" [title]="p.countryFull || item.country" aria-hidden="true"></span>
+                <button type="button" class="player-link" (click)="openPlayer(item)" [title]="playerLabel(p.playerName || item.name, p.countryISO3)">{{ playerLabel(p.playerName || item.name, p.countryISO3) }}</button></td>
+              <td class="date-cell">{{ regional.date(p.playerBirthDate) || '—' }}</td>
+              <td *ngFor="let column of tsColumns" class="strength-cell" [title]="p[column.field] == null ? '' : regional.number(p[column.field]!, 2)">
+                <span *ngIf="p[column.field] != null; else missingStat" class="stars" role="img" [attr.aria-label]="('catalog.stat' | translate:{label: (column.label | translate), value: regional.number(p[column.field]!, 2)})">
+                  <span *ngFor="let star of stars" class="star" [ngClass]="starClass(star, p[column.field]!)"></span></span>
+              </td>
+              <td>{{ (p.totalMatches ?? p.numberOfMatches) == null ? '—' : regional.number((p.totalMatches ?? p.numberOfMatches)!, 0) }}</td>
+              <td class="win-cell">{{ winPercent(p.winPercentage) }}</td>
+              <td class="date-cell">{{ regional.matchDateTime(p.dateOfLastMatch, undefined, true) || '—' }}</td>
+              <td class="info-cell"><button type="button" class="details-icon-btn" (click)="openPlayer(item)" [title]="'catalog.playerDetails' | translate" [attr.aria-label]="('catalog.playerDetails' | translate) + ': ' + item.name">i</button></td>
+            </tr></ng-container></tbody>
+          </table>
+          <ng-template #missingStat>—</ng-template>
+        </div>
+      </ng-container>
+    </ng-container>
+  </div>
+  <details class="popular-method"><summary>{{ 'popularity.methodTitle' | translate }}</summary>
+    <p>{{ 'popularity.method' | translate }}</p></details>
+  <div class="popular-actions">
+    <button type="button" (click)="openPrivacy()">{{ 'privacy.settings' | translate }}</button>
+  </div>
+</section>
+<app-match-details-modal *ngIf="selectedMatch as item" [isOpen]="true" [match]="item.match" [matchTPId]="item.id"
+    [previewDetails]="selectedMatchPreview"
+    (closed)="selectedMatch = null" (requestLogin)="authAction('openLogin')" (requestRegister)="authAction('openRegister')"
+    (requestUpgrade)="authAction('openBilling')"></app-match-details-modal>
+<app-player-modal *ngIf="selectedPlayer as item" [isOpen]="true" [playerTPId]="item.id" [genderHint]="item.gender || 'M'"
+    [playerIndex]="selectedPlayerIndex" [previewIndex]="preview ? selectedPlayerIndex : null"
+    (closed)="selectedPlayer = null"></app-player-modal>
+<app-match-entity-details *ngIf="selectedTournament" [request]="selectedTournament" (closed)="selectedTournament = null" (authRequested)="authAction($event)"></app-match-entity-details>

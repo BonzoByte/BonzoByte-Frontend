@@ -1,0 +1,59 @@
+<app-bb-modal-shell *ngIf="!refundResult" [title]="(labMode ? 'billingLab.history' : 'billing.title') | translate" [closeLabel]="'common.close' | translate"
+    [modalClass]="labMode ? 'bb-modal--billing bb-modal--billing-lab' : 'bb-modal--billing'" (closed)="close()">
+    <div class="bb-billing-grid" [class.bb-billing-grid--lab]="labMode">
+    <app-referral-card *ngIf="!labMode" (loginRequested)="signIn()" (invitationSent)="invitationCompleted($event)"></app-referral-card>
+    <details *ngIf="labMode" class="bb-lab-instructions">
+        <summary>{{ 'billingLab.aboutTest' | translate }}</summary>
+        <p class="bb-hint">{{ 'billingLab.instructions' | translate }}</p>
+    </details>
+    <div class="bb-billing-plans">
+    <div class="bb-plan-list">
+        <button class="bb-plan" *ngFor="let p of plans" [class.active]="p.key === selectedKey" (click)="pick(p.key)"
+            type="button" [disabled]="paying" [attr.aria-pressed]="p.key === selectedKey">
+            <div class="bb-plan-left">
+                <div class="bb-plan-title">
+                    {{ 'billing.plans.' + p.key + '.title' | translate }}
+                    <span class="bb-badge" *ngIf="p.badge && !labMode">{{ 'billing.plans.' + p.key + '.badge' | translate }}</span>
+                </div>
+
+                <div class="bb-plan-meta">
+                    <span class="bb-muted">{{ labMode ? ('billingLab.duration' | translate) : formatDuration(p) }}</span>
+                    <span class="bb-dot" *ngIf="!labMode && perDay(p) !== null">•</span>
+
+                    <span *ngIf="!labMode && perDay(p) as pd" class="bb-muted">
+                        {{ 'billing.perDay' | translate:{amount: (pd | currency:'EUR':'symbol-narrow':'1.2-2':regional.locale())} }}
+                    </span>
+
+                    <span *ngIf="p.limit" class="bb-muted">
+                        <span class="bb-dot">•</span> {{ 'billing.limited' | translate:{count: regional.number(p.limit, 0, true)} }}
+                    </span>
+                </div>
+            </div>
+
+            <div class="bb-plan-price">
+                <div class="bb-eur">{{ (labMode ? 0.01 : p.priceEur) | currency:'EUR':'symbol-narrow':'1.0-2':regional.locale() }}</div>
+            </div>
+        </button>
+    </div>
+
+    <app-plan-checkout *ngIf="!labMode" [plan]="selectedKey" (busyChange)="paying = $event" (completed)="paymentCompleted()"></app-plan-checkout>
+    <app-paypal-sandbox *ngIf="labMode" [plan]="selectedKey" (busyChange)="paying = $event" (completed)="paymentCompleted()"
+        (refundCompleted)="refundCompleted($event)"></app-paypal-sandbox>
+    </div>
+    </div>
+
+    <div bbActions class="bb-actions">
+        <button class="oauth-btn" [disabled]="paying" (click)="close()" type="button">{{ 'common.close' | translate }}</button>
+    </div>
+
+</app-bb-modal-shell>
+
+<app-bb-modal-shell *ngIf="refundResult as result" [title]="'billingLab.refundCompletedTitle' | translate"
+    [closeLabel]="'common.close' | translate" modalClass="bb-modal--refund-confirmation" (closed)="close()">
+    <p>{{ 'billingLab.refundCompletedMessage' | translate:{amount: (result.payment.amount | currency:result.payment.currency:'symbol':'1.2-2':regional.locale())} }}</p>
+    <p *ngIf="refundTierKey as tier" class="bb-refund-membership">{{ 'billingLab.membershipAfterRefund' | translate }} <strong>{{ tier | translate }}</strong></p>
+    <p class="bb-hint">{{ 'billingLab.paymentReference' | translate:{id: result.payment.orderId} }}</p>
+    <div bbActions class="bb-actions">
+        <button class="oauth-btn oauth-btn-primary" type="button" (click)="close()">{{ 'auth.ok' | translate }}</button>
+    </div>
+</app-bb-modal-shell>

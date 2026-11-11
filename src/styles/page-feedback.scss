@@ -1,0 +1,43 @@
+// Shared report failure state. The routed page must not leave a textured strip behind it.
+body:has(.bb-page-error--standalone) {
+    padding-top: var(--header-h);
+}
+
+.main-content:has(.bb-page-error--standalone) {
+    background: none;
+}
+
+.bb-page-error,
+.bb-page-empty {
+    box-sizing: border-box;
+    width: min(920px, calc(100% - 2rem));
+    margin: 2rem auto;
+    padding: 1rem 1.1rem;
+    border: 1px solid rgba(255, 120, 120, 0.28);
+    border-radius: 16px;
+    background: rgba(255, 80, 80, 0.08);
+    color: #ffb4b4;
+    line-height: 1.5;
+    text-align: center;
+    overflow-wrap: anywhere;
+}
+
+// A successful but empty search is informational, not a load failure.
+.bb-page-empty {
+    border-color: var(--bb-border);
+    background: var(--bb-surface-1);
+    color: var(--bb-text-muted);
+}
+
+.main-content:has(.bb-catalog-empty),
+.matches-page-wrapper.bb-catalog-empty,
+.bb-catalog-empty .players-page,
+.bb-catalog-empty .matches-page {
+    background: none;
+}
+
+:root[data-bb-theme='light'] .bb-page-error {
+    border-color: rgba(163, 36, 36, 0.28);
+    background: rgba(163, 36, 36, 0.06);
+    color: #a32424;
+}

@@ -1,0 +1,222 @@
+<div class="mi-page" *ngIf="!isLoading && modelInsights as m">
+  <section class="mi-hero">
+    <div class="mi-hero__content">
+      <div class="mi-kicker">{{ 'reports.copy.bonzobyteResearch' | translate }}</div>
+      <h1 class="mi-title">{{ p.source(m.title) }}</h1>
+      <p class="mi-subtitle">{{ p.source(m.subtitle) }}</p>
+
+      <div class="mi-meta" *ngIf="updatedAt">
+        <span class="mi-meta__label">{{ 'reports.copy.updated' | translate }}</span>
+        <span>{{ p.generatedAt(updatedAt) }} {{ p.regional.timeZone() }}</span>
+      </div>
+    </div>
+
+    <div class="mi-hero__highlights">
+      <div class="mi-stat-card" *ngFor="let finding of m.keyFindings | slice:0:4">
+        <div class="mi-stat-card__eyebrow">{{ p.source(finding.label) }}</div>
+        <div class="mi-stat-card__title">{{ p.countText(finding.value) }}</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="mi-section">
+    <div class="mi-section__header">
+      <span class="mi-section__eyebrow">{{ 'reports.copy.researchSummary' | translate }}</span>
+      <h2>{{ 'reports.copy.executiveSummary' | translate }}</h2>
+    </div>
+
+    <article class="mi-panel mi-panel--feature">
+      <p class="mi-lead">
+        {{ p.source(m.executiveSummary) }}
+      </p>
+    </article>
+  </section>
+
+  <section class="mi-section mi-explainability" *ngIf="explainability as x">
+    <div class="mi-section__header mi-explainability__header">
+      <div>
+        <span class="mi-section__eyebrow">{{ 'reports.copy.modelExplainability' | translate }}</span>
+        <h2>{{ p.source(x.title) }}</h2>
+        <p class="mi-explainability__subtitle">{{ p.source(x.subtitle) }}</p>
+      </div>
+
+      <div class="mi-model-switcher" role="group" [attr.aria-label]="'reports.copy.selectModel' | translate">
+        <button
+          type="button"
+          *ngFor="let model of x.models"
+          [class.is-active]="model.id === selectedExplainabilityModelId"
+          [attr.aria-pressed]="model.id === selectedExplainabilityModelId"
+          (click)="selectExplainabilityModel(model.id)">
+          {{ model.tour }}
+        </button>
+      </div>
+    </div>
+
+    <ng-container *ngIf="selectedExplainabilityModel as model">
+      <div class="mi-explainability__meta">
+        <div>
+          <span>{{ 'reports.copy.model' | translate }}</span>
+          <strong>{{ model.label }}</strong>
+        </div>
+        <div>
+          <span>{{ 'reports.copy.explanationSample' | translate }}</span>
+          <strong>{{ p.text('matchCount', { count: (model.sampleRows | number:'1.0-3':p.regional.locale()) }) }}</strong>
+        </div>
+        <div>
+          <span>{{ 'reports.copy.features' | translate }}</span>
+          <strong>{{ model.featureCount | number:'1.0-0':p.regional.locale() }}</strong>
+        </div>
+        <div>
+          <span>{{ 'reports.copy.accuracy' | translate }}</span>
+          <strong>{{ model.metrics.accuracy | percent:'1.1-1':p.regional.locale() }}</strong>
+        </div>
+        <div>
+          <span>AUC</span>
+          <strong>{{ model.metrics.auc | number:'1.3-3':p.regional.locale() }}</strong>
+        </div>
+      </div>
+
+      <div class="mi-explainability__charts">
+        <article class="mi-panel mi-explainability__chart-card">
+          <div class="mi-explainability__chart-heading">
+            <h3>{{ 'reports.copy.mostInfluentialFeatures' | translate }}</h3>
+            <p>{{ 'reports.copy.shareOfTotalMeanAbsoluteShapInfluence' | translate }}</p>
+          </div>
+          <div class="mi-explainability__chart mi-explainability__chart--features">
+            <canvas
+              baseChart
+              type="bar"
+              [data]="featureChartData"
+              [options]="p.chartOptions(featureChartOptions)">
+            </canvas>
+          </div>
+        </article>
+
+        <article class="mi-panel mi-explainability__chart-card">
+          <div class="mi-explainability__chart-heading">
+            <h3>{{ 'reports.copy.featureFamilies' | translate }}</h3>
+            <p>{{ 'reports.copy.howModelInfluenceIsDistributedAcrossSignalGroups' | translate }}</p>
+          </div>
+          <div class="mi-explainability__chart mi-explainability__chart--families">
+            <canvas
+              baseChart
+              type="doughnut"
+              [data]="familyChartData"
+              [options]="p.chartOptions(familyChartOptions)">
+            </canvas>
+          </div>
+        </article>
+      </div>
+
+      <div class="mi-explainability__window">
+        {{ p.text('explanationWindow') }}
+        {{ p.regional.date(model.window.from) }}–{{ p.regional.date(model.window.to) }}
+      </div>
+    </ng-container>
+
+    <article class="mi-panel mi-panel--subtle mi-explainability__notes">
+      <strong>{{ 'reports.copy.howToReadTheseCharts' | translate }}</strong>
+      <ul class="mi-bullet-list mi-bullet-list--notes">
+        <li *ngFor="let note of x.methodology">{{ p.source(note) }}</li>
+      </ul>
+    </article>
+  </section>
+
+  <section class="mi-section" *ngIf="m.keyFindings.length">
+    <div class="mi-section__header">
+      <span class="mi-section__eyebrow">{{ 'reports.copy.coreTakeaways' | translate }}</span>
+      <h2>{{ 'reports.copy.keyFindings' | translate }}</h2>
+    </div>
+
+    <div class="mi-findings-grid">
+      <article class="mi-finding-card" *ngFor="let card of m.keyFindings; let i = index">
+        <div class="mi-finding-card__eyebrow">
+          {{ p.text('finding', { number: (i + 1).toString().padStart(2, '0') }) }}
+        </div>
+        <h3>{{ p.source(card.label) }}</h3>
+        <p>{{ p.source(card.value) }}</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="mi-section" *ngIf="m.recommendedPolicies.length">
+    <div class="mi-section__header">
+      <span class="mi-section__eyebrow">{{ 'reports.copy.productionGuidance' | translate }}</span>
+      <h2>{{ 'reports.copy.recommendedBlendPolicy' | translate }}</h2>
+    </div>
+
+    <div class="mi-policy-grid">
+      <article class="mi-policy-card" *ngFor="let policy of m.recommendedPolicies">
+        <div class="mi-policy-card__top">
+          <div>
+            <div class="mi-policy-card__scope">{{ p.source(policy.scope) }}</div>
+            <h3>{{ p.source(policy.label) }}</h3>
+          </div>
+
+          <div class="mi-policy-badge">
+            {{ policy.nnWeight * 100 | number:'1.0-0':p.regional.locale() }}/{{ policy.marketWeight * 100 | number:'1.0-0':p.regional.locale() }}
+          </div>
+        </div>
+
+        <div class="mi-policy-bar">
+          <div class="mi-policy-bar__nn" [style.width.%]="policy.nnWeight * 100">
+          </div>
+          <div class="mi-policy-bar__market" [style.width.%]="policy.marketWeight * 100">
+          </div>
+        </div>
+
+        <div class="mi-policy-ratio">
+          <span><strong>{{ policy.nnWeight * 100 | number:'1.0-0':p.regional.locale() }}%</strong> NN</span>
+          <span><strong>{{ policy.marketWeight * 100 | number:'1.0-0':p.regional.locale() }}%</strong> {{ 'reports.copy.market' | translate }}</span>
+        </div>
+
+        <p class="mi-policy-summary">{{ p.source(policy.summary) }}</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="mi-section" *ngIf="m.segmentHighlights.length">
+    <div class="mi-section__header">
+      <span class="mi-section__eyebrow">{{ 'reports.copy.segmentAnalysis' | translate }}</span>
+      <h2>{{ 'reports.copy.segmentHighlights' | translate }}</h2>
+    </div>
+
+    <div class="mi-segment-grid">
+      <article class="mi-segment-card" *ngFor="let section of m.segmentHighlights">
+        <div class="mi-segment-card__header">
+          <h3>{{ p.source(section.title) }}</h3>
+        </div>
+
+        <p class="mi-segment-card__summary">{{ p.source(section.summary) }}</p>
+
+        <ul class="mi-bullet-list" *ngIf="section.bullets.length">
+          <li *ngFor="let bullet of section.bullets">{{ p.source(bullet) }}</li>
+        </ul>
+      </article>
+    </div>
+  </section>
+
+  <section class="mi-section" *ngIf="m.researchNotes.length">
+    <div class="mi-section__header">
+      <span class="mi-section__eyebrow">{{ 'reports.copy.methodology' | translate }}</span>
+      <h2>{{ 'reports.copy.researchNotes' | translate }}</h2>
+    </div>
+
+    <article class="mi-panel mi-panel--subtle">
+      <ul class="mi-bullet-list mi-bullet-list--notes">
+        <li *ngFor="let note of m.researchNotes">{{ p.source(note) }}</li>
+      </ul>
+    </article>
+  </section>
+</div>
+
+<div class="bb-loading-overlay" [class.is-active]="isLoading" aria-live="polite">
+  <div class="bb-loading-card" role="status" [attr.aria-label]="'common.loading' | translate">
+    <div class="bb-spinner"></div>
+    <div class="bb-loading-text">{{ 'common.loading' | translate }}</div>
+  </div>
+</div>
+
+<div class="bb-page-error bb-page-error--standalone" role="alert" *ngIf="!isLoading && error">
+  {{ error | translate }}
+</div>

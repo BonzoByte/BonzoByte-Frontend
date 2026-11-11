@@ -1,0 +1,65 @@
+// Small raster tiles only: no vector rasterisation, filters or decorative DOM.
+// SVGs remain editable sources only; all court geometry is rasterised offline.
+:root:not([data-bb-theme]),
+:root[data-bb-theme='dark'] {
+    --bb-court-pattern: url('../assets/backgrounds/tennis-court-dark.png');
+}
+
+:root[data-bb-theme='light'] {
+    --bb-court-pattern: url('../assets/backgrounds/tennis-court-light.png');
+}
+
+:root[data-bb-theme='wimbledon'] {
+    --bb-court-pattern: url('../assets/backgrounds/surface-wimbledon-v1.png');
+    --bb-court-shade: rgba(1, 5, 3, 0.86);
+    --bb-court-tile-size: 512px 512px;
+}
+
+:root[data-bb-theme='roland-garros'] {
+    --bb-court-pattern: url('../assets/backgrounds/surface-roland-garros-v1.png');
+    --bb-court-shade: rgba(2, 1, 0, 0.74);
+    --bb-court-tile-size: 640px 640px;
+}
+
+:root[data-bb-theme='us-open'] {
+    --bb-court-pattern: url('../assets/backgrounds/surface-us-open-v2.png');
+    --bb-court-shade: rgba(0, 3, 8, 0.15);
+    --bb-court-tile-size: 640px 480px;
+}
+
+:root:is(:not([data-bb-theme]), [data-bb-theme='dark'], [data-bb-theme='light']) {
+    body {
+        background-image: var(--bb-court-pattern);
+        background-size: 720px 570px;
+        background-position: center top;
+        background-repeat: repeat;
+    }
+}
+
+:root:is([data-bb-theme='wimbledon'], [data-bb-theme='roland-garros'], [data-bb-theme='us-open']) body {
+    // A constant-colour wash subdues the artwork without a filter, blend mode,
+    // fixed attachment or input-intercepting overlay. Both layers are static.
+    background-image: linear-gradient(var(--bb-court-shade), var(--bb-court-shade)), var(--bb-court-pattern);
+    background-size: auto, var(--bb-court-tile-size, 256px 256px);
+    background-position: center top;
+    background-repeat: repeat;
+}
+
+:root:is(:not([data-bb-theme]), [data-bb-theme='dark'], [data-bb-theme='light'],
+    [data-bb-theme='wimbledon'], [data-bb-theme='roland-garros'], [data-bb-theme='us-open']) {
+    // Only outer page skins become clear. Cards, table rows and dialogs stay opaque.
+    main.main-content,
+    app-competition-page,
+    app-public-predictions,
+    app-popular,
+    :where(.matches-page, .players-page, .analytics-page, .mi-page, .sim-page, .home-page) {
+        background: transparent !important;
+    }
+}
+
+@media (forced-colors: active), (prefers-contrast: more), print {
+    :root:is(:not([data-bb-theme]), [data-bb-theme='dark'], [data-bb-theme='light'],
+        [data-bb-theme='wimbledon'], [data-bb-theme='roland-garros'], [data-bb-theme='us-open']) body {
+        background-image: none !important;
+    }
+}

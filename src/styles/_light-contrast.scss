@@ -1,0 +1,59 @@
+// These controls previously kept fixed white copy from the original dark skin.
+// Limit the correction to Light; do not recolour semantic results or dark cards.
+:root[data-bb-theme='light'] {
+    .custom-header .user-meta .user-name {
+        color: var(--bb-header-text);
+    }
+
+    .date-nav-sticky .topbar-search {
+        color: var(--bb-control-text);
+        background: var(--bb-control-bg);
+        border-color: var(--bb-control-border);
+
+        &::placeholder { color: var(--bb-text-muted); opacity: 1; }
+    }
+
+    .date-nav-sticky .link-button.topbar-clear {
+        color: var(--bb-control-text);
+        background: var(--bb-control-bg);
+        border-color: var(--bb-control-border);
+
+        &:disabled {
+            color: var(--bb-text-muted);
+            background: var(--bb-surface-3);
+            opacity: 1;
+            cursor: not-allowed;
+        }
+
+        &:not(:disabled):hover { background: var(--bb-surface-3); }
+        &:focus-visible { outline: 2px solid var(--bb-theme-accent); outline-offset: 2px; }
+    }
+
+    .matches-page .prediction-view-notice,
+    .matches-page .time-zone-notice {
+        color: #29453a;
+        background: #edf5f1;
+        border-color: rgba(18, 84, 63, 0.28);
+    }
+
+    .matches-page .prediction-view-notice__label { color: #12543f; }
+    .matches-page .prediction-view-notice__count { color: var(--bb-text-strong); }
+    .matches-page .prediction-view-notice__text { color: #344c43; }
+
+    .matches-page .prediction-view-notice__actions button {
+        color: #12543f;
+        background: #fff;
+        border-color: #5b8875;
+
+        &:hover { background: #dcefe5; border-color: #286c51; }
+        &:focus-visible { outline: 2px solid var(--bb-theme-accent); outline-offset: 2px; }
+    }
+
+    .matches-page .prediction-view-notice__dismiss,
+    .matches-page .time-zone-notice__dismiss {
+        color: #295a46;
+
+        &:hover { background: #dcefe5; }
+        &:focus-visible { background: #dcefe5; outline: 2px solid var(--bb-theme-accent); outline-offset: 2px; }
+    }
+}

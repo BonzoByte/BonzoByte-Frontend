@@ -1,0 +1,87 @@
+<app-bb-modal-shell [title]="'login' | translate" [closeLabel]="'common.close' | translate" (closed)="close()">
+    <form [formGroup]="loginForm" (ngSubmit)="onLogin()">
+        <!-- ERROR banner (kao u Register modalu) -->
+        <div class="bb-alert bb-alert--error" *ngIf="serverErrorMessage">
+            {{ serverErrorMessage | translate }}
+        </div>
+
+        <!-- IDENTIFIER -->
+        <div class="form-row">
+            <label for="identifier">{{ 'auth.identifier' | translate }}</label>
+            <input id="identifier" formControlName="identifier" [placeholder]="'auth.identifierPlaceholder' | translate"
+                [class.invalid]="identifier?.invalid && (identifier?.touched || submitted)" autocomplete="username" />
+            <p class="error" *ngIf="identifier?.hasError('required') && (identifier?.touched || submitted)">
+                {{ 'auth.required' | translate }}
+            </p>
+        </div>
+
+        <!-- PASSWORD -->
+        <div class="form-row">
+            <label for="password">{{ 'auth.password' | translate }}</label>
+            <div class="password-wrapper">
+                <input [type]="showPassword ? 'text' : 'password'" id="password" formControlName="password"
+                    [placeholder]="'auth.password' | translate" class="password-input"
+                    [class.invalid]="password?.invalid && (password?.touched || submitted)"
+                    autocomplete="current-password" appCapsLock #passwordCaps="capsLock" />
+                <button type="button" class="toggle-password" appAccessibleClick (accessibleClick)="togglePassword()"
+                    [attr.aria-label]="'auth.togglePassword' | translate">
+                    <i class="bi" [ngClass]="showPassword ? 'bi-eye-slash' : 'bi-eye'"></i>
+                </button>
+            </div>
+            <app-caps-lock-hint [field]="passwordCaps" />
+            <p class="error" *ngIf="password?.hasError('required') && (password?.touched || submitted)">
+                {{ 'auth.required' | translate }}
+            </p>
+        </div>
+
+        <!-- SUBMIT -->
+        <div bbActions class="bb-actions">
+            <button type="submit" [disabled]="loginForm.invalid || submitting" class="oauth-btn">
+                {{ (submitting ? 'auth.signingIn' : 'login') | translate }}
+            </button>
+        </div>
+
+        <!-- OAUTH -->
+        <div class="oauth-block" *ngIf="!billingLab && !closedBeta">
+            <div class="muted text-center">{{ 'auth.continueWith' | translate }}</div>
+
+            <div class="oauth-buttons">
+                <button type="button" class="oauth-btn" (click)="loginWithGoogle()" [disabled]="submitting">
+                    <span class="oauth-ico">G</span>
+                    <span>Google</span>
+                </button>
+
+                <button type="button" class="oauth-btn" (click)="loginWithFacebook()" [disabled]="submitting">
+                    <span class="oauth-ico">f</span>
+                    <span>Facebook</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Recovery must be available without a failed login attempt. -->
+        <div class="text-center bb-actions" *ngIf="!billingLab">
+            <button type="button" class="oauth-btn" appAccessibleClick (accessibleClick)="openForgotPasswordModal()"
+                [disabled]="isSendingReset">
+                {{ (isSendingReset ? 'auth.sendingReset' : 'auth.forgotPassword') | translate }}
+            </button>
+        </div>
+
+        <!-- Resend verification -->
+        <div class="text-center bb-actions" *ngIf="showResend">
+            <button type="button" class="oauth-btn" appAccessibleClick (accessibleClick)="resendVerification()">
+                {{ 'auth.resendVerification' | translate }}
+            </button>
+        </div>
+
+        <!-- Register suggestion -->
+        <div class="text-center bb-actions" *ngIf="showRegisterSuggestion">
+            <span class="muted">{{ 'auth.noAccount' | translate }}</span>
+            <button type="button" class="oauth-btn" appAccessibleClick (accessibleClick)="switchToRegister()">
+                {{ 'register' | translate }}
+            </button>
+        </div>
+
+<!-- Inline reset-password modal. -->
+        <app-reset-password *ngIf="showResetPasswordModal" (close)="onCloseResetModal()"></app-reset-password>
+    </form>
+</app-bb-modal-shell>

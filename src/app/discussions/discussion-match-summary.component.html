@@ -1,0 +1,37 @@
+<div *ngIf="match as m; else fallback" class="discussion-match-scroll" role="region" tabindex="0" [attr.aria-label]="'discussions.matchSummary' | translate">
+  <table class="match-table discussion-match-grid">
+    <colgroup><col class="c-date"><col class="c-tournament"><col class="c-matchup"><col *ngIf="finalResult(m)" class="c-result"></colgroup>
+    <thead><tr><th scope="col">{{ 'common.date' | translate }}</th><th scope="col">{{ 'common.tournament' | translate }}</th><th scope="col">{{ 'common.matchup' | translate }}</th><th scope="col" *ngIf="finalResult(m)">{{ 'common.result' | translate }}</th></tr></thead>
+    <tbody><tr>
+      <td class="date-cell">{{ dateLabel(m) }}</td>
+      <td class="tournament-cell"><span *ngIf="tournamentFlag(m) as flag" class="fi tournament-flag" [ngClass]="'fi-' + flag"
+        role="img" [attr.aria-label]="m.tournamentEventCountryFull || m.tournamentEventCountryISO2" [title]="m.tournamentEventCountryFull || m.tournamentEventCountryISO2"></span>
+        <button *ngIf="validId(m.tournamentEventTPId) && m.tournamentEventName; else tournamentText"
+        type="button" class="clickable-text inline-link-button tournament-link" [title]="m.tournamentEventName" (click)="openTournament()">{{ m.tournamentEventName }}</button>
+        <ng-template #tournamentText>{{ m.tournamentEventName || '—' }}</ng-template></td>
+      <td class="matchup-cell"><div class="matchup-players">
+        <span class="matchup-player">
+          <span *ngIf="m.player1CountryISO2" class="fi" [ngClass]="'fi-' + flagCode(m.player1CountryISO2).toLowerCase()" [title]="m.player1CountryFull || m.player1CountryISO3" aria-hidden="true"></span>
+          <button *ngIf="validId(m.player1TPId); else player1Text" type="button" class="player-name clickable-text inline-link-button player1-link"
+            [title]="playerLabel(m.player1Name || '', m.player1CountryISO3, m.player1Seed, m.player1Rank)" (click)="openPlayer(1)">{{ playerLabel(m.player1Name || '', m.player1CountryISO3, m.player1Seed, m.player1Rank) }}</button>
+          <ng-template #player1Text><span class="player-name" [title]="playerLabel(m.player1Name || '', m.player1CountryISO3, m.player1Seed, m.player1Rank)">{{ playerLabel(m.player1Name || '', m.player1CountryISO3, m.player1Seed, m.player1Rank) }}</span></ng-template>
+        </span>
+        <span class="matchup-player">
+          <span *ngIf="m.player2CountryISO2" class="fi" [ngClass]="'fi-' + flagCode(m.player2CountryISO2).toLowerCase()" [title]="m.player2CountryFull || m.player2CountryISO3" aria-hidden="true"></span>
+          <button *ngIf="validId(m.player2TPId); else player2Text" type="button" class="player-name clickable-text inline-link-button player2-link"
+            [title]="playerLabel(m.player2Name || '', m.player2CountryISO3, m.player2Seed, m.player2Rank)" (click)="openPlayer(2)">{{ playerLabel(m.player2Name || '', m.player2CountryISO3, m.player2Seed, m.player2Rank) }}</button>
+          <ng-template #player2Text><span class="player-name" [title]="playerLabel(m.player2Name || '', m.player2CountryISO3, m.player2Seed, m.player2Rank)">{{ playerLabel(m.player2Name || '', m.player2CountryISO3, m.player2Seed, m.player2Rank) }}</span></ng-template>
+        </span>
+      </div></td>
+      <td class="result-cell" *ngIf="finalResult(m) as result"><span class="result-main">{{ result }}</span>
+        <span class="result-sets" *ngIf="finalSets(m).length"><span *ngFor="let set of finalSets(m)">{{ set }}</span></span></td>
+    </tr></tbody>
+  </table>
+</div>
+<ng-template #fallback>
+  <div class="discussion-match-fallback">
+    <span>{{ target.title || ('discussions.match' | translate:{id: target.matchTPId}) }}</span>
+    <span *ngIf="loading" role="status">{{ 'common.loading' | translate }}</span>
+    <button *ngIf="!loading" type="button" (click)="load()">{{ 'discussions.retrySummary' | translate }}</button>
+  </div>
+</ng-template>

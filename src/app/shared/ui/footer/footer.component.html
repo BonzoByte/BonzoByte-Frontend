@@ -1,0 +1,64 @@
+<footer class="custom-footer" #footerBar>
+    <div class="footer-links">
+        <button type="button" class="footer-link" aria-haspopup="dialog" (click)="openAbout()">{{ 'footer.about' | translate }}</button>
+        <button type="button" class="footer-link" aria-haspopup="dialog" (click)="openContact()">{{ 'footer.contact' | translate }}</button>
+        <button type="button" class="footer-link" aria-haspopup="dialog" (click)="openPrivacy()">{{ 'privacy.settings' | translate }}</button>
+        <button type="button" class="footer-link responsible-trigger" aria-haspopup="dialog"
+            [attr.aria-expanded]="showResponsible" (click)="openResponsible()">
+            {{ 'footer.responsible.link' | translate }}
+        </button>
+        <a class="footer-link tennis-break-link" href="/tennis-break" (click)="openTennisBreak($event)">{{ 'tennisBreak.title' | translate }} <span aria-hidden="true">↗</span></a>
+    </div>
+
+    <div class="footer-right">
+        <span>&copy; 2026 BonzoByte</span>
+    </div>
+</footer>
+
+<!-- ABOUT MODAL -->
+<app-bb-modal-shell
+  *ngIf="showAbout"
+  [title]="'footer.aboutTitle' | translate"
+  [closeLabel]="'common.close' | translate"
+  (closed)="closeAbout()"
+>
+  <div class="bb-about">
+    <p class="bb-about-lead">
+      {{ 'footer.aboutText' | translate }}
+    </p>
+    <p class="bb-hint bb-about-contact">
+      <span class="bb-about-contact-label">{{ 'footer.business' | translate }}</span>
+      <span class="bb-public-email"><a [href]="'mailto:' + contactEmail">{{ contactEmail }}</a><app-copy-contact-email [email]="contactEmail" /></span>
+    </p>
+  </div>
+</app-bb-modal-shell>
+
+<!-- CONTACT MODAL -->
+<app-contact-modal *ngIf="showContact" (closed)="closeContact()"></app-contact-modal>
+
+<app-bb-modal-shell *ngIf="showResponsible" cdkTrapFocus [cdkTrapFocusAutoCapture]="true"
+    [title]="'footer.responsible.title' | translate" [closeLabel]="'common.close' | translate"
+    modalClass="bb-modal--responsible" (closed)="closeResponsible()">
+    <div class="responsible-details">
+        <p>{{ 'footer.responsible.platform' | translate }}</p>
+        <p>{{ 'footer.responsible.predictions' | translate }}</p>
+        <p class="historical-pl-explanation"><span aria-hidden="true">† </span>{{ 'matchGrid.plHistoricalNote' | translate }}</p>
+        <p>{{ 'footer.responsible.decisions' | translate }}</p>
+        <h5>{{ 'footer.responsible.supportTitle' | translate }}</h5>
+        <p>{{ 'footer.responsible.supportText' | translate }}</p>
+        <ul>
+            <li><a href="https://ovisnosti.hzjz.hr/kockanje/" target="_blank" rel="noopener noreferrer">
+                {{ 'footer.responsible.croatia' | translate }} <span aria-hidden="true">↗</span>
+                <span class="visually-hidden"> ({{ 'footer.responsible.newTab' | translate }})</span>
+            </a></li>
+            <li><a href="https://www.gambleaware.org/tools-and-support/" target="_blank" rel="noopener noreferrer">
+                {{ 'footer.responsible.greatBritain' | translate }} <span aria-hidden="true">↗</span>
+                <span class="visually-hidden"> ({{ 'footer.responsible.newTab' | translate }})</span>
+            </a></li>
+        </ul>
+        <p class="bb-hint">{{ 'footer.responsible.external' | translate }}</p>
+    </div>
+    <div bbActions class="bb-actions">
+        <button type="button" class="oauth-btn" (click)="closeResponsible()">{{ 'common.close' | translate }}</button>
+    </div>
+</app-bb-modal-shell>

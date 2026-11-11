@@ -1,0 +1,129 @@
+<app-bb-modal-shell [title]="'catalog.tournamentFilter' | translate" [closeLabel]="'common.close' | translate" modalClass="bb-filter-modal bb-catalog-filter-modal" (closed)="close()">
+  <div class="bb-section">
+    <div class="bb-section-head"><span class="bb-section-title">{{ 'details.surface' | translate }}</span></div>
+    <div class="bb-chip-row">
+      <label class="bb-chip">
+        <input type="checkbox" [checked]="areAllSurfacesSelected" [indeterminate]="areSomeSurfacesSelected"
+          (change)="toggleAllSurfaces()" />
+        <span>{{ 'common.all' | translate }}</span>
+      </label>
+      <label class="bb-chip" *ngFor="let surface of surfaces">
+        <input type="checkbox" [checked]="draft.surfaces.includes(surface.value)"
+          (change)="toggleSurface(surface.value)" [disabled]="isLastSurfaceSelected(surface.value)" />
+        <span class="bb-surface-swatch"
+          [ngClass]="'bb-surface-swatch--' + surface.indicator" aria-hidden="true"></span>
+        <span>{{ ('surfaces.' + surface.value) | translate | uppercase }}</span>
+      </label>
+    </div>
+  </div>
+
+  <div class="bb-hr"></div>
+
+  <div class="bb-section">
+    <div class="bb-section-head"><span class="bb-section-title">{{ 'matchDetails.tournamentStrength' | translate }}</span></div>
+    <div class="bb-strength-filter-grid">
+      <div class="bb-strength-filter-row">
+        <span class="bb-strength-filter-label">{{ 'details.tsMean' | translate }}</span>
+        <div class="bb-chip-row">
+          <label class="bb-chip" *ngFor="let star of strengthOptions">
+            <input type="checkbox" [checked]="draft.strengthMeanStars.includes(star)"
+              (change)="toggleStrength('strengthMeanStars', star)"
+              [disabled]="isLastStrengthSelected('strengthMeanStars', star)" />
+            <span>{{ star }}★</span>
+          </label>
+        </div>
+      </div>
+      <div class="bb-strength-filter-row">
+        <span class="bb-strength-filter-label">{{ 'details.avgStrength' | translate }}</span>
+        <div class="bb-chip-row">
+          <label class="bb-chip" *ngFor="let star of strengthOptions">
+            <input type="checkbox" [checked]="draft.averageMatchStrengthStars.includes(star)"
+              (change)="toggleStrength('averageMatchStrengthStars', star)"
+              [disabled]="isLastStrengthSelected('averageMatchStrengthStars', star)" />
+            <span>{{ star }}★</span>
+          </label>
+        </div>
+      </div>
+      <div class="bb-strength-filter-row">
+        <span class="bb-strength-filter-label">{{ 'details.peakStrength' | translate }}</span>
+        <div class="bb-chip-row">
+          <label class="bb-chip" *ngFor="let star of strengthOptions">
+            <input type="checkbox" [checked]="draft.peakMatchStrengthStars.includes(star)"
+              (change)="toggleStrength('peakMatchStrengthStars', star)"
+              [disabled]="isLastStrengthSelected('peakMatchStrengthStars', star)" />
+            <span>{{ star }}★</span>
+          </label>
+        </div>
+      </div>
+    </div>
+    <div class="bb-hint">{{ 'catalog.strengthHint' | translate }}</div>
+  </div>
+
+  <div class="bb-hr"></div>
+
+  <div class="bb-section">
+    <div class="bb-section-head"><span class="bb-section-title">{{ 'catalog.draw' | translate }}</span></div>
+    <div class="bb-chip-row">
+      <label class="bb-chip">
+        <input type="radio" name="qualification" value="all" [(ngModel)]="draft.qualification" />
+        <span>{{ 'common.all' | translate }}</span>
+      </label>
+      <label class="bb-chip">
+        <input type="radio" name="qualification" value="main" [(ngModel)]="draft.qualification" />
+        <span>{{ 'catalog.mainDraw' | translate }}</span>
+      </label>
+      <label class="bb-chip">
+        <input type="radio" name="qualification" value="qualification" [(ngModel)]="draft.qualification" />
+        <span>{{ 'catalog.qualifications' | translate }}</span>
+      </label>
+    </div>
+  </div>
+
+  <div class="bb-hr"></div>
+
+  <div class="bb-section">
+    <div class="bb-section-head"><span class="bb-section-title">{{ 'catalog.startDate' | translate }}</span></div>
+    <div class="bb-grid-2">
+      <div class="bb-field">
+        <label for="tournamentFromDate">{{ 'catalog.from' | translate }}</label>
+        <div class="bb-local-date-input">
+          <input #fromDateInput id="tournamentFromDate" class="bb-filter-input" type="text" inputmode="numeric"
+            maxlength="10" autocomplete="off" [placeholder]="regional.datePlaceholder()" [ngModel]="fromDateText"
+            [class.invalid]="fromDateInvalid" [attr.aria-invalid]="fromDateInvalid"
+            (ngModelChange)="onDateTextChange('from', $event)" (keydown)="onDateTextKeydown($event)"
+            (blur)="normalizeDateText('from')" />
+          <button type="button" class="bb-date-picker-button" [attr.title]="'catalog.chooseFrom' | translate"
+            [attr.aria-label]="'catalog.chooseFrom' | translate" (click)="openDatePicker(fromNativeDate)">
+            <span class="bb-local-date-icon" aria-hidden="true"></span>
+          </button>
+          <input #fromNativeDate class="bb-native-date-picker" type="date" tabindex="-1" aria-hidden="true"
+            [ngModel]="draft.fromDate" (ngModelChange)="selectNativeDate('from', $event)" />
+        </div>
+      </div>
+      <div class="bb-field">
+        <label for="tournamentToDate">{{ 'catalog.to' | translate }}</label>
+        <div class="bb-local-date-input">
+          <input #toDateInput id="tournamentToDate" class="bb-filter-input" type="text" inputmode="numeric"
+            maxlength="10" autocomplete="off" [placeholder]="regional.datePlaceholder()" [ngModel]="toDateText"
+            [class.invalid]="toDateInvalid" [attr.aria-invalid]="toDateInvalid"
+            (ngModelChange)="onDateTextChange('to', $event)" (keydown)="onDateTextKeydown($event)"
+            (blur)="normalizeDateText('to')" />
+          <button type="button" class="bb-date-picker-button" [attr.title]="'catalog.chooseTo' | translate"
+            [attr.aria-label]="'catalog.chooseTo' | translate" (click)="openDatePicker(toNativeDate)">
+            <span class="bb-local-date-icon" aria-hidden="true"></span>
+          </button>
+          <input #toNativeDate class="bb-native-date-picker" type="date" tabindex="-1" aria-hidden="true"
+            [ngModel]="draft.toDate" (ngModelChange)="selectNativeDate('to', $event)" />
+        </div>
+      </div>
+    </div>
+    <div class="bb-hint">{{ 'catalog.openRange' | translate }}</div>
+    <div *ngIf="errorMessage" class="bb-error" role="alert">{{ errorMessage | translate:{ format: regional.datePlaceholder() } }}</div>
+  </div>
+
+  <div bbActions class="bb-actions">
+    <button type="button" class="oauth-btn" (click)="reset()">{{ 'common.reset' | translate }}</button>
+    <button type="button" class="oauth-btn oauth-btn-primary"
+      (click)="apply(fromDateInput.value, toDateInput.value)">{{ 'common.apply' | translate }}</button>
+  </div>
+</app-bb-modal-shell>

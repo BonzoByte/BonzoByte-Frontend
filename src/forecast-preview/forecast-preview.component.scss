@@ -1,0 +1,22 @@
+@use '../styles/prediction-market-cell' as prediction;
+:host { display: block; --preview-width: 1000px; }
+.preview-header { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 16px max(16px, calc((100% - var(--preview-width)) / 2)); border-bottom: 1px solid var(--bb-border); background: var(--bb-surface-2); }
+.brand { font-size: 24px; font-weight: 800; letter-spacing: 3px; }.local-badge { color: #e4bf67; font-size: 10px; letter-spacing: .1em; }
+main { width: min(var(--preview-width), calc(100% - 32px)); margin: 32px auto; }
+.eyebrow { font-size: 10px; letter-spacing: .14em; color: var(--bb-text-muted); }h1 { font-size: 32px; margin: 8px 0; }
+.intro, .held-note, .details, footer { color: var(--bb-text-muted); font-size: 12px; line-height: 1.5; }
+.notice { padding: 14px 16px; border: 1px solid #ac8535; border-radius: 9px; background: rgba(172, 133, 53, .07); font-size: 12px; line-height: 1.6; }.notice strong { display: block; color: #edce87; }
+.provenance { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin: 16px 0; }.provenance div { min-width: 0; padding: 12px; border: 1px solid var(--bb-border); border-radius: 8px; background: var(--bb-surface-2); }.provenance span { display: block; color: var(--bb-text-muted); font-size: 11px; margin-bottom: 5px; }.provenance strong { font-size: 12px; }
+.toolbar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }nav { display: flex; gap: 6px; }
+button { color: var(--bb-text); border: 1px solid var(--bb-border); background: var(--bb-control-bg); padding: 8px 14px; border-radius: 6px; cursor: pointer; font-size: 12px; }button[aria-pressed=true] { border-color: var(--bb-theme-accent); background: color-mix(in srgb, var(--bb-theme-accent) 17%, var(--bb-surface-2)); }button span { margin-left: 6px; color: var(--bb-text-muted); }button:focus-visible, summary:focus-visible, .grid-scroll:focus-visible { outline: 2px solid var(--bb-theme-accent); outline-offset: 2px; }.count { font-size: 11px; color: var(--bb-text-muted); }
+.held-note { margin: 12px 0; }.grid-scroll { max-width: 100%; overflow-x: auto; }
+.preview-grid { width: var(--preview-width); min-width: var(--preview-width); max-width: none; table-layout: fixed; font-size: 12px; }
+.preview-grid th { position: static; text-align: center; padding: 6px 4px; }.preview-grid td { vertical-align: middle; }
+caption { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+.c-number { width: 36px; }.c-date { width: 94px; }.c-tour { width: 50px; }.c-tournament { width: 150px; }.c-matchup { width: 340px; }.c-probabilities { width: 80px; }.c-prediction { width: 250px; }
+.number { text-align: right; color: var(--bb-text-muted); }.date, .tour, .tournament { text-align: center; }.preview-grid .tournament { white-space: normal; overflow-wrap: anywhere; }.preview-grid small { display: block; font-size: 9px; color: var(--bb-text-muted); margin-top: 4px; white-space: normal; }
+.players { display: flex; flex-direction: column; gap: 2px; }.player { display: flex; align-items: center; gap: 5px; min-width: 0; padding: 4px; border-radius: 3px; }.player .fi { flex: 0 0 auto; }.player-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }.preferred { background: color-mix(in srgb, var(--bb-theme-accent) 10%, transparent); }
+.probabilities span { display: block; text-align: right; padding: 4px; font-variant-numeric: tabular-nums; }.preferred-value { font-weight: 700; color: var(--bb-theme-accent); }
+@include prediction.cells('.preview-grid');
+.details { margin-top: 16px; padding: 12px; border: 1px solid var(--bb-border); border-radius: 8px; }summary { cursor: pointer; color: var(--bb-text); }code { display: block; overflow-wrap: anywhere; color: var(--bb-text-muted); }.state { margin: 24px 0; padding: 20px; border: 1px solid var(--bb-border); border-radius: 8px; }.error { color: #f08b96; }.state button { display: block; margin-top: 12px; }footer { margin: 24px 0; text-align: center; }
+@media(max-width: 700px) { .provenance { grid-template-columns: 1fr; gap: 6px; }.preview-header { flex-wrap: wrap; }.local-badge { font-size: 9px; } main { margin-top: 22px; } }

@@ -1,0 +1,42 @@
+<article class="match-overview" *ngIf="view as v">
+  <header class="match-overview-header">
+    <p class="match-overview-kicker">{{ 'matchLink.overview' | translate }}</p>
+    <h1>
+      <span class="match-overview-player"><span *ngIf="match.player1CountryISO2" class="fi" [ngClass]="'fi-' + flag(match.player1CountryISO2).toLowerCase()" role="img" [attr.aria-label]="match.player1CountryFull || match.player1CountryISO3 || match.player1CountryISO2" [title]="match.player1CountryFull || match.player1CountryISO3 || match.player1CountryISO2"></span><span class="match-overview-player-name">{{ match.player1Name }}</span></span>
+      <span class="match-overview-separator" aria-hidden="true">—</span>
+      <span class="match-overview-player"><span *ngIf="match.player2CountryISO2" class="fi" [ngClass]="'fi-' + flag(match.player2CountryISO2).toLowerCase()" role="img" [attr.aria-label]="match.player2CountryFull || match.player2CountryISO3 || match.player2CountryISO2" [title]="match.player2CountryFull || match.player2CountryISO3 || match.player2CountryISO2"></span><span class="match-overview-player-name">{{ match.player2Name }}</span></span>
+    </h1>
+    <div class="match-overview-meta">
+      <strong class="tournament-name"><span *ngIf="match.tournamentEventCountryISO2" class="fi" [ngClass]="'fi-' + flag(match.tournamentEventCountryISO2).toLowerCase()" [title]="match.tournamentEventCountryFull || match.tournamentEventCountryISO3" aria-hidden="true"></span> {{ match.tournamentEventName || '—' }}</strong>
+      <span *ngIf="match.tournamentTypeName">{{ match.tournamentTypeName }}</span>
+      <span *ngIf="surface() as label">{{ label }}</span>
+      <span *ngIf="match.tournamentLevelName">{{ match.tournamentLevelName }}</span>
+    </div>
+    <p *ngIf="match.tournamentStrengthMeanTS != null" class="match-strength">{{ 'matchGrid.strengthTs' | translate:{value: regional.number(match.tournamentStrengthMeanTS!, 2)} }}</p>
+  </header>
+
+  <div class="match-overview-scroll" tabindex="0" role="region" [attr.aria-label]="'matchLink.overview' | translate">
+    <table class="match-table match-link-grid">
+      <colgroup><col class="c-date"><col class="c-round"><col class="c-matchup"><col class="c-result"><col class="c-odds"><col class="c-market"></colgroup>
+      <thead><tr><th scope="col">{{ 'common.date' | translate }}</th><th scope="col">{{ 'common.round' | translate }}</th><th scope="col">{{ 'common.matchup' | translate }}</th><th scope="col">{{ 'common.result' | translate }}</th><th scope="col">{{ 'matches.oddsShort' | translate }}</th><th scope="col">{{ 'matches.predictionMarket' | translate }}</th></tr></thead>
+      <tbody><tr>
+        <td class="date-cell"><time [attr.datetime]="match.dateTime">{{ dateLabel() }}</time></td>
+        <td class="round-cell" [title]="match.roundName">{{ roundLabel() }}</td>
+        <td class="matchup-cell"><div class="matchup-players">
+          <span class="matchup-player" [class.is-predicted]="v.model?.side === 0"><span *ngIf="match.player1CountryISO2" class="fi" [ngClass]="'fi-' + flag(match.player1CountryISO2).toLowerCase()" [title]="match.player1CountryFull || match.player1CountryISO3" aria-hidden="true"></span><span class="player-name" [title]="playerLabel(match.player1Name || '', match.player1CountryISO3, match.player1Seed, match.player1Rank)">{{ playerLabel(match.player1Name || '', match.player1CountryISO3, match.player1Seed, match.player1Rank) }}</span></span>
+          <span class="matchup-player" [class.is-predicted]="v.model?.side === 1"><span *ngIf="match.player2CountryISO2" class="fi" [ngClass]="'fi-' + flag(match.player2CountryISO2).toLowerCase()" [title]="match.player2CountryFull || match.player2CountryISO3" aria-hidden="true"></span><span class="player-name" [title]="playerLabel(match.player2Name || '', match.player2CountryISO3, match.player2Seed, match.player2Rank)">{{ playerLabel(match.player2Name || '', match.player2CountryISO3, match.player2Seed, match.player2Rank) }}</span></span>
+        </div></td>
+        <td class="result-cell"><ng-container *ngIf="v.result as result; else pending"><strong>{{ result }}</strong><small *ngIf="v.sets">{{ v.sets }}</small></ng-container><ng-template #pending><span class="result-pending">{{ 'matchLink.resultPending' | translate }}</span></ng-template></td>
+        <td class="odds-cell" [class.is-historical]="!v.verified" [title]="(v.odds ? (v.verified ? 'matchGrid.oddsHeader' : 'matchGrid.recoveredHistoricalOdds') : 'matchGrid.oddsUnavailable') | translate"><ng-container *ngIf="v.odds as odds; else noOdds"><span>{{ regional.number(odds[0], 2) }}</span><span>{{ regional.number(odds[1], 2) }}</span></ng-container><ng-template #noOdds><span aria-hidden="true">—</span><span class="sr-only">{{ 'matchGrid.oddsUnavailable' | translate }}</span></ng-template></td>
+        <td class="prediction-cell" [ngClass]="v.model ? 'prediction-cell--' + v.model.tone : ''">
+          <ng-container *ngIf="v.model as model; else noModel"><div class="prediction-cell__topline"><span class="prediction-cell__player" [title]="model.name">{{ model.name }}</span><strong>{{ regional.number(model.confidence, 2) }}%</strong></div><div class="prediction-cell__bar" aria-hidden="true"><span [style.width.%]="model.confidence"></span></div><div class="prediction-cell__meta"><span>{{ 'matchGrid.' + model.label | translate }}</span><span>P{{ model.side + 1 }}</span></div></ng-container>
+          <ng-template #noModel><span class="prediction-cell__unavailable">{{ (v.held ? 'matchGrid.excluded' : 'matchGrid.noPrediction') | translate }}</span></ng-template>
+          <div class="prediction-cell__market" *ngIf="v.market as market; else noMarket"><span class="prediction-cell__market-copy">{{ 'matchGrid.marketShort' | translate }} P{{ market.side + 1 }} {{ regional.number(market.probability, 1) }}% <small>&#64;{{ regional.number(market.odds, 2) }}</small></span><strong class="prediction-cell__gap" [title]="'matchGrid.gapHint' | translate">{{ 'matchGrid.gap' | translate:{value: signed(market.gap)} }}</strong></div>
+          <ng-template #noMarket><div class="prediction-cell__market prediction-cell__market--muted">{{ 'matchGrid.marketUnavailable' | translate }}</div></ng-template>
+        </td>
+      </tr></tbody>
+    </table>
+  </div>
+  <p *ngIf="v.held" class="match-overview-note" role="note">{{ 'matchGrid.qualityNote' | translate }}</p>
+  <p *ngIf="v.odds && !v.verified" class="match-overview-note" role="note">{{ 'matchGrid.recoveredHistoricalOdds' | translate }}</p>
+</article>

@@ -1,0 +1,9 @@
+{
+  "asset": "oak-cutout-v1.png",
+  "createdAt": "2026-11-11",
+  "mode": "Built-in image generation; new original transparent raster asset",
+  "source": "C:/Users/Stanko/.codex/generated_images/019f94a8-4f48-7fb3-874a-a213417dfe69/exec-53059d44-ed33-4ae6-8348-61d97d9ceb68.png",
+  "transparentBackground": true,
+  "prompt": "Use case: photorealistic-natural. Asset type: transparent cutout tree for a lightweight original 3D tennis game. Generate one complete mature European deciduous oak tree, solitary and isolated, from the bottom of its trunk to all outermost leaves. Photorealistic real tree, NOT cartoon, NOT stylized, NOT low-poly. Naturally irregular broad canopy with many small individually resolved deep green summer leaves, gaps showing branching structure, a substantial rough grey-brown bark trunk with visible real texture and spreading branches. Neutral daylight from upper left, no exaggerated rim light. Entire tree fully inside the frame with a small transparent margin, trunk foot at bottom center. Straight-on distant view, almost orthographic, suitable as an alpha-tested scenery cutout. Genuine transparent background, no sky, no landscape, no grass strip, no ground plane, no cast ground shadow, no pot, no people, no lettering, no watermark. Natural forest-green colour, not oversaturated, realistic uneven silhouette and bark. This is an isolated game scenery asset, not a mockup of a game.",
+  "integration": "Shared local alpha-tested cards; no runtime remote image service. Camera-facing rotation is updated only when the camera or viewport changes."
+}

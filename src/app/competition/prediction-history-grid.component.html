@@ -1,0 +1,60 @@
+<div class="prediction-history-scroll competition-table-scroll" tabindex="0" role="region" [attr.aria-label]="(publicView ? 'competition.publicPredictions' : 'competition.mine') | translate">
+    <table class="match-table prediction-history-grid">
+        <caption class="grid-caption">{{ (retrospective ? 'competition.testSnapshotNote' : 'competition.snapshotNote') | translate }}</caption>
+        <colgroup><col class="c-number"><col class="c-submitted"><col class="c-date"><col class="c-type"><col class="c-tournament"><col class="c-matchup"><col class="c-result"><col class="c-odds"><col class="c-market"><col class="c-pick"><col class="c-status"><col class="c-units"><col class="c-details"></colgroup>
+        <thead><tr>
+            <th scope="col" [title]="'competition.rowNumber' | translate" [attr.aria-label]="'competition.rowNumber' | translate">#</th>
+            <th scope="col">{{ 'competition.submitted' | translate }}</th>
+            <th scope="col">{{ 'common.date' | translate }}</th>
+            <th scope="col">{{ 'details.type' | translate }}</th>
+            <th scope="col">{{ 'common.tournament' | translate }}</th>
+            <th scope="col">{{ 'common.matchup' | translate }}</th>
+            <th scope="col">{{ 'common.result' | translate }}</th>
+            <th scope="col" [title]="'competition.odds' | translate">{{ 'matches.oddsShort' | translate }}</th>
+            <th scope="col" [title]="(retrospective ? 'competition.testSnapshotNote' : 'competition.snapshotNote') | translate">{{ 'matches.predictionMarket' | translate }}</th>
+            <th scope="col">{{ (publicView ? 'competition.pick' : 'competition.yourPick') | translate }}</th>
+            <th scope="col">{{ 'competition.status' | translate }}</th>
+            <th scope="col">{{ 'competition.units' | translate }}</th>
+            <th scope="col">{{ 'common.details' | translate }}</th>
+        </tr></thead>
+        <tbody><tr *ngFor="let row of rows; let index = index; trackBy: trackRow">
+            <td class="row-number-cell">{{ regional.number(index + 1, 0) }}</td>
+            <td class="submitted-cell"><time [attr.datetime]="row.pick.submittedAt">{{ submittedLabel(row.pick.submittedAt) }}</time></td>
+            <td class="submitted-cell match-date-cell"><time [attr.datetime]="row.match.dateTime">{{ matchDate(row.match) }}</time></td>
+            <td class="type-cell">{{ row.match.tournamentTypeName || '—' }}</td>
+            <td class="tournament-cell"><app-match-tournament-cell [match]="row.match" [preview]="preview" [interactive]="!illustrative || preview" (tournamentOpened)="details(row, 'tournament')"></app-match-tournament-cell></td>
+            <td class="matchup-cell">
+                <app-match-players-cell [match]="row.match" [preview]="preview" [interactive]="!illustrative || preview" [selectedSide]="row.pick.side === 0 ? 1 : 2" (playerOpened)="details(row, 'player', $event)"></app-match-players-cell>
+            </td>
+            <td class="result-cell"><app-match-result-cell [match]="row.match"></app-match-result-cell></td>
+            <td class="market-odds-cell"><div class="stacked-odds">
+                <span *ngFor="let odds of row.odds; let side = index" [class.is-your-odds]="side === row.pick.side" [title]="'matchGrid.player' + (side + 1) | translate">{{ odds === null ? '—' : regional.number(odds, 2) }}</span>
+            </div></td>
+            <td class="prediction-cell" [ngClass]="row.model ? 'prediction-cell--' + row.model.tone : ''" [title]="'competition.snapshotNote' | translate">
+                <ng-container *ngIf="row.model as model; else unavailable">
+                    <div class="prediction-cell__topline"><span class="prediction-cell__player" [title]="model.name">{{ model.name }}</span><strong>{{ regional.number(model.confidence, 2) }}%</strong></div>
+                    <div class="prediction-cell__bar" aria-hidden="true"><span [style.width.%]="model.confidence"></span></div>
+                    <div class="prediction-cell__meta"><span>{{ 'matchGrid.' + model.label | translate }}</span><span>P{{ model.side + 1 }}</span><span *ngIf="model.demo">DEMO</span></div>
+                </ng-container>
+                <ng-template #unavailable><span class="prediction-cell__unavailable">{{ 'matchGrid.noPrediction' | translate }}</span></ng-template>
+                <div class="prediction-cell__market" *ngIf="row.market as market; else noMarket">
+                    <span class="prediction-cell__market-copy">{{ 'matchGrid.marketShort' | translate }} P{{ market.side + 1 }} {{ regional.number(market.probability, 1) }}% <small>&#64;{{ regional.number(market.odds, 2) }}</small></span>
+                    <strong *ngIf="market.gap !== null" class="prediction-cell__gap" [title]="'matchGrid.gapHint' | translate">{{ 'matchGrid.gap' | translate:{value: signed(market.gap, 1)} }}</strong>
+                </div>
+                <ng-template #noMarket><div class="prediction-cell__market prediction-cell__market--muted">{{ 'matchGrid.marketUnavailable' | translate }}</div></ng-template>
+            </td>
+            <td class="your-pick-cell" [title]="playerLabel(row.pick.snapshot.players[row.pick.side])"><button *ngIf="!illustrative && !publicView && !retrospective && row.pick.matchTPId > 0; else pickText" type="button" class="pick-link" (click)="open(row)" [attr.aria-label]="'competition.viewPick' | translate"><ng-container *ngTemplateOutlet="pickText"></ng-container></button>
+                <ng-template #pickText><span class="pick-side">P{{ row.pick.side + 1 }}</span><span class="pick-name">{{ compactName(row.pick.snapshot.players[row.pick.side].name) }}</span></ng-template></td>
+            <td class="status-cell"><span class="pick-status" [ngClass]="'pick-status--' + (row.pick.settlement?.status || 'pending')" role="img" tabindex="0"
+                [title]="'competition.' + (row.pick.settlement?.status || 'pending') | translate" [attr.aria-label]="'competition.' + (row.pick.settlement?.status || 'pending') | translate">
+                <span aria-hidden="true" class="status-icon">{{ row.pick.settlement?.status === 'won' ? '✓' : row.pick.settlement?.status === 'lost' ? '×' : row.pick.settlement?.status === 'void' ? '−' : '◷' }}</span>
+                </span></td>
+            <td class="units-cell" [class.units-positive]="(row.pick.settlement?.units || 0) > 0" [class.units-negative]="(row.pick.settlement?.units || 0) < 0">
+                {{ row.pick.settlement ? signed(row.pick.settlement.units) : '—' }}
+            </td>
+            <td class="info-cell"><button type="button" class="details-icon-btn" [disabled]="illustrative && !preview || row.pick.matchTPId <= 0 && !preview" (click)="details(row, 'match')" [title]="'matchGrid.openDetails' | translate" [attr.aria-label]="'matchGrid.openDetails' | translate">i</button></td>
+        </tr></tbody>
+    </table>
+</div>
+<p class="snapshot-note">{{ (retrospective ? 'competition.testSnapshotNote' : 'competition.snapshotNote') | translate }} <span *ngIf="localPreview">{{ 'competition.demoModelNote' | translate }}</span></p>
+<app-match-entity-details *ngIf="entity" [request]="entity" (closed)="entity = null" (authRequested)="auth($event)"></app-match-entity-details>

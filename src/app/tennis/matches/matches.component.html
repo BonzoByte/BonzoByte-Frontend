@@ -1,0 +1,672 @@
+<div class="matches-page-wrapper matches-page main-scroll">
+    <div class="matches-page">
+
+        <!-- Top sticky bar -->
+        <div class="date-nav-sticky" [class.date-nav-sticky--favourites]="viewMode === 'favourites'">
+            <div class="date-left">
+                <div class="daily-layout-switch" *ngIf="viewMode === 'daily'" role="group"
+                    [attr.aria-label]="'matchGrid.layout' | translate">
+                    <button type="button" [class.is-active]="dailyDisplayMode === 'all'"
+                        [attr.aria-pressed]="dailyDisplayMode === 'all'"
+                        (click)="setDailyDisplayMode('all')">
+                        <span class="quick-label-full">{{ 'matches.allMatches' | translate }}</span>
+                        <span class="quick-label-compact">{{ 'common.all' | translate }}</span>
+                    </button>
+                    <button type="button" [class.is-active]="dailyDisplayMode === 'tournament'"
+                        [attr.aria-pressed]="dailyDisplayMode === 'tournament'"
+                        (click)="setDailyDisplayMode('tournament')">
+                        <span class="quick-label-full">{{ 'matches.byTournament' | translate }}</span>
+                        <span class="quick-label-compact">{{ 'navigation.tournaments' | translate }}</span>
+                    </button>
+                </div>
+
+                <span class="daily-layout-divider" *ngIf="viewMode === 'daily'" aria-hidden="true"></span>
+
+                <div class="quick-tour-switch" *ngIf="viewMode === 'daily'" role="group"
+                    [attr.aria-label]="'matchGrid.quickTour' | translate">
+                    <button type="button" [class.is-active]="quickTourFilter === 'all'"
+                        [attr.aria-pressed]="quickTourFilter === 'all'"
+                        (click)="setQuickTourFilter('all')">{{ 'common.all' | translate }}</button>
+                    <button type="button" [class.is-active]="quickTourFilter === 'atp'"
+                        [attr.aria-pressed]="quickTourFilter === 'atp'"
+                        (click)="setQuickTourFilter('atp')">ATP</button>
+                    <button type="button" [class.is-active]="quickTourFilter === 'wta'"
+                        [attr.aria-pressed]="quickTourFilter === 'wta'"
+                        (click)="setQuickTourFilter('wta')">WTA</button>
+                </div>
+
+                <ng-container *ngIf="viewMode === 'daily' && quickFilterPreferences.odds">
+                <span class="daily-layout-divider" aria-hidden="true"></span>
+                <span class="quick-filter-label">{{ 'matches.odds' | translate }}</span>
+
+                <div class="quick-odds-switch" role="group" [attr.aria-label]="'matchGrid.quickOdds' | translate">
+                    <button type="button" [class.is-active]="activeOdds === 'all'"
+                        [attr.aria-pressed]="activeOdds === 'all'"
+                        (click)="setQuickOddsFilter('all')">{{ 'common.all' | translate }}</button>
+                    <button type="button" [class.is-active]="activeOdds === 'with'"
+                        [attr.aria-pressed]="activeOdds === 'with'"
+                        (click)="setQuickOddsFilter('with')">{{ 'matchGrid.with' | translate }}</button>
+                    <button type="button" [class.is-active]="activeOdds === 'without'"
+                        [attr.aria-pressed]="activeOdds === 'without'"
+                        (click)="setQuickOddsFilter('without')">
+                        <span class="quick-label-full">{{ 'matchGrid.without' | translate }}</span>
+                        <span class="quick-label-compact">{{ 'matchGrid.no' | translate }}</span>
+                    </button>
+                </div>
+                </ng-container>
+
+                <ng-container *ngIf="viewMode === 'daily' && quickFilterPreferences.value">
+                <span class="daily-layout-divider" aria-hidden="true"></span>
+                <span class="quick-filter-label">{{ 'matchGrid.edge' | translate }}</span>
+
+                <div class="quick-value-switch" role="group" [attr.aria-label]="'matchGrid.quickValue' | translate">
+                    <button type="button" [class.is-active]="valueFilter === 'all'"
+                        [attr.aria-pressed]="valueFilter === 'all'"
+                        (click)="setQuickValueFilter('all')">{{ 'common.all' | translate }}</button>
+                    <button type="button" [class.is-active]="valueFilter === 'valueOnly'"
+                        [attr.aria-pressed]="valueFilter === 'valueOnly'"
+                        [attr.title]="'matchGrid.positiveEdge' | translate"
+                        (click)="setQuickValueFilter('valueOnly')">
+                        <span class="quick-label-full">{{ 'matchGrid.value' | translate }}</span>
+                        <span class="quick-label-compact">+EV</span>
+                    </button>
+                </div>
+                </ng-container>
+
+                <ng-container *ngIf="viewMode === 'daily' && quickFilterPreferences.status">
+                <span class="daily-layout-divider" aria-hidden="true"></span>
+
+                <div class="quick-status-switch" role="group" [attr.aria-label]="'matchGrid.quickStatus' | translate">
+                    <button type="button" [class.is-active]="activeStatus === 'all'"
+                        [attr.aria-pressed]="activeStatus === 'all'"
+                        (click)="setQuickFinishedFilter(false)">{{ 'common.all' | translate }}</button>
+                    <button type="button" [class.is-active]="activeStatus === 'completed'"
+                        [attr.aria-pressed]="activeStatus === 'completed'"
+                        [attr.title]="'matchGrid.finalOnly' | translate"
+                        (click)="setQuickFinishedFilter(true)">
+                        <span class="quick-label-full">{{ 'matchGrid.final' | translate }}</span>
+                        <span class="quick-label-compact" aria-hidden="true">✓</span>
+                    </button>
+                </div>
+                </ng-container>
+            </div>
+
+            <div class="pagination-center-wrapper">
+                <h1 *ngIf="viewMode === 'favourites'" class="favourites-title">
+                    {{ 'favourites.title' | translate }}
+                    <span *ngIf="showFavouriteColumn && !loading && !favourites?.loading() && !favourites?.error()">
+                        ({{ regional.number(favourites!.count(), 0, true) }})
+                    </span>
+                </h1>
+                <!-- DAILY MODE -->
+                <ng-container *ngIf="viewMode === 'daily'">
+                    <button (click)="previousDay()" class="link-button" [disabled]="isPrevDisabled || loading">
+                        <img src="assets/icons/left.svg" [attr.alt]="'matches.previous' | translate" class="arrow-icon logreg" />
+                    </button>
+
+                    <input #dateInput type="text" class="custom-date-input date-dmy" inputmode="numeric"
+                        autocomplete="off" [placeholder]="regional.datePlaceholder()" [(ngModel)]="currentDateDMY"
+                        (input)="onDateDMYInput($event)" (focus)="onDateInputFocus()" (blur)="commitDateInputDMY()"
+                        (keydown)="onDateDMYKeydown($event)"
+                        (keydown.enter)="commitDateInputDMY()" [disabled]="loading || !minDate || !maxDate" />
+
+                    <button (click)="nextDay()" class="link-button" [disabled]="isNextDisabled || loading">
+                        <img src="assets/icons/right.svg" [attr.alt]="'matches.next' | translate" class="arrow-icon logreg" />
+                    </button>
+
+                    <button type="button" class="daily-layout-mobile-toggle"
+                        [class.is-active]="dailyDisplayMode === 'tournament'"
+                        (click)="setDailyDisplayMode(dailyDisplayMode === 'all' ? 'tournament' : 'all')"
+                        [attr.aria-label]="(dailyDisplayMode === 'all' ? 'matchGrid.groupAction' : 'matchGrid.allAction') | translate"
+                        [title]="(dailyDisplayMode === 'all' ? 'matchGrid.groupTitle' : 'common.showAllMatches') | translate">
+                        {{ (dailyDisplayMode === 'all' ? 'matchGrid.tours' : 'common.all') | translate }}
+                    </button>
+                </ng-container>
+
+                <!-- PLAYER MODE -->
+                <ng-container *ngIf="viewMode === 'player'">
+                    <div class="bb-mode-subheader bb-mode-subheader--player">
+                        <span *ngIf="playerHeaderTypeSafe">{{ playerHeaderTypeSafe }}</span>
+                        <span class="nav-separator" aria-hidden="true"></span>
+                        <span class="bb-flag-wrap" *ngIf="playerHeaderCountryISO2"
+                            [title]="playerHeaderCountryFull || ('details.country' | translate)">
+                            <span class="fi fi-{{ flagIso2OrEmpty(playerHeaderCountryISO2) }} bb-flag-sm"></span>
+                        </span>
+
+                        <span class="bb-mode-subheader-text">
+                            <span *ngIf="playerHeaderTypeSafe && playerHeaderDisplayName">&nbsp;</span>
+                            {{ playerHeaderDisplayName }}
+                        </span>
+                    </div>
+                </ng-container>
+
+                <!-- TOURNAMENT MODE -->
+                <ng-container *ngIf="viewMode === 'tournament'">
+                    <div class="bb-mode-subheader bb-mode-subheader--tournament">
+                        <span *ngIf="tournamentHeaderType">{{ tournamentHeaderType }}</span>
+                        <span class="nav-separator" aria-hidden="true"></span>
+                        <span class="bb-flag-wrap" *ngIf="tournamentHeaderCountryISO2"
+                            [title]="tournamentHeaderCountryFull || ('details.country' | translate)">
+                            <span class="fi fi-{{ flagIso2OrEmpty(tournamentHeaderCountryISO2) }} bb-flag-sm"></span>
+                        </span>
+
+                        <span class="bb-mode-subheader-text">
+                            <span *ngIf="tournamentHeaderType && tournamentHeaderDisplayName">&nbsp;</span>
+                            {{ tournamentHeaderDisplayName }}
+                        </span>
+
+                        <span class="bb-mode-subheader-sep" *ngIf="tournamentHeaderSurfaceSafe">•</span>
+
+                        <span class="bb-mode-subheader-meta bb-mode-subheader-surface" *ngIf="tournamentHeaderSurfaceSafe">
+                            <span class="surface-indicator"
+                                [ngClass]="surfaceIndicatorClass(tournamentHeaderSurfaceSafe)"
+                                aria-hidden="true"></span>
+                            {{ localizedSurface(tournamentHeaderSurfaceSafe) }}
+                        </span>
+
+                        <span class="bb-mode-subheader-strength" *ngIf="tournamentHeaderStrength"
+                            [title]="tournamentHeaderStrengthTitle">
+                            <span class="stars">
+                                <span *ngFor="let s of stars" class="star"
+                                    [ngClass]="starClass(s, tournamentHeaderStrengthStars)"></span>
+                            </span>
+                        </span>
+                    </div>
+                </ng-container>
+            </div>
+
+            <div class="date-right" *ngIf="viewMode !== 'favourites' || showFavouriteColumn">
+                <input type="text" class="custom-date-input date-dmy topbar-search"
+                    [placeholder]="'matches.search' | translate" [(ngModel)]="searchTerm" (input)="onSearchInput()"
+                    [disabled]="loading" />
+
+                <button (click)="clearSearch()" class="link-button topbar-clear" [disabled]="loading || !searchTerm">
+                    {{ 'common.clear' | translate }}
+                </button>
+
+                <button *ngIf="showFilterButton" (click)="openFilterModal()" class="link-button logreg"
+                    [disabled]="loading">
+                    <img src="assets/icons/filter.svg" [attr.alt]="'common.filter' | translate" class="icon icon-filter" />
+                    {{ 'common.filter' | translate }} <span *ngIf="isFiltered" class="badge-on">●</span>
+                </button>
+            </div>
+        </div>
+
+        <section *ngIf="viewMode === 'favourites'" class="favourites-intro">
+            <p>{{ 'favourites.intro' | translate }}</p>
+            <div class="favourites-status-switch" *ngIf="showFavouriteColumn" role="group"
+                [attr.aria-label]="'favourites.filterLabel' | translate">
+                <button type="button" *ngFor="let status of favouriteStatuses"
+                    [class.is-active]="favouriteStatus === status" [attr.aria-pressed]="favouriteStatus === status"
+                    (click)="setFavouriteStatus(status)">{{ ('favourites.' + status) | translate }}</button>
+            </div>
+        </section>
+
+        <ng-container *ngIf="favourites as saved">
+            <aside class="favourites-feedback" *ngIf="saved.signedIn() && saved.message() as message" role="status" aria-live="polite">
+                <span>{{ ('favourites.' + message) | translate:{limit: regional.number(saved.limit(), 0, true)} }}</span>
+                <button type="button" *ngIf="saved.undoId() !== null" (click)="saved.undo()"
+                    [disabled]="favouriteDisabled(saved.undoId()!)">{{ 'favourites.undo' | translate }}</button>
+                <button type="button" (click)="saved.dismissMessage()" [attr.aria-label]="'favourites.dismiss' | translate">×</button>
+            </aside>
+            <aside class="favourites-feedback" *ngIf="viewMode !== 'favourites' && saved.signedIn() && saved.error()" role="alert">
+                <span>{{ 'favourites.readFailed' | translate }}</span>
+                <button type="button" (click)="retryFavourites()" [disabled]="saved.loading()">{{ 'favourites.retry' | translate }}</button>
+            </aside>
+        </ng-container>
+
+        <!-- CONTENT (this is what gets blurred) -->
+        <aside *ngIf="discussions?.countErrors()?.size" class="favourites-feedback" role="status">
+            <span>{{ 'discussions.countFailed' | translate }}</span>
+            <button type="button" (click)="discussions?.retryCounts()">{{ 'discussions.retry' | translate }}</button>
+        </aside>
+        <div class="matches-content" [class.is-blurred]="loading">
+
+            <div class="table-wrapper" [class.is-empty]="!loading && filteredMatches.length === 0 && unavailableFavouriteIds.length === 0">
+                <ng-container *ngIf="viewMode === 'favourites'">
+                    <div *ngIf="!showFavouriteColumn" class="favourites-state favourites-state--login" role="status">
+                        <p>{{ 'favourites.signInHint' | translate }}</p>
+                        <button type="button" (click)="openLoginModal()">{{ 'favourites.signIn' | translate }}</button>
+                    </div>
+                    <div *ngIf="showFavouriteColumn && !loading && (favouriteRowsError || favourites?.error())"
+                        class="favourites-state favourites-state--error" role="alert">
+                        <p>{{ 'favourites.readFailed' | translate }}</p>
+                        <button type="button" (click)="retryFavourites()" [disabled]="favourites?.loading()">{{ 'favourites.retry' | translate }}</button>
+                    </div>
+                    <div *ngIf="showFavouriteColumn && !loading && !favouriteRowsError && !favourites?.error() && filteredMatches.length === 0 && unavailableFavouriteIds.length === 0"
+                        class="favourites-state favourites-state--empty" role="status">
+                        {{ (matches.length ? 'favourites.noResults' : 'favourites.empty') | translate }}
+                        <app-view-recovery-actions [showBrowse]="!matches.length"
+                            [showClear]="favouriteStatus !== 'all' || !!searchTerm"
+                            (clearFilters)="clearEmptyViewFilters()"></app-view-recovery-actions>
+                    </div>
+                </ng-container>
+                <div class="time-zone-status" *ngIf="viewMode !== 'favourites'" aria-live="polite">
+                    <aside *ngIf="timeZoneNoticePreference.visible$ | async" class="time-zone-notice"
+                        [attr.aria-label]="'timeZone.noticeTitle' | translate">
+                        <span class="prediction-view-notice__label">{{ 'timeZone.noticeTitle' | translate }}</span>
+                        <span>{{ 'timeZone.dayNote' | translate:{zone: regional.timeZone()} }}</span>
+                        <span *ngIf="viewMode === 'daily' && !loading && unresolvedTimeCount">{{ 'timeZone.unconverted' | translate:{count: regional.number(unresolvedTimeCount, 0, true)} }}</span>
+                        <button type="button" class="time-zone-notice__dismiss"
+                            [attr.aria-label]="'timeZone.hideNotice' | translate" [title]="'timeZone.hideNotice' | translate"
+                            (click)="timeZoneNoticePreference.setVisible(false)">&times;</button>
+                    </aside>
+                    <div class="time-zone-warning" *ngIf="viewMode === 'daily' && !loading && missingArchiveDays.length">{{ 'timeZone.partial' | translate:{days: missingArchiveDatesText} }}</div>
+                    <div class="time-zone-warning" role="alert" *ngIf="dailyLoadError">{{ 'timeZone.error' | translate }}
+                        <app-view-recovery-actions [showRetry]="true" [loading]="loading" (retry)="retryCurrentRead()"></app-view-recovery-actions>
+                    </div>
+                    <div class="bb-page-error" role="alert" *ngIf="scopedLoadError">{{ 'viewRecovery.matchesFailed' | translate }}
+                        <app-view-recovery-actions [showRetry]="true" [loading]="loading" (retry)="retryCurrentRead()"></app-view-recovery-actions>
+                    </div>
+                </div>
+                <aside *ngIf="!loading && showPredictionViewNotice" class="prediction-view-notice"
+                    [attr.aria-label]="'matchGrid.noticeAria' | translate">
+                    <span class="prediction-view-notice__label">{{ 'matchGrid.noticeTitle' | translate }}</span>
+                    <span class="prediction-view-notice__count">
+                        {{ 'matchGrid.showing' | translate:{ shown: regional.number(filteredMatches.length, 0, true), total: regional.number(predictionViewTotalCount, 0, true) } }}
+                    </span>
+                    <span class="prediction-view-notice__text">
+                        {{ predictionViewNoticeKey | translate }}
+                    </span>
+                    <span class="prediction-view-notice__actions">
+                        <button type="button" (click)="showAllMatchesForCurrentDay()">{{ 'matchGrid.showAll' | translate }}</button>
+                        <button type="button" (click)="openFilterModal()">{{ 'matchGrid.adjustFilters' | translate }}</button>
+                    </span>
+                    <button type="button" class="prediction-view-notice__dismiss"
+                        [attr.aria-label]="'matchGrid.dismissNotice' | translate" [attr.title]="'matchGrid.dismissNotice' | translate"
+                        (click)="dismissPredictionViewNotice()">&times;</button>
+                </aside>
+
+                <section *ngIf="viewMode !== 'favourites' && !loading && filteredMatches.length > 0 && (predictionOverviewVisible$ | async)"
+                    class="prediction-summary"
+                    [attr.aria-label]="'matchGrid.overviewAria' | translate">
+                    <button type="button" class="prediction-summary__dismiss"
+                        [attr.title]="'matchGrid.hideOverview' | translate"
+                        [attr.aria-label]="'matchGrid.hideOverview' | translate"
+                        (click)="dismissPredictionOverview()">&times;</button>
+                    <div class="prediction-summary__intro">
+                        <span class="prediction-summary__eyebrow">{{ 'matchGrid.model' | translate }}</span>
+                        <strong>{{ 'matchGrid.overview' | translate }}</strong>
+                        <span>{{ 'matchGrid.overviewText' | translate }}</span>
+                    </div>
+
+                    <div class="prediction-summary__metrics">
+                        <div class="prediction-summary__metric">
+                            <strong>{{ regional.number(getPredictionCount(), 0, true) }}</strong>
+                            <span>{{ 'matchGrid.predictions' | translate }}</span>
+                            <small>{{ 'matchGrid.coverage' | translate:{ value: regional.number(getPredictionCoverage(), 0) } }}</small>
+                        </div>
+                        <div class="prediction-summary__metric">
+                            <strong>{{ regional.number(getConfidenceCount(70), 0, true) }}</strong>
+                            <span>{{ 'matchGrid.high' | translate }}</span>
+                            <small>{{ 'matchGrid.threshold' | translate:{ value: '70' } }}</small>
+                        </div>
+                        <div class="prediction-summary__metric">
+                            <strong>{{ regional.number(getConfidenceCount(80), 0, true) }}</strong>
+                            <span>{{ 'matchGrid.veryHighShort' | translate }}</span>
+                            <small>{{ 'matchGrid.threshold' | translate:{ value: '80' } }}</small>
+                        </div>
+                    </div>
+
+                    <span class="prediction-summary__note">{{ 'matchGrid.confidenceNote' | translate }}</span>
+                </section>
+
+                <aside *ngIf="showHistoricalPlNote && historicalPlNoticePreference.isVisible" class="historical-pl-note" role="note">
+                    <span><span aria-hidden="true">† </span>{{ 'matchGrid.plHistoricalNote' | translate }}</span>
+                    <button type="button" class="historical-pl-note__dismiss"
+                        [attr.aria-label]="'common.close' | translate" [title]="'common.close' | translate"
+                        (click)="historicalPlNoticePreference.setVisible(false)">×</button>
+                </aside>
+
+                <!-- No matches (unfiltered) -->
+                <div *ngIf="viewMode !== 'favourites' && !loading && !dailyLoadError && !scopedLoadError && !missingArchiveDays.length && filteredMatches.length === 0 && !isFiltered && !searchTerm.trim()"
+                    class="matches-empty-state text-center p-3 rounded border" style="background-color:transparent;">
+                    {{ (viewMode === 'daily' ? 'matchGrid.emptyDay' : viewMode === 'player' ? 'matchGrid.emptyPlayer' : 'matchGrid.emptyTournament') | translate }}
+                    <app-view-recovery-actions [showBrowse]="viewMode !== 'daily'"></app-view-recovery-actions>
+                </div>
+
+                <!-- No matches (filtered) -->
+                <div *ngIf="viewMode !== 'favourites' && !loading && !dailyLoadError && !scopedLoadError && !missingArchiveDays.length && filteredMatches.length === 0 && (isFiltered || !!searchTerm.trim())"
+                    class="matches-empty-state text-center p-3 rounded border" style="background-color:transparent;">
+                    {{ 'matchGrid.emptyFiltered' | translate }}<br />
+                    {{ 'matchGrid.adjustEmpty' | translate }}
+                    <app-view-recovery-actions [showClear]="true" (clearFilters)="clearEmptyViewFilters()"></app-view-recovery-actions>
+                </div>
+
+                <aside class="demo-ad-preview-controls" *ngIf="showDemoAds && filteredMatches.length > 0"
+                    [attr.aria-label]="'demoAds.preview' | translate">
+                    <strong>{{ 'demoAds.preview' | translate }}</strong>
+                    <span class="demo-ad-preview-controls__hint">{{ adNoticeCopyKey | translate }}</span>
+                    <button type="button" class="demo-ad-preview-controls__close" (click)="requestHideAds()"
+                        [attr.aria-label]="'demoAds.remove' | translate" [title]="'demoAds.remove' | translate">×</button>
+                </aside>
+
+                <ng-template #favouriteButton let-id>
+                    <button type="button" class="favourite-star" [class.is-saved]="favourites?.isSaved(id)"
+                        [attr.aria-pressed]="favourites?.isSaved(id)" [disabled]="favouriteDisabled(id)"
+                        [attr.aria-label]="(favourites?.isSaved(id) ? 'favourites.remove' : 'favourites.add') | translate"
+                        [title]="(favourites?.isSaved(id) ? 'favourites.remove' : 'favourites.add') | translate"
+                        (click)="toggleFavourite(id)">
+                        <span aria-hidden="true">{{ favourites?.isSaved(id) ? '★' : '☆' }}</span>
+                    </button>
+                </ng-template>
+
+                <ng-template #matchGrid let-rows="rows" let-grouped="grouped">
+                <div class="match-table-scroll" [class.match-table-scroll--grouped]="grouped" tabindex="0"
+                    (scroll)="onResultsScroll($event)"
+                    [attr.aria-label]="'matchGrid.tableAria' | translate">
+                <table class="match-table">
+                    <colgroup>
+                        <col class="c-date" />
+                        <col class="c-type" *ngIf="showTypeColumn && !grouped" />
+                        <col class="c-tournament" *ngIf="!grouped && viewMode !== 'tournament'" />
+                        <col class="c-round" *ngIf="grouped || viewMode === 'tournament'" />
+                        <col class="c-matchup"
+                            [style.width.px]="grouped ? groupedMatchupWidthPx : null" />
+                        <col class="c-result"
+                            [style.width.px]="grouped ? groupedResultWidthPx : null" />
+                        <col class="c-odds" />
+                        <col class="c-prob-market" />
+                        <col class="c-model-pl" />
+                        <col class="c-prediction-pick" *ngIf="showFavouriteColumn" />
+                        <col class="c-favourite" *ngIf="showFavouriteColumn" />
+                        <col class="c-discussions" />
+                        <col class="c-details logreg" />
+                    </colgroup>
+                    <thead>
+                        <tr>
+                            <th class="col-center" (click)="toggleSort('date')">
+                                {{ 'common.date' | translate }}
+                                <span *ngIf="sortField === 'date'">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
+                            </th>
+                            <th class="col-center" *ngIf="showTypeColumn && !grouped">{{ 'details.type' | translate }}</th>
+                            <th class="col-center" *ngIf="!grouped && viewMode !== 'tournament'" (click)="toggleSort('tournament')">
+                                {{ 'common.tournament' | translate }}
+                                <span *ngIf="sortField === 'tournament'">{{ sortDirection === 'asc' ? '↑' : '↓'}}</span>
+                            </th>
+                            <th class="col-center" *ngIf="grouped || viewMode === 'tournament'">{{ 'common.round' | translate }}</th>
+                            <th class="col-center">{{ 'common.matchup' | translate }}</th>
+                            <th class="col-center">{{ 'common.result' | translate }}</th>
+                            <th class="col-center"
+                                [attr.title]="'matchGrid.oddsHeader' | translate">{{ 'matches.oddsShort' | translate }}</th>
+                            <th class="col-center"
+                                [attr.title]="'matchGrid.predictionHeader' | translate">
+                                {{ 'matches.predictionMarket' | translate }}
+                            </th>
+                            <th class="col-center"
+                                [title]="'matchGrid.plHeader' | translate:{ label: plLabel }">
+                                {{ plLabel }}
+                            </th>
+                            <th class="col-center prediction-pick-cell" *ngIf="showFavouriteColumn" scope="col"
+                                [attr.aria-label]="'competition.makePick' | translate" [title]="'competition.makePick' | translate">◎</th>
+                            <th class="col-center favourite-cell" *ngIf="showFavouriteColumn" scope="col"
+                                [attr.aria-label]="'favourites.title' | translate" [title]="'favourites.title' | translate">
+                                <span aria-hidden="true">☆</span>
+                            </th>
+                            <th class="col-center discussion-cell" scope="col" [attr.aria-label]="'discussions.title' | translate"
+                                [title]="'discussions.title' | translate"><span class="bi bi-chat-left-text" aria-hidden="true"></span></th>
+                            <th class="col-center">{{ 'common.details' | translate }}</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        <ng-container *ngFor="let match of rows; let rowIndex = index">
+                        <tr *ngIf="rowPresentation(match) as view">
+                            <td class="match-date-cell" [title]="view.dateTitle">{{ view.date }}</td>
+                            <td *ngIf="showTypeColumn && !grouped">{{ match.tournamentTypeName }}</td>
+
+                            <td *ngIf="!grouped && viewMode !== 'tournament'" class="col-center tournament-cell strength-cell">
+                                <app-match-tournament-cell [match]="match" [displayName]="view.tournament" (tournamentOpened)="openTournamentPage(match.tournamentEventTPId)"></app-match-tournament-cell>
+                            </td>
+
+                            <td *ngIf="grouped || viewMode === 'tournament'" class="col-center round-cell"
+                                [title]="view.roundTitle">
+                                {{ view.round }}
+                            </td>
+
+                            <td class="matchup-cell">
+                                <app-match-players-cell [match]="match" [labels]="view" [selectedSide]="view.prediction?.side === 'p1' ? 1 : view.prediction?.side === 'p2' ? 2 : undefined" (playerOpened)="openPlayerPage($event === 1 ? match.player1TPId : match.player2TPId)"></app-match-players-cell>
+                            </td>
+
+                            <td class="col-center match-result-cell">
+                                <app-match-result-cell [match]="match" [presentation]="view"></app-match-result-cell>
+                            </td>
+
+                            <td class="col-center market-odds-cell" [title]="view.oddsTitle">
+                                <ng-container *ngIf="view.odds as odds; else noVerifiedOdds">
+                                    <div class="market-odds-cell__values"
+                                        [class.market-odds-cell__legacy]="!odds.verified">
+                                        <ng-container *ngIf="odds.player1 as player1Odds">
+                                            <span class="market-odds-cell__integer">{{ player1Odds.integer }}</span>
+                                            <span class="market-odds-cell__separator">{{ regional.decimalSeparator() }}</span>
+                                            <span class="market-odds-cell__fraction">{{ player1Odds.fraction }}</span>
+                                        </ng-container>
+                                        <ng-container *ngIf="odds.player2 as player2Odds">
+                                            <span class="market-odds-cell__integer">{{ player2Odds.integer }}</span>
+                                            <span class="market-odds-cell__separator">{{ regional.decimalSeparator() }}</span>
+                                            <span class="market-odds-cell__fraction">{{ player2Odds.fraction }}</span>
+                                        </ng-container>
+                                    </div>
+                                </ng-container>
+                                <ng-template #noVerifiedOdds>
+                                    <span class="market-odds-cell__unavailable" [attr.aria-label]="'matchGrid.oddsUnavailable' | translate"></span>
+                                </ng-template>
+                            </td>
+
+                            <td class="col-center prediction-cell" [ngClass]="view.predictionClass"
+                                [title]="view.predictionTitle">
+                                <ng-container *ngIf="view.prediction as prediction; else noPrediction">
+                                    <div class="prediction-cell__topline">
+                                        <span class="prediction-cell__player">{{ prediction.playerName }}</span>
+                                        <strong>{{ prediction.confidence | number:'1.2-2':regional.locale() }}%</strong>
+                                    </div>
+                                    <div class="prediction-cell__bar" aria-hidden="true">
+                                        <span [style.width.%]="prediction.confidence"></span>
+                                    </div>
+                                    <div class="prediction-cell__meta">
+                                        <span>{{ prediction.label }}</span>
+                                        <span>{{ prediction.side === 'p1' ? 'P1' : 'P2' }}</span>
+                                        <span class="prediction-cell__outcome">{{ view.outcome }}</span>
+                                    </div>
+                                </ng-container>
+                                <ng-template #noPrediction>
+                                    <span class="prediction-cell__unavailable">{{ (view.qualityHold ? 'matchGrid.excluded' : 'matchGrid.noPrediction') | translate }}</span>
+                                </ng-template>
+
+                                <ng-container *ngIf="view.market as market; else marketOnly">
+                                    <div class="prediction-cell__market">
+                                        <span class="prediction-cell__market-copy">
+                                            {{ 'matchGrid.marketShort' | translate }} {{ market.side === 'p1' ? 'P1' : 'P2' }}
+                                            {{ market.fairProbability | number:'1.1-1':regional.locale() }}%
+                                            <small>&#64;{{ view.marketDecimal }}</small>
+                                        </span>
+                                        <strong class="prediction-cell__gap"
+                                            [attr.title]="'matchGrid.gapHint' | translate">
+                                            {{ market.gapLabel }}
+                                        </strong>
+                                    </div>
+                                </ng-container>
+                                <ng-template #marketOnly>
+                                    <div class="prediction-cell__market prediction-cell__market--muted">
+                                        <ng-container *ngIf="view.marketLabel as oddsLabel; else noMarketData">
+                                            <span>{{ 'matchGrid.marketOdds' | translate }}</span>
+                                            <strong>{{ oddsLabel }}</strong>
+                                        </ng-container>
+                                        <ng-template #noMarketData>
+                                            <span>{{ 'matchGrid.marketUnavailable' | translate }}</span>
+                                        </ng-template>
+                                    </div>
+                                </ng-template>
+                            </td>
+
+                            <td class="col-center model-pl-cell" [ngClass]="view.plClass"
+                                [title]="view.plTitle">
+                                {{ view.pl }}
+                                <sup *ngIf="view.historicalPl" class="historical-pl-marker" aria-hidden="true">†</sup>
+                            </td>
+
+                            <td class="col-center prediction-pick-cell" *ngIf="showFavouriteColumn">
+                                <app-prediction-button [matchId]="match.matchTPId" [finished]="!!match.isFinished"></app-prediction-button>
+                            </td>
+                            <td class="col-center favourite-cell" *ngIf="showFavouriteColumn">
+                                <ng-container *ngTemplateOutlet="favouriteButton; context: { $implicit: match.matchTPId }"></ng-container>
+                            </td>
+                            <td class="col-center discussion-cell"><app-discussion-count [match]="match"></app-discussion-count></td>
+                            <td class="col-center details-cell">
+                                <ng-container *ngIf="!isDetailsLocked(match); else lockedTpl">
+                                    <button type="button" class="details-icon-btn logreg" (click)="openDetails(match)"
+                                        [attr.title]="'matchGrid.openDetails' | translate" [attr.aria-label]="'matchGrid.openDetails' | translate">
+                                        i
+                                    </button>
+                                </ng-container>
+
+                                <ng-template #lockedTpl>
+                                    <button type="button" class="details-icon-btn details-icon-btn--locked logreg"
+                                        (click)="openDetails(match)" [attr.title]="'matchGrid.lockedDetails' | translate"
+                                        [attr.aria-label]="'matchGrid.lockedAria' | translate">
+                                        🔒
+                                    </button>
+                                </ng-template>
+                            </td>
+                        </tr>
+                        <ng-container *ngIf="!grouped">
+                            <tr class="demo-ad-row" *ngIf="demoAdSlotAfter(rowIndex, rows.length, 'matches') as slot">
+                                <td [attr.colspan]="matchGridColumnCount(grouped)"><app-demo-ad [slot]="slot" (dismissed)="requestHideAds()"></app-demo-ad></td>
+                            </tr>
+                        </ng-container>
+                        </ng-container>
+                        <ng-container *ngIf="viewMode === 'favourites' && !grouped && showFavouriteColumn">
+                            <tr class="favourite-unavailable-row" *ngFor="let id of unavailableFavouriteIds">
+                                <td [attr.colspan]="matchGridColumnCount(false) - 3">
+                                    {{ 'favourites.unavailableMatch' | translate:{id: id} }}
+                                </td>
+                                <td class="col-center favourite-cell">
+                                    <ng-container *ngTemplateOutlet="favouriteButton; context: { $implicit: id }"></ng-container>
+                                </td>
+                                <td class="col-center discussion-cell">—</td>
+                                <td class="col-center details-cell">—</td>
+                            </tr>
+                        </ng-container>
+                    </tbody>
+                </table>
+                </div>
+                </ng-template>
+
+                <ng-container *ngIf="filteredMatches.length > 0 || unavailableFavouriteIds.length > 0">
+                    <ng-container *ngIf="viewMode !== 'daily' || dailyDisplayMode === 'all'; else groupedDailyView">
+                        <ng-container *ngTemplateOutlet="matchGrid; context: { rows: filteredMatches, grouped: false }">
+                        </ng-container>
+                    </ng-container>
+
+                    <ng-template #groupedDailyView>
+                        <div class="tournament-groups-scroll" tabindex="0"
+                            (scroll)="onResultsScroll($event)"
+                            [attr.aria-label]="'matchGrid.groupedAria' | translate">
+                            <ng-container *ngIf="tournamentMatchGroups as groups">
+                            <ng-container *ngFor="let group of groups; let groupIndex = index; trackBy: trackTournamentGroup">
+                            <section class="tournament-group">
+                                <header class="tournament-group__header">
+                                    <div class="tournament-group__identity">
+                                        <span class="fi fi-{{ flagCode(group.countryISO2).toLowerCase() }}"
+                                            [title]="group.countryFull || ('matchDetails.world' | translate)"></span>
+                                        <button type="button" class="tournament-group__title"
+                                            [class.tournament-group__title--disabled]="!group.tournamentEventTPId"
+                                            [disabled]="!group.tournamentEventTPId"
+                                            (click)="openTournamentPage(group.tournamentEventTPId)">
+                                            {{ group.label }}
+                                        </button>
+                                    </div>
+
+                                    <div class="tournament-group__meta strength-cell">
+                                        <span *ngIf="group.tournamentType">{{ group.tournamentType }}</span>
+                                        <span class="tournament-group__surface"
+                                            *ngIf="localizedSurface(group.surface) as surfaceName">
+                                            <span class="surface-indicator"
+                                                [ngClass]="surfaceIndicatorClass(group.surface)"
+                                                aria-hidden="true"></span>
+                                            <span>{{ surfaceName }}</span>
+                                        </span>
+                                        <span>{{ regional.plural('matches.count', group.matches.length) }}</span>
+                                        <span class="tournament-group__pl"
+                                            *ngIf="group.modelPl.eligibleCount > 0"
+                                            [ngClass]="getPlTone(group.modelPl.units)"
+                                            [title]="getGroupPlTooltip(group)">
+                                            {{ plLabel }} {{ formatSignedUnits(group.modelPl.units) }}
+                                            <small>ROI {{ formatSignedPercent(group.modelPl.roiPercent) }} · {{ regional.number(group.modelPl.eligibleCount, 0, true) }}/{{ regional.number(group.modelPl.totalCount, 0, true) }}</small>
+                                        </span>
+                                        <span class="stars" role="img"
+                                            [attr.aria-label]="'matchGrid.strengthStars' | translate:{ value: regional.number(group.strengthStars, 1) }"
+                                            [title]="'matchGrid.strengthTitle' | translate:{ value: regional.number(group.strengthStars, 1) }">
+                                            <span *ngFor="let s of stars" class="star"
+                                                [ngClass]="starClass(s, group.strengthStars)"></span>
+                                        </span>
+                                    </div>
+                                </header>
+
+                                <ng-container *ngTemplateOutlet="matchGrid; context: { rows: group.matches, grouped: true }">
+                                </ng-container>
+                            </section>
+                            <div class="demo-ad-group" *ngIf="demoAdSlotAfter(groupIndex, groups.length, 'groups') as slot">
+                                <app-demo-ad [slot]="slot" (dismissed)="requestHideAds()"></app-demo-ad>
+                            </div>
+                            </ng-container>
+                            </ng-container>
+                        </div>
+                    </ng-template>
+                </ng-container>
+            </div>
+
+            <app-ad-removal-modal *ngIf="showAdRemovalModal" [signedIn]="!!auth.getUser()"
+                (closed)="showAdRemovalModal = false" (action)="onAdRemovalAction($event)"></app-ad-removal-modal>
+
+            <app-match-filter-modal *ngIf="showFilterModalSafe" [activeDateFilter]="activeDateFilter"
+                [activeFromDate]="activeFromDate" [activeToDate]="activeToDate" (closed)="closeFilterModal()"
+                [minDate]="minDate" [maxDate]="maxDate" [activeSurfaceIds]="activeSurfaceIds"
+                [activeTournamentTypeIds]="activeTournamentTypeIds" [activeStrengthStars]="activeStrengthStars"
+                [activeTournamentLevelIds]="activeTournamentLevelIds" [activeStatus]="activeStatus"
+                [activeOdds]="activeOdds" [activeValueFilter]="valueFilter" [activePlBasis]="plBasis" (filterApplied)="onFilterApplied($event)"
+                [activeConfidence]="activeConfidence"
+                (resetFilter)="onFilterReset()"></app-match-filter-modal>
+
+            <app-player-modal *ngIf="infoPlayer" [isOpen]="true"
+                [playerTPId]="infoPlayer.playerTPId" [playerIndex]="infoPlayer"
+                (closed)="closeInfoModal()" (showCurrentMatches)="showAllScopedMatches()"></app-player-modal>
+
+            <app-tournament-modal *ngIf="infoTournament" [tournament]="infoTournament"
+                [strengthScale]="infoTournamentStrengthScale"
+                (closed)="closeInfoModal()" (showMatches)="showTournamentMatches($event)">
+            </app-tournament-modal>
+
+            <app-match-details-modal #detailsModal [isOpen]="isDetailsOpen" [matchTPId]="selectedMatchTPId!"
+                [match]="selectedMatch!" (closed)="onDetailsClosed()" (requestLogin)="onDetailsRequestLogin()"
+                (requestRegister)="onDetailsRequestRegister()"
+                (requestUpgrade)="onDetailsRequestUpgrade()"></app-match-details-modal>
+
+        </div>
+
+        <nav *ngIf="showScrollUp || showScrollDown" class="matches-scroll-nav"
+            [attr.aria-label]="'matchGrid.navigation' | translate">
+            <button *ngIf="showScrollUp" type="button" class="matches-scroll-nav__button"
+                [attr.aria-label]="'matchGrid.scrollFirst' | translate" [attr.title]="'matchGrid.firstMatch' | translate"
+                (click)="scrollResultsTo('top')">
+                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                    <path d="M6 15l6-6 6 6"></path>
+                </svg>
+            </button>
+            <button *ngIf="showScrollDown" type="button" class="matches-scroll-nav__button"
+                [attr.aria-label]="'matchGrid.scrollLast' | translate" [attr.title]="'matchGrid.lastMatch' | translate"
+                (click)="scrollResultsTo('bottom')">
+                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                    <path d="M6 9l6 6 6-6"></path>
+                </svg>
+            </button>
+        </nav>
+
+        <div class="bb-loading-overlay" [class.is-active]="loading" aria-live="polite">
+            <div class="bb-loading-card" role="status" [attr.aria-label]="(viewMode === 'favourites' ? 'favourites.loading' : 'common.loading') | translate">
+                <div class="bb-spinner"></div>
+                <div class="bb-loading-text">{{ (viewMode === 'favourites' ? 'favourites.loading' : 'common.loading') | translate }}</div>
+            </div>
+        </div>
+    </div>
+</div>

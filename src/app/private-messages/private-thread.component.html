@@ -1,0 +1,39 @@
+<section [attr.aria-busy]="loading()||busy()">
+ <p class="note">{{'privateMessages.privacyNote'|translate}}</p>
+ <div class="peer-heading" *ngIf="peer as person"><span class="avatar-slot"><span class="avatar" aria-hidden="true"><img *ngIf="avatar(person) as url;else peerFallback" [src]="url" alt="" referrerpolicy="no-referrer" (error)="avatarFailed(person)"><ng-template #peerFallback><app-initials-avatar [identity]="person.id" [nickname]="person.nickname"></app-initials-avatar></ng-template></span><app-user-presence [userId]="person.id" [conversationId]="id" [enabled]="conversation()?.status === 'accepted' && !conversation()?.blocked"></app-user-presence></span><strong>{{person.nickname}}</strong></div>
+ <p *ngIf="failed()" role="alert">{{'privateMessages.failed'|translate}} <button type="button" (click)="id?load(false):ngOnChanges()">{{'discussions.retry'|translate}}</button></p>
+ <p *ngIf="actionFailed()" role="alert">{{'privateMessages.actionFailed'|translate}}</p>
+ <div class="actions" *ngIf="conversation() as conversation"><span class="note">{{('privateMessages.status.'+conversation.status)|translate}}</span>
+ <button type="button" [disabled]="busy()||loading()" (click)="load(false)">{{'discussions.refresh'|translate}}</button>
+ <button *ngIf="conversation.canAccept" type="button" [disabled]="busy()" (click)="decide(true)">{{'privateMessages.accept'|translate}}</button>
+ <button *ngIf="conversation.canAccept" type="button" [disabled]="busy()" (click)="ask('decline')">{{'privateMessages.decline'|translate}}</button>
+ <button *ngIf="peer&&!conversation.blockedByMe" type="button" [disabled]="busy()" (click)="ask('block')">{{'privateMessages.block'|translate}}</button>
+ <button *ngIf="peer&&conversation.blockedByMe" type="button" [disabled]="busy()" (click)="unblock()">{{'privateMessages.unblock'|translate}}</button></div>
+ <p *ngIf="conversation()?.blocked" class="note">{{'privateMessages.blockedNote'|translate}}</p>
+ <button *ngIf="rangeAfter()>0" type="button" [disabled]="loading()||busy()" (click)="showEarlier()">{{'privateMessages.earlier'|translate}}</button>
+ <p *ngIf="!loading()&&target()&&!id&&!target()!.canRequest" class="note">{{'privateMessages.targetUnavailable'|translate}}</p>
+ <ol class="messages"><li *ngFor="let message of messages();let index=index;trackBy:track" #messageRow [attr.data-pm-id]="message.id" [class.mine]="message.mine">
+ <app-message-day-divider [dateTime]="message.createdAt" [previousDateTime]="messages()[index-1]?.createdAt"></app-message-day-divider>
+ <article><header><span class="author"><span class="avatar-slot"><span class="avatar" aria-hidden="true"><img *ngIf="!message.deleted && avatar(message.author) as url;else fallback" [src]="url" alt="" loading="lazy" referrerpolicy="no-referrer" (error)="avatarFailed(message.author)"><ng-template #fallback><app-initials-avatar [identity]="message.author?.id" [nickname]="message.author?.nickname" [neutral]="message.deleted"></app-initials-avatar></ng-template></span><app-user-presence [userId]="message.author?.id" [conversationId]="id" [enabled]="!message.deleted && conversation()?.status === 'accepted' && !conversation()?.blocked"></app-user-presence></span><strong>{{message.author?.nickname||('privateMessages.formerMember'|translate)}}</strong></span>
+ <time [attr.datetime]="message.createdAt">{{regional.dateTime(message.createdAt,'utc')}}</time></header>
+ <div class="message-body"><p>{{message.deleted?('privateMessages.deleted'|translate):message.body}}</p>
+ <div class="actions"><button *ngIf="message.mine&&!message.deleted" type="button" [disabled]="busy()" (click)="ask('delete',message)">{{'discussions.delete'|translate}}</button>
+ <button *ngIf="message.canReport&&!message.deleted" type="button" [disabled]="busy()" (click)="ask('report',message)">{{'discussions.report'|translate}}</button></div></div></article></li></ol>
+ <button *ngIf="hasMore()" type="button" [disabled]="loading()||busy()" (click)="load(true)">{{'discussions.more'|translate}}</button>
+ <p *ngIf="readFailed()" role="status">{{'discussions.readFailed'|translate}} <button type="button" (click)="markRead()">{{'discussions.retry'|translate}}</button></p>
+ <div *ngIf="confirm() as action" class="confirmation"><p>{{('privateMessages.confirm.'+action.kind)|translate}}</p>
+ <label *ngIf="action.kind==='report'">{{'discussions.reason'|translate}}<textarea [(ngModel)]="reason" maxlength="16000" rows="2"></textarea>
+ <span class="note">{{'discussions.remaining'|translate:{count:regional.number(reasonRemaining,0)} }}</span></label>
+ <button type="button" [disabled]="busy()||!reasonValid" (click)="perform()">{{'discussions.confirm'|translate}}</button> <button type="button" [disabled]="busy()" (click)="confirm.set(null)">{{'discussions.cancel'|translate}}</button></div>
+ <p *ngIf="loading()||busy()" role="status"><span class="bb-spinner" aria-hidden="true"></span>{{(busy()?'discussions.saving':'common.loading')|translate}}</p>
+ <form *ngIf="canCompose" (ngSubmit)="send()"><p *ngIf="!id" class="note">{{'privateMessages.firstRequest'|translate}}</p>
+ <label>{{'privateMessages.write'|translate}}<span class="bb-message-input"><textarea #composer name="body" [(ngModel)]="body" (ngModelChange)="bodyChanged($event)" rows="4" maxlength="32000" [disabled]="busy()" required
+ cdkTextareaAutosize appMessageAutosize cdkAutosizeMinRows="4" cdkAutosizeMaxRows="8"
+ [appDraftUnloadGuard]="body"
+ appSubmitShortcut [submitShortcutDisabled]="!body.trim()||!withinLimit||busy()||loading()" (submitShortcut)="send()" [title]="'common.sendShortcut'|translate" [attr.aria-describedby]="'pm-limit'"></textarea></span></label>
+ <div class="emoji-row"><div class="emojis" role="group" [attr.aria-label]="'discussions.emoji.title'|translate"><button *ngFor="let emoji of emojis" type="button" [disabled]="busy()" (click)="insertEmoji(emoji)" [attr.aria-label]="('discussions.emoji.title'|translate)+': '+emoji">{{emoji}}</button></div>
+ <span class="note" id="pm-limit">{{'discussions.remaining'|translate:{count:regional.number(remaining,0)} }}</span></div>
+ <p *ngIf="!withinLimit" role="alert">{{'discussions.lengthExceeded'|translate:{count:regional.number(1000,0)} }}</p><p *ngIf="emojiLimit" role="status">{{'discussions.emoji.limit'|translate}}</p>
+ <p *ngIf="body.trim()" class="note">{{'privateMessages.draftNote'|translate}}</p>
+ <button type="submit" [disabled]="busy()||loading()||!withinLimit||!body.trim()">{{(id?'privateMessages.send':'privateMessages.sendRequest')|translate}}</button></form>
+</section>

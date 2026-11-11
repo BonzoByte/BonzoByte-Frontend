@@ -1,0 +1,24 @@
+:host { display: block; min-width: 0; margin-bottom: 14px; }
+.discussion-match-scroll { max-width: 100%; overflow-x: auto; }
+.discussion-match-grid { width: 100%; min-width: 515px; max-width: none; table-layout: fixed; font-size: 12px; }
+.c-date { width: 84px; }.c-tournament { width: 150px; }
+.c-result { width: 64px; }
+.discussion-match-grid:has(.c-result) { min-width: 579px; }
+.discussion-match-grid .result-cell { text-align: center; font-weight: 700; font-variant-numeric: tabular-nums; white-space: normal; overflow-wrap: anywhere; }
+.result-sets { display: block; margin-top: 3px; font-size: 11px; font-weight: 400; line-height: 1.4; color: var(--bb-text-muted, #aab5c0); }
+.result-sets span { display: inline-block; white-space: nowrap; margin: 0 2px; }
+.tournament-flag { margin-right: 5px; }
+.discussion-match-grid th { position: static; text-align: center; white-space: normal; padding: 5px 4px; line-height: 1.2; }
+.discussion-match-grid td { vertical-align: middle; }
+.discussion-match-grid .date-cell { text-align: center; white-space: pre-line; line-height: 1.4; font-variant-numeric: tabular-nums; }
+.discussion-match-grid .tournament-cell { text-align: center; white-space: normal; overflow-wrap: anywhere; line-height: 1.3; }
+.matchup-players { display: flex; flex-direction: column; gap: 2px; }
+.matchup-player { display: flex; gap: 5px; align-items: center; padding: 3px 4px; min-width: 0; }
+.matchup-player .fi { flex: 0 0 auto; }.player-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.discussion-match-fallback { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; color: var(--bb-text-muted); }
+.discussion-match-fallback span { overflow-wrap: anywhere; }
+button { color: var(--bb-text); background: var(--bb-control-bg); border: 1px solid var(--bb-border); border-radius: 6px; padding: 6px 8px; }
+.inline-link-button { display: inline; max-width: 100%; min-width: 0; color: inherit; background: transparent; border: 0; border-radius: 0; padding: 0; font: inherit; cursor: pointer; text-align: inherit; }
+.inline-link-button:hover { color: var(--bb-accent, #80d5ff); text-decoration: underline; }
+.tournament-link { white-space: normal; overflow-wrap: anywhere; }
+button:focus-visible, .discussion-match-scroll:focus-visible { outline: 2px solid var(--bb-theme-accent); outline-offset: -2px; }
