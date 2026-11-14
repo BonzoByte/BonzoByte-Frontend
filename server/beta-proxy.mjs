@@ -1,3 +1,5 @@
+import { betaWaitPage } from './beta-wait-page.mjs';
+
 const privateHeaders = { 'X-Robots-Tag': 'noindex, nofollow, noarchive',
     'Cache-Control': 'private, no-store, max-age=0', 'CDN-Cache-Control': 'no-store', 'Vercel-CDN-Cache-Control': 'no-store',
     'Referrer-Policy': 'same-origin' };
@@ -41,12 +43,28 @@ export function createBetaProxy({ settings, next, rewrite, fetcher = fetch }) {
             ? denied(401, 'BETA_ACCESS_REQUIRED')
             : new Response(null, { status: 303, headers: { ...privateHeaders, Location: '/beta' } });
         if (!cookie) return needsLogin();
+        const unavailable = reason => {
+            const navigation = !api && ['GET', 'HEAD'].includes(request.method)
+                && (request.headers.get('accept') || '').toLowerCase().includes('text/html');
+            if (navigation) {
+                console.warn('[BETA] session check temporarily unavailable:', reason);
+                return new Response(request.method === 'HEAD' ? null : betaWaitPage(), {
+                    status: 503, headers: { ...privateHeaders, 'Content-Type': 'text/html; charset=utf-8', 'Retry-After': '5' },
+                });
+            }
+            const response = denied(503, 'BETA_UNAVAILABLE');
+            response.headers.set('Retry-After', '5');
+            return response;
+        };
         try {
             const response = await fetcher(backend + '/beta/session', { method: 'GET', headers: { cookie },
                 cache: 'no-store', redirect: 'error', signal: AbortSignal.timeout(5000) });
             if (response.status === 401 || response.status === 403) return needsLogin();
-            if (!response.ok || (await response.json()).betaAccess !== true) return denied(503, 'BETA_UNAVAILABLE');
-        } catch { return denied(503, 'BETA_UNAVAILABLE'); }
+            if (!response.ok) return unavailable('upstream-' + response.status);
+            if ((await response.json()).betaAccess !== true) return unavailable('invalid-session-response');
+        } catch (error) {
+            return unavailable(['AbortError','TimeoutError'].includes(error?.name) ? 'timeout' : 'network-or-response');
+        }
         if (!['GET', 'HEAD', 'OPTIONS'].includes(request.method) && request.headers.get('origin') !== publicOrigin)
             return denied(403, 'BETA_ORIGIN_DENIED');
         if (api || pathname === '/uploads' || pathname.startsWith('/uploads/') || pathname.startsWith('/static/')) return forward();
