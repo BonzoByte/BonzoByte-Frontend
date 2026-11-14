@@ -1,12 +1,13 @@
 import { Routes } from '@angular/router';
 export const routes: Routes = [
+    { path: 'fantasy', canDeactivate: [(component: { canLeave(): boolean }) => component.canLeave()], loadComponent: () => import('./fantasy/fantasy-page.component').then(m => m.FantasyPageComponent) },
     { path: 'tennis-break', loadComponent: () => import('./arcade/tennis-break.component').then(m => m.TennisBreakComponent) },
     { path: 'auth/callback', loadComponent: () => import('./auth/oauth-success/oauth-success.component').then(m => m.OauthSuccessComponent) },
     { path: 'matches/id/:canonicalMatchId', loadComponent: () => import('./tennis/matches/match-link-page.component').then(m => m.MatchLinkPageComponent) },
     { path: 'matches/:matchTPId', loadComponent: () => import('./tennis/matches/match-link-page.component').then(m => m.MatchLinkPageComponent) },
     { path: 'competition/profiles/:profileId', loadComponent: () => import('./competition/public-predictions.component').then(m => m.PublicPredictionsComponent) },
     { path: 'predictions', data: { mine: true }, loadComponent: () => import('./competition/competition-page.component').then(m => m.CompetitionPageComponent) },
-    { path: 'competition', loadComponent: () => import('./competition/competition-page.component').then(m => m.CompetitionPageComponent) },
+    { path: 'competition', loadComponent: () => import('./competition/leaderboard-page.component').then(m => m.LeaderboardPageComponent) },
     { path: 'popular', loadComponent: () => import('./shared/ui/popular/popular.component').then(m => m.PopularComponent) },
     { path: 'register', loadComponent: () => import('./home/home.component').then(m => m.HomeComponent) },
     { path: 'login', loadComponent: () => import('./home/home.component').then(m => m.HomeComponent) },

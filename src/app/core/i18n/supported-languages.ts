@@ -33,6 +33,16 @@ import it from '../../../assets/i18n/it.json';
 import cs from '../../../assets/i18n/cs.json';
 import hu from '../../../assets/i18n/hu.json';
 
+// New feature modules fall back to English until reviewed translations exist.
+// Merge leaf-by-leaf so an older partial module cannot expose raw message keys.
+function withFantasyFallback<T extends object>(messages:T) {
+  const merge = (fallback: Record<string, any>, translated: Record<string, any>): Record<string, any> =>
+    Object.fromEntries(Object.entries({...fallback,...translated}).map(([key,value]) => [key,
+      value && typeof value === 'object' && !Array.isArray(value)
+        ? merge(fallback[key] ?? {}, translated[key] ?? {}) : value]));
+  return merge(en,messages);
+}
+
 /**
  * Single registry for the picker, persistence, dictionaries and regional formats.
  * Regional variants may share one dictionary; do not add language branches to templates.
@@ -58,37 +68,37 @@ export const SUPPORTED_LANGUAGES = [
   {
     code: 'de', locale: 'de-DE', nativeName: 'Deutsch', shortName: 'DE', flagIso2: 'de',
     direction: 'ltr', dateSeparator: '.', dateSuffix: '', datePlaceholder: 'DD.MM.YYYY',
-    dateFields: ['day', 'month', 'year'], datePattern: 'dd.MM.yyyy', decimalSeparator: ',', messages: de, angularLocale: localeDe
+    dateFields: ['day', 'month', 'year'], datePattern: 'dd.MM.yyyy', decimalSeparator: ',', messages: withFantasyFallback(de), angularLocale: localeDe
   },
   {
     code: 'es', locale: 'es-ES', nativeName: 'Español', shortName: 'ES', flagIso2: 'es',
     direction: 'ltr', dateSeparator: '/', dateSuffix: '', datePlaceholder: 'DD/MM/YYYY',
-    dateFields: ['day', 'month', 'year'], datePattern: 'dd/MM/yyyy', decimalSeparator: ',', messages: es, angularLocale: localeEs
+    dateFields: ['day', 'month', 'year'], datePattern: 'dd/MM/yyyy', decimalSeparator: ',', messages: withFantasyFallback(es), angularLocale: localeEs
   },
   {
     code: 'fr', locale: 'fr-FR', nativeName: 'Français', shortName: 'FR', flagIso2: 'fr',
     direction: 'ltr', dateSeparator: '/', dateSuffix: '', datePlaceholder: 'DD/MM/YYYY',
-    dateFields: ['day', 'month', 'year'], datePattern: 'dd/MM/yyyy', decimalSeparator: ',', messages: fr, angularLocale: localeFr
+    dateFields: ['day', 'month', 'year'], datePattern: 'dd/MM/yyyy', decimalSeparator: ',', messages: withFantasyFallback(fr), angularLocale: localeFr
   },
   {
     code: 'pt-BR', locale: 'pt-BR', nativeName: 'Português (Brasil)', shortName: 'PT', flagIso2: 'br',
     direction: 'ltr', dateSeparator: '/', dateSuffix: '', datePlaceholder: 'DD/MM/YYYY',
-    dateFields: ['day', 'month', 'year'], datePattern: 'dd/MM/yyyy', decimalSeparator: ',', messages: pt, angularLocale: localePt
+    dateFields: ['day', 'month', 'year'], datePattern: 'dd/MM/yyyy', decimalSeparator: ',', messages: withFantasyFallback(pt), angularLocale: localePt
   },
   {
     code: 'ru', locale: 'ru-RU', nativeName: 'Русский', shortName: 'RU', flagIso2: 'ru',
     direction: 'ltr', dateSeparator: '.', dateSuffix: '', datePlaceholder: 'DD.MM.YYYY',
-    dateFields: ['day', 'month', 'year'], datePattern: 'dd.MM.yyyy', decimalSeparator: ',', messages: ru, angularLocale: localeRu
+    dateFields: ['day', 'month', 'year'], datePattern: 'dd.MM.yyyy', decimalSeparator: ',', messages: withFantasyFallback(ru), angularLocale: localeRu
   },
   {
     code: 'ja', locale: 'ja-JP', nativeName: '日本語', shortName: 'JA', flagIso2: 'jp',
     direction: 'ltr', dateSeparator: '/', dateSuffix: '', datePlaceholder: 'YYYY/MM/DD',
-    dateFields: ['year', 'month', 'day'], datePattern: 'yyyy/MM/dd', decimalSeparator: '.', messages: ja, angularLocale: localeJa
+    dateFields: ['year', 'month', 'day'], datePattern: 'yyyy/MM/dd', decimalSeparator: '.', messages: withFantasyFallback(ja), angularLocale: localeJa
   },
   {
     code: 'sr-Latn', locale: 'sr-Latn-RS', nativeName: 'Srpski (latinica)', shortName: 'SR', flagIso2: 'rs',
     direction: 'ltr', dateSeparator: '.', dateSuffix: '.', datePlaceholder: 'DD.MM.YYYY',
-    dateFields: ['day', 'month', 'year'], datePattern: 'dd.MM.yyyy.', decimalSeparator: ',', messages: sr, angularLocale: localeSr
+    dateFields: ['day', 'month', 'year'], datePattern: 'dd.MM.yyyy.', decimalSeparator: ',', messages: withFantasyFallback(sr), angularLocale: localeSr
   },
   {
     code: 'bs', locale: 'bs-BA', nativeName: 'Bosanski', shortName: 'BS', flagIso2: 'ba',
@@ -96,37 +106,37 @@ export const SUPPORTED_LANGUAGES = [
     // Croatian has the same decimal/grouping and USD placement; language/plurals stay Bosnian.
     numberLocaleFallback: 'hr-HR',
     direction: 'ltr', dateSeparator: '.', dateSuffix: '.', datePlaceholder: 'DD.MM.YYYY',
-    dateFields: ['day', 'month', 'year'], datePattern: 'dd.MM.yyyy.', decimalSeparator: ',', messages: bs, angularLocale: localeBs
+    dateFields: ['day', 'month', 'year'], datePattern: 'dd.MM.yyyy.', decimalSeparator: ',', messages: withFantasyFallback(bs), angularLocale: localeBs
   },
   {
     code: 'sl', locale: 'sl-SI', nativeName: 'Slovenščina', shortName: 'SL', flagIso2: 'si',
     direction: 'ltr', dateSeparator: '.', dateSuffix: '', datePlaceholder: 'DD.MM.YYYY',
-    dateFields: ['day', 'month', 'year'], datePattern: 'dd.MM.yyyy', decimalSeparator: ',', messages: sl, angularLocale: localeSl
+    dateFields: ['day', 'month', 'year'], datePattern: 'dd.MM.yyyy', decimalSeparator: ',', messages: withFantasyFallback(sl), angularLocale: localeSl
   },
   {
     code: 'pl', locale: 'pl-PL', nativeName: 'Polski', shortName: 'PL', flagIso2: 'pl',
     direction: 'ltr', dateSeparator: '.', dateSuffix: '', datePlaceholder: 'DD.MM.YYYY',
-    dateFields: ['day', 'month', 'year'], datePattern: 'dd.MM.yyyy', decimalSeparator: ',', messages: pl, angularLocale: localePl
+    dateFields: ['day', 'month', 'year'], datePattern: 'dd.MM.yyyy', decimalSeparator: ',', messages: withFantasyFallback(pl), angularLocale: localePl
   },
   {
     code: 'sk', locale: 'sk-SK', nativeName: 'Slovenčina', shortName: 'SK', flagIso2: 'sk',
     direction: 'ltr', dateSeparator: '.', dateSuffix: '', datePlaceholder: 'DD.MM.YYYY',
-    dateFields: ['day', 'month', 'year'], datePattern: 'dd.MM.yyyy', decimalSeparator: ',', messages: sk, angularLocale: localeSk
+    dateFields: ['day', 'month', 'year'], datePattern: 'dd.MM.yyyy', decimalSeparator: ',', messages: withFantasyFallback(sk), angularLocale: localeSk
   },
   {
     code: 'it', locale: 'it-IT', nativeName: 'Italiano', shortName: 'IT', flagIso2: 'it',
     direction: 'ltr', dateSeparator: '/', dateSuffix: '', datePlaceholder: 'DD/MM/YYYY',
-    dateFields: ['day', 'month', 'year'], datePattern: 'dd/MM/yyyy', decimalSeparator: ',', messages: it, angularLocale: localeIt
+    dateFields: ['day', 'month', 'year'], datePattern: 'dd/MM/yyyy', decimalSeparator: ',', messages: withFantasyFallback(it), angularLocale: localeIt
   },
   {
     code: 'cs', locale: 'cs-CZ', nativeName: 'Čeština', shortName: 'CS', flagIso2: 'cz',
     direction: 'ltr', dateSeparator: '.', dateSuffix: '', datePlaceholder: 'DD.MM.YYYY',
-    dateFields: ['day', 'month', 'year'], datePattern: 'dd.MM.yyyy', decimalSeparator: ',', messages: cs, angularLocale: localeCs
+    dateFields: ['day', 'month', 'year'], datePattern: 'dd.MM.yyyy', decimalSeparator: ',', messages: withFantasyFallback(cs), angularLocale: localeCs
   },
   {
     code: 'hu', locale: 'hu-HU', nativeName: 'Magyar', shortName: 'HU', flagIso2: 'hu',
     direction: 'ltr', dateSeparator: '.', dateSuffix: '.', datePlaceholder: 'YYYY.MM.DD',
-    dateFields: ['year', 'month', 'day'], datePattern: 'yyyy.MM.dd.', decimalSeparator: ',', messages: hu, angularLocale: localeHu
+    dateFields: ['year', 'month', 'day'], datePattern: 'yyyy.MM.dd.', decimalSeparator: ',', messages: withFantasyFallback(hu), angularLocale: localeHu
   }
 ] as const;
 

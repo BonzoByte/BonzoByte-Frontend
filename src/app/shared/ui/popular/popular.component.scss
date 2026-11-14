@@ -1,5 +1,7 @@
+@use '../../../../styles/compact-page-heading' as heading;
+
 :host { display: flow-root; color: var(--bb-text); background: var(--bb-page-bg); min-height: calc(100dvh - var(--header-h) - var(--footer-h)); }
-.popular-page { box-sizing: border-box; width: 100%; max-width: 1017px; margin: 20px auto; padding: 0 18px 30px; }
+.popular-page { box-sizing: border-box; width: 100%; max-width: 1017px; margin: 8px auto 20px; padding: 0 18px 30px; }
 .popular-page--players { max-width: 1017px; }
 .popular-heading h1 { font-size: clamp(24px, 4vw, 36px); margin: 0 0 16px; }
 .popular-eyebrow { font-size: 10px; letter-spacing: .15em; color: var(--bb-text-muted); }
@@ -67,3 +69,4 @@ button:disabled:hover { border-color: var(--bb-control-border, #46535e); color: 
 .popular-method p { margin: 8px 0; }
 .popular-actions { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
 button:focus-visible { outline: 2px solid var(--bb-theme-accent, #94d5f5); outline-offset: 2px; }
+@include heading.layout;

@@ -1,7 +1,6 @@
 ﻿import { CommonModule } from '@angular/common';
 import { DOCUMENT } from '@angular/common';
-import { AfterViewInit, Component, ElementRef, Inject, NgZone, OnDestroy, ViewChild, inject } from '@angular/core';
-import { Router } from '@angular/router';
+import { AfterViewInit, Component, ElementRef, Inject, NgZone, OnDestroy, ViewChild } from '@angular/core';
 import { A11yModule } from '@angular/cdk/a11y';
 import { TranslateModule } from '@ngx-translate/core';
 import { ContactModalComponent } from '../../modals/contact-modal/contact-modal.component';
@@ -18,12 +17,6 @@ import { CopyContactEmailComponent } from '../copy-contact-email/copy-contact-em
     styleUrls: ['./footer.component.scss']
 })
 export class FooterComponent implements AfterViewInit, OnDestroy {
-    private readonly router = inject(Router, { optional: true });
-    openTennisBreak(event: MouseEvent): void {
-        if (!this.router || event.defaultPrevented || event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
-        event.preventDefault();
-        void this.router.navigateByUrl('/tennis-break');
-    }
     readonly contactEmail = PUBLIC_INFO_EMAIL;
     constructor(readonly privacy: PrivacyConsentService, @Inject(DOCUMENT) private document: Document, private zone: NgZone) {}
     @ViewChild('footerBar', { static: true }) private footerBar!: ElementRef<HTMLElement>;

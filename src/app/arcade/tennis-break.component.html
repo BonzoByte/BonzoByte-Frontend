@@ -1,9 +1,52 @@
 <main class="tennis-break">
-  <a routerLink="/matches" class="back-link"><span aria-hidden="true">←</span> {{ words().back }}</a>
-  <header class="arcade-heading">
-    <div><p class="eyebrow">{{ words().eyebrow }}</p><h1>{{ words().title }}<span aria-hidden="true">.</span></h1><p class="intro">{{ words().intro }}</p></div>
-    <div class="club-seal" aria-hidden="true"><span>BB</span><small>TENNIS CLUB</small></div>
+  <header class="arcade-heading bb-compact-heading bb-compact-heading--centred">
+    <div class="bb-compact-heading__line"><h1>{{ words().title }}<span aria-hidden="true">.</span></h1><p class="eyebrow bb-compact-eyebrow">{{ words().eyebrow }}</p><p class="intro bb-compact-intro"><span class="bb-compact-heading__separator" aria-hidden="true">— </span>{{ words().intro }}</p></div>
   </header>
+
+  <section class="career-panel" [attr.aria-label]="words().chooseOpponent">
+    <div class="opponent-picker">
+      <label for="arcade-player-search">{{ words().chooseOpponent }}</label>
+      <div class="opponent-combobox" (focusout)="opponentFocusOut($event)">
+        <input id="arcade-player-search" type="search" role="combobox" autocomplete="off" maxlength="80"
+          aria-autocomplete="list" aria-haspopup="listbox" aria-controls="arcade-player-options"
+          [attr.aria-expanded]="opponentOpen()" [attr.aria-activedescendant]="activeOpponentId()"
+          [placeholder]="words().searchOpponent" [value]="searchText()" [disabled]="view().phase !== 'ready' || careerBusy()"
+          (focus)="openOpponentSearch()" (input)="searchOpponents($any($event.target).value)" (keydown)="opponentKeyDown($event)">
+        <div class="opponent-dropdown" *ngIf="opponentOpen()">
+          <p class="opponent-search-status" role="status" *ngIf="opponentSearchPending() || career.searching()">{{ words().searchingPlayers }}</p>
+          <p class="opponent-search-status" role="status" *ngIf="!opponentSearchPending() && !career.searching() && career.catalogError()">{{ words().catalogUnavailable }}</p>
+          <p class="opponent-search-status" role="status" *ngIf="!opponentSearchPending() && !career.searching() && !career.catalogError() && !opponentChoices().length">{{ words().noPlayers }}</p>
+          <ul id="arcade-player-options" role="listbox" [attr.aria-label]="words().chooseOpponent" [attr.aria-busy]="opponentSearchPending() || career.searching()">
+            <ng-container *ngIf="!opponentSearchPending() && !career.searching() && !career.catalogError()">
+              <li *ngFor="let player of opponentChoices(); let i = index; trackBy: opponentTrackBy" role="option"
+                [id]="'arcade-player-option-' + player.id" [attr.aria-selected]="career.selected()?.id === player.id"
+                [class.is-active]="activeOpponentIndex() === i" (mousedown)="$event.preventDefault()" (click)="chooseOpponentId('' + player.id)">
+                <span class="opponent-option-name"><span *ngIf="player.countryISO2" [class]="'fi fi-' + player.countryISO2" aria-hidden="true"></span>{{ player.name }}</span>
+                <small>{{ player.ts === null ? words().noTs : words().strength + ' ' + gameNumber(player.ts) }}</small>
+              </li>
+            </ng-container>
+          </ul>
+        </div>
+      </div>
+      <p class="opponent-selected" *ngIf="career.selected() as player"><span *ngIf="player.countryISO2" [class]="'fi fi-' + player.countryISO2" aria-hidden="true"></span> {{ words().selectedOpponent }}: <strong>{{ player.name }}</strong> · {{ player.ts === null ? words().noTs : 'TS ' + gameNumber(player.ts) }}
+        <button type="button" class="clear-opponent" [disabled]="view().phase !== 'ready' || careerBusy()" (click)="clearOpponent()">{{ words().clearOpponent }}</button></p>
+      <p class="opponent-selected" *ngIf="!career.selected()">{{ words().computerOpponent }}</p>
+      <small>{{ words().opponentNote }}</small>
+      <p *ngIf="career.catalogError() && !opponentOpen()" role="status">{{ words().catalogUnavailable }}</p>
+    </div>
+    <div class="rated-options">
+      <div class="mode-switch" role="group" [attr.aria-label]="words().format">
+        <button type="button" [attr.aria-pressed]="!rated()" [disabled]="!['ready','over'].includes(view().phase) || careerBusy() || savingResult()" (click)="setRated(false)">{{ words().training }}</button>
+        <button type="button" [attr.aria-pressed]="rated()" [disabled]="!career.verified() || !['ready','over'].includes(view().phase) || careerBusy() || savingResult()" (click)="setRated(true)">{{ words().rated }}</button>
+      </div>
+      <p *ngIf="!career.verified()">{{ words().signInGame }}</p>
+      <ng-container *ngIf="rated()">
+        <label class="ranking-consent"><input type="checkbox" [checked]="rankingConsent()" [disabled]="view().phase !== 'ready' || careerBusy()" (change)="rankingConsent.set($any($event.target).checked)">{{ words().consent }}</label>
+        <p>{{ words().ratedNote }}</p>
+      </ng-container>
+      <p *ngIf="career.profile()?.active">{{ words().pendingGame }} {{ words().ratedNote }}</p>
+    </div>
+  </section>
 
   <section #gamePanel class="game-panel" [class.is-expanded]="expanded()" [attr.aria-label]="words().title" [cdkTrapFocus]="expanded()" [attr.role]="expanded() ? 'dialog' : null" [attr.aria-modal]="expanded() ? true : null">
     <div class="game-toolbar">
@@ -14,13 +57,13 @@
         <button type="button" class="quiet-button" [attr.aria-pressed]="lightweight()" (click)="toggleLightweight()">{{ words().lightweight }} {{ lightweight() ? '✓' : '—' }}</button>
         <button type="button" class="quiet-button" [disabled]="soundPending()" [title]="words().soundHint" [attr.aria-pressed]="sound()" (click)="toggleSound()"><span aria-hidden="true">{{ sound() ? '♪' : '♩' }}</span> {{ words().sound }} {{ sound() ? '✓' : '—' }}</button>
         <button *ngIf="view().phase !== 'ready' && view().phase !== 'over'" type="button" class="quiet-button" (click)="paused() ? resume() : pause()">{{ paused() ? words().resume : words().pause }}</button>
-        <button *ngIf="view().phase !== 'ready'" type="button" class="quiet-button" (click)="setup()">{{ words().reset }}</button>
+        <button *ngIf="view().phase !== 'ready'" type="button" class="quiet-button" [disabled]="careerBusy() || savingResult()" (click)="setup()">{{ words().reset }}</button>
       </div>
     </div>
     <div class="scoreboard" *ngIf="view().format === 'challenge'" [attr.aria-label]="words().scoring" aria-live="polite" aria-atomic="true">
       <div class="score-side home"><span class="player-chip">01</span><span>{{ words().you }}</span><strong>{{ view().left }}</strong></div>
       <div class="score-centre"><span class="tiny-ball" aria-hidden="true"></span><span>CLUB CHALLENGE</span></div>
-      <div class="score-side away"><strong>{{ view().right }}</strong><span>{{ words().cpu }}</span><span class="player-chip">02</span></div>
+      <div class="score-side away"><strong>{{ view().right }}</strong><span>{{ opponentName() }}</span><span class="player-chip">02</span></div>
     </div>
     <div class="scoreboard match-scoreboard" *ngIf="view().format === 'match'" aria-live="polite" aria-atomic="true">
       <div class="match-context"><span class="tiny-ball" aria-hidden="true"></span><strong>{{ scoreNote() }}</strong></div>
@@ -28,7 +71,7 @@
         <thead><tr><th scope="col">{{ words().matchMode }}</th><th scope="col">{{ words().sets }}</th><th scope="col">{{ words().games }}</th><th scope="col">{{ view().tieBreak ? words().tieBreak : words().points }}</th></tr></thead>
         <tbody>
           <tr class="human-score"><th scope="row"><span class="server-dot" *ngIf="view().server === 0 && view().phase !== 'over'" role="img" [attr.aria-label]="words().serving" [title]="words().serving"></span>{{ words().you }}</th><td>{{ view().sets[0] }}</td><td>{{ view().phase === 'over' ? '—' : view().games[0] }}</td><td class="point-score" [attr.aria-label]="view().pointLabels[0] === 'AD' ? words().advantage : null">{{ view().phase === 'over' ? '—' : view().pointLabels[0] }}</td></tr>
-          <tr class="computer-score"><th scope="row"><span class="server-dot" *ngIf="view().server === 1 && view().phase !== 'over'" role="img" [attr.aria-label]="words().serving" [title]="words().serving"></span>{{ words().cpu }}</th><td>{{ view().sets[1] }}</td><td>{{ view().phase === 'over' ? '—' : view().games[1] }}</td><td class="point-score" [attr.aria-label]="view().pointLabels[1] === 'AD' ? words().advantage : null">{{ view().phase === 'over' ? '—' : view().pointLabels[1] }}</td></tr>
+          <tr class="computer-score"><th scope="row"><span class="server-dot" *ngIf="view().server === 1 && view().phase !== 'over'" role="img" [attr.aria-label]="words().serving" [title]="words().serving"></span>{{ opponentName() }}</th><td>{{ view().sets[1] }}</td><td>{{ view().phase === 'over' ? '—' : view().games[1] }}</td><td class="point-score" [attr.aria-label]="view().pointLabels[1] === 'AD' ? words().advantage : null">{{ view().phase === 'over' ? '—' : view().pointLabels[1] }}</td></tr>
         </tbody>
       </table>
       <div class="set-history" *ngIf="view().completedSets.length" [attr.aria-label]="words().setHistory">
@@ -46,12 +89,24 @@
           <h2>{{ unavailable() ? words().unavailable : paused() ? words().paused : view().phase === 'over' ? (view().winner === 0 ? words().victory : words().defeat) : words().ready }}</h2>
           <p>{{ paused() ? words().pausedText : view().phase === 'over' ? (view().winner === 0 ? words().victoryText : words().defeatText) : matchFormat() === 'match' ? words().matchReady : words().readyText }}</p>
           <div class="setup-options" *ngIf="view().phase === 'ready' && !unavailable()">
-            <label>{{ words().format }}<select [value]="matchFormat()" (change)="changeFormat($any($event.target).value)"><option value="match">{{ words().matchMode }}</option><option value="challenge">{{ words().challengeMode }}</option></select></label>
+            <label>{{ words().format }}<select [disabled]="rated() || careerBusy()" [value]="matchFormat()" (change)="changeFormat($any($event.target).value)"><option value="match">{{ words().matchMode }}</option><option value="challenge">{{ words().challengeMode }}</option></select></label>
             <label>{{ words().surface }}<select [value]="surface()" (change)="changeSurface($any($event.target).value)"><option value="grass">{{ words().grass }}</option><option value="clay">{{ words().clay }}</option><option value="hard">{{ words().hard }}</option></select></label>
-            <label>{{ words().difficulty }}<select [value]="difficulty()" (change)="changeDifficulty($any($event.target).value)"><option value="easy">{{ words().easy }}</option><option value="normal">{{ words().normal }}</option><option value="hard">{{ words().hardLevel }}</option></select></label>
+            <label *ngIf="career.selected()?.ts == null">{{ words().difficulty }}<select [value]="difficulty()" (change)="changeDifficulty($any($event.target).value)"><option value="easy">{{ words().easy }}</option><option value="normal">{{ words().normal }}</option><option value="hard">{{ words().hardLevel }}</option></select></label>
           </div>
-          <label class="assist-option" *ngIf="!unavailable() && view().phase === 'ready'"><input type="checkbox" [checked]="assist()" (change)="toggleAssist()">{{ words().assist }}</label>
-          <button *ngIf="!unavailable()" type="button" class="play-button" (click)="paused() ? resume() : start()">{{ paused() ? words().resume : view().phase === 'over' ? words().again : words().start }} <span aria-hidden="true">↗</span></button>
+          <label class="assist-option" *ngIf="!unavailable() && view().phase === 'ready'"><input type="checkbox" [disabled]="rated()" [checked]="assist()" (change)="toggleAssist()">{{ words().assist }}</label>
+          <p *ngIf="careerBusy()" role="status">{{ words().startingGame }}</p>
+          <p *ngIf="savingResult()" role="status">{{ words().savingGame }}</p>
+          <button *ngIf="!unavailable()" type="button" class="play-button" [disabled]="careerBusy() || savingResult() || leavingGame() || (rated() && (!rankingConsent() || career.selected()?.ts == null))" (click)="paused() ? resume() : start()">{{ paused() ? words().resume : view().phase === 'over' ? words().again : words().start }} <span aria-hidden="true">↗</span></button>
+          <ng-container *ngIf="view().phase === 'over'">
+            <div class="end-save-warning" *ngIf="canRetryCareerSave() && !savingResult()">
+              <p role="status">{{ careerMessage() || words().replayFailed }}</p>
+              <button type="button" class="quiet-button" (click)="retryCareerSave()">{{ words().retrySave }}</button>
+            </div>
+            <div class="end-game-actions">
+              <button type="button" [disabled]="careerBusy() || savingResult() || leavingGame()" (click)="leaveFinishedGame('leaderboard')">{{ words().endLeaderboard }}</button>
+              <button type="button" [disabled]="careerBusy() || savingResult() || leavingGame()" (click)="leaveFinishedGame('matches')">{{ words().endMatches }}</button>
+            </div>
+          </ng-container>
         </div>
       </div>
       <div class="point-callout" *ngIf="(view().phase === 'point' || view().phase === 'fault' || view().phase === 'let') && !paused()" aria-live="polite">{{ status() }}</div>
@@ -59,32 +114,73 @@
         <strong>{{ status() }}</strong>
         <ng-container *ngIf="view().server === 0">
           <span>{{ words().serveHint }}</span>
+          <div class="serve-aim-options" role="group" [attr.aria-label]="words().serveDirection">
+            <button type="button" [attr.aria-pressed]="view().serveAim < -.5" (click)="chooseServeAim(-1)">← {{ words().aimLeft }}</button>
+            <button type="button" [attr.aria-pressed]="view().serveAim >= -.5 && view().serveAim <= .5" (click)="chooseServeAim(0)">{{ words().aimCentre }}</button>
+            <button type="button" [attr.aria-pressed]="view().serveAim > .5" (click)="chooseServeAim(1)">{{ words().aimRight }} →</button>
+          </div>
+          <small class="serve-target-hint">{{ words().targetHint }}</small>
           <div class="serve-meter" role="meter" [attr.aria-label]="words().power" aria-valuemin="0" aria-valuemax="130" [attr.aria-valuenow]="view().charge * 100"><i [style.width.%]="view().charge / 1.3 * 100" [class.overcharged]="view().charge > .95"></i></div>
+          <div class="aim-meter" role="meter" [attr.aria-label]="words().serveDirection" aria-valuemin="-130" aria-valuemax="130" [attr.aria-valuenow]="view().serveAim * 100"><i [style.left.%]="(view().serveAim + 1.3) / 2.6 * 100"></i></div>
+          <small>{{ words().safeZone }}</small>
         </ng-container>
+      </div>
+      <div class="stroke-card" *ngIf="view().phase === 'playing' && !paused()" role="group" [attr.aria-label]="words().selectedShot">
+        <strong>{{ view().strokeCharging ? words().releaseHit : view().strokePending ? words().queuedHit : words().holdHit }}</strong>
+        <div class="meter-label"><span>{{ words().shotPower }}</span><span>{{ view().strokeCharge * 100 | number:'1.0-0' }}%</span></div>
+        <div class="serve-meter" role="meter" [attr.aria-label]="words().shotPower" aria-valuemin="0" aria-valuemax="130" [attr.aria-valuenow]="view().strokeCharge * 100"><i [style.width.%]="view().strokeCharge / 1.3 * 100" [class.overcharged]="view().strokeCharge > .95"></i></div>
+        <div class="meter-label"><span>← {{ words().shotDirection }} →</span><span [class.danger]="view().strokeAim > 1 || view().strokeAim < -1">{{ view().strokeAim * 100 | number:'1.0-0' }}</span></div>
+        <div class="aim-meter" role="meter" [attr.aria-label]="words().shotDirection" aria-valuemin="-130" aria-valuemax="130" [attr.aria-valuenow]="view().strokeAim * 100"><i [style.left.%]="(view().strokeAim + 1.3) / 2.6 * 100"></i></div>
+        <small>{{ words().safeZone }}</small>
       </div>
       <div class="umpire-callout" *ngIf="umpireSpeaking()" role="status"><small>{{ words().umpire }}</small><span>“{{ words().quiet }}”</span></div>
     </div>
 
-    <div class="court-bottom"><span class="live-label"><i [class.is-playing]="view().phase === 'playing' && !paused()"></i>{{ status() }}</span><span class="fullscreen-help" *ngIf="expanded()">{{ words().fullscreenHint }}</span><span>{{ words().rally }} <strong>{{ view().rally }}</strong><span class="sep">/</span>{{ words().best }} <strong>{{ view().best }}</strong></span></div>
+    <div class="court-bottom"><span class="live-label"><i [class.is-playing]="view().phase === 'playing' && !paused()"></i>{{ status() }}</span><span class="stroke-choice" *ngIf="selectedShot()">{{ words().selectedShot }}: <strong>{{ selectedShot() === 'drop' ? words().drop : selectedShot() === 'smash' ? words().smash : selectedShot() === 'lob' ? words().lob : words().drive }}</strong></span><span class="fullscreen-help" *ngIf="expanded()">{{ words().fullscreenHint }}</span><span>{{ words().rally }} <strong>{{ view().rally }}</strong><span class="sep">/</span>{{ words().best }} <strong>{{ view().best }}</strong></span></div>
     <ng-container *ngIf="expanded()" [ngTemplateOutlet]="touchPad"></ng-container>
+  </section>
+
+  <div class="career-feedback" *ngIf="careerMessage() || savingResult()" role="status">
+    {{ savingResult() ? words().savingGame : careerMessage() }}
+    <button type="button" *ngIf="canRetryCareerSave() && !savingResult()" (click)="retryCareerSave()">{{ words().retrySave }}</button>
+    <span *ngIf="careerResult() as result"> · μ {{ gameNumber(result.before.mu) }} → {{ gameNumber(result.after.mu) }} · σ {{ gameNumber(result.after.sigma) }}</span>
+  </div>
+
+  <section class="career-panel career-history" *ngIf="career.signedIn()">
+    <div *ngIf="career.profile() as profile">
+      <h2>{{ words().career }}</h2>
+      <div class="rating-values"><span>μ <strong>{{ gameNumber(profile.career.mu) }}</strong></span><span>σ <strong>{{ gameNumber(profile.career.sigma) }}</strong></span><span>{{ words().played }} <strong>{{ profile.career.played }}</strong></span><span>{{ words().wins }} <strong>{{ profile.career.won }}</strong></span></div>
+      <p>{{ words().ratingScore }}: <strong>{{ gameNumber(profile.career.score) }}</strong> · {{ words().monthly }}: <strong>{{ gameNumber(profile.monthly.score) }}</strong></p>
+      <small>{{ words().ratingHelp }}</small>
+      <p *ngIf="profile.career.provisional">{{ words().provisional }}</p>
+      <details *ngIf="profile.history.length"><summary>{{ words().history }}</summary><ol class="game-history"><li *ngFor="let item of profile.history"><span>{{ item.opponent.name }}</span><strong>{{ item.result.abandoned ? words().abandoned : item.result.score?.join('–') }}</strong><time>{{ gameDate(item.finishedAt) }}</time></li></ol></details>
+    </div>
+    <p *ngIf="career.profileError()" role="status">{{ words().profileUnavailable }}</p>
+    <div class="trial-board">
+      <h2>{{ words().standings }}</h2>
+      <a routerLink="/competition" [queryParams]="{tab:'tennis-break'}" class="back-link">{{ words().loadStandings }} ↗</a>
+      <small>{{ words().local }}</small>
+    </div>
   </section>
 
   <section class="controls-panel" aria-labelledby="tennis-controls">
     <div class="control-title"><h2 id="tennis-controls">{{ words().controls }}</h2><p>{{ words().tip }}</p></div>
     <div class="control-keys" id="tennis-keys">
-      <div><span><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd><span class="or">/</span><kbd>↑↓←→</kbd></span><small>{{ words().move }}</small></div>
-      <div><kbd>SHIFT</kbd><small>{{ words().jump }}</small></div>
-      <div><span><kbd class="space-key">SPACE</kbd><span class="or">/</span><kbd>X</kbd></span><small>{{ words().drive }}</small></div>
+      <div><kbd>↑↓←→</kbd><small>{{ words().move }}</small></div>
+      <div><kbd class="space-key">SPACE</kbd><small>{{ words().holdHit }}</small></div>
+      <div><kbd>B</kbd><small>{{ words().drop }}</small></div>
+      <div><kbd>N</kbd><small>{{ words().smash }}</small></div>
       <div><kbd>C</kbd><small>{{ words().lob }}</small></div>
-      <div><kbd>Z</kbd><small>{{ words().smash }}</small></div>
+      <div><span><kbd class="space-key">SPACE</kbd><span>+</span><kbd>← →</kbd></span><small>{{ words().aim }}</small></div>
     </div>
+    <p class="shot-help">{{ words().dropHint }}</p>
     <p class="sr-only">{{ words().keyHelp }}</p>
     <ng-container *ngIf="!expanded()" [ngTemplateOutlet]="touchPad"></ng-container>
   </section>
   <ng-template #touchPad>
     <div class="touch-controls" [attr.aria-label]="words().controls">
       <div class="touch-directions"><button *ngFor="let item of touchDirections" type="button" [attr.aria-label]="words().move + ' ' + item.icon" (pointerdown)="touchStart($event, item.action)" (pointerup)="touchEnd($event)" (pointercancel)="touchCancel($event)" (lostpointercapture)="touchCancel($event)">{{ item.icon }}</button></div>
-      <div><button type="button" class="hit-touch" (pointerdown)="touchStart($event, 'drive')" (pointerup)="touchEnd($event)" (pointercancel)="touchCancel($event)" (lostpointercapture)="touchCancel($event)">{{ words().drive }}</button><button type="button" (pointerdown)="touchStart($event, 'lob')" (pointerup)="touchEnd($event)" (pointercancel)="touchCancel($event)" (lostpointercapture)="touchCancel($event)">{{ words().lob }}</button><button type="button" (pointerdown)="touchStart($event, 'smash')" (pointerup)="touchEnd($event)" (pointercancel)="touchCancel($event)" (lostpointercapture)="touchCancel($event)">{{ words().smash }}</button></div>
+      <div><button type="button" class="hit-touch" (pointerdown)="touchStart($event, 'drive')" (pointerup)="touchEnd($event)" (pointercancel)="touchCancel($event)" (lostpointercapture)="touchCancel($event)">{{ words().drive }}</button><button type="button" (pointerdown)="touchStart($event, 'drop')" (pointerup)="touchEnd($event)" (pointercancel)="touchCancel($event)" (lostpointercapture)="touchCancel($event)">{{ words().drop }}</button><button type="button" (pointerdown)="touchStart($event, 'lob')" (pointerup)="touchEnd($event)" (pointercancel)="touchCancel($event)" (lostpointercapture)="touchCancel($event)">{{ words().lob }}</button><button type="button" (pointerdown)="touchStart($event, 'smash')" (pointerup)="touchEnd($event)" (pointercancel)="touchCancel($event)" (lostpointercapture)="touchCancel($event)">{{ words().smash }}</button></div>
     </div>
   </ng-template>
   <div class="arcade-notes"><p>{{ matchFormat() === 'match' ? words().matchRules : words().rules }} {{ words().serviceRules }} {{ words().autoPause }}</p><p>{{ words().local }}</p></div>

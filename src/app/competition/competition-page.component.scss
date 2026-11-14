@@ -1,8 +1,9 @@
 @use '../../styles/prediction-history-layout' as history;
+@use '../../styles/compact-page-heading' as heading;
 
 :host {display:flow-root;color:var(--bb-text);background:var(--bb-page-bg);min-height:calc(100dvh - var(--header-h) - var(--footer-h));}
 a {color:var(--bb-theme-accent);}
-.competition-page {max-width:1160px;margin:20px auto;padding:0 18px 30px;}
+.competition-page {max-width:1160px;margin:8px auto 20px;padding:0 18px 30px;}
 .competition-page--mine {box-sizing:border-box;width:100%;max-width:history.$width + 36px;}
 .competition-page--board {max-width:720px;}
 // Only the shared table contributes to intrinsic width; prose wraps to that width.
@@ -17,7 +18,7 @@ h1 {font-size:clamp(24px,4vw,36px);margin:0 0 16px;} h2 {font-size:18px;margin:2
 .competition-demo-note {padding:14px 16px;border:1px solid #cba541;border-radius:10px;background:#b0821615;line-height:1.5;}
 .competition-demo-link {display:inline-block;padding:10px 0;}
 .competition-demo-actions {display:flex;align-items:center;flex-wrap:wrap;gap:4px 24px;}
-.competition-tabs {display:flex;gap:10px;flex-wrap:wrap;margin:20px 0;}
+.competition-tabs {display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin:20px 0;}
 .competition-tabs a {padding:10px 16px;border:1px solid var(--bb-border,#4e5c65);border-radius:8px;color:var(--bb-text);text-decoration:none;}
 .competition-tabs a.active {background:var(--bb-surface-2,#293d4b);border-color:var(--bb-theme-accent);}
 .competition-controls {display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin:18px 0;font-size:12px;}
@@ -46,3 +47,8 @@ th{background:var(--bb-surface-2,#202b34);}td small{display:block;color:var(--bb
 .picks-link:hover,.picks-link:focus-visible {background:var(--bb-surface-2);outline:1px solid var(--bb-theme-accent);}
 .picks-private {color:var(--bb-text-muted);}
 .leaderboard-caption {position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0;}
+@include heading.layout;
+.bb-compact-heading .competition-disclaimer {padding:0;border:0;border-radius:0;}
+.competition-page.competition-page--embedded {width:100%;max-width:none;margin:0;padding:0;box-sizing:border-box;}
+.competition-page--embedded > :not(.leaderboard-scroll) {contain:none;}
+.competition-page--embedded .leaderboard-table {min-width:100%;}

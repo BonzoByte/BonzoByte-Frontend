@@ -92,12 +92,12 @@
             </div>
 
             <div class="pagination-center-wrapper">
-                <h1 *ngIf="viewMode === 'favourites'" class="favourites-title">
-                    {{ 'favourites.title' | translate }}
-                    <span *ngIf="showFavouriteColumn && !loading && !favourites?.loading() && !favourites?.error()">
-                        ({{ regional.number(favourites!.count(), 0, true) }})
-                    </span>
-                </h1>
+                <div class="favourites-status-switch" *ngIf="viewMode === 'favourites' && showFavouriteColumn" role="group"
+                    [attr.aria-label]="'favourites.filterLabel' | translate">
+                    <button type="button" *ngFor="let status of favouriteStatuses"
+                        [class.is-active]="favouriteStatus === status" [attr.aria-pressed]="favouriteStatus === status"
+                        (click)="setFavouriteStatus(status)">{{ ('favourites.' + status) | translate }}</button>
+                </div>
                 <!-- DAILY MODE -->
                 <ng-container *ngIf="viewMode === 'daily'">
                     <button (click)="previousDay()" class="link-button" [disabled]="isPrevDisabled || loading">
@@ -192,13 +192,12 @@
             </div>
         </div>
 
-        <section *ngIf="viewMode === 'favourites'" class="favourites-intro">
-            <p>{{ 'favourites.intro' | translate }}</p>
-            <div class="favourites-status-switch" *ngIf="showFavouriteColumn" role="group"
-                [attr.aria-label]="'favourites.filterLabel' | translate">
-                <button type="button" *ngFor="let status of favouriteStatuses"
-                    [class.is-active]="favouriteStatus === status" [attr.aria-pressed]="favouriteStatus === status"
-                    (click)="setFavouriteStatus(status)">{{ ('favourites.' + status) | translate }}</button>
+        <section *ngIf="viewMode === 'favourites'" class="favourites-intro bb-compact-heading" aria-labelledby="favourites-title">
+            <div class="bb-compact-heading__line">
+                <h1 id="favourites-title" class="favourites-title">{{ 'favourites.title' | translate }}
+                    <span *ngIf="showFavouriteColumn && !loading && !favourites?.loading() && !favourites?.error()">({{ regional.number(favourites!.count(), 0, true) }})</span>
+                </h1>
+                <p class="bb-compact-intro"><span class="bb-compact-heading__separator" aria-hidden="true">— </span>{{ 'favourites.intro' | translate }}</p>
             </div>
         </section>
 

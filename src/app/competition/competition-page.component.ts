@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
@@ -15,6 +15,7 @@ import { leaderboardDemoName } from './leaderboard-demo-names';
     imports: [CommonModule, FormsModule, RouterModule, TranslateModule, PredictionHistoryGridComponent],
     templateUrl: './competition-page.component.html', styleUrls: ['./competition-page.component.scss'] })
 export class CompetitionPageComponent implements OnInit, OnDestroy {
+    @Input() embeddedLeaderboard = false;
     readonly mineMode: boolean;
     readonly maxMonth: string;
     month: string;

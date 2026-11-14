@@ -1,0 +1,17 @@
+<section class="arcade-standings" [attr.aria-busy]="loading">
+  <p class="ranking-note">{{ 'leaderboardHub.arcadeNote' | translate }}</p>
+  <div class="ranking-controls"><label>{{ 'competition.month' | translate }} <input type="month" [(ngModel)]="month" min="2020-01" [max]="maxMonth" (change)="load()"></label>
+    <button type="button" [disabled]="loading" (click)="load()">{{ 'competition.refresh' | translate }}</button><span>{{ 'competition.utcNote' | translate }}</span></div>
+  <p *ngIf="loading" role="status">{{ 'common.loading' | translate }}</p>
+  <p *ngIf="failed" role="alert">{{ 'competition.unavailable' | translate }}</p>
+  <ng-container *ngIf="board as data">
+    <p *ngIf="!data.items.length">{{ 'leaderboardHub.empty' | translate }}</p>
+    <div *ngIf="data.items.length" class="ranking-scroll" tabindex="0" role="region" [attr.aria-label]="'tennisBreak.title' | translate">
+      <table class="match-table"><caption>{{ 'tennisBreak.title' | translate }} — {{ data.month }}</caption>
+        <thead><tr><th scope="col">#</th><th scope="col">{{ 'competition.competitor' | translate }}</th><th scope="col">{{ 'leaderboardHub.rating' | translate }}</th><th scope="col">{{ 'leaderboardHub.played' | translate }}</th><th scope="col">{{ 'leaderboardHub.wins' | translate }}</th></tr></thead>
+        <tbody><tr *ngFor="let row of data.items"><td>{{ regional.number(row.rank,0) }}</td><td>{{ row.nickname }}<small *ngIf="row.provisional">{{ 'leaderboardHub.provisional' | translate }}</small></td>
+          <td>{{ regional.number(row.score,2) }}</td><td>{{ regional.number(row.played,0) }}</td><td>{{ regional.number(row.won,0) }}</td></tr></tbody>
+      </table>
+    </div>
+  </ng-container>
+</section>

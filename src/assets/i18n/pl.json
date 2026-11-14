@@ -1,4 +1,13 @@
 {
+  "leaderboardHub": {
+    "intro": "Trzy konkursy. Oddzielne rankingi i punktacja.",
+    "arcadeNote": "Miesięczny ranking gry według μ − 3σ. Liczą się tylko zweryfikowane wyzwania rankingowe, nie trening. Ranking próbny nie oferuje nagród.",
+    "rating": "Ocena (μ − 3σ)",
+    "played": "Rozegrane",
+    "wins": "Wygrane",
+    "provisional": "Tymczasowy · mniej niż 10 wyzwań",
+    "empty": "Brak ukończonych wyzwań rankingowych w tym miesiącu."
+  },
   "viewRecovery": {
     "backOnline": "Przeglądarka znów ma połączenie z internetem.",
     "backHint": "Jeśli niektóre dane nadal są niedostępne, spróbuj ponownie wczytać ten widok.",
@@ -113,7 +122,8 @@
     "makePick": "Dodaj prognozę",
     "viewPick": "Zobacz swoją prognozę",
     "winner": "Wybierz zwycięzcę",
-    "virtual": "Bezpłatny konkurs · 1 wirtualna jednostka na prognozę · Bez wpłat, wartości pieniężnej i nagród.",
+    "virtual": "Bezpłatny konkurs · 1 wirtualna jednostka na prognozę.",
+    "rewardRule": "Zwycięzca miesiąca otrzymuje 30 dni Premium po końcowej weryfikacji wyników. Przy remisie każdy zwycięzca otrzymuje taką samą nagrodę. Aktywność testowa jest wykluczona. Nagrody nie można wymienić na pieniądze.",
     "deadline": "Zamknięcie typowania",
     "stake": "Stawka: 1 wirtualna jednostka",
     "odds": "Mediany kursów",
@@ -595,6 +605,14 @@
   "register": "Zarejestruj się",
   "logout": "Wyloguj się",
   "navigation": {
+    "menu": "Menu",
+    "primary": "Nawigacja główna",
+    "groups": {
+      "data": "Dane tenisowe",
+      "analysis": "Analiza modelu",
+      "community": "Społeczność i ulubione",
+      "personal": "Moje aktywności"
+    },
     "skipToContent": "Przejdź do głównej treści",
     "matches": "Mecze",
     "players": "Zawodnicy",

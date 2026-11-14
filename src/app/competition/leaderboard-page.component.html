@@ -1,0 +1,15 @@
+<section class="leaderboard-page" aria-labelledby="leaderboard-title">
+  <header class="bb-compact-heading bb-compact-heading--centred"><div class="bb-compact-heading__line">
+    <h1 id="leaderboard-title">{{ 'competition.leaderboard' | translate }}</h1><p class="bb-compact-eyebrow">BONZOBYTE COMMUNITY</p>
+    <p class="bb-compact-intro"><span class="bb-compact-heading__separator" aria-hidden="true">— </span>{{ 'leaderboardHub.intro' | translate }}</p>
+  </div></header>
+  <nav class="ranking-tabs" role="tablist" [attr.aria-label]="'competition.leaderboard' | translate" (keydown)="tabKey($event)">
+    <a *ngFor="let item of tabs" class="ranking-tab" role="tab" [id]="'ranking-tab-'+item.id" routerLink="/competition" [queryParams]="queryFor(item.id)"
+      [class.active]="tab===item.id" [attr.aria-selected]="tab===item.id" [attr.tabindex]="tab===item.id?0:-1" aria-controls="ranking-panel">{{ item.label | translate }}</a>
+  </nav>
+  <div id="ranking-panel" role="tabpanel" [attr.aria-labelledby]="'ranking-tab-'+tab">
+    <app-competition-page *ngIf="tab==='picks'" [embeddedLeaderboard]="true"></app-competition-page>
+    <app-arcade-leaderboard *ngIf="tab==='tennis-break'" [initialMonth]="month"></app-arcade-leaderboard>
+    <app-fantasy-page *ngIf="tab==='fantasy'" [leaderboardOnly]="true" [initialMonth]="month"></app-fantasy-page>
+  </div>
+</section>

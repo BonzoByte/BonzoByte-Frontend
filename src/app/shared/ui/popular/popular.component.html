@@ -1,6 +1,8 @@
 <section class="popular-page" [class.popular-page--players]="tab === 'player'" [attr.aria-label]="'popularity.title' | translate">
-  <header class="popular-heading"><p class="popular-eyebrow">BONZOBYTE COMMUNITY</p><h1>{{ 'popularity.title' | translate }}</h1></header>
-  <p class="popular-intro">{{ 'popularity.intro' | translate }}</p>
+  <header class="popular-heading bb-compact-heading"><div class="bb-compact-heading__line">
+    <h1>{{ 'popularity.title' | translate }}</h1><p class="popular-eyebrow bb-compact-eyebrow">BONZOBYTE COMMUNITY</p>
+    <p class="popular-intro bb-compact-intro"><span class="bb-compact-heading__separator" aria-hidden="true">— </span>{{ 'popularity.intro' | translate }}</p>
+  </div></header>
   <p *ngIf="!preview && ranking && ranking.environment !== 'production'" class="popular-development" role="note">{{ (ranking.testActivity ? 'competition.testActivityNote' : 'popularity.development') | translate }}</p>
   <p *ngIf="preview" class="popular-preview-note" role="note">{{ 'popularity.previewNotice' | translate }}</p>
   <div class="popular-tabs" role="tablist" [attr.aria-label]="'popularity.title' | translate" (keydown)="tabKey($event)">

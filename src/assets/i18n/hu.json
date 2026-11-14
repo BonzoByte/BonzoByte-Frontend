@@ -1,4 +1,13 @@
 {
+  "leaderboardHub": {
+    "intro": "Három verseny. Külön ranglisták és pontozás.",
+    "arcadeNote": "A játék havi ranglistája μ − 3σ alapján. Csak az ellenőrzött rangsorolt kihívások számítanak, a gyakorlás nem. A próbaranglistához nem jár díj.",
+    "rating": "Értékelés (μ − 3σ)",
+    "played": "Lejátszott",
+    "wins": "Győzelmek",
+    "provisional": "Előzetes · 10 kihívás alatt",
+    "empty": "Ebben a hónapban még nincs befejezett rangsorolt kihívás."
+  },
   "viewRecovery": {
     "backOnline": "A böngésző ismét csatlakozik az internethez.",
     "backHint": "Ha egyes adatok továbbra sem érhetők el, próbáld újra betölteni ezt a nézetet.",
@@ -113,7 +122,8 @@
     "makePick": "Előrejelzés készítése",
     "viewPick": "Saját előrejelzés megtekintése",
     "winner": "Válaszd ki a győztest",
-    "virtual": "Ingyenes tippverseny · Tippenként 1 virtuális egység · Nincs befizetés, pénzbeli érték vagy díj.",
+    "virtual": "Ingyenes tippverseny · Tippenként 1 virtuális egység.",
+    "rewardRule": "A havi győztes az eredmények végső ellenőrzése után 30 nap Premiumot kap. Holtverseny esetén minden győztes ugyanazt a jutalmat kapja. A teszttevékenység nem jogosít jutalomra. A jutalom nem váltható pénzre.",
     "deadline": "Tippek lezárása",
     "stake": "Tét: 1 virtuális egység",
     "odds": "Medián oddsok",
@@ -595,6 +605,14 @@
   "register": "Regisztráció",
   "logout": "Kijelentkezés",
   "navigation": {
+    "menu": "Menü",
+    "primary": "Fő navigáció",
+    "groups": {
+      "data": "Teniszadatok",
+      "analysis": "Modellelemzés",
+      "community": "Közösség és kedvencek",
+      "personal": "Saját tevékenységek"
+    },
     "skipToContent": "Ugrás a fő tartalomra",
     "matches": "Mérkőzések",
     "players": "Játékosok",

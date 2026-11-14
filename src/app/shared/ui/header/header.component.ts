@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, ElementRef, EventEmitter, HostListener, NgZone, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, EventEmitter, HostListener, NgZone, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
 import { NavigationEnd, Router, RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { filter, Subscription } from 'rxjs';
@@ -46,11 +46,40 @@ import {
         AccountAvatarComponent
     ]
 })
-export class HeaderComponent implements OnInit, OnDestroy {
+export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
     readonly billingLab = environment.billingLab;
     @Output() closed = new EventEmitter<void>();
     @Output() userModalOpened = new EventEmitter<void>();
     @ViewChild('languagePicker') private languagePicker?: ElementRef<HTMLDetailsElement>;
+    @ViewChild('headerBar', { static: true }) private headerBar!: ElementRef<HTMLElement>;
+    @ViewChild('navigationToggle') private navigationToggle?: ElementRef<HTMLButtonElement>;
+    @ViewChild('primaryNavigation') private primaryNavigation?: ElementRef<HTMLElement>;
+    navigationOpen = false;
+    private headerResizeObserver?: ResizeObserver;
+    private previousHeaderHeight = '';
+
+    toggleNavigation(): void {
+        this.navigationOpen = !this.navigationOpen;
+        if (this.languagePicker) this.languagePicker.nativeElement.open = false;
+    }
+
+    closeNavigation(restoreFocus = false): void {
+        const wasOpen = this.navigationOpen;
+        this.navigationOpen = false;
+        if (wasOpen && restoreFocus) this.navigationToggle?.nativeElement.focus();
+    }
+
+    onNavigationClick(event: MouseEvent): void {
+        if (event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+        if ((event.target as Element | null)?.closest('a[href]')) this.closeNavigation();
+    }
+
+    @HostListener('document:keydown.escape', ['$event'])
+    closeNavigationOnEscape(event: KeyboardEvent): void {
+        if (!this.navigationOpen || event.defaultPrevented) return;
+        event.preventDefault();
+        this.closeNavigation(true);
+    }
 
     @HostListener('document:click', ['$event'])
     closeLanguagePickerOnOutsideClick(event: MouseEvent): void {
@@ -58,6 +87,8 @@ export class HeaderComponent implements OnInit, OnDestroy {
         if (picker?.open && !picker.contains(event.target as Node | null)) {
             picker.open = false;
         }
+        if (this.navigationOpen && !this.primaryNavigation?.nativeElement.contains(event.target as Node | null)
+            && !this.navigationToggle?.nativeElement.contains(event.target as Node | null)) this.closeNavigation();
     }
 
     isLoggedIn = false;
@@ -144,12 +175,14 @@ export class HeaderComponent implements OnInit, OnDestroy {
         this.navigationSub = this.router.events
             .pipe(filter((e): e is NavigationEnd => e instanceof NavigationEnd))
             .subscribe((e) => {
+                this.closeNavigation();
                 const path = e.urlAfterRedirects.split(/[?#]/)[0];
                 if (path === '/login') this.openLoginModal();
                 if (path === '/register') this.openRegisterModal();
             });
 
         this.authSub = this.authService.authStatus$.subscribe(status => {
+            this.closeNavigation();
             this.isLoggedIn = status;
             if (status) this.themeService.restoreStoredTheme();
             else this.themeService.useAnonymousDefault();
@@ -173,7 +206,28 @@ export class HeaderComponent implements OnInit, OnDestroy {
         window.addEventListener('openVerification', this.openVerificationFromGlobal);
     }
 
+    ngAfterViewInit(): void {
+        const rootStyle = document.documentElement.style;
+        this.previousHeaderHeight = rootStyle.getPropertyValue('--header-h');
+        this.zone.runOutsideAngular(() => {
+            const measure = () => {
+                const height = Math.ceil(this.headerBar.nativeElement.getBoundingClientRect().height);
+                // Header sizing never depends on this measured variable: no resize loop.
+                if (height > 0 && rootStyle.getPropertyValue('--header-h') !== `${height}px`) rootStyle.setProperty('--header-h', `${height}px`);
+            };
+            measure();
+            if (typeof ResizeObserver !== 'undefined') {
+                this.headerResizeObserver = new ResizeObserver(measure);
+                this.headerResizeObserver.observe(this.headerBar.nativeElement);
+            }
+        });
+    }
+
     ngOnDestroy(): void {
+        this.headerResizeObserver?.disconnect();
+        const rootStyle = document.documentElement.style;
+        if (this.previousHeaderHeight) rootStyle.setProperty('--header-h', this.previousHeaderHeight);
+        else rootStyle.removeProperty('--header-h');
         if (this.authSub) this.authSub.unsubscribe();
         this.userSub?.unsubscribe();
         this.navigationSub?.unsubscribe();
@@ -200,6 +254,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
     }
 
     openLoginModal(): void {
+        this.closeNavigation();
         this.verificationContext = null;
         this.showRegisterModal = false;
         this.showLoginModal = true;
@@ -211,6 +266,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
     }
 
     openRegisterModal(): void {
+        this.closeNavigation();
         this.verificationContext = null;
         this.showLoginModal = false;
         this.showRegisterModal = true;
@@ -233,8 +289,8 @@ export class HeaderComponent implements OnInit, OnDestroy {
         }
     }
 
-    logout(): void { this.authService.logout(); }
+    logout(): void { this.closeNavigation(); this.authService.logout(); }
 
-    openUserModal() { this.userModalOpened.emit(); }
+    openUserModal() { this.closeNavigation(); this.userModalOpened.emit(); }
 
 }

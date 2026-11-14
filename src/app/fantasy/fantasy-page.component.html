@@ -1,0 +1,69 @@
+<section class="fantasy-page" [class.fantasy-page--embedded]="leaderboardOnly" [attr.aria-busy]="loading" [attr.aria-label]="'fantasy.title' | translate">
+  <header *ngIf="!leaderboardOnly" class="hero bb-compact-heading"><div class="bb-compact-heading__line"><h1 id="fantasy-title">{{ 'fantasy.title' | translate }}</h1><p class="eyebrow bb-compact-eyebrow">BONZOBYTE · FANTASY</p><p class="bb-compact-intro"><span class="bb-compact-heading__separator" aria-hidden="true">— </span>{{ 'fantasy.intro' | translate }}</p></div>
+    <div class="prize bb-compact-heading__actions" *ngIf="status?.season?.rewardsEnabled"><strong>30</strong><span>{{ 'fantasy.prize' | translate }}</span></div>
+  </header>
+  <p class="notice">{{ 'fantasy.virtual' | translate }}</p>
+  <nav *ngIf="!leaderboardOnly" class="tabs" [attr.aria-label]="'fantasy.title' | translate"><button *ngFor="let item of tabs" type="button" [class.active]="tab===item" [attr.aria-pressed]="tab===item" (click)="tab=item">{{ 'fantasy.'+item | translate }}</button><a class="standings-link" routerLink="/competition" [queryParams]="{tab:'fantasy',month:month||null}">{{ 'fantasy.leaderboard' | translate }} ↗</a></nav>
+  <div class="season-controls" *ngIf="status?.season">
+    <label>{{ 'fantasy.month' | translate }} <select [ngModel]="month" (ngModelChange)="changeMonth($event)" [disabled]="loading||saving"><option *ngFor="let value of status!.months" [value]="value">{{ value }}</option></select></label>
+    <span>{{ 'fantasy.utc' | translate }}</span><button type="button" (click)="load()" [disabled]="loading||saving||dirty">{{ 'fantasy.refresh' | translate }}</button>
+  </div>
+  <p *ngIf="loading" role="status">{{ 'fantasy.loading' | translate }}</p>
+  <p *ngIf="error" class="error" role="alert">{{ error | translate }} <button type="button" (click)="load()">{{ 'fantasy.retry' | translate }}</button></p>
+  <section *ngIf="!loading&&!error&&!status?.season&&tab!=='rules'" class="empty"><h2>{{ 'fantasy.preparing' | translate }}</h2><p>{{ 'fantasy.preparingDetail' | translate }}</p><button type="button" (click)="tab='rules'">{{ 'fantasy.rules' | translate }}</button></section>
+
+  <ng-container *ngIf="status?.season as season">
+    <p class="notice" *ngIf="!season.rewardsEnabled">{{ 'fantasy.practiceSeason' | translate }}</p>
+    <p class="muted">{{ 'fantasy.catalogueAsOf' | translate:{date:regional.date(season.sourceAsOf)} }}</p>
+    <p class="muted" *ngIf="season.catalogueCoverage==='reviewed-grand-slam-pool-2026'">{{ 'fantasy.initialPool' | translate }}</p>
+    <section *ngIf="(tab==='team'||tab==='market')&&!mineLoading" class="budget-panel" [class.budget-shortfall]="budget.shortfall>0" aria-labelledby="fantasy-budget-title">
+      <ng-container *ngIf="budget as funds">
+        <div class="budget-heading">
+          <div class="budget-remaining"><span id="fantasy-budget-title">{{ 'fantasy.remaining' | translate }}</span><strong>{{ regional.number(funds.remaining,0,true) }} <small>{{ 'fantasy.credits' | translate }}</small></strong></div>
+          <div class="budget-spent"><span>{{ 'fantasy.spent' | translate }}</span><strong>{{ regional.number(funds.spent,0,true) }} / {{ regional.number(totalBudget,0,true) }}</strong><small>{{ 'fantasy.sharedBudget' | translate }}</small></div>
+          <div class="budget-roster"><span>{{ 'fantasy.squad' | translate }}</span><strong>ATP {{ count('ATP') }}/5 · WTA {{ count('WTA') }}/5</strong><button *ngIf="tab==='market'" type="button" (click)="tab='team'">{{ 'fantasy.team' | translate }} →</button></div>
+        </div>
+        <div class="budget-bar" role="progressbar" [attr.aria-label]="'fantasy.spent' | translate" aria-valuemin="0" [attr.aria-valuemax]="totalBudget" [attr.aria-valuenow]="Math.max(0,Math.min(totalBudget,funds.spent))" [attr.aria-valuetext]="'fantasy.spentOfBudget' | translate:{spent:regional.number(funds.spent,0,true),total:regional.number(totalBudget,0,true)}"><span [style.width.%]="funds.usedPercent"></span></div>
+        <p class="budget-guidance" aria-live="polite" aria-atomic="true">
+          <ng-container *ngIf="funds.shortfall>0;else budgetRoom"><strong>{{ 'fantasy.shortfall' | translate:{amount:regional.number(funds.shortfall,0,true)} }}</strong> {{ 'fantasy.minimumNeeded' | translate:{slots:funds.emptySlots,amount:regional.number(funds.minimumForEmptySlots,0,true)} }} {{ 'fantasy.chooseCheaper' | translate }}</ng-container>
+          <ng-template #budgetRoom><ng-container *ngIf="funds.emptySlots>0;else budgetComplete">{{ 'fantasy.minimumNeeded' | translate:{slots:funds.emptySlots,amount:regional.number(funds.minimumForEmptySlots,0,true)} }}</ng-container><ng-template #budgetComplete>{{ 'fantasy.completeWithinBudget' | translate }}</ng-template></ng-template>
+        </p>
+      </ng-container>
+    </section>
+    <ng-container *ngIf="tab==='team'">
+      <p *ngIf="!actor" class="notice">{{ 'fantasy.signIn' | translate }} <button type="button" (click)="showLogin=true">{{ 'login' | translate }}</button></p>
+      <p *ngIf="actor&&!verified" class="notice">{{ 'fantasy.verify' | translate }}</p>
+      <p *ngIf="mineLoading" role="status">{{ 'fantasy.loading' | translate }}</p>
+      <p *ngIf="mineError" class="error" role="alert">{{ mineError | translate }} <button type="button" (click)="reloadMine()">{{ 'fantasy.reloadTeam' | translate }}</button></p>
+      <ng-container *ngIf="actor&&!mineLoading">
+        <div class="metrics"><div><span>{{ 'fantasy.transfers' | translate }}</span><strong>{{ mine?.team?.remainingTransfers ?? 4 }} / 4</strong><small>{{ 'fantasy.reserved' | translate:{count:mine?.team?.reservedTransfers ?? 0} }}</small></div><div><span>{{ 'fantasy.points' | translate }}</span><strong>{{ regional.number((mine?.pointsMinor??0)/100,2,true) }}</strong></div></div>
+        <p class="notice" *ngIf="mine?.team&&!mine?.team?.qualified">{{ 'fantasy.provisional' | translate }}</p>
+        <p class="notice" *ngIf="season.status==='final'">{{ 'fantasy.final' | translate }}</p>
+        <label class="name-label" for="fantasy-team-name">{{ 'fantasy.teamName' | translate }}</label><input id="fantasy-team-name" maxlength="40" autocomplete="off" [(ngModel)]="name" (ngModelChange)="changeName()" [disabled]="!editable">
+        <div class="squad-grid"><section *ngFor="let group of ['ATP','WTA']"><h2>{{ group }} <small>{{ count(group) }} / 5</small></h2><ng-container *ngFor="let player of selectedPlayers"><article *ngIf="player.tour===group" class="player-card"><div><span *ngIf="player.countryISO2" [class]="'fi fi-'+player.countryISO2" aria-hidden="true"></span> <strong>{{ player.name }}</strong><small>{{ regional.number(player.price,0,true) }} {{ 'fantasy.credits' | translate }}</small></div><button type="button" [disabled]="!editable" (click)="toggle(player)" [attr.aria-label]="('fantasy.remove' | translate)+': '+player.name">×</button></article></ng-container><button type="button" class="add-player" (click)="tour=group;page=0;tab='market';loadMarket()" [disabled]="!editable||count(group)>=5">+ {{ 'fantasy.choosePlayer' | translate }}</button></section></div>
+        <p class="muted">{{ 'fantasy.nextLock' | translate:{day:scheduledDay} }}</p>
+        <p class="muted">{{ 'fantasy.noAutoSave' | translate }}</p>
+        <p *ngIf="dirty&&problem" class="muted" role="status">{{ problem | translate }}</p>
+        <div class="actions"><button type="button" class="primary" (click)="save()" [disabled]="!editable||!!problem||!dirty">{{ (saving?'fantasy.saving':'fantasy.save') | translate }}</button><button type="button" (click)="discard()" [disabled]="!dirty||saving">{{ 'fantasy.discard' | translate }}</button><button type="button" *ngIf="mine?.team?.reservedTransfers" (click)="cancelPending()" [disabled]="!editable">{{ 'fantasy.cancelPending' | translate }}</button><span *ngIf="dirty" class="muted">{{ 'fantasy.unsaved' | translate }}</span></div>
+        <details class="locked" *ngIf="mine?.team?.currentPlayers?.length"><summary>{{ 'fantasy.lockedSquad' | translate }}</summary><ng-container *ngFor="let id of mine!.team!.currentPlayers"><p>{{ players.get(id)?.name ?? id }}</p></ng-container></details>
+        <section class="results" *ngIf="mine?.results?.length"><h2>{{ 'fantasy.results' | translate }}</h2><p class="muted">{{ 'fantasy.resultsLimit' | translate:{shown:mine!.results.length,total:mine!.resultCount} }}</p><article *ngFor="let result of mine!.results"><time>{{ regional.date(result.day) }}</time><div><p *ngFor="let entry of result.entries">{{ players.get(entry.playerId)?.name ?? entry.playerId }} · {{ 'fantasy.'+entry.outcome | translate }} <strong>{{ regional.number(entry.pointsMinor/100,2) }}</strong></p><small>#{{ result.fixtureId }} · {{ 'fantasy.lockedProbability' | translate }}</small></div></article></section>
+      </ng-container>
+    </ng-container>
+
+    <section *ngIf="tab==='market'">
+      <p class="muted">{{ 'fantasy.priceRule' | translate }}</p><p *ngIf="!actor" class="notice">{{ 'fantasy.signIn' | translate }} <button type="button" (click)="showLogin=true">{{ 'login' | translate }}</button></p>
+      <div class="market-controls"><label for="fantasy-tour">{{ 'fantasy.tour' | translate }}</label><select id="fantasy-tour" [(ngModel)]="tour" (ngModelChange)="search()"><option value="">ATP + WTA</option><option>ATP</option><option>WTA</option></select><label for="fantasy-search">{{ 'fantasy.search' | translate }}</label><input id="fantasy-search" [(ngModel)]="query" (ngModelChange)="search()" maxlength="80" type="search"></div>
+      <p *ngIf="marketLoading" role="status">{{ 'fantasy.loading' | translate }}</p><p *ngIf="marketError" class="error" role="alert">{{ 'fantasy.unavailable' | translate }} <button type="button" (click)="loadMarket()">{{ 'fantasy.retry' | translate }}</button></p>
+      <div class="table-scroll" *ngIf="market&&!marketError" tabindex="0"><table><caption class="sr-only">{{ 'fantasy.market' | translate }}</caption><thead><tr><th>{{ 'fantasy.player' | translate }}</th><th>{{ 'fantasy.tour' | translate }}</th><th>{{ 'fantasy.strength' | translate }}</th><th>{{ 'fantasy.price' | translate }}</th><th>{{ 'fantasy.selection' | translate }}</th></tr></thead><tbody><tr *ngFor="let player of market.items" [class.selected]="draft.includes(player.playerId)"><td><span *ngIf="player.countryISO2" [class]="'fi fi-'+player.countryISO2" aria-hidden="true"></span> {{ player.name }}</td><td>{{ player.tour }}</td><td>{{ regional.number(player.strength,2) }}</td><td>{{ regional.number(player.price,0,true) }}</td><td><button type="button" [disabled]="!editable||(!draft.includes(player.playerId)&&(count(player.tour)>=5||cost+player.price>1000000))" (click)="toggle(player)">{{ (draft.includes(player.playerId)?'fantasy.remove':'fantasy.add') | translate }}</button></td></tr></tbody></table></div>
+      <p *ngIf="market?.total===0&&!marketLoading">{{ 'fantasy.noPlayers' | translate }}</p><div class="pagination" *ngIf="market"><button type="button" (click)="turnPage(-1)" [disabled]="page===0||marketLoading">← {{ 'fantasy.previous' | translate }}</button><span>{{ regional.number(page+1,0) }} / {{ regional.number(Math.ceil(market.total/40)||1,0) }}</span><button type="button" (click)="turnPage(1)" [disabled]="(page+1)*40>=market.total||marketLoading">{{ 'fantasy.next' | translate }} →</button></div>
+    </section>
+
+    <section *ngIf="tab==='leaderboard'"><p class="muted">{{ 'fantasy.boardRule' | translate }}</p><p *ngIf="boardLoading" role="status">{{ 'fantasy.loading' | translate }}</p><p *ngIf="boardError" class="error">{{ 'fantasy.unavailable' | translate }} <button type="button" (click)="loadBoard()">{{ 'fantasy.retry' | translate }}</button></p>
+      <ng-container *ngIf="board&&!boardError"><p *ngIf="!board.qualified.length&&!board.provisional.length" class="empty">{{ 'fantasy.noTeams' | translate }}</p><ng-container *ngFor="let group of ['qualified','provisional']"><h2>{{ 'fantasy.'+group | translate }}</h2><div class="table-scroll" tabindex="0"><table><thead><tr><th>#</th><th>{{ 'fantasy.team' | translate }}</th><th>{{ 'fantasy.member' | translate }}</th><th>{{ 'fantasy.points' | translate }}</th><th>{{ 'fantasy.results' | translate }}</th></tr></thead><tbody><tr *ngFor="let row of group==='qualified'?board.qualified:board.provisional"><td>{{ row.rank }}</td><td><button type="button" class="text-link" (click)="showTeam(row.id)">{{ row.name }}</button></td><td>{{ row.nickname }}</td><td>{{ regional.number(row.pointsMinor/100,2,true) }}</td><td>{{ row.matches }}</td></tr></tbody></table></div></ng-container></ng-container>
+      <p *ngIf="publicLoading" role="status">{{ 'fantasy.loading' | translate }}</p><section *ngIf="publicTeam" class="public-team"><h2>{{ publicTeam.name }} — {{ publicTeam.nickname }}</h2><p class="muted">{{ 'fantasy.publicRule' | translate }}</p><p *ngIf="!publicTeam.players.length">{{ 'fantasy.notLocked' | translate }}</p><p *ngFor="let player of publicTeam.players"><span *ngIf="player.countryISO2" [class]="'fi fi-'+player.countryISO2" aria-hidden="true"></span> {{ player.name }} · {{ player.tour }}</p></section>
+    </section>
+  </ng-container>
+
+  <section class="rules" *ngIf="tab==='rules'"><h2>{{ 'fantasy.rules' | translate }}</h2><p *ngFor="let key of ['squadRule','transferRule','lockRule','eligibilityRule','scoringRule','correctionRule','rewardRule','privacyRule']">{{ 'fantasy.'+key | translate }}</p><div class="formula"><strong>{{ 'fantasy.scoring' | translate }}</strong><p>{{ 'fantasy.formulaWin' | translate }}</p><p>{{ 'fantasy.formulaLoss' | translate }}</p><small>{{ 'fantasy.formulaDetail' | translate }}</small></div></section>
+</section>
+<app-login *ngIf="showLogin" (closed)="showLogin=false"></app-login>

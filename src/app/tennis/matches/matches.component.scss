@@ -1,5 +1,7 @@
 ﻿@use '../../../styles/prediction-market-cell' as prediction;
 
+@use '../../../styles/compact-page-heading' as heading;
+
 .matches-page {
     background:
         linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(0, 0, 0, 0.52)),
@@ -84,7 +86,7 @@
     margin: 0;
     font: inherit;
     font-weight: 700;
-    white-space: nowrap;
+    white-space: normal;
 }
 
 .matches-page .favourites-status-switch {
@@ -104,10 +106,27 @@
     justify-content: space-between;
     flex-wrap: wrap;
     gap: 8px 16px;
-    margin: 8px 16px;
+    box-sizing: border-box;
+    width: min(1320px, calc(100% - 32px));
+    align-self: center;
+    flex: 0 0 auto;
+    margin: 8px auto 12px;
     color: var(--bb-text-muted);
 
     p { margin: 0; }
+}
+
+@include heading.layout;
+.matches-page .favourites-intro { align-items:baseline; }
+.matches-page .favourites-intro .bb-compact-heading__line {
+    flex: 0 1 auto;
+    justify-content: center;
+    margin-inline: auto;
+    text-align: center;
+}
+.matches-page .favourites-intro .favourites-title { color:var(--bb-text); font-size:clamp(24px,2.5vw,32px); line-height:1.2; }
+@media (max-width: 600px) {
+    .matches-page .favourites-intro .bb-compact-heading__line { flex-basis: 100%; }
 }
 
 .matches-page .favourites-feedback,

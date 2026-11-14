@@ -1,4 +1,13 @@
 {
+  "leaderboardHub": {
+    "intro": "Tři soutěže. Oddělené žebříčky a bodování.",
+    "arcadeNote": "Měsíční žebříček hry podle μ − 3σ. Počítají se jen ověřené hodnocené výzvy, ne trénink. Zkušební žebříček je bez cen.",
+    "rating": "Hodnocení (μ − 3σ)",
+    "played": "Odehráno",
+    "wins": "Výhry",
+    "provisional": "Předběžné pořadí · méně než 10 výzev",
+    "empty": "V tomto měsíci nejsou dokončené hodnocené výzvy."
+  },
   "viewRecovery": {
     "backOnline": "Prohlížeč je znovu připojen k internetu.",
     "backHint": "Pokud některé údaje stále chybí, zkus tento přehled načíst znovu.",
@@ -113,7 +122,8 @@
     "makePick": "Vytvořit předpověď",
     "viewPick": "Zobrazit váš tip",
     "winner": "Vyberte vítěze",
-    "virtual": "Bezplatná soutěž · 1 virtuální jednotka na tip · Bez vkladů, peněžní hodnoty nebo cen.",
+    "virtual": "Bezplatná soutěž · 1 virtuální jednotka na tip.",
+    "rewardRule": "Měsíční vítěz obdrží 30 dní Premium po závěrečném ověření výsledků. Při shodném výsledku získá každý vítěz stejnou odměnu. Testovací aktivita je vyloučena. Odměnu nelze směnit za peníze.",
     "deadline": "Uzávěrka tipů",
     "stake": "Sázka: 1 virtuální jednotka",
     "odds": "Mediánové kurzy",
@@ -595,6 +605,14 @@
   "register": "Registrace",
   "logout": "Odhlášení",
   "navigation": {
+    "menu": "Nabídka",
+    "primary": "Hlavní navigace",
+    "groups": {
+      "data": "Tenisová data",
+      "analysis": "Analýza modelu",
+      "community": "Komunita a oblíbené",
+      "personal": "Moje aktivity"
+    },
     "skipToContent": "Přejít na hlavní obsah",
     "matches": "Zápasy",
     "players": "Hráči",

@@ -49,7 +49,7 @@ export class PageTitleService {
     if (this.match?.path === path && this.match.first && this.match.second) label = `${this.match.first} — ${this.match.second}`;
     else if (/^\/matches\/(?:id\/)?[^/]+$/.test(path)) label = this.regional.text('matchLink.overview');
     else {
-      const key: Record<string, string> = { '/matches': 'navigation.matches', '/players': 'navigation.players',
+      const key: Record<string, string> = { '/fantasy': 'fantasy.title', '/matches': 'navigation.matches', '/players': 'navigation.players',
         '/tournaments': 'navigation.tournaments', '/analytics': 'navigation.analytics', '/model-insights': 'navigation.modelInsights',
         '/simulation': 'navigation.simulation', '/predictions': 'competition.mine', '/competition': 'competition.leaderboard', '/popular': 'popularity.title', '/favourites': 'favourites.title', '/tennis-break': 'tennisBreak.title' };
       if (key[path]) label = this.regional.text(key[path]);

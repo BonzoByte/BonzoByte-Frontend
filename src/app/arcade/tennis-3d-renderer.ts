@@ -2,11 +2,12 @@ import * as THREE from 'three';
 import { FIELD, Player3D, Tennis3DEngine } from './tennis-3d-engine';
 import type { CourtSurface } from './tennis-engine';
 import { TennisCrowd } from './tennis-crowd';
+import { tennisAthletePose, TENNIS_ATHLETE_JOINTS as JOINTS } from './tennis-athlete-pose';
 
 export type TennisCamera = 'broadcast' | 'baseline';
 interface Athlete {
   root: THREE.Group; torso: THREE.Group; head: THREE.Group;
-  arms: THREE.Group[]; elbows: THREE.Group[]; legs: THREE.Group[]; knees: THREE.Group[];
+  arms: THREE.Group[]; elbows: THREE.Group[]; legs: THREE.Group[]; knees: THREE.Group[]; racket: THREE.Group;
 }
 
 /** Original procedural scene. No external avatars, game assets or remote services. */
@@ -26,6 +27,9 @@ export class Tennis3DRenderer {
   private readonly ballShadow: THREE.Mesh;
   private readonly playerRing: THREE.Mesh;
   private readonly bounceRing: THREE.Mesh;
+  private readonly serveMarker = new THREE.Group();
+  private readonly serveGuide: THREE.LineSegments;
+  private readonly serveMarkerMaterial = new THREE.MeshBasicMaterial({ color: 0xf2eea0, transparent: true, opacity: .9, depthWrite: false });
   private surface: CourtSurface | null = null;
   private dead = false;
   private cameraMode: TennisCamera = 'broadcast';
@@ -42,7 +46,7 @@ export class Tennis3DRenderer {
     this.gl.setPixelRatio(1); this.gl.setSize(1000, 540, false);
     this.gl.outputColorSpace = THREE.SRGBColorSpace;
     this.gl.toneMapping = THREE.ACESFilmicToneMapping; this.gl.toneMappingExposure = 1;
-    this.gl.shadowMap.enabled = true; this.gl.shadowMap.type = THREE.PCFSoftShadowMap;
+    this.gl.shadowMap.enabled = true; this.gl.shadowMap.type = THREE.PCFShadowMap;
     this.scene.background = new THREE.Color(0xb3c9cb); this.scene.fog = new THREE.Fog(0xb3c9cb, 45, 100);
     this.scene.add(new THREE.HemisphereLight(0xe7f2ff, 0x557445, 2.2));
     this.sunlight.position.set(-14, 24, 10); this.sunlight.castShadow = true;
@@ -54,6 +58,17 @@ export class Tennis3DRenderer {
     this.buildGround(); this.buildCourt(); this.buildNet(); this.buildClub(); this.buildUmpire();
     this.crowd = new TennisCrowd(this.scene);
     this.athletes.push(this.athlete(false), this.athlete(true));
+    const aimRing = new THREE.Mesh(new THREE.RingGeometry(.26, .34, 28), this.serveMarkerMaterial);
+    aimRing.rotation.x = -Math.PI / 2; this.serveMarker.add(aimRing);
+    const cross = new THREE.BufferGeometry().setFromPoints([
+      new THREE.Vector3(-.47, 0, 0), new THREE.Vector3(.47, 0, 0),
+      new THREE.Vector3(0, 0, -.47), new THREE.Vector3(0, 0, .47)
+    ]);
+    this.serveMarker.add(new THREE.LineSegments(cross, new THREE.LineBasicMaterial({ color: 0xf2eea0, transparent: true, opacity: .8, depthWrite: false })));
+    this.serveGuide = new THREE.LineSegments(new THREE.BufferGeometry().setAttribute('position', new THREE.Float32BufferAttribute(new Float32Array(6), 3)),
+      new THREE.LineBasicMaterial({ color: 0xf2eea0, transparent: true, opacity: .35, depthWrite: false }));
+    this.serveGuide.frustumCulled = false; this.serveMarker.visible = this.serveGuide.visible = false;
+    this.scene.add(this.serveMarker, this.serveGuide);
     const ballMesh = this.mesh(this.sphere, this.material(0xd5f03e), [0, 0, 0], [.125, .125, .125]);
     ballMesh.material = new THREE.MeshStandardMaterial({ color: 0xd8f12a, roughness: .92, emissive: 0x657712, emissiveIntensity: .16 });
     this.ball.add(ballMesh);
@@ -138,6 +153,14 @@ export class Tennis3DRenderer {
     const landing = game.landing();
     this.bounceRing.visible = game.phase === 'playing' && Math.abs(landing.x) < 6 && Math.abs(landing.z) < 14;
     this.bounceRing.position.set(landing.x, .04, landing.z);
+    this.serveMarker.visible = this.serveGuide.visible = game.phase === 'serving' && game.server === 0;
+    if (this.serveMarker.visible) {
+      const target = game.serveTarget, server = game.players[0];
+      this.serveMarker.position.set(target.x, .055, target.z);
+      this.serveMarkerMaterial.color.setHex(game.serveCharge > .95 || Math.abs(game.serveAim) > 1 ? 0xff927e : 0xf2eea0);
+      const points = this.serveGuide.geometry.getAttribute('position') as THREE.BufferAttribute;
+      points.setXYZ(0, server.x, .05, server.z - .2); points.setXYZ(1, target.x, .05, target.z); points.needsUpdate = true;
+    }
     this.crowd.update(time, game.phase === 'point' || game.phase === 'over');
     this.gl.render(this.scene, this.camera);
   }
@@ -272,7 +295,7 @@ export class Tennis3DRenderer {
     const root = new THREE.Group(), torso = new THREE.Group(), head = new THREE.Group();
     const skin = this.material(opponent ? 0x9a6040 : 0xd0a07b), shirt = this.material(opponent ? 0x497d99 : 0xe9e6d5), shorts = this.material(0x1d303d);
     const shoes = this.material(0xe6e6dc), hair = this.material(opponent ? 0x30241f : 0x59402b);
-    root.add(torso); torso.position.y = .95;
+    root.add(torso); torso.position.y = JOINTS.torsoHeight;
     torso.add(this.mesh(this.sphere, shirt, [0, .28, 0], [.24, .36, .13]));
     this.box(shorts, 0, -.02, 0, .39, .23, .25, torso);
     torso.add(this.mesh(this.sphere, skin, [0, .66, 0], [.065, .11, .065]));
@@ -284,11 +307,11 @@ export class Tennis3DRenderer {
     this.box(band, 0, .45, -.119, .34, .018, .014, torso);
     const arms: THREE.Group[] = [], elbows: THREE.Group[] = [], legs: THREE.Group[] = [], knees: THREE.Group[] = [];
     for (const side of [-1, 1]) {
-      const arm = new THREE.Group(), elbow = new THREE.Group(); arm.position.set(side * .265, .48, 0);
+      const arm = new THREE.Group(), elbow = new THREE.Group(); arm.position.set(side * JOINTS.shoulderWidth, JOINTS.shoulderHeight, JOINTS.shoulderForward);
       arm.add(this.mesh(this.limb, shirt, [0, -.095, 0], [1.2, .72, 1.2]));
       arm.add(this.mesh(this.limb, skin, [0, -.18, 0], [.82, .8, .82]));
-      elbow.position.y = -.3; elbow.add(this.mesh(this.limb, skin, [0, -.11, 0], [.78, .8, .78]));
-      elbow.add(this.mesh(this.sphere, skin, [0, -.25, 0], [.06, .075, .055]));
+      elbow.position.y = -JOINTS.elbowDrop; elbow.add(this.mesh(this.limb, skin, [0, -.11, 0], [.78, .8, .78]));
+      elbow.add(this.mesh(this.sphere, skin, [0, -JOINTS.handDrop, 0], [.06, .075, .055]));
       arm.add(elbow); torso.add(arm); arms.push(arm); elbows.push(elbow);
       const leg = new THREE.Group(), knee = new THREE.Group(); leg.position.set(side * .12, .83, 0);
       leg.add(this.mesh(this.limb, shorts, [0, -.12, 0], [1.5, 1.22, 1.5]));
@@ -298,25 +321,24 @@ export class Tennis3DRenderer {
       knee.add(this.mesh(this.sphere, shoes, [0, -.36, -.06], [.09, .065, .18]));
       leg.add(knee); root.add(leg); legs.push(leg); knees.push(knee);
     }
-    const racquet = new THREE.Group(); racquet.position.set(0, -.28, 0); racquet.rotation.x = Math.PI / 2;
-    this.box(this.material(0xe4e0d5), 0, -.14, 0, .035, .29, .035, racquet);
-    const rim = new THREE.Mesh(new THREE.TorusGeometry(.17, .013, 5, 28), this.material(opponent ? 0xdc874e : 0x8cb87b)); rim.scale.y = 1.3; rim.position.y = -.48; racquet.add(rim);
+    const racquet = new THREE.Group(); racquet.position.set(0, -JOINTS.handDrop, JOINTS.gripForward); racquet.rotation.x = .65;
+    const frame = this.material(opponent ? 0xdc874e : 0x8cb87b);
+    this.box(this.material(0xe4e0d5), 0, -.02, 0, .037, .26, .037, racquet);
+    for (const side of [-1, 1]) { const throat = this.box(frame, side * .032, -.19, 0, .018, .15, .018, racquet); throat.rotation.z = side * .42; }
+    const rim = new THREE.Mesh(new THREE.TorusGeometry(.17, .013, 5, 28), frame); rim.scale.y = 1.3; rim.position.y = -JOINTS.racketHeadDrop; racquet.add(rim);
     const strings: THREE.Vector3[] = [];
-    for (let x = -.12; x <= .121; x += .04) { const y = .21 * Math.sqrt(1 - (x / .17) ** 2); strings.push(new THREE.Vector3(x, -.48 - y, 0), new THREE.Vector3(x, -.48 + y, 0)); }
-    for (let y = -.16; y <= .161; y += .04) { const x = .17 * Math.sqrt(1 - (y / .22) ** 2); strings.push(new THREE.Vector3(-x, -.48 + y, 0), new THREE.Vector3(x, -.48 + y, 0)); }
+    for (let x = -.12; x <= .121; x += .04) { const y = .21 * Math.sqrt(1 - (x / .17) ** 2); strings.push(new THREE.Vector3(x, -JOINTS.racketHeadDrop - y, 0), new THREE.Vector3(x, -JOINTS.racketHeadDrop + y, 0)); }
+    for (let y = -.16; y <= .161; y += .04) { const x = .17 * Math.sqrt(1 - (y / .22) ** 2); strings.push(new THREE.Vector3(-x, -JOINTS.racketHeadDrop + y, 0), new THREE.Vector3(x, -JOINTS.racketHeadDrop + y, 0)); }
     racquet.add(new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(strings), new THREE.LineBasicMaterial({ color: 0xcacfc4, transparent: true, opacity: .65 })));
     elbows[1].add(racquet); this.scene.add(root);
-    return { root, torso, head, arms, elbows, legs, knees };
+    return { root, torso, head, arms, elbows, legs, knees, racket: racquet };
   }
   private animate(rig: Athlete, p: Player3D, index: number, time: number): void {
-    const moving = Math.min(1, p.speed / 5), step = Math.sin(time * 12) * moving;
-    const swing = p.swing > 0 ? Math.sin((1 - p.swing / .34) * Math.PI) : 0;
-    rig.root.position.set(p.x, p.y + Math.abs(step) * .035, p.z); rig.root.rotation.y = index === 0 ? 0 : Math.PI;
-    rig.torso.rotation.y = -swing * .7; rig.torso.rotation.x = moving * .08;
-    rig.head.rotation.x = -.06;
-    rig.legs.forEach((leg, i) => { leg.rotation.x = step * (i ? 1 : -1) * .48; rig.knees[i].rotation.x = Math.max(0, step * (i ? -1 : 1)) * .6; });
-    rig.arms[0].rotation.set(-.25 - step * .22, 0, .16);
-    rig.arms[1].rotation.set(-.35 - swing * 1.4 + step * .15, -.4 - swing * .6, -.18 - swing * .7);
-    rig.elbows[0].rotation.x = -.4; rig.elbows[1].rotation.x = -.55 - swing * .3;
+    const pose = tennisAthletePose(p.speed, p.swing, time, p.stroke, p.forehand);
+    rig.root.position.set(p.x, p.y + pose.bounce, p.z); rig.root.rotation.y = index === 0 ? 0 : Math.PI;
+    rig.torso.rotation.set(...pose.torso); rig.head.rotation.x = pose.head;
+    rig.legs.forEach((leg, i) => { leg.rotation.x = pose.legs[i]; rig.knees[i].rotation.x = pose.knees[i]; });
+    rig.arms.forEach((arm, i) => { arm.rotation.set(...pose.arms[i]); rig.elbows[i].rotation.x = pose.elbows[i]; });
+    rig.racket.rotation.x = pose.racket;
   }
 }

@@ -1,8 +1,8 @@
 <div class="analytics-page" *ngIf="!isLoading && analytics as a">
     <div class="analytics-header">
-        <div>
+        <div class="analytics-title">
             <h1>{{ 'reports.copy.analytics' | translate }}</h1>
-            <p class="analytics-subtitle">{{ 'reports.copy.aCuratedOverviewOfMatchTournamentAndMarketPatternsAcross' | translate }}</p>
+            <p class="analytics-subtitle"><span class="analytics-title-separator" aria-hidden="true">— </span>{{ 'reports.copy.aCuratedOverviewOfMatchTournamentAndMarketPatternsAcross' | translate }}</p>
         </div>
 
         <div class="analytics-meta" *ngIf="updatedAt">

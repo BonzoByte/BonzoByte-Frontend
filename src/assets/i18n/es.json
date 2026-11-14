@@ -1,4 +1,13 @@
 {
+  "leaderboardHub": {
+    "intro": "Tres competiciones. Clasificaciones y puntuaciones separadas.",
+    "arcadeNote": "Clasificación mensual del juego según μ − 3σ. Solo cuentan los desafíos puntuables verificados, no los entrenamientos. La clasificación de prueba no tiene premios.",
+    "rating": "Valoración (μ − 3σ)",
+    "played": "Jugados",
+    "wins": "Victorias",
+    "provisional": "Provisional · menos de 10 desafíos",
+    "empty": "No hay desafíos puntuables completados este mes."
+  },
   "viewRecovery": {
     "backOnline": "Tu navegador vuelve a estar conectado.",
     "backHint": "Si aún falta información, intenta cargar esta vista de nuevo.",
@@ -113,7 +122,8 @@
     "makePick": "Hacer un pronóstico",
     "viewPick": "Ver tu pronóstico",
     "winner": "Elegir al ganador",
-    "virtual": "Reto gratuito · 1 unidad virtual por pronóstico · Sin depósitos, valor monetario ni premios.",
+    "virtual": "Reto gratuito · 1 unidad virtual por pronóstico.",
+    "rewardRule": "El ganador mensual recibe 30 días de Premium tras la revisión final de resultados. En caso de empate, cada ganador recibe el mismo premio. La actividad de prueba queda excluida. El premio no se puede canjear por dinero.",
     "deadline": "Cierre de pronósticos",
     "stake": "Apuesta: 1 unidad virtual",
     "odds": "Cuotas medianas",
@@ -595,6 +605,14 @@
   "register": "Registrarse",
   "logout": "Cerrar sesión",
   "navigation": {
+    "menu": "Menú",
+    "primary": "Navegación principal",
+    "groups": {
+      "data": "Datos de tenis",
+      "analysis": "Análisis del modelo",
+      "community": "Comunidad y favoritos",
+      "personal": "Mis actividades"
+    },
     "skipToContent": "Saltar al contenido principal",
     "matches": "Partidos",
     "players": "Jugadores",

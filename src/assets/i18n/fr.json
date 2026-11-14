@@ -1,4 +1,13 @@
 {
+  "leaderboardHub": {
+    "intro": "Trois compétitions. Classements et scores distincts.",
+    "arcadeNote": "Classement mensuel du jeu selon μ − 3σ. Seuls les défis classés vérifiés comptent, pas les entraînements. Le classement d’essai n’offre aucun prix.",
+    "rating": "Évaluation (μ − 3σ)",
+    "played": "Joués",
+    "wins": "Victoires",
+    "provisional": "Provisoire · moins de 10 défis",
+    "empty": "Aucun défi classé terminé ce mois-ci."
+  },
   "viewRecovery": {
     "backOnline": "Votre navigateur est de nouveau connecté.",
     "backHint": "Si des informations restent indisponibles, essayez de recharger cette vue.",
@@ -113,7 +122,8 @@
     "makePick": "Faire un pronostic",
     "viewPick": "Voir votre pronostic",
     "winner": "Choisir le vainqueur",
-    "virtual": "Concours gratuit · 1 unité virtuelle par pronostic · Aucun dépôt, aucune valeur monétaire ni récompense.",
+    "virtual": "Concours gratuit · 1 unité virtuelle par pronostic.",
+    "rewardRule": "Le gagnant du mois reçoit 30 jours de Premium après la vérification finale des résultats. En cas d’égalité, chaque gagnant reçoit la même récompense. L’activité de test est exclue. La récompense ne peut pas être échangée contre de l’argent.",
     "deadline": "Clôture des pronostics",
     "stake": "Mise : 1 unité virtuelle",
     "odds": "Cotes médianes",
@@ -595,6 +605,14 @@
   "register": "Inscription",
   "logout": "Déconnexion",
   "navigation": {
+    "menu": "Menu",
+    "primary": "Navigation principale",
+    "groups": {
+      "data": "Données de tennis",
+      "analysis": "Analyse du modèle",
+      "community": "Communauté et favoris",
+      "personal": "Mes activités"
+    },
     "skipToContent": "Aller au contenu principal",
     "matches": "Matchs",
     "players": "Joueurs",

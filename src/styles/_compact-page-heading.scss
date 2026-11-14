@@ -1,0 +1,70 @@
+// Compact route headings share spacing without changing page content or controls.
+@mixin layout {
+  .bb-compact-heading {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 6px 16px;
+    margin-bottom: 12px;
+    min-width: 0;
+  }
+  .bb-compact-heading__line {
+    display: flex;
+    align-items: baseline;
+    flex: 1 1 30rem;
+    flex-wrap: wrap;
+    gap: 4px 10px;
+    min-width: 0;
+  }
+  .bb-compact-heading h1 {
+    flex: 0 1 auto;
+    min-width: 0;
+    margin: 0;
+    font-size: clamp(24px, 2.5vw, 32px);
+    line-height: 1.2;
+    letter-spacing: normal;
+    overflow-wrap: anywhere;
+  }
+  .bb-compact-heading .bb-compact-eyebrow {
+    margin: 0;
+    color: var(--bb-text-muted);
+    font-size: 9px;
+    font-weight: 500;
+    line-height: 1.5;
+    letter-spacing: .1em;
+  }
+  .bb-compact-heading .bb-compact-intro {
+    flex: 0 1 auto;
+    min-width: 0;
+    margin: 0;
+    color: var(--bb-text-muted);
+    font-size: 12px;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+  }
+  .bb-compact-heading__actions {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px 12px;
+    min-width: 0;
+    margin-inline-start: auto;
+  }
+  .bb-compact-heading--centred {
+    justify-content: center;
+    text-align: center;
+  }
+  .bb-compact-heading--centred .bb-compact-heading__line {
+    flex: 0 1 auto;
+    justify-content: center;
+    margin-inline: auto;
+  }
+  @media (max-width: 600px) {
+    .bb-compact-heading__line { flex-basis: 100%; gap: 4px 8px; }
+    .bb-compact-heading .bb-compact-intro { flex-basis: 100%; }
+    .bb-compact-heading__separator { display: none; }
+    .bb-compact-heading__actions { margin-inline-start: 0; }
+    .bb-compact-heading--centred .bb-compact-heading__line { flex-basis: 100%; }
+  }
+}

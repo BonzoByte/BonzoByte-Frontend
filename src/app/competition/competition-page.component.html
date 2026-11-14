@@ -1,11 +1,13 @@
-<section class="competition-page" [class.competition-page--mine]="mineMode" [class.competition-page--board]="!mineMode" [class.competition-page--standings]="!mineMode && boardHasRows">
-    <header><div><p class="competition-eyebrow">BONZOBYTE COMMUNITY</p><h1>{{ (mineMode ? 'competition.mine' : 'competition.leaderboard') | translate }}</h1></div>
-        <a routerLink="/matches">{{ 'favourites.backToMatches' | translate }}</a></header>
-    <p class="competition-disclaimer">{{ 'competition.virtual' | translate }}</p>
+<section class="competition-page" [class.competition-page--mine]="mineMode" [class.competition-page--board]="!mineMode" [class.competition-page--standings]="!mineMode && boardHasRows" [class.competition-page--embedded]="embeddedLeaderboard">
+    <header *ngIf="!embeddedLeaderboard" class="bb-compact-heading bb-compact-heading--centred"><div class="bb-compact-heading__line">
+        <h1>{{ (mineMode ? 'competition.mine' : 'competition.leaderboard') | translate }}</h1><p class="competition-eyebrow bb-compact-eyebrow">BONZOBYTE COMMUNITY</p>
+        <p class="competition-disclaimer bb-compact-intro"><span class="bb-compact-heading__separator" aria-hidden="true">— </span>{{ 'competition.virtual' | translate }}</p></div>
+        </header>
+    <p *ngIf="embeddedLeaderboard" class="competition-disclaimer">{{ 'competition.virtual' | translate }}</p>
     <p *ngIf="demoMode" class="competition-demo-note" role="status"><strong>DEMO</strong> — {{ 'competition.demoNote' | translate }}</p>
     <p *ngIf="previewMode" class="competition-demo-note" role="status"><strong>DEMO</strong> — {{ 'competition.previewNote' | translate }}</p>
     <p *ngIf="testActivity" class="competition-demo-note" role="note">{{ 'competition.testActivityNote' | translate }}</p>
-    <nav class="competition-tabs" [attr.aria-label]="'competition.title' | translate">
+    <nav *ngIf="!embeddedLeaderboard" class="competition-tabs" [attr.aria-label]="'competition.title' | translate">
         <a routerLink="/predictions" [queryParams]="{month: month, demo: demoMode ? '1' : null, preview: previewMode ? '1' : null}" routerLinkActive="active" ariaCurrentWhenActive="page">{{ 'competition.mine' | translate }}</a>
         <a routerLink="/competition" [queryParams]="{month: month, demo: demoMode ? '1' : null}" routerLinkActive="active" ariaCurrentWhenActive="page">{{ 'competition.leaderboard' | translate }}</a>
     </nav>
@@ -62,7 +64,7 @@
         </div>
     </ng-container>
     <details class="competition-rules"><summary>{{ 'competition.rulesTitle' | translate }}</summary>
-        <p>{{ 'competition.rulesBody' | translate }}</p><p>{{ 'competition.resultRules' | translate }}</p>
+        <p>{{ 'competition.rulesBody' | translate }}</p><p>{{ 'competition.rewardRule' | translate }}</p><p>{{ 'competition.resultRules' | translate }}</p>
         <p>{{ 'competition.fairness' | translate }}</p><p>{{ 'competition.privacy' | translate }}</p>
     </details>
 </section>

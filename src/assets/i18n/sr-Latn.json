@@ -1,4 +1,13 @@
 {
+  "leaderboardHub": {
+    "intro": "Tri takmičenja. Odvojene rang-liste i bodovanje.",
+    "arcadeNote": "Mesečna rang-lista igrice prema μ − 3σ. Broje se samo provereni rangirani izazovi, ne i vežba. Probna rang-lista nema nagrade.",
+    "rating": "Rejting (μ − 3σ)",
+    "played": "Odigrano",
+    "wins": "Pobede",
+    "provisional": "Privremeni poredak · manje od 10 izazova",
+    "empty": "Nema završenih rangiranih izazova za ovaj mesec."
+  },
   "viewRecovery": {
     "backOnline": "Pregledač je ponovo povezan na internet.",
     "backHint": "Ako podaci još nisu dostupni, pokušaj ponovo da učitaš ovaj pregled.",
@@ -113,7 +122,8 @@
     "makePick": "Prognoziraj pobednika",
     "viewPick": "Pogledaj svoju prognozu",
     "winner": "Odaberi pobednika",
-    "virtual": "Besplatno takmičenje · 1 virtualna jedinica po prognozi · Bez uplata, novčane vrednosti i nagrada.",
+    "virtual": "Besplatno takmičenje · 1 virtualna jedinica po prognozi.",
+    "rewardRule": "Mesečni pobednik dobija 30 dana Premiuma nakon završne provere rezultata. Izjednačeni pobednici dobijaju istu nagradu. Testna aktivnost ne učestvuje u dodeli. Nagrada se ne može zameniti za novac.",
     "deadline": "Rok za prognozu",
     "stake": "Ulog: 1 virtualna jedinica",
     "odds": "Medijalna kvota",
@@ -595,6 +605,14 @@
   "register": "Registracija",
   "logout": "Odjava",
   "navigation": {
+    "menu": "Meni",
+    "primary": "Glavna navigacija",
+    "groups": {
+      "data": "Teniski podaci",
+      "analysis": "Analiza modela",
+      "community": "Zajednica i omiljeni mečevi",
+      "personal": "Moje aktivnosti"
+    },
     "skipToContent": "Pređi na glavni sadržaj",
     "matches": "Mečevi",
     "players": "Igrači",

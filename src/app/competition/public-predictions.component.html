@@ -1,8 +1,8 @@
 <section class="competition-page competition-page--mine">
-    <header><div><p class="competition-eyebrow">BONZOBYTE COMMUNITY</p>
-        <h1>{{ (data ? 'competition.publicTitle' : 'competition.publicPredictions') | translate:{name: nickname} }}</h1></div>
-        <a routerLink="/competition" [queryParams]="{month: month, demo: demoMode ? '1' : null}">{{ 'competition.backToBoard' | translate }}</a></header>
-    <p class="competition-disclaimer">{{ 'competition.virtual' | translate }}</p>
+    <header class="bb-compact-heading"><div class="bb-compact-heading__line">
+        <h1>{{ (data ? 'competition.publicTitle' : 'competition.publicPredictions') | translate:{name: nickname} }}</h1><p class="competition-eyebrow bb-compact-eyebrow">BONZOBYTE COMMUNITY</p>
+        <p class="competition-disclaimer bb-compact-intro"><span class="bb-compact-heading__separator" aria-hidden="true">— </span>{{ 'competition.virtual' | translate }}</p></div>
+        <div class="bb-compact-heading__actions"><a routerLink="/competition" [queryParams]="{month: month, demo: demoMode ? '1' : null}">{{ 'competition.backToBoard' | translate }}</a></div></header>
     <p *ngIf="data?.testActivity" class="competition-demo-note" role="note">{{ 'competition.testActivityNote' | translate }}</p>
     <p *ngIf="demoMode" class="competition-demo-note"><strong>DEMO</strong> — {{ (localPreview ? 'competition.archivedDemoNote' : 'competition.demoNote') | translate:{date: archiveDay} }}</p>
     <p class="competition-source-note">{{ 'competition.publicNote' | translate }}</p>

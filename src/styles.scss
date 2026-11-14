@@ -67,7 +67,7 @@
 
     --bb-brand-font: 'Orbitron', system-ui, sans-serif;
 
-    --header-h: 56px;
+    --header-h: 76px;
     --datebar-h: 40px;
     --footer-h: 36px;
 
@@ -209,7 +209,14 @@ body {
     background: var(--bb-body-bg);
 }
 
-body.no-datebar {
+body.no-datebar,
+body:has(app-analytics),
+body:has(app-popular),
+body:has(app-competition-page),
+body:has(app-leaderboard-page),
+body:has(app-public-predictions),
+body:has(app-fantasy-page),
+body:has(app-tennis-break) {
     padding-top: var(--header-h);
 }
 
@@ -374,15 +381,15 @@ main {
     cursor: pointer;
 }
 
-@media (min-width: 801px) and (max-width: 1480px) {
+@media (min-width: 801px) and (max-width: 1599px) {
     :root {
-        --header-h: 96px;
+        --header-h: 128px;
     }
 }
 
 @media (max-width: 800px) {
     :root {
-        --header-h: 86px;
+        --header-h: 104px;
         --datebar-h: 76px;
     }
 

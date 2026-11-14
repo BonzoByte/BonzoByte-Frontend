@@ -1,4 +1,13 @@
 {
+  "leaderboardHub": {
+    "intro": "Drei Wettbewerbe. Getrennte Ranglisten und Wertungen.",
+    "arcadeNote": "Monatliche Spielrangliste nach μ − 3σ. Nur überprüfte Ranglisten-Duelle zählen, kein Training. Für die Test-Rangliste gibt es keine Preise.",
+    "rating": "Wertung (μ − 3σ)",
+    "played": "Gespielt",
+    "wins": "Siege",
+    "provisional": "Vorläufig · weniger als 10 Duelle",
+    "empty": "Keine abgeschlossenen Ranglisten-Duelle in diesem Monat."
+  },
   "viewRecovery": {
     "backOnline": "Dein Browser ist wieder online.",
     "backHint": "Falls Informationen weiterhin fehlen, versuche diese Ansicht erneut zu laden.",
@@ -113,7 +122,8 @@
     "makePick": "Prognose abgeben",
     "viewPick": "Deine Prognose ansehen",
     "winner": "Sieger auswählen",
-    "virtual": "Kostenloser Prognosewettbewerb · 1 virtuelle Einheit pro Prognose · Keine Einzahlungen, kein Geldwert und keine Preise.",
+    "virtual": "Kostenloser Prognosewettbewerb · 1 virtuelle Einheit pro Prognose.",
+    "rewardRule": "Der Monatssieger erhält nach der abschließenden Ergebnisprüfung 30 Tage Premium. Bei Gleichstand erhält jeder Sieger dieselbe Belohnung. Testaktivitäten sind ausgeschlossen. Eine Barauszahlung ist nicht möglich.",
     "deadline": "Abgabeschluss",
     "stake": "Einsatz: 1 virtuelle Einheit",
     "odds": "Medianquote",
@@ -595,6 +605,14 @@
   "register": "Registrieren",
   "logout": "Abmelden",
   "navigation": {
+    "menu": "Menü",
+    "primary": "Hauptnavigation",
+    "groups": {
+      "data": "Tennisdaten",
+      "analysis": "Modellanalyse",
+      "community": "Community & Favoriten",
+      "personal": "Meine Aktivitäten"
+    },
     "skipToContent": "Zum Hauptinhalt springen",
     "matches": "Matches",
     "players": "Spieler",
