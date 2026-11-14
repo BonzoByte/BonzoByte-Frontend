@@ -1,12 +1,12 @@
-// Small raster tiles only: no vector rasterisation, filters or decorative DOM.
-// SVGs remain editable sources only; all court geometry is rasterised offline.
+// One pre-rendered stadium image for the base themes. No vector rasterisation,
+// fixed attachment, filters, blend modes, animation or decorative DOM layers.
 :root:not([data-bb-theme]),
 :root[data-bb-theme='dark'] {
-    --bb-court-pattern: url('../assets/backgrounds/tennis-court-dark.png');
+    --bb-court-pattern: url('../assets/backgrounds/tennis-stadium-dark-v1.webp');
 }
 
 :root[data-bb-theme='light'] {
-    --bb-court-pattern: url('../assets/backgrounds/tennis-court-light.png');
+    --bb-court-pattern: url('../assets/backgrounds/tennis-stadium-light-v1.webp');
 }
 
 :root[data-bb-theme='wimbledon'] {
@@ -30,9 +30,9 @@
 :root:is(:not([data-bb-theme]), [data-bb-theme='dark'], [data-bb-theme='light']) {
     body {
         background-image: var(--bb-court-pattern);
-        background-size: 720px 570px;
-        background-position: center top;
-        background-repeat: repeat;
+        background-size: cover;
+        background-position: center center;
+        background-repeat: no-repeat;
     }
 }
 

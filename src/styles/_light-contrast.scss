@@ -1,6 +1,16 @@
 // These controls previously kept fixed white copy from the original dark skin.
 // Limit the correction to Light; do not recolour semantic results or dark cards.
 :root[data-bb-theme='light'] {
+    .home-page { color: var(--bb-page-text); }
+
+    .home-page :is(.home-kicker, .home-section__eyebrow, .home-stat-card__eyebrow) {
+        color: var(--bb-text-muted);
+    }
+
+    .home-page :is(.home-chip, .home-tech, .home-lead, .home-bullet-list) {
+        color: var(--bb-page-text);
+    }
+
     .custom-header .user-meta .user-name {
         color: var(--bb-header-text);
     }
