@@ -388,6 +388,7 @@
     "storageUnavailable": "Your browser could not save this choice permanently. It applies to this visit; you may be asked again."
   },
   "planCheckout": {
+    "live": "PayPalを通じたユーロでの実際のお支払いです。確定前に選択したプランと合計金額をご確認ください。",
     "pay": "Pay with PayPal",
     "extend": "Extend Premium",
     "sandbox": "Sandbox — no real money is charged.",

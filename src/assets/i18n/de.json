@@ -388,6 +388,7 @@
     "storageUnavailable": "Your browser could not save this choice permanently. It applies to this visit; you may be asked again."
   },
   "planCheckout": {
+    "live": "Echte Zahlung in EUR über PayPal. Prüfe vor der Bestätigung den gewählten Tarif und den Gesamtbetrag.",
     "pay": "Pay with PayPal",
     "extend": "Extend Premium",
     "sandbox": "Sandbox — no real money is charged.",

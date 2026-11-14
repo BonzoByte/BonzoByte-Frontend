@@ -3,12 +3,12 @@ import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { Entitlements } from '../models/user.model';
 
-export type BillingFulfillment = 'preview-only' | 'isolated-lab' | 'sandbox-plans';
+export type BillingFulfillment = 'preview-only' | 'isolated-lab' | 'sandbox-plans' | 'live-plans';
 export interface BillingCapabilities { history: boolean; reconcile: boolean; refund: boolean;
-    membershipPreview: boolean; activatesMembership: boolean; livePayments: false; }
+    membershipPreview: boolean; activatesMembership: boolean; livePayments: boolean; }
 export interface BillingPayment { orderId: string; plan: string; status: string; amount: string; currency: string;
     grantEndsAt: string | null; revokedAt: string | null; refundStatus: string | null; capturePending?: boolean; }
-export interface BillingStatus { sandbox: true; fulfillment: BillingFulfillment; capabilities: BillingCapabilities;
+export interface BillingStatus { sandbox: boolean; fulfillment: BillingFulfillment; capabilities: BillingCapabilities;
     entitlements: Entitlements; payments: BillingPayment[]; }
 export interface BillingRefundConfirmation { payment: BillingPayment; entitlements: Entitlements; }
 

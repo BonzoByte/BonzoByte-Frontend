@@ -9,7 +9,7 @@ import { environment } from '../../environments/environment';
 
 @Component({ selector: 'app-plan-checkout', standalone: true, imports: [CommonModule, TranslateModule],
     template: `<section class="plan-checkout">
-      <p class="bb-hint">{{ 'planCheckout.sandbox' | translate }}</p>
+      <p *ngIf="config" class="bb-hint" [class.bb-live-payment]="liveMode">{{ (liveMode ? 'planCheckout.live' : 'planCheckout.sandbox') | translate }}</p>
       <p class="bb-hint">{{ 'planCheckout.oneTime' | translate }}</p>
       <div *ngIf="working" class="bb-loading-overlay is-active" aria-live="polite">
         <div class="bb-loading-card" role="status"><div class="bb-spinner" aria-hidden="true"></div>
@@ -22,7 +22,7 @@ import { environment } from '../../environments/environment';
       <button *ngIf="!rendered && !loading" class="oauth-btn oauth-btn-primary" type="button"
         [disabled]="!ready || !auth.getUser()?.isVerified || busy" (click)="initialize()">{{ 'planCheckout.pay' | translate }}</button>
     </section>`,
-    styles: [`.bb-hint {font-size:12px;color:var(--bb-text-muted);} .bb-loading-card {text-align:center;max-width:360px;}`] })
+    styles: [`.bb-hint {font-size:12px;color:var(--bb-text-muted);} .bb-live-payment {font-weight:600;color:var(--bb-text);} .bb-loading-card {text-align:center;max-width:360px;}`] })
 export class PlanCheckoutComponent implements OnInit, OnDestroy {
     @Input() plan = 'monthly';
     @Output() busyChange = new EventEmitter<boolean>();
@@ -37,10 +37,12 @@ export class PlanCheckoutComponent implements OnInit, OnDestroy {
     private pendingTimer?: ReturnType<typeof setTimeout>;
     private pendingChecks = 0;
     private watching = false;
+    get liveMode(): boolean { return this.config?.sandbox === false && this.config.fulfillment === 'live-plans'; }
     get ready(): boolean {
         const c = this.config, caps = c?.capabilities;
-        return !environment.production && !!c?.enabled && c.sandbox === true && c.protocolVersion === 2
-            && c.fulfillment === 'sandbox-plans' && caps?.livePayments === false && caps.activatesMembership === true
+        const mode = this.liveMode ? c?.protocolVersion === 3 && caps?.livePayments === true && c.webhookConfigured === true && !environment.billingLab
+            : !environment.production && c?.sandbox === true && c.protocolVersion === 2 && c.fulfillment === 'sandbox-plans' && caps?.livePayments === false;
+        return mode && !!c?.enabled && c.currency === 'EUR' && !!c.clientId && caps?.activatesMembership === true
             && caps.membershipPreview === false && caps.reconcile === true
             && BILLING_PLANS.filter(p => !p.lifetime).every(p => c.plans?.some(q => q.key === p.key
                 && q.amount === p.priceEur.toFixed(2) && q.currency === 'EUR' && q.durationDays === p.durationDays));
@@ -76,7 +78,8 @@ export class PlanCheckoutComponent implements OnInit, OnDestroy {
                     this.setBusy(true); this.message = ''; this.finished = false;
                     if (!this.requestId || this.lockedPlan !== this.plan) { this.requestId = crypto.randomUUID(); this.lockedPlan = this.plan; }
                     try {
-                        const result = await this.api.create(this.lockedPlan, this.requestId);
+                        const result = this.liveMode ? await this.api.create(this.lockedPlan, this.requestId, this.config!)
+                            : await this.api.create(this.lockedPlan, this.requestId);
                         if (!this.valid(actor) || revision !== this.revision) throw new Error('ACCOUNT_CHANGED');
                         this.orderId = result.orderId; return result.orderId;
                     } catch (error: any) {
@@ -93,9 +96,9 @@ export class PlanCheckoutComponent implements OnInit, OnDestroy {
                     this.working = true; this.setBusy(true); this.watchMembership();
                     let restarted = false;
                     try {
-                        const result = await this.api.capture(data.orderID);
+                        const result = this.liveMode ? await this.api.capture(data.orderID, this.config!) : await this.api.capture(data.orderID);
                         if (!this.valid(actor) || revision !== this.revision) return;
-                        if (result.sandbox !== true || result.fulfillment !== 'sandbox-plans') throw new Error('UNEXPECTED_CAPTURE');
+                        if (result.sandbox !== !this.liveMode || result.fulfillment !== this.config?.fulfillment) throw new Error('UNEXPECTED_CAPTURE');
                         if (result.completed === true) this.confirm();
                         else this.markPending();
                     } catch (error: any) {
@@ -129,7 +132,7 @@ export class PlanCheckoutComponent implements OnInit, OnDestroy {
         try {
             const result = await this.api.check(orderId);
             if (!this.valid(actor) || revision !== this.revision || this.orderId !== orderId) return;
-            if (result.sandbox !== true || result.fulfillment !== 'sandbox-plans' || result.capabilities?.livePayments !== false) throw new Error('UNEXPECTED_CHECK');
+            if (result.sandbox !== !this.liveMode || result.fulfillment !== this.config?.fulfillment || result.capabilities?.livePayments !== this.liveMode) throw new Error('UNEXPECTED_CHECK');
             const payment = result.payments.find(p => p.orderId === orderId);
             if (!payment) throw new Error('MISSING_PAYMENT');
             if (payment.status === 'completed') this.confirm();

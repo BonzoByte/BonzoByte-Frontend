@@ -388,6 +388,7 @@
     "storageUnavailable": "Your browser could not save this choice permanently. It applies to this visit; you may be asked again."
   },
   "planCheckout": {
+    "live": "Skutočná platba v EUR cez PayPal. Pred potvrdením skontroluj vybraný program a celkovú sumu.",
     "pay": "Pay with PayPal",
     "extend": "Extend Premium",
     "sandbox": "Sandbox — no real money is charged.",

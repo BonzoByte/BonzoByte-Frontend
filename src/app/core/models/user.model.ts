@@ -6,6 +6,7 @@ export interface Entitlements {
     trialResumesAt?: string | null;
     trialRemainingMs?: number;
     sandboxMembership?: boolean;
+    liveMembership?: boolean;
     showAds: boolean;
     tier?: 'standard' | 'trial' | 'premium' | 'vip' | 'admin';
     isVip?: boolean;

@@ -388,6 +388,7 @@
     "storageUnavailable": "Your browser could not save this choice permanently. It applies to this visit; you may be asked again."
   },
   "planCheckout": {
+    "live": "Реальная оплата в EUR через PayPal. Перед подтверждением проверьте выбранный тариф и итоговую сумму.",
     "pay": "Pay with PayPal",
     "extend": "Extend Premium",
     "sandbox": "Sandbox — no real money is charged.",

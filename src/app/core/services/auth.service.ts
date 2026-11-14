@@ -46,6 +46,7 @@ function normalizeUser(u: any): User {
             trialResumesAt: u.entitlements.trialResumesAt ?? null,
             trialRemainingMs: u.entitlements.trialRemainingMs,
             sandboxMembership: !!u.entitlements.sandboxMembership,
+            liveMembership: !!u.entitlements.liveMembership,
             // Missing rights must not accidentally grant an ad-free account.
             showAds: u.entitlements.showAds !== false,
             tier: u.entitlements.tier,

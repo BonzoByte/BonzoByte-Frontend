@@ -435,6 +435,7 @@
     "storageUnavailable": "Preglednik nije mogao trajno spremiti ovaj izbor. Vrijedi za ovaj posjet; pri sljedećem se pitanje može ponoviti."
   },
   "planCheckout": {
+    "live": "Stvarna naplata u eurima putem PayPala. Prije potvrde provjeri odabrani paket i ukupan iznos.",
     "pay": "Plati PayPalom",
     "extend": "Produlji Premium",
     "sandbox": "Sandbox — bez stvarne naplate.",
