@@ -134,6 +134,7 @@ export class TennisBreakComponent implements AfterViewInit, OnDestroy {
   @ViewChild('gamePanel', { static: true }) gamePanel!: ElementRef<HTMLElement>;
   @ViewChild('courtStage', { static: true }) courtStage!: ElementRef<HTMLElement>;
   @ViewChild('fullscreenButton', { static: true }) fullscreenButton!: ElementRef<HTMLButtonElement>;
+  @ViewChild('displaySettings', { static: true }) displaySettings!: ElementRef<HTMLDetailsElement>;
   readonly words = computed(() => this.regional.language() === 'hr' ? HR : EN);
   readonly surface = signal<CourtSurface>('grass');
   readonly difficulty = signal<Difficulty>('normal');
@@ -142,7 +143,7 @@ export class TennisBreakComponent implements AfterViewInit, OnDestroy {
   readonly sound = signal(false);
   readonly soundPending = signal(false);
   readonly unavailable = signal(false);
-  readonly camera = signal<TennisCamera>('broadcast');
+  readonly camera = signal<TennisCamera>('baseline');
   readonly lightweight = signal(false);
   readonly assist = signal(true);
   readonly expanded = signal(false);
@@ -236,6 +237,7 @@ export class TennisBreakComponent implements AfterViewInit, OnDestroy {
     try {
       this.zone.runOutsideAngular(() => {
         this.renderer = new Tennis3DRenderer(this.court.nativeElement, () => { if (!this.destroyed) this.paint(); });
+        this.renderer.setCamera(this.camera());
         if (typeof ResizeObserver !== 'undefined') {
           this.stageObserver = new ResizeObserver(() => this.resizeCourt()); this.stageObserver.observe(this.courtStage.nativeElement);
         }
@@ -336,6 +338,17 @@ export class TennisBreakComponent implements AfterViewInit, OnDestroy {
   }
   @HostListener('document:pointerdown', ['$event']) outsideOpponentSearch(event: PointerEvent): void {
     if (this.opponentOpen() && !this.host.nativeElement.querySelector('.opponent-combobox')?.contains(event.target as Node)) this.closeOpponentSearch();
+    const settings = this.displaySettings?.nativeElement;
+    if (settings?.open && !settings.contains(event.target as Node)) this.closeDisplaySettings();
+  }
+  closeDisplaySettings(restoreFocus = false): void {
+    const settings = this.displaySettings?.nativeElement;
+    if (!settings?.open) return;
+    settings.open = false;
+    if (restoreFocus) settings.querySelector('summary')?.focus({ preventScroll: true });
+  }
+  displaySettingsFocusOut(event: FocusEvent): void {
+    if (!this.displaySettings?.nativeElement.contains(event.relatedTarget as Node | null)) this.closeDisplaySettings();
   }
   retryCareerSave(): void {
     if (!this.replayToSave || !this.careerSession || this.savingResult()) return;
@@ -424,6 +437,9 @@ export class TennisBreakComponent implements AfterViewInit, OnDestroy {
     this.resizeCourt();
   }
   @HostListener('document:keydown', ['$event']) fullscreenEscape(event: KeyboardEvent): void {
+    if (event.key === 'Escape' && !event.defaultPrevented && this.displaySettings?.nativeElement.open) {
+      event.preventDefault(); event.stopPropagation(); this.closeDisplaySettings(true); return;
+    }
     if (event.key === 'Escape' && !event.defaultPrevented && this.expanded() && this.document.fullscreenElement !== this.gamePanel.nativeElement) {
       event.preventDefault(); this.pause(); void this.toggleFullscreen();
     }

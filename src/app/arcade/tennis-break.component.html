@@ -53,12 +53,12 @@
       <div class="court-tag"><span class="court-dot" [class.clay]="surface() === 'clay'" [class.hard]="surface() === 'hard'"></span>{{ surfaceName() }} <span class="sep">/</span> {{ formatTitle() }}</div>
       <div class="game-actions">
         <button #fullscreenButton type="button" class="quiet-button fullscreen-toggle" [attr.aria-pressed]="expanded()" (click)="toggleFullscreen()"><span aria-hidden="true">{{ expanded() ? '⤡' : '⛶' }}</span> <span [class.sr-only]="expanded()">{{ expanded() ? words().exitFullscreen : words().fullscreen }}</span></button>
-        <details class="display-settings">
+        <details #displaySettings class="display-settings" (focusout)="displaySettingsFocusOut($event)">
           <summary>{{ words().camera }} / {{ words().sound }} <span aria-hidden="true">⌄</span></summary>
           <div class="display-settings-options">
-            <button type="button" class="quiet-button" (click)="changeCamera()">{{ words().camera }}: {{ camera() === 'broadcast' ? words().broadcast : words().baseline }}</button>
-            <button type="button" class="quiet-button" [attr.aria-pressed]="lightweight()" (click)="toggleLightweight()">{{ words().lightweight }} {{ lightweight() ? '✓' : '—' }}</button>
-            <button type="button" class="quiet-button" [disabled]="soundPending()" [title]="words().soundHint" [attr.aria-pressed]="sound()" (click)="toggleSound()"><span aria-hidden="true">{{ sound() ? '♪' : '♩' }}</span> {{ words().sound }} {{ sound() ? '✓' : '—' }}</button>
+            <button type="button" class="quiet-button" (click)="changeCamera(); closeDisplaySettings(true)">{{ words().camera }}: {{ camera() === 'broadcast' ? words().broadcast : words().baseline }}</button>
+            <button type="button" class="quiet-button" [attr.aria-pressed]="lightweight()" (click)="toggleLightweight(); closeDisplaySettings(true)">{{ words().lightweight }} {{ lightweight() ? '✓' : '—' }}</button>
+            <button type="button" class="quiet-button" [disabled]="soundPending()" [title]="words().soundHint" [attr.aria-pressed]="sound()" (click)="toggleSound(); closeDisplaySettings(true)"><span aria-hidden="true">{{ sound() ? '♪' : '♩' }}</span> {{ words().sound }} {{ sound() ? '✓' : '—' }}</button>
           </div>
         </details>
         <button *ngIf="view().phase !== 'ready' && view().phase !== 'over'" type="button" class="quiet-button" (click)="paused() ? resume() : pause()">{{ paused() ? words().resume : words().pause }}</button>

@@ -38,7 +38,7 @@ export class Tennis3DRenderer {
   private readonly serveMarkerMaterial = new THREE.MeshBasicMaterial({ color: 0xf2eea0, transparent: true, opacity: .9, depthWrite: false });
   private surface: CourtSurface | null = null;
   private dead = false;
-  private cameraMode: TennisCamera = 'broadcast';
+  private cameraMode: TennisCamera = 'baseline';
   private readonly crowd: TennisCrowd;
   private readonly effects: TennisCourtEffects;
   private readonly clubDetails: TennisClubDetails;
@@ -100,7 +100,7 @@ export class Tennis3DRenderer {
     this.ballShadow = new THREE.Mesh(new THREE.PlaneGeometry(.48, .48), new THREE.MeshBasicMaterial({ map: shadowMap, transparent: true, opacity: .44, depthWrite: false }));
     this.ballShadow.rotation.x = -Math.PI / 2; this.ballShadow.position.y = .033; this.scene.add(this.ballShadow);
     this.playerRing = this.ring(.47, .485, 0xe6edac); this.bounceRing = this.ring(.23, .255, 0xffed91);
-    this.setCamera('broadcast');
+    this.setCamera('baseline');
     const loader = new THREE.TextureLoader();
     loader.load('/assets/arcade/oak-cutout-v1.png', texture => {
       if (this.dead) { texture.dispose(); return; }
