@@ -151,6 +151,8 @@ export class Tennis3DEngine {
   }
   private awaitComputerReaction(): void {
     // Only the struck ball is observed. Never read a queued shot or the aim keys.
+    // A receiver must not drift back to the recovery centre while still waiting to read a serve.
+    if (this.serviceActive) this.cpuTarget = { x: this.players[1].x, z: this.players[1].z };
     this.cpuAware = false; this.reaction = this.cpuConfig.delay + this.random() * .04;
   }
   private moveComputer(dt: number): void {
