@@ -1,4 +1,5 @@
 import type { CourtShot as Shot } from './tennis-3d-engine';
+import { tennisServeFollowThroughPose } from './tennis-serve-pose';
 type Rotation = [number, number, number];
 const clamp = (value: number, min: number, max: number) => Math.max(min, Math.min(max, value));
 export const TENNIS_ATHLETE_JOINTS = {
@@ -8,6 +9,7 @@ export const TENNIS_ATHLETE_JOINTS = {
 
 /** The model faces local -Z. Positive arm/elbow X bends towards the net. */
 export function tennisAthletePose(speed: number, remaining: number, time: number, stroke: Shot | 'serve' = 'drive', forehand = true) {
+  if (stroke === 'serve' && remaining > 0) return tennisServeFollowThroughPose(remaining);
   const moving = clamp(speed / 5, 0, 1), step = Math.sin(time * 12) * moving;
   const progress = 1 - clamp(remaining / (stroke === 'serve' ? .4 : .34), 0, 1);
   const swing = remaining > 0 ? Math.sin((.2 + progress * .8) * Math.PI) : 0;

@@ -3,6 +3,7 @@ import { FIELD, Player3D, Tennis3DEngine } from './tennis-3d-engine';
 import type { CourtSurface } from './tennis-engine';
 import { TennisCrowd } from './tennis-crowd';
 import { tennisAthletePose, TENNIS_ATHLETE_JOINTS as JOINTS } from './tennis-athlete-pose';
+import { TennisServePresentation, tennisServePreparationPose, tennisServeToss } from './tennis-serve-pose';
 
 export type TennisCamera = 'broadcast' | 'baseline';
 interface Athlete {
@@ -24,6 +25,8 @@ export class Tennis3DRenderer {
   private readonly trees: { x: number; z: number; height: number }[] = [];
   private readonly athletes: Athlete[] = [];
   private readonly ball = new THREE.Group();
+  private readonly servePresentation = new TennisServePresentation();
+  private readonly serveHand = new THREE.Vector3();
   private readonly ballShadow: THREE.Mesh;
   private readonly playerRing: THREE.Mesh;
   private readonly bounceRing: THREE.Mesh;
@@ -142,12 +145,25 @@ export class Tennis3DRenderer {
       this.apronMaterial.color.setHex({ grass: 0x456c48, clay: 0x875d41, hard: 0x44655b }[game.surface]);
       this.courtMaterial.map = this.maps[game.surface] ?? null; this.courtMaterial.needsUpdate = true;
     }
-    game.players.forEach((p, i) => this.animate(this.athletes[i], p, i, time));
+    const preparation = this.servePresentation.preparation(game, time);
+    game.players.forEach((p, i) => this.animate(this.athletes[i], p, i, time, i === game.server ? preparation : null));
     const b = game.ball;
     this.ball.position.set(b.x, Math.max(.13, b.y), b.z);
+    if (preparation !== null) {
+      const rig = this.athletes[game.server], server = game.players[game.server], sign = game.server === 0 ? 1 : -1;
+      rig.root.updateMatrixWorld(true);
+      rig.elbows[0].localToWorld(this.serveHand.set(0, -JOINTS.handDrop, 0));
+      const toss = tennisServeToss(preparation);
+      this.ball.position.set(
+        THREE.MathUtils.lerp(this.serveHand.x, server.x, toss),
+        THREE.MathUtils.lerp(this.serveHand.y, 2.75, toss) + Math.sin(toss * Math.PI) * .12,
+        THREE.MathUtils.lerp(this.serveHand.z, server.z - sign * .2, toss),
+      );
+    }
     this.ball.rotation.set(time * 7, time * 10, time * 3);
-    this.ballShadow.position.set(b.x, .033, b.z); this.ballShadow.scale.setScalar(1 + Math.max(0, b.y) * .2);
-    (this.ballShadow.material as THREE.MeshBasicMaterial).opacity = Math.max(.08, .34 - b.y * .045);
+    const shownBall = this.ball.position;
+    this.ballShadow.position.set(shownBall.x, .033, shownBall.z); this.ballShadow.scale.setScalar(1 + Math.max(0, shownBall.y) * .2);
+    (this.ballShadow.material as THREE.MeshBasicMaterial).opacity = Math.max(.08, .34 - shownBall.y * .045);
     this.playerRing.position.set(game.players[0].x, .04, game.players[0].z);
     this.playerRing.visible = game.phase !== 'ready';
     const landing = game.landing();
@@ -333,8 +349,8 @@ export class Tennis3DRenderer {
     elbows[1].add(racquet); this.scene.add(root);
     return { root, torso, head, arms, elbows, legs, knees, racket: racquet };
   }
-  private animate(rig: Athlete, p: Player3D, index: number, time: number): void {
-    const pose = tennisAthletePose(p.speed, p.swing, time, p.stroke, p.forehand);
+  private animate(rig: Athlete, p: Player3D, index: number, time: number, servePreparation: number | null = null): void {
+    const pose = servePreparation === null ? tennisAthletePose(p.speed, p.swing, time, p.stroke, p.forehand) : tennisServePreparationPose(servePreparation);
     rig.root.position.set(p.x, p.y + pose.bounce, p.z); rig.root.rotation.y = index === 0 ? 0 : Math.PI;
     rig.torso.rotation.set(...pose.torso); rig.head.rotation.x = pose.head;
     rig.legs.forEach((leg, i) => { leg.rotation.x = pose.legs[i]; rig.knees[i].rotation.x = pose.knees[i]; });
