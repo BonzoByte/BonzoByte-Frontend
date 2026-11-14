@@ -268,7 +268,11 @@ export class TennisBreakComponent implements AfterViewInit, OnDestroy {
     this.startRequestId ||= crypto.randomUUID();
     this.careerRequest = this.career.start({ opponentId: opponent.id, surface: this.surface(), requestId: this.startRequestId,
       engineVersion: TENNIS_KERNEL_VERSION, publicRanking: true }).subscribe({ next: session => {
-        this.careerBusy.set(false); this.startRequestId = ''; this.careerSession = session;
+        this.careerBusy.set(false); this.startRequestId = '';
+        if (session.engineVersion !== TENNIS_KERNEL_VERSION || !['grass', 'clay', 'hard'].includes(session.surface)) {
+          this.careerMessage.set(this.words().gameVersion); return;
+        }
+        this.careerSession = session; this.surface.set(session.surface);
         this.matchFormat.set('challenge'); this.assist.set(true);
         this.game = new Tennis3DEngine(arcadeRandom(session.seed), 'challenge'); this.game.opponentStrength = session.opponent.strength;
         this.recorder = null; this.beginPlay(); this.recorder = new ArcadeRecorder(); this.resultAttempted = false;
@@ -380,12 +384,14 @@ export class TennisBreakComponent implements AfterViewInit, OnDestroy {
     this.game.surface = this.surface(); this.sync(); this.paint();
   }
   changeSurface(value: string): void {
-    if (!['grass', 'clay', 'hard'].includes(value) || this.view().phase !== 'ready') return;
+    if (!['grass', 'clay', 'hard'].includes(value) || this.game.phase !== 'ready' || this.careerBusy() || this.savingResult()) return;
     this.surface.set(value as CourtSurface); this.game.surface = value as CourtSurface; this.paint();
   }
-  changeDifficulty(value: string): void { if (['easy', 'normal', 'hard'].includes(value)) this.difficulty.set(value as Difficulty); }
+  changeDifficulty(value: string): void {
+    if (this.game.phase === 'ready' && !this.careerBusy() && !this.savingResult() && ['easy', 'normal', 'hard'].includes(value)) this.difficulty.set(value as Difficulty);
+  }
   changeFormat(value: string): void {
-    if (!['match', 'challenge'].includes(value) || this.game.phase !== 'ready' || this.rated()) return;
+    if (!['match', 'challenge'].includes(value) || this.game.phase !== 'ready' || this.rated() || this.careerBusy() || this.savingResult()) return;
     this.matchFormat.set(value as TennisFormat); this.setup();
   }
   changeCamera(): void {
@@ -539,7 +545,7 @@ export class TennisBreakComponent implements AfterViewInit, OnDestroy {
     });
   }
   private stop(): void { if (this.frameId !== null) cancelAnimationFrame(this.frameId); this.frameId = null; }
-  private paint(now = 0): void { this.renderer?.draw(this.game, now / 1000); }
+  private paint(now = performance.now()): void { this.renderer?.draw(this.game, now / 1000, this.selectedShot() ?? 'drive'); }
   private sync(): void {
     const next: ScoreView = { phase: this.game.phase, left: this.game.score[0], right: this.game.score[1], winner: this.game.winner, pointWinner: this.game.pointWinner,
       reason: this.game.reason, rally: this.game.rally, best: this.game.bestRally, hits: this.game.hits,

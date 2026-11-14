@@ -52,17 +52,22 @@
     <div class="game-toolbar">
       <div class="court-tag"><span class="court-dot" [class.clay]="surface() === 'clay'" [class.hard]="surface() === 'hard'"></span>{{ surfaceName() }} <span class="sep">/</span> {{ formatTitle() }}</div>
       <div class="game-actions">
-        <button #fullscreenButton type="button" class="quiet-button fullscreen-toggle" [attr.aria-pressed]="expanded()" (click)="toggleFullscreen()"><span aria-hidden="true">{{ expanded() ? '⤡' : '⛶' }}</span> {{ expanded() ? words().exitFullscreen : words().fullscreen }}</button>
-        <button type="button" class="quiet-button" (click)="changeCamera()">{{ words().camera }}: {{ camera() === 'broadcast' ? words().broadcast : words().baseline }}</button>
-        <button type="button" class="quiet-button" [attr.aria-pressed]="lightweight()" (click)="toggleLightweight()">{{ words().lightweight }} {{ lightweight() ? '✓' : '—' }}</button>
-        <button type="button" class="quiet-button" [disabled]="soundPending()" [title]="words().soundHint" [attr.aria-pressed]="sound()" (click)="toggleSound()"><span aria-hidden="true">{{ sound() ? '♪' : '♩' }}</span> {{ words().sound }} {{ sound() ? '✓' : '—' }}</button>
+        <button #fullscreenButton type="button" class="quiet-button fullscreen-toggle" [attr.aria-pressed]="expanded()" (click)="toggleFullscreen()"><span aria-hidden="true">{{ expanded() ? '⤡' : '⛶' }}</span> <span [class.sr-only]="expanded()">{{ expanded() ? words().exitFullscreen : words().fullscreen }}</span></button>
+        <details class="display-settings">
+          <summary>{{ words().camera }} / {{ words().sound }} <span aria-hidden="true">⌄</span></summary>
+          <div class="display-settings-options">
+            <button type="button" class="quiet-button" (click)="changeCamera()">{{ words().camera }}: {{ camera() === 'broadcast' ? words().broadcast : words().baseline }}</button>
+            <button type="button" class="quiet-button" [attr.aria-pressed]="lightweight()" (click)="toggleLightweight()">{{ words().lightweight }} {{ lightweight() ? '✓' : '—' }}</button>
+            <button type="button" class="quiet-button" [disabled]="soundPending()" [title]="words().soundHint" [attr.aria-pressed]="sound()" (click)="toggleSound()"><span aria-hidden="true">{{ sound() ? '♪' : '♩' }}</span> {{ words().sound }} {{ sound() ? '✓' : '—' }}</button>
+          </div>
+        </details>
         <button *ngIf="view().phase !== 'ready' && view().phase !== 'over'" type="button" class="quiet-button" (click)="paused() ? resume() : pause()">{{ paused() ? words().resume : words().pause }}</button>
         <button *ngIf="view().phase !== 'ready'" type="button" class="quiet-button" [disabled]="careerBusy() || savingResult()" (click)="setup()">{{ words().reset }}</button>
       </div>
     </div>
     <div class="scoreboard" *ngIf="view().format === 'challenge'" [attr.aria-label]="words().scoring" aria-live="polite" aria-atomic="true">
       <div class="score-side home"><span class="player-chip">01</span><span>{{ words().you }}</span><strong>{{ view().left }}</strong></div>
-      <div class="score-centre"><span class="tiny-ball" aria-hidden="true"></span><span>CLUB CHALLENGE</span></div>
+      <div class="score-centre"><span class="tiny-ball" aria-hidden="true"></span><span>{{ words().challengeMode }}</span></div>
       <div class="score-side away"><strong>{{ view().right }}</strong><span>{{ opponentName() }}</span><span class="player-chip">02</span></div>
     </div>
     <div class="scoreboard match-scoreboard" *ngIf="view().format === 'match'" aria-live="polite" aria-atomic="true">
@@ -79,18 +84,17 @@
       </div>
     </div>
 
-    <div #courtStage class="court-window">
+    <div #courtStage class="court-window" [class.has-overlay]="view().phase === 'ready' || view().phase === 'over' || paused() || unavailable()">
       <canvas #court width="1000" height="540" tabindex="0" role="application" [attr.aria-label]="words().ball" aria-describedby="tennis-keys"
         (keydown)="keyDown($event)" (keyup)="keyUp($event)" (blur)="clearInput()" (webglcontextlost)="contextLost($event)">{{ words().unavailable }}</canvas>
       <div class="court-overlay" *ngIf="view().phase === 'ready' || view().phase === 'over' || paused() || unavailable()">
-        <div class="start-card">
-          <div class="mini-court" aria-hidden="true"><i></i></div>
+        <div class="start-card" [class.is-paused]="paused()" [class.is-finished]="view().phase === 'over'" role="group" aria-labelledby="tennis-overlay-title" aria-describedby="tennis-overlay-description">
           <p class="eyebrow">BONZOBYTE TENNIS BREAK · 3D</p>
-          <h2>{{ unavailable() ? words().unavailable : paused() ? words().paused : view().phase === 'over' ? (view().winner === 0 ? words().victory : words().defeat) : words().ready }}</h2>
-          <p>{{ paused() ? words().pausedText : view().phase === 'over' ? (view().winner === 0 ? words().victoryText : words().defeatText) : matchFormat() === 'match' ? words().matchReady : words().readyText }}</p>
+          <h2 id="tennis-overlay-title">{{ unavailable() ? words().unavailable : paused() ? words().paused : view().phase === 'over' ? (view().winner === 0 ? words().victory : words().defeat) : words().ready }}</h2>
+          <p id="tennis-overlay-description">{{ paused() ? words().pausedText : view().phase === 'over' ? (view().winner === 0 ? words().victoryText : words().defeatText) : matchFormat() === 'match' ? words().matchReady : words().readyText }}</p>
           <div class="setup-options" *ngIf="view().phase === 'ready' && !unavailable()">
             <label>{{ words().format }}<select [disabled]="rated() || careerBusy()" [value]="matchFormat()" (change)="changeFormat($any($event.target).value)"><option value="match">{{ words().matchMode }}</option><option value="challenge">{{ words().challengeMode }}</option></select></label>
-            <label>{{ words().surface }}<select [value]="surface()" (change)="changeSurface($any($event.target).value)"><option value="grass">{{ words().grass }}</option><option value="clay">{{ words().clay }}</option><option value="hard">{{ words().hard }}</option></select></label>
+            <label>{{ words().surface }}<select [disabled]="careerBusy() || savingResult()" [value]="surface()" (change)="changeSurface($any($event.target).value)"><option value="grass">{{ words().grass }}</option><option value="clay">{{ words().clay }}</option><option value="hard">{{ words().hard }}</option></select></label>
             <label *ngIf="career.selected()?.ts == null">{{ words().difficulty }}<select [value]="difficulty()" (change)="changeDifficulty($any($event.target).value)"><option value="easy">{{ words().easy }}</option><option value="normal">{{ words().normal }}</option><option value="hard">{{ words().hardLevel }}</option></select></label>
           </div>
           <label class="assist-option" *ngIf="!unavailable() && view().phase === 'ready'"><input type="checkbox" [disabled]="rated()" [checked]="assist()" (change)="toggleAssist()">{{ words().assist }}</label>
@@ -110,34 +114,55 @@
         </div>
       </div>
       <div class="point-callout" *ngIf="(view().phase === 'point' || view().phase === 'fault' || view().phase === 'let') && !paused()" aria-live="polite">{{ status() }}</div>
-      <div class="serve-card" *ngIf="view().phase === 'serving' && !paused()">
-        <strong>{{ status() }}</strong>
-        <ng-container *ngIf="view().server === 0">
-          <span>{{ words().serveHint }}</span>
-          <div class="serve-aim-options" role="group" [attr.aria-label]="words().serveDirection">
-            <button type="button" [attr.aria-pressed]="view().serveAim < -.5" (click)="chooseServeAim(-1)">← {{ words().aimLeft }}</button>
-            <button type="button" [attr.aria-pressed]="view().serveAim >= -.5 && view().serveAim <= .5" (click)="chooseServeAim(0)">{{ words().aimCentre }}</button>
-            <button type="button" [attr.aria-pressed]="view().serveAim > .5" (click)="chooseServeAim(1)">{{ words().aimRight }} →</button>
-          </div>
-          <small class="serve-target-hint">{{ words().targetHint }}</small>
-          <div class="serve-meter" role="meter" [attr.aria-label]="words().power" aria-valuemin="0" aria-valuemax="130" [attr.aria-valuenow]="view().charge * 100"><i [style.width.%]="view().charge / 1.3 * 100" [class.overcharged]="view().charge > .95"></i></div>
-          <div class="aim-meter" role="meter" [attr.aria-label]="words().serveDirection" aria-valuemin="-130" aria-valuemax="130" [attr.aria-valuenow]="view().serveAim * 100"><i [style.left.%]="(view().serveAim + 1.3) / 2.6 * 100"></i></div>
-          <small>{{ words().safeZone }}</small>
-        </ng-container>
-      </div>
-      <div class="stroke-card" *ngIf="view().phase === 'playing' && !paused()" role="group" [attr.aria-label]="words().selectedShot">
-        <strong>{{ view().strokeCharging ? words().releaseHit : view().strokePending ? words().queuedHit : words().holdHit }}</strong>
-        <div class="meter-label"><span>{{ words().shotPower }}</span><span>{{ view().strokeCharge * 100 | number:'1.0-0' }}%</span></div>
-        <div class="serve-meter" role="meter" [attr.aria-label]="words().shotPower" aria-valuemin="0" aria-valuemax="130" [attr.aria-valuenow]="view().strokeCharge * 100"><i [style.width.%]="view().strokeCharge / 1.3 * 100" [class.overcharged]="view().strokeCharge > .95"></i></div>
-        <div class="meter-label"><span>← {{ words().shotDirection }} →</span><span [class.danger]="view().strokeAim > 1 || view().strokeAim < -1">{{ view().strokeAim * 100 | number:'1.0-0' }}</span></div>
-        <div class="aim-meter" role="meter" [attr.aria-label]="words().shotDirection" aria-valuemin="-130" aria-valuemax="130" [attr.aria-valuenow]="view().strokeAim * 100"><i [style.left.%]="(view().strokeAim + 1.3) / 2.6 * 100"></i></div>
-        <small>{{ words().safeZone }}</small>
-      </div>
       <div class="umpire-callout" *ngIf="umpireSpeaking()" role="status"><small>{{ words().umpire }}</small><span>“{{ words().quiet }}”</span></div>
     </div>
 
+    <div class="play-controls">
+      <div class="serve-card" *ngIf="view().phase === 'serving' && !paused()">
+        <div class="hud-copy">
+          <strong>{{ status() }}</strong>
+          <details class="serve-instructions" *ngIf="view().server === 0"><summary>{{ words().holdHit }}</summary><p>{{ words().serveHint }}</p></details>
+        </div>
+        <ng-container *ngIf="view().server === 0">
+          <div class="serve-target">
+            <div class="serve-aim-options" role="group" [attr.aria-label]="words().serveDirection">
+              <button type="button" [attr.aria-pressed]="view().serveAim < -.5" (click)="chooseServeAim(-1)">← {{ words().aimLeft }}</button>
+              <button type="button" [attr.aria-pressed]="view().serveAim >= -.5 && view().serveAim <= .5" (click)="chooseServeAim(0)">{{ words().aimCentre }}</button>
+              <button type="button" [attr.aria-pressed]="view().serveAim > .5" (click)="chooseServeAim(1)">{{ words().aimRight }} →</button>
+            </div>
+            <small class="serve-target-hint">{{ words().targetHint }}</small>
+          </div>
+          <div class="hud-meters">
+            <div class="meter-group">
+              <div class="meter-label"><span>{{ words().power }}</span><span>{{ view().charge * 100 | number:'1.0-0' }}%</span></div>
+              <div class="serve-meter" role="meter" [attr.aria-label]="words().power" aria-valuemin="0" aria-valuemax="130" [attr.aria-valuenow]="view().charge * 100"><i [style.width.%]="view().charge / 1.3 * 100" [class.overcharged]="view().charge > .95"></i></div>
+            </div>
+            <div class="meter-group">
+              <div class="meter-label"><span>{{ words().serveDirection }}</span><span [class.danger]="view().serveAim > 1 || view().serveAim < -1">{{ view().serveAim * 100 | number:'1.0-0' }}</span></div>
+              <div class="aim-meter" role="meter" [attr.aria-label]="words().serveDirection" aria-valuemin="-130" aria-valuemax="130" [attr.aria-valuenow]="view().serveAim * 100"><i [style.left.%]="(view().serveAim + 1.3) / 2.6 * 100"></i></div>
+            </div>
+            <small class="meter-legend">{{ words().safeZone }}</small>
+          </div>
+        </ng-container>
+      </div>
+      <div class="stroke-card" *ngIf="view().phase === 'playing' && !paused()" role="group" [attr.aria-label]="words().selectedShot">
+        <div class="hud-copy"><strong>{{ view().strokeCharging ? words().releaseHit : view().strokePending ? words().queuedHit : words().holdHit }}</strong></div>
+        <div class="hud-meters">
+          <div class="meter-group">
+            <div class="meter-label"><span>{{ words().shotPower }}</span><span>{{ view().strokeCharge * 100 | number:'1.0-0' }}%</span></div>
+            <div class="serve-meter" role="meter" [attr.aria-label]="words().shotPower" aria-valuemin="0" aria-valuemax="130" [attr.aria-valuenow]="view().strokeCharge * 100"><i [style.width.%]="view().strokeCharge / 1.3 * 100" [class.overcharged]="view().strokeCharge > .95"></i></div>
+          </div>
+          <div class="meter-group">
+            <div class="meter-label"><span>← {{ words().shotDirection }} →</span><span [class.danger]="view().strokeAim > 1 || view().strokeAim < -1">{{ view().strokeAim * 100 | number:'1.0-0' }}</span></div>
+            <div class="aim-meter" role="meter" [attr.aria-label]="words().shotDirection" aria-valuemin="-130" aria-valuemax="130" [attr.aria-valuenow]="view().strokeAim * 100"><i [style.left.%]="(view().strokeAim + 1.3) / 2.6 * 100"></i></div>
+          </div>
+          <small class="meter-legend">{{ words().safeZone }}</small>
+        </div>
+      </div>
+      <ng-container *ngIf="expanded()" [ngTemplateOutlet]="touchPad"></ng-container>
+    </div>
+
     <div class="court-bottom"><span class="live-label"><i [class.is-playing]="view().phase === 'playing' && !paused()"></i>{{ status() }}</span><span class="stroke-choice" *ngIf="selectedShot()">{{ words().selectedShot }}: <strong>{{ selectedShot() === 'drop' ? words().drop : selectedShot() === 'smash' ? words().smash : selectedShot() === 'lob' ? words().lob : words().drive }}</strong></span><span class="fullscreen-help" *ngIf="expanded()">{{ words().fullscreenHint }}</span><span>{{ words().rally }} <strong>{{ view().rally }}</strong><span class="sep">/</span>{{ words().best }} <strong>{{ view().best }}</strong></span></div>
-    <ng-container *ngIf="expanded()" [ngTemplateOutlet]="touchPad"></ng-container>
   </section>
 
   <div class="career-feedback" *ngIf="careerMessage() || savingResult()" role="status">
@@ -178,9 +203,9 @@
     <ng-container *ngIf="!expanded()" [ngTemplateOutlet]="touchPad"></ng-container>
   </section>
   <ng-template #touchPad>
-    <div class="touch-controls" [attr.aria-label]="words().controls">
+    <div class="touch-controls" role="group" [attr.aria-label]="words().controls">
       <div class="touch-directions"><button *ngFor="let item of touchDirections" type="button" [attr.aria-label]="words().move + ' ' + item.icon" (pointerdown)="touchStart($event, item.action)" (pointerup)="touchEnd($event)" (pointercancel)="touchCancel($event)" (lostpointercapture)="touchCancel($event)">{{ item.icon }}</button></div>
-      <div><button type="button" class="hit-touch" (pointerdown)="touchStart($event, 'drive')" (pointerup)="touchEnd($event)" (pointercancel)="touchCancel($event)" (lostpointercapture)="touchCancel($event)">{{ words().drive }}</button><button type="button" (pointerdown)="touchStart($event, 'drop')" (pointerup)="touchEnd($event)" (pointercancel)="touchCancel($event)" (lostpointercapture)="touchCancel($event)">{{ words().drop }}</button><button type="button" (pointerdown)="touchStart($event, 'lob')" (pointerup)="touchEnd($event)" (pointercancel)="touchCancel($event)" (lostpointercapture)="touchCancel($event)">{{ words().lob }}</button><button type="button" (pointerdown)="touchStart($event, 'smash')" (pointerup)="touchEnd($event)" (pointercancel)="touchCancel($event)" (lostpointercapture)="touchCancel($event)">{{ words().smash }}</button></div>
+      <div class="touch-shots"><button type="button" class="hit-touch" (pointerdown)="touchStart($event, 'drive')" (pointerup)="touchEnd($event)" (pointercancel)="touchCancel($event)" (lostpointercapture)="touchCancel($event)">{{ words().drive }}</button><button type="button" (pointerdown)="touchStart($event, 'drop')" (pointerup)="touchEnd($event)" (pointercancel)="touchCancel($event)" (lostpointercapture)="touchCancel($event)">{{ words().drop }}</button><button type="button" (pointerdown)="touchStart($event, 'lob')" (pointerup)="touchEnd($event)" (pointercancel)="touchCancel($event)" (lostpointercapture)="touchCancel($event)">{{ words().lob }}</button><button type="button" (pointerdown)="touchStart($event, 'smash')" (pointerup)="touchEnd($event)" (pointercancel)="touchCancel($event)" (lostpointercapture)="touchCancel($event)">{{ words().smash }}</button></div>
     </div>
   </ng-template>
   <div class="arcade-notes"><p>{{ matchFormat() === 'match' ? words().matchRules : words().rules }} {{ words().serviceRules }} {{ words().autoPause }}</p><p>{{ words().local }}</p></div>

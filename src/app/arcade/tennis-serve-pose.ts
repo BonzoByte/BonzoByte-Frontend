@@ -11,28 +11,28 @@ const smooth = (value: number) => { const t = clamp(value); return t * t * (3 - 
 const ready: ServeAthletePose = {
   bounce: 0, torso: [-.09, 0, 0], head: -.06,
   arms: [[.65, 0, .28], [.55, .08, -.28]], elbows: [1.15, 1.15], racket: .65,
-  legs: [0, 0], knees: [0, 0],
+  legs: [.24, .24], knees: [-.36, -.36],
 };
 const load: ServeAthletePose = {
   bounce: 0, torso: [.015, .23, -.035], head: .12,
   arms: [[1.65, 0, .2], [1.6, -.16, -.42]], elbows: [.35, .85], racket: -.2,
-  legs: [0, 0], knees: [.16, .2],
+  legs: [.3, .25], knees: [-.44, -.38],
 };
 const trophy: ServeAthletePose = {
   bounce: 0, torso: [.025, .2, -.035], head: .22,
   // The free arm points up at the toss; the hitting arm is already raised.
   arms: [[3.02, 0, .17], [2.35, -.15, -.4]], elbows: [.08, .7], racket: -.35,
-  legs: [0, 0], knees: [.16, .2],
+  legs: [.32, .28], knees: [-.46, -.4],
 };
 const contact: ServeAthletePose = {
   bounce: .34, torso: [.015, .08, 0], head: .18,
   arms: [[3.02, 0, .17], [2.85, -.05, -.16]], elbows: [.08, .08], racket: .08,
-  legs: [-.04, .04], knees: [.03, .03],
+  legs: [-.04, .04], knees: [-.03, -.03],
 };
 const follow: ServeAthletePose = {
-  bounce: .12, torso: [-.2, -.14, 0], head: .04,
+  bounce: .04, torso: [-.2, -.14, 0], head: .04,
   arms: [[1.25, 0, .3], [1.82, -.45, -.3]], elbows: [.6, .35], racket: .02,
-  legs: [.1, -.1], knees: [.12, .08],
+  legs: [.28, -.06], knees: [-.44, -.18],
 };
 
 function mix(a: ServeAthletePose, b: ServeAthletePose, amount: number): ServeAthletePose {
@@ -52,13 +52,13 @@ export function tennisServePreparationPose(progress: number): ServeAthletePose {
 }
 
 export function tennisServeFollowThroughPose(remaining: number): ServeAthletePose {
-  const p = 1 - clamp(remaining / .4);
+  const p = 1 - clamp(Number.isFinite(remaining) ? remaining / .4 : 0);
   return p < .52 ? mix(contact, follow, p / .52) : mix(follow, ready, (p - .52) / .48);
 }
 
 /** The ball leaves the free hand and reaches the existing 2.75 m contact point. */
 export function tennisServeToss(progress: number): number {
-  return smooth((progress - .24) / .76);
+  return smooth(((Number.isFinite(progress) ? progress : 0) - .24) / .76);
 }
 
 /** Independent render clock: the computer's 1.15 s preparation does not expose its intended shot. */
