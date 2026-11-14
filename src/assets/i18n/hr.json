@@ -1690,6 +1690,7 @@
     "accountErasurePending": "Prijava i ponovna registracija nisu dostupne dok se ne dovrši završna provjera brisanja ovog računa. Za pomoć se javi na support@bonzobyte.com.",
     "oauthCancelled": "Prijava je otkazana. Možeš pokušati ponovno.",
     "oauthFailed": "Prijavu nije bilo moguće dovršiti. Pokušaj ponovno.",
+    "oauthBetaNotInvited": "Ovaj Google račun nema pristup privatnoj beti. Odaberi račun koji je pozvan.",
     "capsLockOn": "Caps Lock je uključen.",
     "identifier": "E-pošta ili korisničko ime",
     "identifierPlaceholder": "Korisničko ime ili e-pošta",

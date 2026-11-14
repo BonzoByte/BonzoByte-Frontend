@@ -42,7 +42,7 @@
         </div>
 
         <!-- OAUTH -->
-        <div class="oauth-block" *ngIf="!billingLab && !closedBeta">
+        <div class="oauth-block" *ngIf="!billingLab">
             <div class="muted text-center">{{ 'auth.continueWith' | translate }}</div>
 
             <div class="oauth-buttons">
@@ -51,7 +51,7 @@
                     <span>Google</span>
                 </button>
 
-                <button type="button" class="oauth-btn" (click)="loginWithFacebook()" [disabled]="submitting">
+                <button *ngIf="!closedBeta" type="button" class="oauth-btn" (click)="loginWithFacebook()" [disabled]="submitting">
                     <span class="oauth-ico">f</span>
                     <span>Facebook</span>
                 </button>

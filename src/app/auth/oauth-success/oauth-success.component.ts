@@ -40,7 +40,8 @@ export class OauthSuccessComponent implements OnInit, OnDestroy {
     }
     private failed(error: string): void {
         const key = error === 'account_erasure_pending' ? 'auth.accountErasurePending'
-            : error === 'oauth_cancelled' ? 'auth.oauthCancelled' : 'auth.oauthFailed';
+            : error === 'oauth_cancelled' ? 'auth.oauthCancelled'
+            : error === 'beta_not_invited' ? 'auth.oauthBetaNotInvited' : 'auth.oauthFailed';
         this.snack.open(key, 'auth.ok', { duration: 8000, panelClass: error === 'oauth_cancelled' ? 'info-snackbar' : 'error-snackbar' });
         this.router.navigateByUrl('/');
     }

@@ -1690,6 +1690,7 @@
     "accountErasurePending": "Sign-in and registration are unavailable while the final review of this account's deletion is pending. Contact support@bonzobyte.com for help.",
     "oauthCancelled": "Sign-in was cancelled. You can try again.",
     "oauthFailed": "Sign-in could not be completed. Please try again.",
+    "oauthBetaNotInvited": "This Google account does not have access to the private beta. Please choose an invited account.",
     "capsLockOn": "Caps Lock is on.",
     "identifier": "Email or username",
     "identifierPlaceholder": "Username or email",
