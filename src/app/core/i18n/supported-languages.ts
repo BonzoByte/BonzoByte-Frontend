@@ -35,12 +35,12 @@ import hu from '../../../assets/i18n/hu.json';
 
 // New feature modules fall back to English until reviewed translations exist.
 // Merge leaf-by-leaf so an older partial module cannot expose raw message keys.
-function withFantasyFallback<T extends object>(messages:T) {
+function withFantasyFallback<T extends object>(messages:T): T & typeof en {
   const merge = (fallback: Record<string, any>, translated: Record<string, any>): Record<string, any> =>
     Object.fromEntries(Object.entries({...fallback,...translated}).map(([key,value]) => [key,
       value && typeof value === 'object' && !Array.isArray(value)
         ? merge(fallback[key] ?? {}, translated[key] ?? {}) : value]));
-  return merge(en,messages);
+  return merge(en,messages) as T & typeof en;
 }
 
 /**
