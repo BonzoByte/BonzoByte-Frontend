@@ -188,6 +188,17 @@ describe('Tennis break lifecycle and controls', () => {
     expect(page.game.phase).toBe('ready'); expect(window.requestAnimationFrame).not.toHaveBeenCalled(); expect(page.sound()).toBeFalse();
     expect(fixture.nativeElement.querySelector('canvas').width).toBe(1000);
   });
+  it('keeps practice playable and disables rated challenges while the server has older physics', () => {
+    career.verified.set(true); career.engineVersion.set('older-reviewed-kernel'); fixture.detectChanges();
+    const buttons = fixture.nativeElement.querySelectorAll('.mode-switch button') as NodeListOf<HTMLButtonElement>;
+    expect(buttons[0].disabled).toBeFalse(); expect(buttons[1].disabled).toBeTrue();
+    expect(fixture.nativeElement.querySelector('.rated-options [role="status"]').textContent).toContain('Your saved rating stays unchanged');
+    page.start(); expect(page.game.phase).toBe('serving'); expect(career.start).not.toHaveBeenCalled();
+    page.setup(); career.engineVersion.set(TENNIS_KERNEL_VERSION); fixture.detectChanges();
+    expect(buttons[1].disabled).toBeFalse(); expect(fixture.nativeElement.querySelector('.rated-options [role="status"]')).toBeNull();
+    career.engineVersion.set('older-reviewed-kernel'); language.set('hr'); fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.rated-options [role="status"]').textContent).toContain('Tvoja spremljena ocjena ostaje nepromijenjena');
+  });
   it('starts only on interaction and stops the frame on pause', () => {
     page.start(); fixture.detectChanges(); expect(page.view().phase).toBe('serving'); expect(window.requestAnimationFrame).toHaveBeenCalledTimes(1);
     page.pause(); expect(page.paused()).toBeTrue(); expect(window.cancelAnimationFrame).toHaveBeenCalledWith(52);

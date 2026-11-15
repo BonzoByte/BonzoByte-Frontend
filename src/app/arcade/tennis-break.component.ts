@@ -54,6 +54,7 @@ const EN = {
   history: 'Recent challenges', standings: 'Trial standings', loadStandings: 'Show trial standings', noStandings: 'No completed challenges yet.',
   savingGame: 'Verifying and saving your challenge…', savedGame: 'Challenge verified and saved', retrySave: 'Try saving again', startingGame: 'Preparing your challenge…',
   gameUnavailable: 'Rated play is temporarily unavailable. You can still practise.', catalogUnavailable: 'Player selection is temporarily unavailable. The practice computer is still available.',
+  ratedUpgrade: 'Rated challenges are temporarily unavailable while the game is being updated. Training with the practice computer or a selected player remains available. Your saved rating stays unchanged.',
   gameVersion: 'The game has changed. Finish any drafts, then refresh the page before starting a rated challenge.',
   gameLimit: 'The daily challenge limit has been reached. You can still practise.', replayFailed: 'This challenge could not be verified. Your result has not been added. You can retry saving.',
   consentRequired: 'Choose an opponent with TS and confirm saving before starting.', challengeExpired: 'This rated session has expired. Start a new challenge; an unfinished rated session counts as a loss.',
@@ -106,6 +107,7 @@ const HR: typeof EN = {
   history: 'Nedavni izazovi', standings: 'Probna ljestvica', loadStandings: 'Prikaži probnu ljestvicu', noStandings: 'Još nema završenih izazova.',
   savingGame: 'Provjeravamo i spremamo tvoj izazov…', savedGame: 'Izazov je provjeren i spremljen', retrySave: 'Pokušaj ponovno spremiti', startingGame: 'Pripremamo tvoj izazov…',
   gameUnavailable: 'Bodovana igra trenutačno nije dostupna. Trening i dalje radi.', catalogUnavailable: 'Odabir igrača trenutačno nije dostupan. Računalo za trening i dalje je dostupno.',
+  ratedUpgrade: 'Bodovani izazovi privremeno nisu dostupni dok traje nadogradnja igre. Trening s računalom ili odabranim igračem i dalje radi. Tvoja spremljena ocjena ostaje nepromijenjena.',
   gameVersion: 'Igrica je promijenjena. Sačuvaj nedovršeni rad pa osvježi stranicu prije novog bodovanog izazova.',
   gameLimit: 'Dosegnuto je dnevno ograničenje izazova. Možeš nastaviti trenirati.', replayFailed: 'Ovaj izazov nije moguće potvrditi. Rezultat nije dodan. Možeš pokušati ponovno spremiti.',
   consentRequired: 'Odaberi protivnika s TS-om i potvrdi spremanje prije početka.', challengeExpired: 'Ovaj bodovani izazov je istekao. Pokreni novi; nedovršeni bodovani izazov računa se kao poraz.',
@@ -155,6 +157,10 @@ export class TennisBreakComponent implements AfterViewInit, OnDestroy {
   readonly umpireSpeaking = signal(false);
   readonly selectedShot = signal<Shot | null>(null);
   readonly rated = signal(false);
+  readonly ratedVersionMismatch = computed(() => {
+    const serverVersion = this.career.engineVersion();
+    return !!serverVersion && serverVersion !== TENNIS_KERNEL_VERSION;
+  });
   readonly rankingConsent = signal(false);
   readonly careerBusy = signal(false);
   readonly savingResult = signal(false);

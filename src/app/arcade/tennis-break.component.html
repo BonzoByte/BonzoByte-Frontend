@@ -37,9 +37,10 @@
     <div class="rated-options">
       <div class="mode-switch" role="group" [attr.aria-label]="words().format">
         <button type="button" [attr.aria-pressed]="!rated()" [disabled]="!['ready','over'].includes(view().phase) || careerBusy() || savingResult()" (click)="setRated(false)">{{ words().training }}</button>
-        <button type="button" [attr.aria-pressed]="rated()" [disabled]="!career.verified() || !['ready','over'].includes(view().phase) || careerBusy() || savingResult()" (click)="setRated(true)">{{ words().rated }}</button>
+        <button type="button" [attr.aria-pressed]="rated()" [disabled]="!career.verified() || ratedVersionMismatch() || !['ready','over'].includes(view().phase) || careerBusy() || savingResult()" (click)="setRated(true)">{{ words().rated }}</button>
       </div>
       <p *ngIf="!career.verified()">{{ words().signInGame }}</p>
+      <p *ngIf="career.verified() && ratedVersionMismatch()" role="status">{{ words().ratedUpgrade }}</p>
       <ng-container *ngIf="rated()">
         <label class="ranking-consent"><input type="checkbox" [checked]="rankingConsent()" [disabled]="view().phase !== 'ready' || careerBusy()" (change)="rankingConsent.set($any($event.target).checked)">{{ words().consent }}</label>
         <p>{{ words().ratedNote }}</p>
