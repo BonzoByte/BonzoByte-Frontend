@@ -4,7 +4,7 @@ const surnamePrefixes = new Set([
 
 /** Names passed here are already decoded plain text, never markup. */
 export function playerGridLabel(name: string, iso3?: string | null, seed?: string | null, rank?: string | null): string {
-    const n = (name ?? '').trim();
+    let baseName = (name ?? '').trim();
     const isoRaw = (iso3 ?? '').toString().trim().toUpperCase();
     const iso = isoRaw && isoRaw !== '0' ? isoRaw : '';
     const nonZero = (value?: string | null) => {
@@ -12,6 +12,19 @@ export function playerGridLabel(name: string, iso3?: string | null, seed?: strin
         return text && text !== '0' && text !== '0.0' ? text : '';
     };
     const s = nonZero(seed), r = nonZero(rank);
+    // Older archives may already include these fields in the name. Remove only
+    // matching trailing metadata; keep birth years and other name qualifiers.
+    const retainedSuffixes: string[] = [];
+    const key = (value: string) => value.trim().replace(/\s+/g, ' ').toUpperCase();
+    let suffix: RegExpMatchArray | null;
+    while ((suffix = baseName.match(/\s*(?:\(([^()]*)\)|\[([^\[\]]*)\])\s*$/))) {
+        const value = key(suffix[1] ?? suffix[2]);
+        const metadata = (iso && value === key(iso)) || (s && value === key(s)) ||
+            (r && suffix[2] !== undefined && value === key(r));
+        if (!metadata) retainedSuffixes.unshift(suffix[0].trim());
+        baseName = baseName.slice(0, suffix.index).trimEnd();
+    }
+    const n = [baseName, ...retainedSuffixes].filter(Boolean).join(' ');
     return `${n}${iso ? ` (${iso})` : ''}${s ? ` (${s})` : ''}${r ? ` [${r}]` : ''}`.trim();
 }
 
