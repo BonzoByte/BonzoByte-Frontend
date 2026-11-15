@@ -13,6 +13,7 @@ import{PrivateMessagesService,PrivateSelection,PrivateTarget,PrivateConversation
 import{RegionalSettingsService}from'../core/services/regional-settings.service';
 import{discussionLengthValid,discussionTextLength,discussionSelection}from'../core/helpers/discussion-text';
 import{SubmitShortcutDirective}from'../shared/directives/submit-shortcut.directive';
+import{accountAvatarUrl}from'../core/helpers/account-avatar-url';
 @Component({selector:'app-private-thread',standalone:true,imports:[CommonModule,FormsModule,TranslateModule,SubmitShortcutDirective,CdkTextareaAutosize,MessageAutosizeDirective,DraftUnloadDirective,MessageDayDividerComponent,InitialsAvatarComponent,UserPresenceComponent],
  templateUrl:'./private-thread.component.html',styleUrls:['./private-thread.component.scss']})
 export class PrivateThreadComponent implements OnChanges,AfterViewInit,OnDestroy{
@@ -91,7 +92,7 @@ export class PrivateThreadComponent implements OnChanges,AfterViewInit,OnDestroy
   const[start,end]=discussionSelection(this.body,input.selectionStart,input.selectionEnd),next=this.body.slice(0,start)+emoji+this.body.slice(end);
   if(!discussionLengthValid(next)){this.emojiLimit=true;return;}this.bodyChanged(next);input.value=next;input.focus();input.setSelectionRange(start+emoji.length,start+emoji.length);}
  avatar(profile:PrivateProfile|null):string|null{const value=profile?.avatarUrl;if(!value||this.failedAvatars.has(value)||/[<>@\s\\]/u.test(value))return null;
-  if(/^\/uploads\/[A-Za-z0-9/_.,-]+$/.test(value))return value;try{const url=new URL(value);return['http:','https:'].includes(url.protocol)&&!url.username&&!url.password?url.href:null;}catch{return null;}}
+  if(/^\/uploads\/[A-Za-z0-9/_.,-]+$/.test(value))return value;try{const url=new URL(value);return['http:','https:'].includes(url.protocol)&&!url.username&&!url.password?accountAvatarUrl(url.href):null;}catch{return null;}}
  avatarFailed(profile:PrivateProfile|null):void{if(profile?.avatarUrl)this.failedAvatars.add(profile.avatarUrl);}
  ngAfterViewInit():void{this.observer=new IntersectionObserver(entries=>{for(const entry of entries){const row=entry.target as HTMLElement;
    if(this.api.visible&&row.isConnected&&entry.isIntersecting&&entry.intersectionRatio>0&&entry.intersectionRect.width>0

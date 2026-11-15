@@ -8,6 +8,7 @@ import { ManualCopyComponent } from '../shared/ui/manual-copy/manual-copy.compon
 import { UserPresenceComponent } from '../shared/ui/user-presence/user-presence.component';
 import { CommentLinkTarget, parseCommentLinkTarget } from '../core/helpers/comment-link';
 import { CommentLinkCopyService } from './comment-link-copy.service';
+import { accountAvatarUrl } from '../core/helpers/account-avatar-url';
 import { SubmitShortcutDirective } from '../shared/directives/submit-shortcut.directive';
 import { AfterViewInit, Component, ElementRef, EventEmitter, Input, OnChanges, OnDestroy, Output, QueryList, ViewChild, ViewChildren, effect, signal, untracked } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -183,7 +184,7 @@ export class DiscussionThreadComponent implements OnChanges, AfterViewInit, OnDe
         if (/^\/uploads\/[A-Za-z0-9/_.,-]+$/.test(url)) return url;
         try {
             const parsed = new URL(url);
-            return ['http:', 'https:'].includes(parsed.protocol) && !parsed.username && !parsed.password ? parsed.href : null;
+            return ['http:', 'https:'].includes(parsed.protocol) && !parsed.username && !parsed.password ? accountAvatarUrl(parsed.href) : null;
         } catch { return null; }
     }
     avatarFailed(comment: DiscussionComment): void {

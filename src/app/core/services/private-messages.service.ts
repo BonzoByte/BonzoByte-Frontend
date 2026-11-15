@@ -3,6 +3,7 @@ import {Inject,Injectable,Injector,OnDestroy,Optional,signal} from '@angular/cor
 import {Subject,Subscription,Observable,throwError,defer} from 'rxjs';
 import {takeUntil,timeout} from 'rxjs/operators';
 import {environment} from '@env/environment';
+import {accountAvatarUrl} from '../helpers/account-avatar-url';
 import {AuthService} from './auth.service';
 import {DiscussionsService} from './discussions.service';
 import {DraftUnloadGuardService} from './draft-unload-guard.service';
@@ -48,7 +49,7 @@ export class PrivateMessagesService implements OnDestroy{
   return defer(()=>this.injector.get(HttpClient).request<T>(method,this.base+path,{body})).pipe(timeout(45000),takeUntil(this.accountChanged));}
  canContact(profile:{id:string}|null|undefined):boolean{return this.eligible&&!!profile&&/^[a-f0-9]{24}$/.test(profile.id)&&profile.id!==this.auth.getUser()?._id;}
  avatar(profile:PrivateProfile|null):string|null{const value=profile?.avatarUrl;if(!value||this.failedAvatars.has(value)||/[<>@\s\\]/u.test(value))return null;
-  if(/^\/uploads\/[A-Za-z0-9/_.,-]+$/.test(value))return value;try{const url=new URL(value);return['http:','https:'].includes(url.protocol)&&!url.username&&!url.password?url.href:null;}catch{return null;}}
+  if(/^\/uploads\/[A-Za-z0-9/_.,-]+$/.test(value))return value;try{const url=new URL(value);return['http:','https:'].includes(url.protocol)&&!url.username&&!url.password?accountAvatarUrl(url.href):null;}catch{return null;}}
  avatarFailed(profile:PrivateProfile|null):void{if(profile?.avatarUrl)this.failedAvatars.add(profile.avatarUrl);}
  openUser(profile:PrivateProfile):void{if(!this.canContact(profile))return;this.discussions.selected.set(null);this.selected.set({userId:profile.id});}
  openConversation(conversationId:string):void{if(!this.eligible||!/^[a-f0-9]{24}$/.test(conversationId))return;this.discussions.selected.set(null);this.selected.set({conversationId});}

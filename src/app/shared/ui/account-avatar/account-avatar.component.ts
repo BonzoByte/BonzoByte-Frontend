@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, Input, signal } from '@angular/core';
 import { InitialsAvatarComponent } from '../initials-avatar/initials-avatar.component';
+import { accountAvatarUrl } from '../../../core/helpers/account-avatar-url';
 
 /** Account photos (including local upload previews) with the same fallback as messages. */
 @Component({
@@ -31,8 +32,9 @@ export class AccountAvatarComponent {
   @Input() alt = '';
 
   readonly photoSource = computed(() => {
-    const source = this.requestedPhoto()?.trim();
-    if (!source || /^(?:\.\/|\/)?assets\/images\/defaultUser\.png(?:[?#].*)?$/i.test(source)) return null;
+    const requested = this.requestedPhoto()?.trim();
+    if (!requested || /^(?:\.\/|\/)?assets\/images\/defaultUser\.png(?:[?#].*)?$/i.test(requested)) return null;
+    const source = accountAvatarUrl(requested);
     const failed = this.failedPhoto();
     return failed?.source === source && failed.identity === (this.accountIdentity() ?? '') ? null : source;
   });
