@@ -22,7 +22,7 @@ describe('Lightweight stadium backgrounds for all visual themes', () => {
     });
     const style = (selector: string) => getComputedStyle(fixture.querySelector(selector)!);
     const background = () => getComputedStyle(document.body, '::before');
-    const stadium = (id: string) => 'tennis-stadium-' + id + (id === 'dark' ? '-v2' : '-v1');
+    const stadium = (id: string) => 'tennis-stadium-' + id + '-v2';
 
     it('uses one pre-rendered theme-matched WebP without changing the base page colour', () => {
         for (const [id, colour] of [['dark', 'rgb(16, 20, 25)'], ['light', 'rgb(242, 245, 247)']]) {
@@ -51,7 +51,7 @@ describe('Lightweight stadium backgrounds for all visual themes', () => {
     for (const [id, colour] of [['wimbledon', 'rgb(16, 41, 29)'], ['roland-garros', 'rgb(59, 33, 26)'], ['us-open', 'rgb(7, 29, 58)']]) {
         it('uses one photographic WebP for ' + id + ' without changing its palette', () => {
             theme.setTheme(id, false); const body = background();
-            expect(body.backgroundImage).toContain('tennis-stadium-' + id + '-v1');
+            expect(body.backgroundImage).toContain(stadium(id));
             expect(body.backgroundImage).toMatch(/tennis-stadium-[^"')]+\.webp/);
             expect(body.backgroundImage).not.toContain('gradient');
             expect(body.backgroundImage).not.toContain('.png');
@@ -78,10 +78,10 @@ describe('Lightweight stadium backgrounds for all visual themes', () => {
     });
     it('uses the blue stadium only in the US Open theme', () => {
         theme.setTheme('us-open', false);
-        expect(background().backgroundImage).toContain('tennis-stadium-us-open-v1');
+        expect(background().backgroundImage).toContain('tennis-stadium-us-open-v2');
         for (const id of ['dark', 'light', 'wimbledon', 'roland-garros']) {
             theme.setTheme(id, false);
-            expect(background().backgroundImage).not.toContain('tennis-stadium-us-open-v1');
+            expect(background().backgroundImage).not.toContain('tennis-stadium-us-open-v2');
         }
     });
     it('uses a dark green Wimbledon toolbar and retains all other toolbar colours', () => {

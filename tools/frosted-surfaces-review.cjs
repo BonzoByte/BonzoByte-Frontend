@@ -36,7 +36,7 @@ const { chromium } = require(path.join(runtime, 'playwright'));
         if (request.method !== 'GET') return response.writeHead(405).end();
         if (url.pathname === '/') { response.setHeader('Content-Type','text/html');return response.end(html); }
         if (url.pathname === '/styles.css') { response.setHeader('Content-Type','text/css');return response.end(css); }
-        const asset=url.pathname.match(/^\/assets\/backgrounds\/(tennis-stadium-(?:dark-v2|(?:light|wimbledon|roland-garros|us-open)-v1)\.webp)$/);
+        const asset=url.pathname.match(/^\/assets\/backgrounds\/(tennis-stadium-(?:dark|light|wimbledon|roland-garros|us-open)-v2\.webp)$/);
         if (asset) { response.setHeader('Content-Type','image/webp');return response.end(await fs.readFile(path.join(project,'src/assets/backgrounds',asset[1]))); }
         response.writeHead(404).end();
     });

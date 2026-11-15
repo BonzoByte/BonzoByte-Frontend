@@ -6,19 +6,19 @@
 }
 
 :root[data-bb-theme='light'] {
-    --bb-court-pattern: url('../assets/backgrounds/tennis-stadium-light-v1.webp');
+    --bb-court-pattern: url('../assets/backgrounds/tennis-stadium-light-v2.webp');
 }
 
 :root[data-bb-theme='wimbledon'] {
-    --bb-court-pattern: url('../assets/backgrounds/tennis-stadium-wimbledon-v1.webp');
+    --bb-court-pattern: url('../assets/backgrounds/tennis-stadium-wimbledon-v2.webp');
 }
 
 :root[data-bb-theme='roland-garros'] {
-    --bb-court-pattern: url('../assets/backgrounds/tennis-stadium-roland-garros-v1.webp');
+    --bb-court-pattern: url('../assets/backgrounds/tennis-stadium-roland-garros-v2.webp');
 }
 
 :root[data-bb-theme='us-open'] {
-    --bb-court-pattern: url('../assets/backgrounds/tennis-stadium-us-open-v1.webp');
+    --bb-court-pattern: url('../assets/backgrounds/tennis-stadium-us-open-v2.webp');
 }
 
 :root:is(:not([data-bb-theme]), [data-bb-theme='dark'], [data-bb-theme='light'],
