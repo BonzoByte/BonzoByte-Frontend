@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { ThemeService } from './theme.service';
 
-describe('Lightweight stadium backgrounds and material theme surfaces', () => {
+describe('Lightweight stadium backgrounds for all visual themes', () => {
     let theme: ThemeService, fixture: HTMLElement;
     let initialTheme: string | undefined;
     beforeEach(() => {
@@ -48,13 +48,15 @@ describe('Lightweight stadium backgrounds and material theme surfaces', () => {
         }
     });
     for (const [id, colour] of [['wimbledon', 'rgb(16, 41, 29)'], ['roland-garros', 'rgb(59, 33, 26)'], ['us-open', 'rgb(7, 29, 58)']]) {
-        it('uses a small shaded material PNG for ' + id + ' without changing its palette', () => {
+        it('uses one photographic WebP for ' + id + ' without changing its palette', () => {
             theme.setTheme(id, false); const body = background();
-            expect(body.backgroundImage).toContain('surface-' + id);
-            expect(body.backgroundImage).toMatch(/surface-[^"')]+\.png/);
-            expect(body.backgroundImage).toContain('linear-gradient');
-            const size = id === 'roland-garros' ? '640px 640px' : id === 'wimbledon' ? '512px 512px' : '640px 480px';
-            expect(body.backgroundSize).toBe('auto, ' + size);
+            expect(body.backgroundImage).toContain('tennis-stadium-' + id + '-v1');
+            expect(body.backgroundImage).toMatch(/tennis-stadium-[^"')]+\.webp/);
+            expect(body.backgroundImage).not.toContain('gradient');
+            expect(body.backgroundImage).not.toContain('.png');
+            expect(body.backgroundSize).toBe('cover');
+            expect(body.backgroundPosition).toBe('50% 50%');
+            expect(body.backgroundRepeat).toBe('no-repeat');
             expect(body.backgroundColor).toBe(colour);
             expect(body.backgroundBlendMode.split(',').every(mode => mode.trim() === 'normal')).toBeTrue();
         });
@@ -64,31 +66,21 @@ describe('Lightweight stadium backgrounds and material theme surfaces', () => {
         expect(background().backgroundImage).toContain('tennis-stadium-dark-v1');
         expect(background().backgroundSize).toBe('cover');
     });
-    it('uses darker, coarser material tiles without leaking sizes between themes', () => {
-        for (const [id, shade] of [['wimbledon', 'rgba(1, 5, 3, 0.86)'], ['roland-garros', 'rgba(2, 1, 0, 0.74)'], ['us-open', 'rgba(0, 3, 8, 0.15)']]) {
+    it('changes only the photograph when switching between all five themes', () => {
+        for (const id of ['roland-garros', 'wimbledon', 'us-open', 'dark', 'light']) {
             theme.setTheme(id, false);
-            expect(background().backgroundImage).toContain(shade);
+            expect(background().backgroundImage).toContain('tennis-stadium-' + id + '-v1');
+            expect(background().backgroundSize).toBe('cover');
+            expect(background().backgroundRepeat).toBe('no-repeat');
+            expect(background().backgroundImage).not.toContain('surface-');
         }
-        theme.setTheme('roland-garros', false);
-        expect(background().backgroundSize).toBe('auto, 640px 640px');
-        theme.setTheme('wimbledon', false);
-        expect(background().backgroundSize).toBe('auto, 512px 512px');
-        theme.setTheme('us-open', false);
-        expect(background().backgroundSize).toBe('auto, 640px 480px');
-        theme.setTheme('dark', false);
-        expect(background().backgroundSize).toBe('cover');
-        expect(background().backgroundRepeat).toBe('no-repeat');
-        theme.setTheme('light', false);
-        expect(background().backgroundImage).toContain('tennis-stadium-light-v1');
-        expect(background().backgroundSize).toBe('cover');
-        expect(background().backgroundRepeat).toBe('no-repeat');
     });
-    it('loads the new pre-rendered hard-court pattern only in the US Open theme', () => {
+    it('uses the blue stadium only in the US Open theme', () => {
         theme.setTheme('us-open', false);
-        expect(background().backgroundImage).toContain('surface-us-open-v2');
+        expect(background().backgroundImage).toContain('tennis-stadium-us-open-v1');
         for (const id of ['dark', 'light', 'wimbledon', 'roland-garros']) {
             theme.setTheme(id, false);
-            expect(background().backgroundImage).not.toContain('surface-us-open-v2');
+            expect(background().backgroundImage).not.toContain('tennis-stadium-us-open-v1');
         }
     });
     it('uses a dark green Wimbledon toolbar and retains all other toolbar colours', () => {

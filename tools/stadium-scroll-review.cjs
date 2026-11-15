@@ -31,7 +31,7 @@ const sharp = require(path.join(runtime, 'sharp'));
         if (request.method !== 'GET') { response.writeHead(405).end(); return; }
         if (url.pathname === '/') { response.setHeader('Content-Type', 'text/html'); response.end(html); return; }
         if (url.pathname === '/styles.css') { response.setHeader('Content-Type', 'text/css'); response.end(css); return; }
-        const asset = url.pathname.match(/^\/assets\/backgrounds\/(tennis-stadium-(?:dark|light)-v1\.webp|surface-(?:wimbledon-v1|roland-garros-v1|us-open-v2)\.png)$/);
+        const asset = url.pathname.match(/^\/assets\/backgrounds\/(tennis-stadium-(?:dark|light|wimbledon|roland-garros|us-open)-v1\.webp)$/);
         if (asset) {
             response.setHeader('Content-Type', asset[1].endsWith('.png') ? 'image/png' : 'image/webp');
             response.end(await fs.readFile(path.join(project, 'src/assets/backgrounds', asset[1]))); return;
@@ -67,7 +67,7 @@ const sharp = require(path.join(runtime, 'sharp'));
                 const position = await page.evaluate(() => ({ scroll: scrollY, viewport: innerHeight,
                     backdrop: parseFloat(getComputedStyle(document.body, '::before').height) }));
                 assert.ok(position.scroll > viewport.height); assert.equal(position.backdrop, position.viewport);
-                if (theme === 'dark') await page.screenshot({ path: path.join(output, 'bottom-' + viewport.width + '.png') });
+                await page.screenshot({ path: path.join(output, 'bottom-' + theme + '-' + viewport.width + '.png') });
                 checks.push({ theme, width: viewport.width, bottomScroll: position.scroll, fixedBackgroundPixels: true, maxChannelDelta: delta });
             }
             await page.locator('.probe').click();
