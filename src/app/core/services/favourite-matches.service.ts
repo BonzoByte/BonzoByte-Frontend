@@ -1,10 +1,11 @@
 import { DOCUMENT } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { Inject, Injectable, OnDestroy, computed, signal } from '@angular/core';
+import { Inject, Injectable, OnDestroy, Optional, computed, signal } from '@angular/core';
 import { Observable, Subject, Subscription, defer, finalize, from, map, mergeMap, of, switchMap, takeUntil, throwError, timeout, toArray } from 'rxjs';
 import { environment } from '@env/environment';
 import { Match } from '../models/tennis.model';
 import { AuthService } from './auth.service';
+import { LocalizedSnackbarService } from '../i18n/localized-snackbar.service';
 
 interface FavouriteIndex { ids: number[]; count: number; limit: number; }
 interface FavouriteMutation { matchTPId: number; saved: boolean; count: number; }
@@ -36,12 +37,14 @@ export class FavouriteMatchesService implements OnDestroy {
     private generation = 0;
     private rowLoads = 0;
     private messageTimer?: ReturnType<typeof setTimeout>;
+    private confirmation?: ReturnType<LocalizedSnackbarService['open']>;
     private readonly focus = () => {
         if (this.signedIn() && !this.pending().size && !this.rowLoads) this.refresh();
     };
 
     constructor(private http: HttpClient, private auth: AuthService,
-        @Inject(DOCUMENT) private document: Document) {}
+        @Inject(DOCUMENT) private document: Document,
+        @Optional() private snack: LocalizedSnackbarService | null = null) {}
 
     start(): void {
         if (this.userSubscription || environment.billingLab) return;
@@ -155,11 +158,21 @@ export class FavouriteMatchesService implements OnDestroy {
     }
 
     private notify(message: 'added' | 'removed' | 'failed' | 'limit', undoId: number | null = null): void {
-        clearTimeout(this.messageTimer); this.message.set(message); this.undoId.set(undoId);
+        this.dismissMessage();
+        if (message === 'added' && this.snack) {
+            try {
+                this.confirmation = this.snack.open('favourites.added', '', { duration: 3500, panelClass: 'success-snackbar' });
+                return;
+            } catch {
+                // Keep feedback available if the notification surface cannot open.
+            }
+        }
+        this.message.set(message); this.undoId.set(undoId);
         this.messageTimer = setTimeout(() => this.dismissMessage(), 10000);
     }
     dismissMessage(): void {
         clearTimeout(this.messageTimer); this.message.set(null); this.undoId.set(null);
+        this.confirmation?.dismiss(); this.confirmation = undefined;
     }
     ngOnDestroy(): void {
         this.accountChanged.next(); this.accountChanged.complete();
