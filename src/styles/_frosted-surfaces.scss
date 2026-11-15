@@ -1,0 +1,73 @@
+// Keep the tint nearly opaque. Never use opacity/filter on a whole card: that
+// would soften its text and charts as well as the photograph behind it.
+:root {
+    --bb-frost-fill: 90%;
+    --bb-frost-row-fill: 92%;
+    --bb-frost-blur: none;
+}
+
+:root[data-bb-theme='light'] {
+    --bb-frost-fill: 95%;
+    --bb-frost-row-fill: 96%;
+}
+
+// One bounded blur per scrolling viewport, not per row, cell or tournament.
+// Touch/small screens keep the tint but avoid live backdrop compositing.
+@supports ((backdrop-filter: blur(2px)) or (-webkit-backdrop-filter: blur(2px))) {
+    @media (min-width: 769px) and (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+        :root { --bb-frost-blur: blur(2px); }
+    }
+}
+
+@supports (background: color-mix(in srgb, white 90%, transparent)) {
+    :root :is(
+        .analytics-card, .analytics-chart-card,
+        .mi-hero__content, .mi-hero__highlights, .mi-panel,
+        .mi-finding-card, .mi-policy-card, .mi-segment-card,
+        .sim-hero, .sim-controls, .sim-model-strip, .sim-panel, .sim-method,
+        .sql-study__panel, .sql-study__controls, .sql-study__cards > article,
+        .home-hero__content, .home-hero__stats, .home-stat-card, .home-card, .home-panel
+    ) {
+        background: color-mix(in srgb, var(--bb-surface-1) var(--bb-frost-fill), transparent) !important;
+        -webkit-backdrop-filter: var(--bb-frost-blur) !important;
+        backdrop-filter: var(--bb-frost-blur) !important;
+    }
+
+    // Nested highlights stay crisp and never create a second blur layer.
+    :root :is(.mi-stat-card, .mi-meta, .sim-hero__meta, .home-chip, .home-tech) {
+        background: color-mix(in srgb, var(--bb-surface-2) var(--bb-frost-row-fill), transparent) !important;
+    }
+    :root .mi-explainability__meta > div {
+        background: color-mix(in srgb, var(--bb-surface-1) var(--bb-frost-fill), transparent) !important;
+    }
+
+    // These wrappers end before the route's dialogs/loading overlays. Keeping
+    // blur here avoids changing the containing block of fixed modal windows.
+    :root :is(app-matches, app-players, app-tournaments) .table-wrapper {
+        -webkit-backdrop-filter: var(--bb-frost-blur);
+        backdrop-filter: var(--bb-frost-blur);
+    }
+    :root :is(app-matches, app-players, app-tournaments) :is(.match-table, .tournament-group) {
+        background: transparent !important;
+    }
+    :root :is(app-matches, app-players, app-tournaments) .match-table tbody tr:nth-child(odd) {
+        background: color-mix(in srgb, var(--bb-table-row-odd) var(--bb-frost-row-fill), transparent) !important;
+    }
+    :root :is(app-matches, app-players, app-tournaments) .match-table tbody tr:nth-child(even) {
+        background: color-mix(in srgb, var(--bb-table-row-even) var(--bb-frost-row-fill), transparent) !important;
+    }
+    // Do not blur nested cards. Row hover/focus, headers, dialogs and controls
+    // retain their existing solid/highlighted colours and hit targets.
+    :root :is(.home-hero__stats, .home-panel) :is(.home-stat-card, .home-card) {
+        -webkit-backdrop-filter: none !important;
+        backdrop-filter: none !important;
+    }
+}
+
+@media (prefers-contrast: more), (forced-colors: active), (prefers-reduced-transparency: reduce), print {
+    :root, :root[data-bb-theme] {
+        --bb-frost-fill: 100%;
+        --bb-frost-row-fill: 100%;
+        --bb-frost-blur: none;
+    }
+}

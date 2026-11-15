@@ -16,6 +16,7 @@
 @use './styles/message-autosize';
 @use './styles/tennis-background';
 @use './styles/light-contrast';
+@use './styles/frosted-surfaces';
 
 // LiveAnnouncer appends its screen-reader message directly to body. Keep the
 // CDK accessibility utility available even before a focus-trap loads it.
