@@ -5,6 +5,7 @@ export interface CourtControls { left: boolean; right: boolean; forward: boolean
 export interface Player3D { x: number; y: number; z: number; vy: number; swing: number; speed: number; stroke?: CourtShot | 'serve'; forehand?: boolean; }
 export interface Ball3D { x: number; y: number; z: number; vx: number; vy: number; vz: number; }
 export const FIELD = { halfWidth: 4.115, halfLength: 11.885, serviceLine: 6.4, netHeight: .965, gravity: 9.81 } as const;
+export const SERVE_TOSS = { windup: .18, contact: 1.05, lastContact: 1.13, catchAt: 1.65, height: 1.3, velocity: 5.94 } as const;
 const clamp = (n: number, a: number, b: number) => Math.max(a, Math.min(b, n));
 const opposite = (side: Side): Side => side === 0 ? 1 : 0;
 
@@ -29,6 +30,12 @@ export class Tennis3DEngine {
   serveAttempt: 1 | 2 = 1;
   serveCharge = 0;
   serveAim = 0;
+  serveDepth = 0;
+  private serveTossTime = -1;
+  private queuedServe: { power: number; aim: number; depth: number } | null = null;
+  get serveTossActive(): boolean { return this.phase === 'serving' && this.serveTossTime >= 0; }
+  get serveTossProgress(): number { return this.serveTossActive ? clamp(this.serveTossTime / SERVE_TOSS.contact, 0, 1) : 0; }
+  get serveReleaseQueued(): boolean { return this.queuedServe !== null; }
   strokeCharge = 0;
   strokeAim = 0;
   strokeCharging = false;
@@ -175,14 +182,42 @@ export class Tennis3DEngine {
     if (this.phase === 'serving') {
       if (this.server === 1) {
         this.delay -= dt;
-        if (this.delay <= 0) this.strikeServe(this.random() < (this.serveAttempt === 1 ? .12 : .025) ? 1.1 : .5, (this.random() - .5) * 1.2);
+        if (!this.serveTossActive && this.delay <= SERVE_TOSS.contact) this.beginServeToss();
+        if (this.serveTossActive) {
+          this.advanceServeToss(dt);
+          if (this.serveTossTime >= SERVE_TOSS.contact) this.strikeServe(
+            this.random() < (this.serveAttempt === 1 ? .12 : .025) ? 1.1 : .5,
+            (this.random() - .5) * 1.2, (this.random() - .5) * .7);
+        }
       } else {
-        const direction = Number(input.right) - Number(input.left);
-        this.serveAim = clamp(this.serveAim + direction * dt * 1.8, -1.3, 1.3);
+        if (!this.queuedServe) {
+          const direction = Number(input.right) - Number(input.left);
+          this.serveAim = clamp(this.serveAim + direction * dt * 1.8, -1.3, 1.3);
+          this.serveDepth = clamp(this.serveDepth + (Number(input.forward) - Number(input.back)) * dt * 1.8, -1.3, 1.3);
+        }
         // Require a release after a held rally stroke or a fault; never auto-submit a second serve.
         if (!input.shot && !this.serveHeld) this.serveArmed = true;
-        if (input.shot && this.serveArmed) { this.serveHeld = true; this.serveCharge = Math.min(1.3, this.serveCharge + dt / 1.2); }
-        else if (this.serveHeld) this.strikeServe(this.serveCharge, this.serveAim);
+        if (input.shot && this.serveArmed && !this.queuedServe) {
+          if (!this.serveHeld) this.beginServeToss();
+          this.serveHeld = true; this.serveCharge = Math.min(1.3, this.serveCharge + dt / 1.05);
+        } else if (this.serveHeld) {
+          this.serveHeld = false; this.serveArmed = false;
+          this.queuedServe = { power: this.serveCharge, aim: this.serveAim, depth: this.serveDepth };
+        }
+        if (this.serveTossActive) {
+          this.advanceServeToss(dt);
+          if (this.queuedServe && this.serveTossTime >= SERVE_TOSS.contact) {
+            if (this.serveTossTime <= SERVE_TOSS.lastContact) {
+              const shot = this.queuedServe; this.strikeServe(shot.power, shot.aim, shot.depth);
+            } else {
+              // An attempted swing at an already fallen toss is a service fault.
+              this.queuedServe = null; this.players[0].swing = .4; this.players[0].stroke = 'serve'; this.serviceFault();
+            }
+          } else if (this.serveTossTime >= SERVE_TOSS.catchAt) {
+            // Choosing not to strike a toss is allowed. Catch/reset without consuming an attempt.
+            this.cancelServeCharge();
+          }
+        }
       }
       return;
     }
@@ -216,11 +251,12 @@ export class Tennis3DEngine {
         this.hit(1, this.ball.y > 1.95 ? 'smash' : this.random() < .14 ? 'lob' : 'drive', (this.random() - .5) * 1.8, .35 + this.random() * .5);
       }
     }
-    const b = this.ball, beforeZ = b.z;
+    const b = this.ball, beforeZ = b.z, beforeY = b.y;
     b.vy -= FIELD.gravity * dt; b.x += b.vx * dt; b.y += b.vy * dt; b.z += b.vz * dt;
     if (beforeZ * b.z < 0) {
-      if (b.y < FIELD.netHeight + .065) {
-        if (this.serviceActive && b.y >= FIELD.netHeight - .025) { this.netTouched = true; b.vz *= .94; }
+      const crossing = beforeZ / (beforeZ - b.z), netY = beforeY + (b.y - beforeY) * crossing;
+      if (netY < FIELD.netHeight + .065) {
+        if (netY >= FIELD.netHeight - .025) { this.netTouched = this.serviceActive; b.vz *= .94; }
         else { if (this.serviceActive) this.serviceFault(); else this.award(opposite(this.hitter), 'net'); return; }
       }
       this.crossed = true;
@@ -228,7 +264,7 @@ export class Tennis3DEngine {
     if (b.y <= .065 && b.vy < 0) {
       if (this.bounces > 0) { this.award(this.hitter, 'bounce'); return; }
       const side: Side = b.z >= 0 ? 0 : 1;
-      if (this.serviceActive && (!this.crossed || side === this.server || Math.abs(b.z) > FIELD.serviceLine || Math.abs(b.x) > FIELD.halfWidth || b.x * this.serviceBoxSign <= 0)) {
+      if (this.serviceActive && (!this.crossed || side === this.server || Math.abs(b.z) > FIELD.serviceLine || Math.abs(b.x) > FIELD.halfWidth || b.x * this.serviceBoxSign < -1e-8)) {
         this.serviceFault(); return;
       }
       if (this.serviceActive && this.netTouched) { this.phase = 'let'; this.delay = 1.05; this.emit('let'); return; }
@@ -245,24 +281,33 @@ export class Tennis3DEngine {
   }
   get serviceBoxSign(): number { return (this.server === 0 ? -1 : 1) * ((this.score[0] + this.score[1]) % 2 === 0 ? 1 : -1); }
   setServeAim(value: number): void {
-    if (this.phase === 'serving' && this.server === 0 && Number.isFinite(value)) this.serveAim = clamp(value, -1.3, 1.3);
+    if (this.phase === 'serving' && this.server === 0 && !this.queuedServe && Number.isFinite(value)) this.serveAim = clamp(value, -1.3, 1.3);
+  }
+  setServeDepth(value: number): void {
+    if (this.phase === 'serving' && this.server === 0 && !this.queuedServe && Number.isFinite(value)) this.serveDepth = clamp(value, -1.3, 1.3);
   }
   /** World-space left/right, within the correct diagonal singles service box. */
-  get serveTarget(): { x: number; z: number } { return this.serviceTarget(this.serveCharge, this.serveAim); }
-  private serviceTarget(power: number, aim: number): { x: number; z: number } {
+  get serveTarget(): { x: number; z: number } { return this.serviceTarget(this.serveCharge, this.serveAim, this.serveDepth); }
+  private serviceTarget(power: number, aim: number, depth = 0): { x: number; z: number } {
     const x = Math.abs(aim) <= 1 ? this.serviceBoxSign * 2.05 + aim * 1.65 :
       Math.sign(aim) === this.serviceBoxSign ? this.serviceBoxSign * (FIELD.halfWidth + .15 + (Math.abs(aim) - 1) * 3) : -this.serviceBoxSign * (.15 + (Math.abs(aim) - 1) * 3);
-    return { x,
-      z: (this.server === 0 ? -1 : 1) * (power > .95 ? 8.4 : 4.7 + power * .6) };
+    // Green depth spans the service box; excessive short aim risks the net,
+    // excessive deep aim crosses the service line. Power remains independent.
+    const distance = depth > 1 ? FIELD.serviceLine + .15 + (depth - 1) * 3 :
+      depth < -1 ? 2.1 + (depth + 1) * 3.5 : 4.7 + power * .6 + depth * 1.05;
+    return { x, z: (this.server === 0 ? -1 : 1) * (power > .95 ? 8.4 : distance) };
   }
   cancelServeCharge(): void {
     this.serveHeld = false; this.serveArmed = false; this.serveCharge = 0;
+    this.serveTossTime = -1; this.queuedServe = null;
+    if (this.phase === 'serving') this.holdServiceBall();
     this.strokeCharging = false; this.pendingStroke = null; this.strokeCharge = 0; this.strokeAim = 0;
   }
   armServe(): void { if (this.phase === 'serving' && this.server === 0) this.serveArmed = true; }
   private prepareServe(fresh: boolean): void {
     if (fresh) this.serveAttempt = 1;
-    this.phase = 'serving'; this.serveCharge = 0; this.serveAim = 0; this.serveHeld = false; this.serveArmed = false; this.delay = 1.15;
+    this.phase = 'serving'; this.serveCharge = 0; this.serveAim = 0; this.serveDepth = 0;
+    this.serveTossTime = -1; this.queuedServe = null; this.serveHeld = false; this.serveArmed = false; this.delay = 1.15;
     this.strokeCharging = false; this.pendingStroke = null; this.strokeCharge = 0; this.strokeAim = 0; this.humanPlanning = 0;
     this.serviceActive = true; this.netTouched = false; this.dropShot = false; this.rally = 0; this.bounces = 0; this.crossed = false;
     this.hitter = this.server; this.pointWinner = null; this.reason = null; this.cpuMiss = false; this.reaction = 0;
@@ -270,25 +315,42 @@ export class Tennis3DEngine {
     const p = this.players[this.server], sign = this.server === 0 ? 1 : -1;
     p.x = -this.serviceBoxSign * .85; p.z = sign * 12.35;
     this.players[opposite(this.server)].x = this.serviceBoxSign * 1.6;
-    this.ball = { x: p.x, y: 1.2, z: p.z, vx: 0, vy: 0, vz: 0 };
+    this.holdServiceBall();
+  }
+  private holdServiceBall(): void {
+    const p = this.players[this.server], sign = this.server === 0 ? 1 : -1;
+    this.ball = { x: p.x - sign * .22, y: SERVE_TOSS.height, z: p.z - sign * .2, vx: 0, vy: 0, vz: 0 };
+  }
+  private beginServeToss(): void { this.serveTossTime = 0; this.queuedServe = null; this.holdServiceBall(); }
+  private advanceServeToss(dt: number): void {
+    this.serveTossTime += dt;
+    const flight = Math.max(0, this.serveTossTime - SERVE_TOSS.windup);
+    const p = this.players[this.server], sign = this.server === 0 ? 1 : -1;
+    this.ball = { x: p.x - sign * .22 * (1 - clamp(flight / .5, 0, 1)),
+      y: Math.max(.065, SERVE_TOSS.height + SERVE_TOSS.velocity * flight - .5 * FIELD.gravity * flight * flight),
+      z: p.z - sign * .2, vx: 0, vy: flight > 0 ? SERVE_TOSS.velocity - FIELD.gravity * flight : 0, vz: 0 };
   }
   /** Power is controlled before the outcome exists. The red zone deliberately risks a long serve. */
-  strikeServe(power = .5, aim = this.serveAim): boolean {
-    if (this.phase !== 'serving' || !Number.isFinite(power) || !Number.isFinite(aim)) return false;
+  strikeServe(power = .5, aim = this.serveAim, depth = this.serveDepth): boolean {
+    if (this.phase !== 'serving' || ![power, aim, depth].every(Number.isFinite)) return false;
     const p = this.players[this.server], sign = this.server === 0 ? 1 : -1;
     const strength = clamp(power, 0, 1.3), time = (this.serveAttempt === 2 ? 1.04 : .98) - Math.min(.85, strength) * .22;
     this.serveAim = clamp(aim, -1.3, 1.3);
-    const { x: targetX, z: targetZ } = this.serviceTarget(strength, this.serveAim);
+    this.serveDepth = clamp(depth, -1.3, 1.3);
+    const { x: targetX, z: targetZ } = this.serviceTarget(strength, this.serveAim, this.serveDepth);
+    const contactHeight = this.serveTossActive ? this.ball.y : 2.75;
     this.phase = 'playing'; this.serveHeld = false; this.dropShot = false; p.swing = .4; p.stroke = 'serve'; p.forehand = true;
+    this.serveTossTime = -1; this.queuedServe = null;
     this.humanPlanning = 0;
-    this.ball = { x: p.x, y: 2.75, z: p.z - sign * .2, vx: (targetX - p.x) / time,
-      vy: (.065 - 2.75 + .5 * FIELD.gravity * time ** 2) / time, vz: (targetZ - (p.z - sign * .2)) / time };
+    this.ball = { x: p.x, y: contactHeight, z: p.z - sign * .2, vx: (targetX - p.x) / time,
+      vy: (.065 - contactHeight + .5 * FIELD.gravity * time ** 2) / time, vz: (targetZ - (p.z - sign * .2)) / time };
     if (this.server === 0) this.awaitComputerReaction();
     this.emit('serve');
     return true;
   }
   private serviceFault(): void {
-    if (this.serveAttempt === 2) { this.award(opposite(this.server), 'doubleFault'); return; }
+    this.serveTossTime = -1; this.queuedServe = null; this.serveHeld = false; this.serveArmed = false;
+    if (this.serveAttempt === 2) { this.phase = 'playing'; this.award(opposite(this.server), 'doubleFault'); return; }
     this.serveAttempt = 2; this.phase = 'fault'; this.delay = 1.15; this.players.forEach(p => p.speed = 0); this.emit('fault');
   }
   private award(side: Side, reason: 'net' | 'out' | 'bounce' | 'doubleFault'): void {

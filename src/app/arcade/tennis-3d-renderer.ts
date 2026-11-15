@@ -3,9 +3,10 @@ import { CourtShot, FIELD, Player3D, Tennis3DEngine } from './tennis-3d-engine';
 import type { CourtSurface } from './tennis-engine';
 import { TennisCrowd } from './tennis-crowd';
 import { tennisAthletePose, tennisAthleteStrokePreparationPose, TENNIS_ATHLETE_JOINTS as JOINTS } from './tennis-athlete-pose';
-import { TennisServePresentation, tennisServePreparationPose, tennisServeToss } from './tennis-serve-pose';
+import { TennisServePresentation, tennisServePreparationPose } from './tennis-serve-pose';
 import { TennisCourtEffects } from './tennis-court-effects';
 import { TennisClubDetails } from './tennis-club-details';
+import { TennisBallCrew } from './tennis-ball-crew';
 import { createTennisAthlete, TennisAthlete as Athlete } from './tennis-athlete-model';
 import { createTennisCourtTexture, TENNIS_COURT_COLOURS } from './tennis-court-surface';
 
@@ -42,6 +43,7 @@ export class Tennis3DRenderer {
   private readonly crowd: TennisCrowd;
   private readonly effects: TennisCourtEffects;
   private readonly clubDetails: TennisClubDetails;
+  private readonly ballCrew: TennisBallCrew;
   private readonly athleteShadows: THREE.Mesh[] = [];
   private readonly athleteLook = [{ player: null as Player3D | null, time: -1, yaw: 0, pitch: 0 }, { player: null as Player3D | null, time: -1, yaw: 0, pitch: 0 }];
   private lightweight = false;
@@ -68,6 +70,7 @@ export class Tennis3DRenderer {
     this.clubDetails = new TennisClubDetails(this.scene, texture => this.textures.add(texture));
     this.crowd = new TennisCrowd(this.scene);
     this.effects = new TennisCourtEffects(this.scene);
+    this.ballCrew = new TennisBallCrew(this.scene);
     this.athletes.push(this.athlete(false), this.athlete(true));
     const shadowMap = this.contactShadowTexture();
     for (let i = 0; i < 2; i++) {
@@ -160,7 +163,7 @@ export class Tennis3DRenderer {
       this.courtMaterial.bumpScale = { grass: .013, clay: .026, hard: .006 }[game.surface];
       this.mowing.visible = game.surface === 'grass';
     }
-    const preparation = this.servePresentation.preparation(game, time);
+    const preparation = this.servePresentation.preparation(game);
     game.players.forEach((p, i) => {
       this.animate(this.athletes[i], p, i, time, i === game.server ? preparation : null,
         i === 0 && game.phase === 'playing' && game.strokeCharging ? game : null, heldShot);
@@ -173,20 +176,17 @@ export class Tennis3DRenderer {
       look.yaw += (yaw - look.yaw) * damping; look.pitch += (pitch - look.pitch) * damping;
       this.athletes[i].head.rotation.y = look.yaw; this.athletes[i].head.rotation.x += look.pitch;
       const shadow = this.athleteShadows[i]; shadow.position.set(p.x, .035, p.z);
-      shadow.scale.setScalar(1 + p.y * .25); (shadow.material as THREE.MeshBasicMaterial).opacity = Math.max(.13, .38 - p.y * .16);
+      const height = Math.max(0, this.athletes[i].root.position.y);
+      shadow.scale.setScalar(1 + height * .25); (shadow.material as THREE.MeshBasicMaterial).opacity = Math.max(.13, .38 - height * .16);
     });
     const b = game.ball;
-    this.ball.position.set(b.x, Math.max(.13, b.y), b.z);
-    if (preparation !== null) {
-      const rig = this.athletes[game.server], server = game.players[game.server], sign = game.server === 0 ? 1 : -1;
+    this.ball.position.set(b.x, game.serveTossActive ? b.y : Math.max(.13, b.y), b.z);
+    // Idle only. During windup, flight and a queued release, physics owns the entire toss.
+    if (preparation !== null && !game.serveTossActive) {
+      const rig = this.athletes[game.server];
       rig.root.updateMatrixWorld(true);
       rig.elbows[0].localToWorld(this.serveHand.set(0, -JOINTS.handDrop, 0));
-      const toss = tennisServeToss(preparation);
-      this.ball.position.set(
-        THREE.MathUtils.lerp(this.serveHand.x, server.x, toss),
-        THREE.MathUtils.lerp(this.serveHand.y, 2.75, toss) + Math.sin(toss * Math.PI) * .12,
-        THREE.MathUtils.lerp(this.serveHand.z, server.z - sign * .2, toss),
-      );
+      this.ball.position.copy(this.serveHand);
     }
     if (this.ballSpinPlayer !== game.players[0] || time < this.ballSpinTime || time - this.ballSpinTime > .5) {
       this.ballSpinPlayer = game.players[0]; this.ballSpinTime = time; this.ball.rotation.set(.5, .2, .3);
@@ -195,7 +195,9 @@ export class Tennis3DRenderer {
     if (game.phase === 'playing') {
       this.ball.rotation.x -= spinDt * (8 + Math.hypot(b.vx, b.vy, b.vz) * .6) * Math.sign(b.vz);
       this.ball.rotation.z += spinDt * b.vx * .6;
-    } else if (preparation !== null && tennisServeToss(preparation) > .1) this.ball.rotation.x += spinDt * .8;
+    } else if (game.serveTossActive && b.vy !== 0) this.ball.rotation.x += spinDt * .8;
+    this.ball.visible = this.ballCrew.update(game, time, this.ball.position, this.lightweight);
+    this.ballShadow.visible = this.ball.visible;
     const shownBall = this.ball.position;
     this.ballShadow.position.set(shownBall.x, .033, shownBall.z); this.ballShadow.scale.setScalar(1 + Math.max(0, shownBall.y) * .2);
     (this.ballShadow.material as THREE.MeshBasicMaterial).opacity = Math.max(.10, .48 - shownBall.y * .055);
@@ -208,7 +210,7 @@ export class Tennis3DRenderer {
     if (this.serveMarker.visible) {
       const target = game.serveTarget, server = game.players[0];
       this.serveMarker.position.set(target.x, .055, target.z);
-      this.serveMarkerMaterial.color.setHex(game.serveCharge > .95 || Math.abs(game.serveAim) > 1 ? 0xff927e : 0xf2eea0);
+      this.serveMarkerMaterial.color.setHex(game.serveCharge > .95 || Math.abs(game.serveAim) > 1 || Math.abs(game.serveDepth) > 1 ? 0xff927e : 0xf2eea0);
       const points = this.serveGuide.geometry.getAttribute('position') as THREE.BufferAttribute;
       points.setXYZ(0, server.x, .05, server.z - .2); points.setXYZ(1, target.x, .05, target.z); points.needsUpdate = true;
     }

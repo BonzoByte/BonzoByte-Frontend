@@ -1,4 +1,5 @@
-import type { Tennis3DEngine, Player3D } from './tennis-3d-engine';
+import { SERVE_TOSS } from './tennis-3d-engine';
+import type { Tennis3DEngine } from './tennis-3d-engine';
 
 type Rotation = [number, number, number];
 export interface ServeAthletePose {
@@ -13,9 +14,14 @@ const ready: ServeAthletePose = {
   arms: [[.65, 0, .28], [.55, .08, -.28]], elbows: [1.15, 1.15], racket: .65,
   legs: [.24, .24], knees: [-.36, -.36],
 };
+const holding: ServeAthletePose = {
+  ...ready, torso: [.015, .23, -.035], head: .06,
+  // The free palm agrees with the engine's idle/windup ball: (-.22, 1.3, -.2).
+  arms: [[-.0171, 0, .5629], ready.arms[1]], elbows: [2.1637, 1.15],
+};
 const load: ServeAthletePose = {
   bounce: 0, torso: [.015, .23, -.035], head: .12,
-  arms: [[1.65, 0, .2], [1.6, -.16, -.42]], elbows: [.35, .85], racket: -.2,
+  arms: [holding.arms[0], [1.6, -.16, -.42]], elbows: [2.1637, .85], racket: -.2,
   legs: [.3, .25], knees: [-.44, -.38],
 };
 const trophy: ServeAthletePose = {
@@ -24,9 +30,14 @@ const trophy: ServeAthletePose = {
   arms: [[3.02, 0, .17], [2.35, -.15, -.4]], elbows: [.08, .7], racket: -.35,
   legs: [.32, .28], knees: [-.46, -.4],
 };
+const racketDrop: ServeAthletePose = {
+  bounce: .045, torso: [.065, .25, -.025], head: .24,
+  arms: [[3.02, 0, .17], [2.25, -.18, -.38]], elbows: [.08, 1.65], racket: -.65,
+  legs: [.3, .26], knees: [-.43, -.38],
+};
 const contact: ServeAthletePose = {
-  bounce: .34, torso: [.015, .08, 0], head: .18,
-  arms: [[3.02, 0, .17], [2.85, -.05, -.16]], elbows: [.08, .08], racket: .08,
+  bounce: .413, torso: [.015, .08, 0], head: .18,
+  arms: [[3.02, 0, .17], [2.8183, -.05, -.2692]], elbows: [.08, .08], racket: .08,
   legs: [-.04, .04], knees: [-.03, -.03],
 };
 const follow: ServeAthletePose = {
@@ -48,7 +59,11 @@ function mix(a: ServeAthletePose, b: ServeAthletePose, amount: number): ServeAth
 /** Presentation only: these poses never change a shot, a score or a replay. */
 export function tennisServePreparationPose(progress: number): ServeAthletePose {
   const p = clamp(Number.isFinite(progress) ? progress : 0);
-  return p < .35 ? mix(ready, load, p / .35) : mix(load, trophy, (p - .35) / .65);
+  const release = SERVE_TOSS.windup / SERVE_TOSS.contact;
+  if (p < release) return mix(holding, load, p / release);
+  if (p < .58) return mix(load, trophy, (p - release) / (.58 - release));
+  if (p < .76) return mix(trophy, racketDrop, (p - .58) / .18);
+  return mix(racketDrop, contact, (p - .76) / .24);
 }
 
 export function tennisServeFollowThroughPose(remaining: number): ServeAthletePose {
@@ -56,26 +71,10 @@ export function tennisServeFollowThroughPose(remaining: number): ServeAthletePos
   return p < .52 ? mix(contact, follow, p / .52) : mix(follow, ready, (p - .52) / .48);
 }
 
-/** The ball leaves the free hand and reaches the existing 2.75 m contact point. */
-export function tennisServeToss(progress: number): number {
-  return smooth(((Number.isFinite(progress) ? progress : 0) - .24) / .76);
-}
-
-/** Independent render clock: the computer's 1.15 s preparation does not expose its intended shot. */
+/** A read-only adapter: human, queued release and CPU all use the same physics clock. */
 export class TennisServePresentation {
-  private server?: Player3D;
-  private previousTime?: number;
-  private elapsed = 0;
-
-  preparation(game: Pick<Tennis3DEngine, 'phase' | 'server' | 'players' | 'serveCharge'>, time: number): number | null {
-    const now = Number.isFinite(time) ? time : this.previousTime ?? 0;
-    const dt = this.previousTime === undefined ? 0 : clamp(now - this.previousTime, 0, .05);
-    this.previousTime = now;
-    if (game.phase !== 'serving') { this.server = undefined; this.elapsed = 0; return null; }
-    const server = game.players[game.server];
-    if (server !== this.server) { this.server = server; this.elapsed = 0; }
-    else this.elapsed += dt;
-    // Charging keeps existing Space timing; a release still strikes immediately.
-    return game.server === 0 ? clamp(game.serveCharge / .85) : smooth((this.elapsed - .1) / .85);
+  preparation(game: Pick<Tennis3DEngine, 'phase' | 'serveTossActive' | 'serveTossProgress'>): number | null {
+    if (game.phase !== 'serving') return null;
+    return game.serveTossActive && Number.isFinite(game.serveTossProgress) ? clamp(game.serveTossProgress) : 0;
   }
 }

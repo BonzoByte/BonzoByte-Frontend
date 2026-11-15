@@ -85,7 +85,7 @@
     </div>
 
     <div #courtStage class="court-window" [class.has-overlay]="view().phase === 'ready' || view().phase === 'over' || paused() || unavailable()">
-      <canvas #court width="1000" height="540" tabindex="0" role="application" [attr.aria-label]="words().ball" aria-describedby="tennis-keys"
+      <canvas #court width="1000" height="540" tabindex="0" role="application" [attr.aria-label]="words().ball" aria-describedby="tennis-key-help"
         (keydown)="keyDown($event)" (keyup)="keyUp($event)" (blur)="clearInput()" (webglcontextlost)="contextLost($event)">{{ words().unavailable }}</canvas>
       <div class="court-overlay" *ngIf="view().phase === 'ready' || view().phase === 'over' || paused() || unavailable()">
         <div class="start-card" [class.is-paused]="paused()" [class.is-finished]="view().phase === 'over'" role="group" aria-labelledby="tennis-overlay-title" aria-describedby="tennis-overlay-description">
@@ -121,14 +121,30 @@
       <div class="serve-card" *ngIf="view().phase === 'serving' && !paused()">
         <div class="hud-copy">
           <strong>{{ status() }}</strong>
+          <div class="serve-toss" *ngIf="view().server === 0">
+            <span class="serve-toss-status" role="status">{{ view().serveReleaseQueued ? words().queuedServe : !view().serveTossActive ? words().tossReady : view().serveTossProgress >= 1 ? words().tossLate : words().tossStatus }}</span>
+            <div class="meter-label"><span>{{ words().tossWindow }}</span><span>{{ view().serveTossProgress * 100 | number:'1.0-0' }}%</span></div>
+            <div class="toss-meter" [class.is-active]="view().serveTossActive" [class.is-queued]="view().serveReleaseQueued" [class.is-late]="view().serveTossProgress >= 1 && !view().serveReleaseQueued" role="progressbar" [attr.aria-label]="words().tossWindow" aria-valuemin="0" aria-valuemax="100" [attr.aria-valuenow]="view().serveTossProgress * 100"><i [style.width.%]="view().serveTossProgress * 100"></i></div>
+          </div>
           <details class="serve-instructions" *ngIf="view().server === 0"><summary>{{ words().holdHit }}</summary><p>{{ words().serveHint }}</p></details>
         </div>
         <ng-container *ngIf="view().server === 0">
           <div class="serve-target">
-            <div class="serve-aim-options" role="group" [attr.aria-label]="words().serveDirection">
-              <button type="button" [attr.aria-pressed]="view().serveAim < -.5" (click)="chooseServeAim(-1)">← {{ words().aimLeft }}</button>
-              <button type="button" [attr.aria-pressed]="view().serveAim >= -.5 && view().serveAim <= .5" (click)="chooseServeAim(0)">{{ words().aimCentre }}</button>
-              <button type="button" [attr.aria-pressed]="view().serveAim > .5" (click)="chooseServeAim(1)">{{ words().aimRight }} →</button>
+            <div class="serve-target-axis">
+              <small>{{ words().serveWidth }}</small>
+              <div class="serve-aim-options" role="group" [attr.aria-label]="words().serveDirection">
+                <button type="button" [disabled]="view().serveReleaseQueued" [attr.aria-pressed]="view().serveAim < -.5" (pointerdown)="$event.preventDefault()" (click)="chooseServeAim(-1)">← {{ words().aimLeft }}</button>
+                <button type="button" [disabled]="view().serveReleaseQueued" [attr.aria-pressed]="view().serveAim >= -.5 && view().serveAim <= .5" (pointerdown)="$event.preventDefault()" (click)="chooseServeAim(0)">{{ words().aimCentre }}</button>
+                <button type="button" [disabled]="view().serveReleaseQueued" [attr.aria-pressed]="view().serveAim > .5" (pointerdown)="$event.preventDefault()" (click)="chooseServeAim(1)">{{ words().aimRight }} →</button>
+              </div>
+            </div>
+            <div class="serve-target-axis">
+              <small>{{ words().serveDepth }} ↓ / ↑</small>
+              <div class="serve-depth-options" role="group" [attr.aria-label]="words().serveDepth">
+                <button type="button" [disabled]="view().serveReleaseQueued" [attr.aria-pressed]="view().serveDepth < -.5" (pointerdown)="$event.preventDefault()" (click)="chooseServeDepth(-1)">↓ {{ words().depthNear }}</button>
+                <button type="button" [disabled]="view().serveReleaseQueued" [attr.aria-pressed]="view().serveDepth >= -.5 && view().serveDepth <= .5" (pointerdown)="$event.preventDefault()" (click)="chooseServeDepth(0)">{{ words().depthCentre }}</button>
+                <button type="button" [disabled]="view().serveReleaseQueued" [attr.aria-pressed]="view().serveDepth > .5" (pointerdown)="$event.preventDefault()" (click)="chooseServeDepth(1)">{{ words().depthDeep }} ↑</button>
+              </div>
             </div>
             <small class="serve-target-hint">{{ words().targetHint }}</small>
           </div>
@@ -140,6 +156,10 @@
             <div class="meter-group">
               <div class="meter-label"><span>{{ words().serveDirection }}</span><span [class.danger]="view().serveAim > 1 || view().serveAim < -1">{{ view().serveAim * 100 | number:'1.0-0' }}</span></div>
               <div class="aim-meter" role="meter" [attr.aria-label]="words().serveDirection" aria-valuemin="-130" aria-valuemax="130" [attr.aria-valuenow]="view().serveAim * 100"><i [style.left.%]="(view().serveAim + 1.3) / 2.6 * 100"></i></div>
+            </div>
+            <div class="meter-group serve-depth-meter">
+              <div class="meter-label"><span>{{ words().serveDepth }} ↓ / ↑</span><span [class.danger]="view().serveDepth > 1 || view().serveDepth < -1">{{ view().serveDepth * 100 | number:'1.0-0' }}</span></div>
+              <div class="aim-meter" role="meter" [attr.aria-label]="words().serveDepth" [attr.aria-valuetext]="(view().serveDepth < -.5 ? words().depthNear : view().serveDepth > .5 ? words().depthDeep : words().depthCentre) + ' ' + (view().serveDepth * 100 | number:'1.0-0')" aria-valuemin="-130" aria-valuemax="130" [attr.aria-valuenow]="view().serveDepth * 100"><i [style.left.%]="(view().serveDepth + 1.3) / 2.6 * 100"></i></div>
             </div>
             <small class="meter-legend">{{ words().safeZone }}</small>
           </div>
@@ -198,14 +218,15 @@
       <div><kbd>C</kbd><small>{{ words().lob }}</small></div>
       <div><span><kbd class="space-key">SPACE</kbd><span>+</span><kbd>← →</kbd></span><small>{{ words().aim }}</small></div>
     </div>
+    <p class="service-help">{{ words().serveKeys }}. {{ words().serveHint }}</p>
     <p class="shot-help">{{ words().dropHint }}</p>
-    <p class="sr-only">{{ words().keyHelp }}</p>
+    <p class="sr-only" id="tennis-key-help">{{ words().keyHelp }}</p>
     <ng-container *ngIf="!expanded()" [ngTemplateOutlet]="touchPad"></ng-container>
   </section>
   <ng-template #touchPad>
     <div class="touch-controls" role="group" [attr.aria-label]="words().controls">
-      <div class="touch-directions"><button *ngFor="let item of touchDirections" type="button" [attr.aria-label]="words().move + ' ' + item.icon" (pointerdown)="touchStart($event, item.action)" (pointerup)="touchEnd($event)" (pointercancel)="touchCancel($event)" (lostpointercapture)="touchCancel($event)">{{ item.icon }}</button></div>
-      <div class="touch-shots"><button type="button" class="hit-touch" (pointerdown)="touchStart($event, 'drive')" (pointerup)="touchEnd($event)" (pointercancel)="touchCancel($event)" (lostpointercapture)="touchCancel($event)">{{ words().drive }}</button><button type="button" (pointerdown)="touchStart($event, 'drop')" (pointerup)="touchEnd($event)" (pointercancel)="touchCancel($event)" (lostpointercapture)="touchCancel($event)">{{ words().drop }}</button><button type="button" (pointerdown)="touchStart($event, 'lob')" (pointerup)="touchEnd($event)" (pointercancel)="touchCancel($event)" (lostpointercapture)="touchCancel($event)">{{ words().lob }}</button><button type="button" (pointerdown)="touchStart($event, 'smash')" (pointerup)="touchEnd($event)" (pointercancel)="touchCancel($event)" (lostpointercapture)="touchCancel($event)">{{ words().smash }}</button></div>
+      <div class="touch-directions"><button *ngFor="let item of touchDirections" type="button" [attr.aria-label]="touchDirectionLabel(item.action, item.icon)" (pointerdown)="touchStart($event, item.action)" (pointerup)="touchEnd($event)" (pointercancel)="touchCancel($event)" (lostpointercapture)="touchCancel($event)">{{ item.icon }}</button></div>
+      <div class="touch-shots"><button type="button" class="hit-touch" (pointerdown)="touchStart($event, 'drive')" (pointerup)="touchEnd($event)" (pointercancel)="touchCancel($event)" (lostpointercapture)="touchCancel($event)">{{ view().phase === 'serving' ? words().serveAction : words().drive }}</button><ng-container *ngIf="view().phase !== 'serving'"><button type="button" (pointerdown)="touchStart($event, 'drop')" (pointerup)="touchEnd($event)" (pointercancel)="touchCancel($event)" (lostpointercapture)="touchCancel($event)">{{ words().drop }}</button><button type="button" (pointerdown)="touchStart($event, 'lob')" (pointerup)="touchEnd($event)" (pointercancel)="touchCancel($event)" (lostpointercapture)="touchCancel($event)">{{ words().lob }}</button><button type="button" (pointerdown)="touchStart($event, 'smash')" (pointerup)="touchEnd($event)" (pointercancel)="touchCancel($event)" (lostpointercapture)="touchCancel($event)">{{ words().smash }}</button></ng-container></div>
     </div>
   </ng-template>
   <div class="arcade-notes"><p>{{ matchFormat() === 'match' ? words().matchRules : words().rules }} {{ words().serviceRules }} {{ words().autoPause }}</p><p>{{ words().local }}</p></div>

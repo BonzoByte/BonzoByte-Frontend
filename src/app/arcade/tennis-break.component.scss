@@ -35,7 +35,7 @@ button:disabled, input:disabled, select:disabled { cursor: default; opacity: .55
 .opponent-option-name { display: flex; align-items: center; gap: 7px; min-width: 0; overflow-wrap: anywhere; }
 .opponent-option-name .fi { flex-shrink: 0; }
 .opponent-search-status { padding: 12px; color: var(--muted); }
-.career-panel button, .career-feedback button, .end-game-actions button, .touch-controls button, .serve-aim-options button { min-height: 44px; padding: 8px 12px; border: 1px solid var(--line); border-radius: 7px; background: var(--raised); color: var(--ink); font-size: 12px; line-height: 1.45; }
+.career-panel button, .career-feedback button, .end-game-actions button, .touch-controls button, .serve-aim-options button, .serve-depth-options button { min-height: 44px; padding: 8px 12px; border: 1px solid var(--line); border-radius: 7px; background: var(--raised); color: var(--ink); font-size: 12px; line-height: 1.45; }
 .career-panel .clear-opponent { margin: 6px 0 0 6px; font-size: 11px; }
 .rated-options { border-inline-start: 1px solid var(--line); padding-inline-start: 20px; }
 .mode-switch { display: flex; gap: 4px; flex-wrap: wrap; padding: 4px; border: 1px solid var(--line); border-radius: 10px; background: var(--raised); }
@@ -125,14 +125,23 @@ canvas:focus-visible { outline: 3px solid var(--lime); outline-offset: -4px; }
 .serve-card, .stroke-card { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(230px, 100%), 1fr)); align-items: center; gap: 10px 20px; padding: 12px 16px; border-top: 1px solid var(--line); font-size: 12px; }
 .hud-copy { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 4px 10px; min-width: 0; }
 .hud-copy > strong { font-size: 13px; font-weight: 650; }
+.serve-toss { display: grid; flex: 1 1 100%; gap: 5px; min-width: 0; }
+.serve-toss-status { font-size: 11px; line-height: 1.4; overflow-wrap: anywhere; }
+.toss-meter { position: relative; height: 8px; border: 1px solid var(--line); border-radius: 4px; background: var(--raised); }
+.toss-meter::after { content: ''; position: absolute; right: 0; top: -3px; bottom: -3px; border-inline-end: 3px solid var(--muted); }
+.toss-meter i { display: block; height: 100%; border-radius: inherit; background: var(--muted); }
+.toss-meter.is-active i, .toss-meter.is-queued::after { background: var(--lime); border-color: var(--lime); }
+.toss-meter.is-late i { background: var(--risk-track); }
 .serve-instructions { font-size: 11px; }
 .serve-instructions summary { min-height: 44px; padding-block: 10px; color: var(--muted); }
 .serve-instructions[open] { flex-basis: 100%; }
 .serve-instructions p { margin: 6px 0 0; color: var(--muted); line-height: 1.6; }
 .serve-target { display: grid; gap: 6px; min-width: 0; }
-.serve-aim-options { display: flex; gap: 4px; }
-.serve-aim-options button { flex: 1 1 0; min-width: 0; padding: 6px; font-size: 11px; touch-action: manipulation; overflow-wrap: anywhere; }
-.serve-aim-options button[aria-pressed="true"] { border-color: #8ba45e; background: var(--lime); color: #19382d; font-weight: 700; box-shadow: inset 0 -2px #607941; }
+.serve-target-axis { display: grid; gap: 3px; min-width: 0; }
+.serve-aim-options, .serve-depth-options { display: flex; gap: 4px; }
+.serve-aim-options button, .serve-depth-options button { flex: 1 1 0; min-width: 0; min-height: 44px; padding: 6px 4px; font-size: 11px; touch-action: manipulation; overflow-wrap: anywhere; }
+.serve-aim-options button[aria-pressed="true"], .serve-depth-options button[aria-pressed="true"] { border-color: #8ba45e; background: var(--lime); color: #19382d; font-weight: 700; box-shadow: inset 0 -2px #607941; }
+.serve-depth-meter { grid-column: 1 / -1; }
 .hud-meters { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px 16px; min-width: 0; }
 .meter-group { display: grid; gap: 7px; min-width: 0; }
 .meter-label { display: flex; justify-content: space-between; align-items: baseline; gap: 6px; font-size: 11px; font-variant-numeric: tabular-nums; }
@@ -158,13 +167,13 @@ canvas:focus-visible { outline: 3px solid var(--lime); outline-offset: -4px; }
 .controls-panel { margin-top: 14px; padding: 18px 20px; border: 1px solid var(--line); border-radius: 14px; background: var(--panel); }
 .control-title { display: flex; align-items: baseline; justify-content: space-between; gap: 12px 24px; }
 .control-title h2 { margin: 0 0 12px; font-size: 15px; }
-.control-title p, .shot-help, .arcade-notes { color: var(--muted); font-size: 11px; line-height: 1.6; }
+.control-title p, .service-help, .shot-help, .arcade-notes { color: var(--muted); font-size: 11px; line-height: 1.6; }
 .control-title p { max-width: 650px; margin: 0 0 14px; }
 .control-keys { display: flex; align-items: start; gap: 12px 24px; flex-wrap: wrap; }
 .control-keys > div { display: flex; align-items: center; gap: 6px; }
 kbd { display: inline-grid; place-items: center; flex: 0 0 auto; min-width: 27px; min-height: 28px; padding: 4px 5px; border: 1px solid var(--line); border-bottom-width: 3px; border-radius: 5px; background: var(--raised); color: var(--ink); font: 11px var(--font-sans, system-ui); }
 .space-key { min-width: 50px; font-size: 9px; }
-.shot-help, .arcade-notes { margin: 14px 0 0; }
+.service-help, .shot-help, .arcade-notes { margin: 14px 0 0; }
 .arcade-notes p { margin: 0 0 5px; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 .touch-controls { display: none; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
@@ -204,6 +213,14 @@ kbd { display: inline-grid; place-items: center; flex: 0 0 auto; min-width: 27px
   .setup-options { gap: 8px; margin-top: 14px; }
   .setup-options select { padding-inline: 5px; }
   .serve-card, .stroke-card { padding: 10px 12px; gap: 8px 14px; }
+  .serve-card { grid-template-columns: minmax(0, 1fr); }
+  .serve-card .hud-copy { display: grid; grid-template-columns: minmax(0, 1fr) auto; }
+  .serve-card .serve-toss { grid-column: 1 / -1; grid-row: 2; }
+  .serve-card .serve-instructions[open] { grid-column: 1 / -1; }
+  .serve-target { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .serve-target-hint { grid-column: 1 / -1; }
+  .serve-card .hud-meters { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 7px 10px; }
+  .serve-depth-meter { grid-column: auto; }
   .meter-label { font-size: 10px; }
   .controls-panel { padding: 16px; }
   .control-title { display: block; }
@@ -231,9 +248,19 @@ kbd { display: inline-grid; place-items: center; flex: 0 0 auto; min-width: 27px
 .is-expanded { --frame-padding: 6px 12px; --score-height: 58px; --score-padding: 5px 12px; --bottom-height: 32px; position: fixed; inset: 0; z-index: 2147483000; display: flex; flex-direction: column; width: 100%; height: 100vh; height: 100dvh; margin: 0; padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px); border: 0; border-radius: 0; }
 .is-expanded .court-window { flex: 1 1 0; min-height: 0; overflow: hidden; }
 .is-expanded .court-window canvas { position: static; height: 100%; min-height: 0; aspect-ratio: auto; }
-.is-expanded .play-controls { max-height: var(--controls-max, 38dvh); overflow-y: auto; overscroll-behavior: contain; }
+.is-expanded .play-controls { display: flex; flex-direction: column; max-height: var(--controls-max, 38dvh); overflow: hidden; }
+.is-expanded .play-controls > .serve-card, .is-expanded .play-controls > .stroke-card { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
 .is-expanded > :not(.court-window) { flex-shrink: 0; }
-.is-expanded .touch-controls { margin: 0; padding: 8px 12px; border-top: 1px solid var(--line); }
+.is-expanded .touch-controls { flex: 0 0 auto; margin: 0; padding: 8px 12px; border-top: 1px solid var(--line); }
+@media (max-width: 700px) and (min-height: 541px) {
+  // Keep the actual touch serve reachable without scrolling past explanatory text.
+  // The full keyboard/help copy remains below the non-fullscreen court.
+  .is-expanded .serve-instructions,
+  .is-expanded .serve-target-hint,
+  .is-expanded .serve-card .meter-legend { display: none; }
+  .is-expanded .serve-card .hud-copy { grid-template-columns: minmax(0, 1fr); }
+  .is-expanded .serve-card .serve-toss { grid-row: auto; }
+}
 @media (max-height: 540px) and (min-width: 601px) {
   .is-expanded { --frame-padding: 5px 10px; --score-padding: 4px 10px; --score-height: 44px; --controls-max: none; display: grid; grid-template: "toolbar toolbar" auto "score controls" auto "court controls" minmax(0, 1fr) "status controls" auto / minmax(0, 1fr) clamp(210px, 27vw, 250px); }
   .is-expanded .game-toolbar { flex-wrap: nowrap; }
@@ -242,6 +269,9 @@ kbd { display: inline-grid; place-items: center; flex: 0 0 auto; min-width: 27px
   .is-expanded .play-controls { border-inline-start: 1px solid var(--line); }
   .is-expanded .serve-card, .is-expanded .stroke-card { padding: 10px; border-top: 0; }
   .is-expanded .hud-meters { grid-template-columns: minmax(0, 1fr); }
+  .is-expanded .serve-target { grid-template-columns: minmax(0, 1fr); }
+  .is-expanded .serve-card .hud-copy { display: flex; }
+  .is-expanded .serve-card .hud-meters { grid-template-columns: minmax(0, 1fr); }
   .is-expanded .touch-controls { padding: 8px; gap: 8px; }
   .is-expanded .touch-controls > div { width: 100%; gap: 4px; }
   .is-expanded .touch-shots { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -251,7 +281,7 @@ kbd { display: inline-grid; place-items: center; flex: 0 0 auto; min-width: 27px
   .is-expanded .start-card { padding: 14px 16px; }
 }
 @media (forced-colors: active) {
-  .serve-meter, .aim-meter, .server-dot { forced-color-adjust: none; }
+  .serve-meter, .aim-meter, .toss-meter, .server-dot { forced-color-adjust: none; }
   button[aria-pressed="true"] { outline: 2px solid Highlight; outline-offset: -3px; }
 }
 // Keep the established centred route heading without unused action-layout rules.

@@ -26,20 +26,22 @@ const EN = {
   format: 'Format', matchMode: 'Tennis match', challengeMode: '7-point challenge', bestOfThree: 'BEST OF 3 SETS',
   matchReady: 'Best of three sets. Standard advantage games, with a seven-point tie-break at 6–6 in every set.',
   matchRules: 'Win two sets. A set needs six games with a two-game lead; at 6–6 play a tie-break to 7, win by 2. Games use 0 / 15 / 30 / 40, deuce and advantage. The server changes after each game; tie-break service follows one point, then two each.',
-  serviceRules: 'Two attempts per serve. A net let is replayed; a double fault gives the point to the receiver. Let a serve bounce before returning it.',
+  serviceRules: 'Two attempts per serve. Net touch + correct diagonal service box = let: replay the same attempt, including a second serve. Net touch + out = fault. A double fault gives the point to the receiver. Let a serve bounce before returning it. During a rally, a net touch plays on if the ball crosses; it is not a let.',
   sets: 'Sets', games: 'Games', points: 'Points', set: 'Set', tieBreak: 'Tie-break', deuce: 'Deuce', advantage: 'Advantage', serving: 'Serving', finished: 'Match complete',
   gameYou: 'Your game', gameCpu: 'Computer’s game', setYou: 'Your set', setCpu: 'Computer’s set', setHistory: 'Completed sets',
   pausedText: 'The match is paused. Nothing moves until you are ready.', victory: 'Well played!', defeat: 'One more match?',
   victoryText: 'The court is yours. Fancy another round?', defeatText: 'Every rally is a fresh start. Give it another shot.',
   again: 'Play again', controls: 'Make your move', move: 'Move', jump: 'Jump', drive: 'Hit', lob: 'Lob', smash: 'Smash',
-  drop: 'Drop shot', dropHint: 'B: a soft, short ball with a lower, slower bounce. N: overhead smash when the ball is high; a low ball becomes a drive. Hold either key for power, then release. Arrows set the direction.',
+  drop: 'Drop shot', dropHint: 'B: a soft, short ball with a lower, slower bounce. N: overhead smash when the ball is high; a low ball becomes a drive. Hold either key for power, then release. ← / → sets the direction.',
   endLeaderboard: 'Leaderboard', endMatches: 'Back to matches', leaveUnsavedResult: 'Your challenge result has not been saved. Leave without saving it?',
   tip: 'Hold Space for a normal hit, B for a drop shot, or N for a smash; release to hit. Use ← / → while holding to aim. Green targets the court; red power goes long and red aim goes wide. Release shortly before the ball reaches you. Optional C: lob, Z: quick smash.',
   aim: 'Aim', selectedShot: 'Next shot',
   rules: 'First to 7, win by 2. Tie-break service order: one opening point, then two points each. Return the ball before its second bounce.',
-  serveYou: 'Your serve', serveCpu: 'Computer serving', firstServe: 'First serve', secondServe: 'Second serve', fault: 'Fault — second serve', let: 'Let — serve again', doubleFault: 'Double fault',
-  serveHint: '← / → moves the target in the service box. Hold Space for power, then release to serve. Your aim stays selected. Avoid the red zone.', power: 'Serve power',
+  serveYou: 'Your serve', serveCpu: 'Computer serving', firstServe: 'First serve', secondServe: 'Second serve', fault: 'Fault — second serve', let: 'Let — replay the same serve', doubleFault: 'Double fault',
+  serveHint: 'The first Space hold starts the toss and charges power. Release to queue an overhead strike at 1.05 seconds after the toss starts. Release locks width, depth and power. While serving, ← / → adjusts width; ↑ goes deeper, ↓ shorter. Or use the width and depth buttons. On touch, hold Toss / serve, then release. Holding too long catches the ball without a fault; a late release can fault. Avoid the red zone.', power: 'Serve power',
   serveDirection: 'Serve direction', aimLeft: 'Left', aimCentre: 'Centre', aimRight: 'Right', targetHint: 'The marker on court shows your target.',
+  serveWidth: 'Width ← / →', serveDepth: 'Serve depth', depthNear: 'Near', depthCentre: 'Centre', depthDeep: 'Deep',
+  tossStatus: 'Toss: aim and charge / release to strike', tossReady: 'Hold Space or Toss / serve to toss', tossWindow: 'Toss → strike window', tossLate: 'Contact reached · late release risks a fault', queuedServe: 'Strike queued · target and power locked', serveAction: 'Toss / serve', serveKeys: 'Serve: ← / → width · ↑ deep / ↓ near',
   shotPower: 'Shot power', shotDirection: 'Shot direction', releaseHit: 'Release to hit', queuedHit: 'Shot ready', safeZone: 'Green: in court · Red: out', holdHit: 'Hold → release',
   local: 'Training stays on this device. Rated challenges are verified and saved to your account. The trial standings have no prizes or automatic membership rewards.',
   chooseOpponent: 'Choose your opponent', searchOpponent: 'Search players…', computerOpponent: 'Practice computer', noTs: 'No TS available — practice only', strength: 'TS',
@@ -65,7 +67,7 @@ const EN = {
   camera: 'Camera', broadcast: 'Courtside', baseline: 'Baseline', lightweight: 'Lighter graphics', assist: 'Movement assist',
   fullscreen: 'Full screen', exitFullscreen: 'Exit full screen', umpire: 'Chair umpire', quiet: 'Quiet, please.',
   soundHint: 'Crowd reactions and court sounds. The umpire uses a local English voice when available.', fullscreenHint: 'F: full screen · Esc: exit / pause',
-  scoring: 'Points', first: 'FIRST TO 7', keyHelp: 'Click the court to use the keyboard. Arrows or WASD to move. Hold Space for a normal hit, B for a drop shot, N for a smash. Release to hit. While held, left/right adjusts aim instead of moving. Green: in court; red: long or wide. Space also serves. Optional shortcuts: Shift to jump, X to hit, C to lob, Z to smash. Esc / P to pause.'
+  scoring: 'Points', first: 'FIRST TO 7', keyHelp: 'Click the court to use the keyboard. During service, the first Space hold tosses and charges; release locks the target and power and queues an overhead strike at 1.05 seconds. Left/right sets service width, up deeper, down shorter. During rallies, arrows or WASD move. Hold Space for a normal hit, B for a drop shot, N for a smash, then release. While held, left/right aims instead of moving. Green: in court; red: long or wide. Optional shortcuts: Shift to jump, X to hit, C to lob, Z to smash. Esc / P to pause.'
 };
 const HR: typeof EN = {
   title: 'Teniski predah 3D', eyebrow: 'BONZOBYTE KLUB · MALO OPUŠTANJA', intro: 'Ostavimo brojke na trenutak. Vrijeme je za izlazak na teren.',
@@ -76,20 +78,22 @@ const HR: typeof EN = {
   format: 'Format', matchMode: 'Teniski meč', challengeMode: 'Do 7 poena', bestOfThree: 'NA DVA DOBIVENA SETA',
   matchReady: 'Na dva dobivena seta. Gemovi s prednošću; pri 6:6 u svakom setu igra se tie-break do sedam poena.',
   matchRules: 'Osvoji dva seta. Set traži šest gemova uz dva razlike; pri 6:6 tie-break do 7, uz dva razlike. Bodovanje gema je 0 / 15 / 30 / 40, izjednačenje i prednost. Server se mijenja nakon gema; u tie-breaku nakon prvog poena, zatim po dva.',
-  serviceRules: 'Dva pokušaja servisa. Dodir mreže uz ispravan odskok ponavlja servis; dvostruka pogreška daje poen primatelju. Servis mora odskočiti prije povrata.',
+  serviceRules: 'Dva pokušaja servisa. Dodir mreže + ispravno dijagonalno servisno polje = let: ponavlja se isti pokušaj, uključujući drugi servis. Dodir mreže + aut = pogreška. Dvostruka pogreška daje poen primatelju. Servis mora odskočiti prije povrata. U izmjeni se nakon dodira mreže nastavlja ako loptica prijeđe mrežu; to nije let.',
   sets: 'Setovi', games: 'Gemovi', points: 'Poeni', set: 'Set', tieBreak: 'Tie-break', deuce: 'Izjednačenje', advantage: 'Prednost', serving: 'Servira', finished: 'Meč je završen',
   gameYou: 'Tvoj gem', gameCpu: 'Gem za računalo', setYou: 'Tvoj set', setCpu: 'Set za računalo', setHistory: 'Završeni setovi',
   pausedText: 'Meč je pauziran. Igra se nastavlja tek kada budeš spreman.', victory: 'Odlično odigrano!', defeat: 'Još jedan meč?',
   victoryText: 'Teren je tvoj. Hoćemo još jednu rundu?', defeatText: 'Svaka izmjena je novi početak. Pokušaj još jednom.',
   again: 'Igraj ponovno', controls: 'Tvoj sljedeći potez', move: 'Kretanje', jump: 'Skok', drive: 'Udarac', lob: 'Lob', smash: 'Smeč',
-  drop: 'Skraćena', dropHint: 'B: mekša, kratka lopta s nižim i sporijim odskokom. N: smeč kad je lopta visoko; niska se vraća običnim udarcem. Drži odabranu tipku za snagu pa otpusti. Strelice određuju smjer.',
+  drop: 'Skraćena', dropHint: 'B: mekša, kratka lopta s nižim i sporijim odskokom. N: smeč kad je lopta visoko; niska se vraća običnim udarcem. Drži odabranu tipku za snagu pa otpusti. ← / → određuje smjer.',
   endLeaderboard: 'Ljestvica', endMatches: 'Natrag na mečeve', leaveUnsavedResult: 'Rezultat izazova još nije spremljen. Želiš li izaći bez spremanja rezultata?',
   tip: 'Drži Space za obični udarac, B za skraćenu ili N za smeč pa otpusti za udarac. Uz ← / → odaberi smjer. Zeleno cilja teren; crvena snaga šalje predugo, a crveni smjer preširoko. Otpusti malo prije dolaska loptice. Dodatno C: lob, Z: brzi smeč.',
   aim: 'Smjer', selectedShot: 'Sljedeći udarac',
   rules: 'Do 7 poena, uz 2 razlike. Servis kao u tie-breaku: prvi poen, zatim po dva. Vrati lopticu prije drugog odskoka.',
-  serveYou: 'Tvoj servis', serveCpu: 'Računalo servira', firstServe: 'Prvi servis', secondServe: 'Drugi servis', fault: 'Pogreška — drugi servis', let: 'Mreža — ponovi servis', doubleFault: 'Dvostruka pogreška',
-  serveHint: '← / → pomiče cilj u servisnom polju. Drži Space za snagu, zatim otpusti za servis. Odabrani smjer se pamti. Izbjegni crveno područje.', power: 'Snaga servisa',
+  serveYou: 'Tvoj servis', serveCpu: 'Računalo servira', firstServe: 'Prvi servis', secondServe: 'Drugi servis', fault: 'Pogreška — drugi servis', let: 'Let — ponovi isti servis', doubleFault: 'Dvostruka pogreška',
+  serveHint: 'Prvo držanje tipke Space počinje izbačaj i puni snagu. Otpuštanje priprema udarac iznad glave 1,05 sekundi nakon početka izbačaja te zaključava širinu, dubinu i snagu. Pri servisu ← / → određuje širinu; ↑ dublje, ↓ kraće. Možeš koristiti i gumbe za širinu i dubinu. Na dodir drži Izbačaj / servis pa otpusti. Predugo držanje hvata lopticu bez pogreške; kasno otpuštanje može biti pogreška. Izbjegni crveno područje.', power: 'Snaga servisa',
   serveDirection: 'Smjer servisa', aimLeft: 'Lijevo', aimCentre: 'Sredina', aimRight: 'Desno', targetHint: 'Oznaka na terenu pokazuje odabrani cilj.',
+  serveWidth: 'Širina ← / →', serveDepth: 'Dubina servisa', depthNear: 'Kratko', depthCentre: 'Sredina', depthDeep: 'Duboko',
+  tossStatus: 'Izbačaj: ciljaj i puni snagu / otpusti za udarac', tossReady: 'Drži Space ili Izbačaj / servis za izbačaj', tossWindow: 'Izbačaj → trenutak udarca', tossLate: 'Trenutak kontakta · kasno otpuštanje riskira pogrešku', queuedServe: 'Udarac pripremljen · cilj i snaga zaključani', serveAction: 'Izbačaj / servis', serveKeys: 'Servis: ← / → širina · ↑ duboko / ↓ kratko',
   shotPower: 'Snaga udarca', shotDirection: 'Smjer udarca', releaseHit: 'Otpusti za udarac', queuedHit: 'Udarac spreman', safeZone: 'Zeleno: teren · Crveno: aut', holdHit: 'Drži → otpusti',
   local: 'Trening ostaje na ovom uređaju. Bodovani izazovi provjeravaju se i spremaju na tvoj račun. Probna ljestvica nema nagrada ni automatske dodjele članstva.',
   chooseOpponent: 'Odaberi protivnika', searchOpponent: 'Pretraži igrače…', computerOpponent: 'Računalo za trening', noTs: 'TS nije dostupan — samo trening', strength: 'TS',
@@ -115,12 +119,13 @@ const HR: typeof EN = {
   camera: 'Kamera', broadcast: 'Uz teren', baseline: 'Osnovna crta', lightweight: 'Lakša grafika', assist: 'Pomoć pri kretanju',
   fullscreen: 'Cijeli ekran', exitFullscreen: 'Izađi iz cijelog ekrana', umpire: 'Glavni sudac', quiet: 'Quiet, please.',
   soundHint: 'Reakcije publike i zvukovi terena. Sudac koristi lokalni engleski glas kada je dostupan.', fullscreenHint: 'F: cijeli ekran · Esc: izlaz / pauza',
-  scoring: 'Poeni', first: 'DO 7 POENA', keyHelp: 'Klikni teren za tipkovnicu. Strelice ili WASD za kretanje. Drži Space za obični udarac, B za skraćenu, N za smeč pa otpusti. Dok držiš, lijevo/desno odabire smjer umjesto kretanja. Zeleno: teren; crveno: predugo ili preširoko. Space je i servis. Dodatne prečice: Shift za skok, X za udarac, C za lob, Z za smeč. Esc / P za pauzu.'
+  scoring: 'Poeni', first: 'DO 7 POENA', keyHelp: 'Klikni teren za tipkovnicu. Pri servisu prvo držanje tipke Space izbacuje lopticu i puni snagu; otpuštanje zaključava cilj i snagu te priprema udarac iznad glave na 1,05 sekundi. Lijevo/desno određuje širinu servisa, gore dublje, dolje kraće. U izmjeni strelice ili WASD služe za kretanje. Drži Space za obični udarac, B za skraćenu, N za smeč pa otpusti. Dok držiš, lijevo/desno cilja umjesto kretanja. Zeleno: teren; crveno: predugo ili preširoko. Dodatne prečice: Shift za skok, X za udarac, C za lob, Z za smeč. Esc / P za pauzu.'
 };
 type Action = 'left' | 'right' | 'forward' | 'back' | 'jump' | 'drive' | 'lob' | 'smash' | 'drop';
 interface ScoreView {
   phase: string; left: number; right: number; winner: number | null; pointWinner: number | null; reason: string | null; rally: number; best: number; hits: number;
   server: number; attempt: number; charge: number; serveAim: number; format: TennisFormat; pointLabels: [string, string]; games: [number, number]; sets: [number, number];
+  serveDepth: number; serveTossActive: boolean; serveTossProgress: number; serveReleaseQueued: boolean;
   completedSets: CompletedTennisSet[]; tieBreak: boolean; award: PointAward | null;
   strokeCharge: number; strokeAim: number; strokeCharging: boolean; strokePending: boolean;
 }
@@ -178,6 +183,7 @@ export class TennisBreakComponent implements AfterViewInit, OnDestroy {
   private startRequestId = '';
   readonly touchDirections: { action: Action; icon: string }[] = [{ action: 'forward', icon: '↑' }, { action: 'left', icon: '←' }, { action: 'back', icon: '↓' }, { action: 'right', icon: '→' }];
   readonly view = signal<ScoreView>({ phase: 'ready', left: 0, right: 0, winner: null, pointWinner: null, reason: null, rally: 0, best: 0, hits: 0, server: 0, attempt: 1, charge: 0, serveAim: 0,
+    serveDepth: 0, serveTossActive: false, serveTossProgress: 0, serveReleaseQueued: false,
     format: 'match', pointLabels: ['0', '0'], games: [0, 0], sets: [0, 0], completedSets: [], tieBreak: false, award: null,
     strokeCharge: 0, strokeAim: 0, strokeCharging: false, strokePending: false });
   readonly formatTitle = computed(() => this.matchFormat() === 'match' ? this.words().bestOfThree : this.words().first);
@@ -197,7 +203,7 @@ export class TennisBreakComponent implements AfterViewInit, OnDestroy {
     if (s.phase === 'ready') return this.formatTitle();
     if (s.phase === 'over') return s.winner === 0 ? w.victory : w.defeat;
     if (s.phase === 'fault') return w.fault;
-    if (s.phase === 'let') return w.let;
+    if (s.phase === 'let') return w.let + ' · ' + (s.attempt === 1 ? w.firstServe : w.secondServe);
     if (s.phase === 'serving') return (s.server === 0 ? w.serveYou : w.serveCpu) + ' · ' + (s.attempt === 1 ? w.firstServe : w.secondServe);
     if (s.phase === 'point') {
       const point = s.award === 'set' ? (s.pointWinner === 0 ? w.setYou : w.setCpu) : s.award === 'game' ? (s.pointWinner === 0 ? w.gameYou : w.gameCpu) : (s.pointWinner === 0 ? w.pointYou : w.pointCpu);
@@ -464,6 +470,7 @@ export class TennisBreakComponent implements AfterViewInit, OnDestroy {
     this.paused.set(false); this.clearInput(); this.court.nativeElement.focus({ preventScroll: true }); this.run();
   }
   keyDown(event: KeyboardEvent): void {
+    if (event.isComposing || event.altKey || event.ctrlKey || event.metaKey) return;
     const key = event.key.toLowerCase();
     if (key === 'f' && !event.repeat) { event.preventDefault(); void this.toggleFullscreen(); return; }
     if (key === 'escape' && this.expanded()) { event.preventDefault(); this.pause(); void this.toggleFullscreen(); return; }
@@ -484,7 +491,7 @@ export class TennisBreakComponent implements AfterViewInit, OnDestroy {
     this.keys.delete(key); this.syncShotChoice();
   }
   touchStart(event: PointerEvent, action: Action): void {
-    if (this.game.phase === 'ready' || this.paused() || this.game.phase === 'over') return;
+    if (!['serving', 'playing'].includes(this.game.phase) || this.paused() || this.unavailable() || this.destroyed) return;
     event.preventDefault();
     if (['drive', 'lob', 'smash', 'drop'].includes(action)) { this.recordCommand(1); this.game.armServe(); }
     this.touches.set(event.pointerId, action);
@@ -493,8 +500,17 @@ export class TennisBreakComponent implements AfterViewInit, OnDestroy {
   }
   touchEnd(event: PointerEvent): void { this.touches.delete(event.pointerId); this.syncShotChoice(); }
   chooseServeAim(value: number): void {
-    if (this.paused() || this.game.phase !== 'serving' || this.game.server !== 0) return;
+    if (![-1, 0, 1].includes(value) || this.paused() || this.unavailable() || this.destroyed || this.game.phase !== 'serving' || this.game.server !== 0 || this.game.serveReleaseQueued) return;
     this.recordCommand((value + 4) as ArcadeCommand); this.game.setServeAim(value); this.sync(); this.paint(performance.now()); this.court.nativeElement.focus({ preventScroll: true });
+  }
+  chooseServeDepth(value: number): void {
+    if (![-1, 0, 1].includes(value) || this.paused() || this.unavailable() || this.destroyed || this.game.phase !== 'serving' || this.game.server !== 0 || this.game.serveReleaseQueued) return;
+    this.recordCommand((value + 7) as ArcadeCommand); this.game.setServeDepth(value); this.sync(); this.paint(performance.now()); this.court.nativeElement.focus({ preventScroll: true });
+  }
+  touchDirectionLabel(action: Action, icon: string): string {
+    const w = this.words();
+    if (this.game.phase !== 'serving' || this.game.server !== 0) return w.move + ' ' + icon;
+    return (action === 'forward' ? w.serveDepth + ': ' + w.depthDeep : action === 'back' ? w.serveDepth + ': ' + w.depthNear : w.serveWidth) + ' ' + icon;
   }
   touchCancel(event: PointerEvent): void {
     if (!this.touches.has(event.pointerId)) return;
@@ -566,6 +582,7 @@ export class TennisBreakComponent implements AfterViewInit, OnDestroy {
     const next: ScoreView = { phase: this.game.phase, left: this.game.score[0], right: this.game.score[1], winner: this.game.winner, pointWinner: this.game.pointWinner,
       reason: this.game.reason, rally: this.game.rally, best: this.game.bestRally, hits: this.game.hits,
       server: this.game.server, attempt: this.game.serveAttempt, charge: Math.round(this.game.serveCharge * 20) / 20, serveAim: Math.round(this.game.serveAim * 100) / 100,
+      serveDepth: Math.round(this.game.serveDepth * 100) / 100, serveTossActive: this.game.serveTossActive, serveTossProgress: Math.round(this.game.serveTossProgress * 100) / 100, serveReleaseQueued: this.game.serveReleaseQueued,
       format: this.game.scoring.format, pointLabels: this.game.scoring.pointLabels, games: [...this.game.scoring.games], sets: [...this.game.scoring.sets],
       completedSets: [...this.game.scoring.completedSets], tieBreak: this.game.scoring.isTieBreak, award: this.game.scoring.lastAward,
       strokeCharge: Math.round(this.game.strokeCharge * 50) / 50, strokeAim: Math.round(this.game.strokeAim * 50) / 50,

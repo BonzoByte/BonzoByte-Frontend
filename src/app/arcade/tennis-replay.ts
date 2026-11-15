@@ -3,13 +3,14 @@ import { CourtSurface } from './tennis-engine';
 import { arcadeRandom } from './tennis-skill';
 
 export const ARCADE_REPLAY = { bytesPerFrame: 7, maxFrames: 90000, maxSeconds: 1200, maxCommands: 6 } as const;
-export type ArcadeCommand = 1 | 2 | 3 | 4 | 5; // arm, cancel, aim left/centre/right
+export type ArcadeCommand = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8; // arm, cancel, width left/centre/right, depth short/centre/deep
 const shots = [null, 'drive', 'lob', 'smash', 'drop'] as const;
 export function quantizedStep(seconds: number): number { return Math.round(Math.max(0, Math.min(.05, seconds)) * 1e6) / 1e6; }
 export function applyArcadeCommand(game: Tennis3DEngine, command: ArcadeCommand): void {
   if (command === 1) game.armServe();
   else if (command === 2) game.cancelServeCharge();
-  else game.setServeAim(command - 4);
+  else if (command <= 5) game.setServeAim(command - 4);
+  else game.setServeDepth(command - 7);
 }
 export class ArcadeRecorder {
   private bytes = new Uint8Array(ARCADE_REPLAY.bytesPerFrame * ARCADE_REPLAY.maxFrames);
@@ -57,7 +58,7 @@ export function replayArcade(bytes: Uint8Array, config: { seed: number; strength
     for (let i = 0; i < 6; i++) {
       const command = (bytes[pos + 4 + Math.floor(i / 2)] >>> ((i % 2) * 4)) & 15;
       if (!command) { ended = true; continue; }
-      if (ended || command > 5) throw Error('Invalid replay command');
+      if (ended || command > 8) throw Error('Invalid replay command');
       applyArcadeCommand(game, command as ArcadeCommand);
     }
     const aim = (stroke >>> 2) & 3;
