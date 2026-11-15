@@ -31,7 +31,7 @@ const sharp = require(path.join(runtime, 'sharp'));
         if (request.method !== 'GET') { response.writeHead(405).end(); return; }
         if (url.pathname === '/') { response.setHeader('Content-Type', 'text/html'); response.end(html); return; }
         if (url.pathname === '/styles.css') { response.setHeader('Content-Type', 'text/css'); response.end(css); return; }
-        const asset = url.pathname.match(/^\/assets\/backgrounds\/(tennis-stadium-(?:dark|light|wimbledon|roland-garros|us-open)-v1\.webp)$/);
+        const asset = url.pathname.match(/^\/assets\/backgrounds\/(tennis-stadium-(?:dark-v2|(?:light|wimbledon|roland-garros|us-open)-v1)\.webp)$/);
         if (asset) {
             response.setHeader('Content-Type', asset[1].endsWith('.png') ? 'image/png' : 'image/webp');
             response.end(await fs.readFile(path.join(project, 'src/assets/backgrounds', asset[1]))); return;

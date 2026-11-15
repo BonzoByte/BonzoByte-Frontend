@@ -22,11 +22,12 @@ describe('Lightweight stadium backgrounds for all visual themes', () => {
     });
     const style = (selector: string) => getComputedStyle(fixture.querySelector(selector)!);
     const background = () => getComputedStyle(document.body, '::before');
+    const stadium = (id: string) => 'tennis-stadium-' + id + (id === 'dark' ? '-v2' : '-v1');
 
     it('uses one pre-rendered theme-matched WebP without changing the base page colour', () => {
         for (const [id, colour] of [['dark', 'rgb(16, 20, 25)'], ['light', 'rgb(242, 245, 247)']]) {
             theme.setTheme(id, false); const body = background();
-            expect(body.backgroundImage).toContain('tennis-stadium-' + id + '-v1');
+            expect(body.backgroundImage).toContain(stadium(id));
             expect(body.backgroundImage).toMatch(/tennis-stadium-[^"')]+\.webp/);
             expect(body.backgroundImage).not.toContain('.svg');
             expect(body.backgroundImage).not.toContain('gradient');
@@ -63,13 +64,13 @@ describe('Lightweight stadium backgrounds for all visual themes', () => {
     }
     it('retains the Dark stadium when a theme has not yet been selected', () => {
         delete document.documentElement.dataset['bbTheme'];
-        expect(background().backgroundImage).toContain('tennis-stadium-dark-v1');
+        expect(background().backgroundImage).toContain('tennis-stadium-dark-v2');
         expect(background().backgroundSize).toBe('cover');
     });
     it('changes only the photograph when switching between all five themes', () => {
         for (const id of ['roland-garros', 'wimbledon', 'us-open', 'dark', 'light']) {
             theme.setTheme(id, false);
-            expect(background().backgroundImage).toContain('tennis-stadium-' + id + '-v1');
+            expect(background().backgroundImage).toContain(stadium(id));
             expect(background().backgroundSize).toBe('cover');
             expect(background().backgroundRepeat).toBe('no-repeat');
             expect(background().backgroundImage).not.toContain('surface-');
