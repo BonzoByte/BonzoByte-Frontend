@@ -6,6 +6,12 @@
 .bb-modal-heading { display: contents; }
 .bb-modal-title-row { display: contents; }
 
+// Keep a small viewport gutter instead of reserving an unused 10% height.
+.bb-modal.bb-modal--match-details {
+  max-height: min(calc(100vh - 32px), 860px);
+  max-height: min(calc(100dvh - 32px), 860px);
+}
+
 // Reserve the close control's space without adding a separate toolbar row.
 .bb-modal-title-row--actions {
   display: flex;
