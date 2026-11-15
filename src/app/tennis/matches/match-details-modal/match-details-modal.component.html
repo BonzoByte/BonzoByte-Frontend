@@ -475,31 +475,31 @@
                                 (mousemove)="onTsChartMouseMove($event, cm)" (mouseleave)="onTsChartMouseLeave()">
                                 <g *ngFor="let yt of cm.yTicks">
                                     <line [attr.x1]="chartPad" [attr.x2]="chartWidth-chartPad" [attr.y1]="yt.y"
-                                        [attr.y2]="yt.y" stroke="rgba(255,255,255,0.08)"></line>
-                                    <text [attr.x]="6" [attr.y]="yt.y+4" font-size="11" fill="rgba(255,255,255,0.65)">{{
+                                        [attr.y2]="yt.y" stroke="var(--bb-md-chart-grid)"></line>
+                                    <text [attr.x]="6" [attr.y]="yt.y+4" font-size="11" fill="var(--bb-md-muted)">{{
                                         yt.label }}</text>
                                 </g>
 
                                 <g *ngFor="let xt of cm.xTicks">
                                     <line [attr.x1]="xt.x" [attr.x2]="xt.x" [attr.y1]="chartHeight-chartPad"
-                                        [attr.y2]="chartHeight-chartPad+6" stroke="rgba(255,255,255,0.25)"></line>
+                                        [attr.y2]="chartHeight-chartPad+6" stroke="var(--bb-md-chart-axis)"></line>
                                     <text [attr.x]="xt.x" [attr.y]="chartHeight-6" text-anchor="middle" font-size="11"
-                                        fill="rgba(255,255,255,0.65)">{{ xt.label }}</text>
+                                        fill="var(--bb-md-muted)">{{ xt.label }}</text>
                                 </g>
 
                                 <line [attr.x1]="chartPad" [attr.x2]="chartPad" [attr.y1]="chartPad"
-                                    [attr.y2]="chartHeight-chartPad" stroke="rgba(255,255,255,0.25)"></line>
+                                    [attr.y2]="chartHeight-chartPad" stroke="var(--bb-md-chart-axis)"></line>
                                 <line [attr.x1]="chartPad" [attr.x2]="chartWidth-chartPad"
                                     [attr.y1]="chartHeight-chartPad" [attr.y2]="chartHeight-chartPad"
-                                    stroke="rgba(255,255,255,0.25)"></line>
+                                    stroke="var(--bb-md-chart-axis)"></line>
 
                                 <line *ngIf="cm.matchX !== null" [attr.x1]="cm.matchX" [attr.x2]="cm.matchX"
                                     [attr.y1]="chartPad" [attr.y2]="20 + chartHeight-chartPad"
-                                    stroke="rgba(255,255,255,0.22)" stroke-dasharray="4 4"></line>
+                                    stroke="var(--bb-md-chart-axis)" stroke-dasharray="4 4"></line>
 
                                 <g *ngIf="cm.matchX !== null">
                                     <text [attr.x]="cm.matchX" [attr.y]="20 + chartPad - 8" text-anchor="middle"
-                                        font-size="14" fill="rgba(255,255,255,0.75)">
+                                        font-size="14" fill="var(--bb-md-text)">
                                         {{ 'matchDetails.matchDate' | translate }}
                                     </text>
                                 </g>
@@ -516,7 +516,7 @@
 
                                 <g *ngIf="cm.hoverX !== null">
                                     <line [attr.x1]="cm.hoverX" [attr.x2]="cm.hoverX" [attr.y1]="chartPad"
-                                        [attr.y2]="chartHeight-chartPad" stroke="rgba(255,255,255,0.20)"></line>
+                                        [attr.y2]="chartHeight-chartPad" stroke="var(--bb-md-chart-axis)"></line>
                                     <circle [attr.cx]="cm.hoverX" [attr.cy]="cm.hoverY1" r="4.5" fill="#ff4d4d"
                                         opacity="0.95"></circle>
                                     <circle [attr.cx]="cm.hoverX" [attr.cy]="cm.hoverY2" r="4.5" fill="#4da3ff"
@@ -558,8 +558,8 @@
                                 <!-- Grid + Y labels -->
                                 <g *ngFor="let yt of cm.yTicks">
                                     <line [attr.x1]="chartPad" [attr.x2]="chartWidth-chartPad" [attr.y1]="yt.y"
-                                        [attr.y2]="yt.y" stroke="rgba(255,255,255,0.08)"></line>
-                                    <text [attr.x]="6" [attr.y]="yt.y+4" font-size="11" fill="rgba(255,255,255,0.65)">
+                                        [attr.y2]="yt.y" stroke="var(--bb-md-chart-grid)"></line>
+                                    <text [attr.x]="6" [attr.y]="yt.y+4" font-size="11" fill="var(--bb-md-muted)">
                                         {{ yt.label }}
                                     </text>
                                 </g>
@@ -567,27 +567,27 @@
                                 <!-- X ticks -->
                                 <g *ngFor="let xt of cm.xTicks">
                                     <line [attr.x1]="xt.x" [attr.x2]="xt.x" [attr.y1]="chartHeight-chartPad"
-                                        [attr.y2]="chartHeight-chartPad+6" stroke="rgba(255,255,255,0.25)"></line>
+                                        [attr.y2]="chartHeight-chartPad+6" stroke="var(--bb-md-chart-axis)"></line>
                                     <text [attr.x]="xt.x" [attr.y]="chartHeight-6" text-anchor="middle" font-size="11"
-                                        fill="rgba(255,255,255,0.65)">
+                                        fill="var(--bb-md-muted)">
                                         {{ xt.label }}
                                     </text>
                                 </g>
 
                                 <!-- Axis -->
                                 <line [attr.x1]="chartPad" [attr.x2]="chartPad" [attr.y1]="chartPad"
-                                    [attr.y2]="chartHeight-chartPad" stroke="rgba(255,255,255,0.25)"></line>
+                                    [attr.y2]="chartHeight-chartPad" stroke="var(--bb-md-chart-axis)"></line>
                                 <line [attr.x1]="chartPad" [attr.x2]="chartWidth-chartPad"
                                     [attr.y1]="chartHeight-chartPad" [attr.y2]="chartHeight-chartPad"
-                                    stroke="rgba(255,255,255,0.25)"></line>
+                                    stroke="var(--bb-md-chart-axis)"></line>
 
                                 <!-- Match date line -->
                                 <line *ngIf="cm.matchX !== null" [attr.x1]="cm.matchX" [attr.x2]="cm.matchX"
                                     [attr.y1]="chartPad" [attr.y2]="chartHeight-chartPad"
-                                    stroke="rgba(255,255,255,0.22)" stroke-dasharray="4 4"></line>
+                                    stroke="var(--bb-md-chart-axis)" stroke-dasharray="4 4"></line>
                                 <g *ngIf="cm.matchX !== null">
                                     <text [attr.x]="cm.matchX" [attr.y]="chartPad - 8" text-anchor="middle"
-                                        font-size="14" fill="rgba(255,255,255,0.75)">
+                                        font-size="14" fill="var(--bb-md-text)">
                                         {{ 'matchDetails.matchDate' | translate }}
                                     </text>
                                 </g>
@@ -600,7 +600,7 @@
                                 <!-- Hover marker -->
                                 <g *ngIf="cm.hoverX !== null">
                                     <line [attr.x1]="cm.hoverX" [attr.x2]="cm.hoverX" [attr.y1]="chartPad"
-                                        [attr.y2]="chartHeight-chartPad" stroke="rgba(255,255,255,0.20)"></line>
+                                        [attr.y2]="chartHeight-chartPad" stroke="var(--bb-md-chart-axis)"></line>
                                     <circle [attr.cx]="cm.hoverX" [attr.cy]="cm.hoverY1" r="4.5" fill="#ff4d4d"
                                         opacity="0.95"></circle>
                                     <circle *ngIf="cm.hoverY2 !== null" [attr.cx]="cm.hoverX" [attr.cy]="cm.hoverY2"

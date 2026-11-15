@@ -14,9 +14,9 @@
 :host ::ng-deep .bb-modal--match-details {
   /* ---- Theme hooks (prefer global vars, fallback to sensible defaults) ---- */
   --bb-md-text: var(--bb-text, rgba(255, 255, 255, 0.92));
-  --bb-md-muted: var(--bb-muted, rgba(255, 255, 255, 0.72));
+  --bb-md-muted: var(--bb-text-muted, #9ba8b5);
   --bb-md-border: var(--bb-border, rgba(255, 255, 255, 0.12));
-  --bb-md-surface: var(--bb-surface, rgba(0, 0, 0, 0.18));
+  --bb-md-surface: var(--bb-surface-1, #151b21);
   --bb-md-surface-2: var(--bb-surface-2, rgba(0, 0, 0, 0.14));
 
   --bb-md-success: var(--bb-success, #3fd18b);
@@ -24,10 +24,12 @@
 
   --bb-md-p1: var(--bb-chart-p1, #ff4d4d);
   --bb-md-p2: var(--bb-chart-p2, #4da3ff);
-  --bb-md-neutral: var(--bb-chart-neutral, rgba(255, 255, 255, 0.35));
+  --bb-md-neutral: var(--bb-text-muted, #9ba8b5);
+  --bb-md-chart-grid: var(--bb-border);
+  --bb-md-chart-axis: var(--bb-border-strong);
 
-  --bb-md-tooltip-bg: var(--bb-tooltip-bg, rgba(20, 20, 20, 0.92));
-  --bb-md-tooltip-border: var(--bb-tooltip-border, rgba(255, 255, 255, 0.10));
+  --bb-md-tooltip-bg: var(--bb-surface-2, #1b232b);
+  --bb-md-tooltip-border: var(--bb-border);
 
   :host ::ng-deep .bb-modal--match-details {
     .bb-player-summary {
@@ -150,7 +152,7 @@
 
   .bb-loading,
   .bb-error {
-    color: rgba(255, 255, 255, 0.85);
+    color: var(--bb-md-text);
   }
 
   .bb-loading,
@@ -270,18 +272,18 @@
     font-size: 12px;
     white-space: nowrap;
 
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    background: rgba(255, 255, 255, 0.06);
-    color: rgba(255, 255, 255, 0.82);
+    border: 1px solid var(--bb-control-border);
+    background: var(--bb-md-surface-2);
+    color: var(--bb-md-text);
 
     input {
       display: none !important;
     }
 
     &:has(input:checked) {
-      background: rgba(255, 255, 255, 0.14);
-      color: rgba(255, 255, 255, 0.92);
-      border-color: rgba(255, 255, 255, 0.18);
+      background: color-mix(in srgb, var(--bb-theme-accent) 15%, var(--bb-md-surface-2));
+      color: var(--bb-text-strong);
+      border-color: var(--bb-theme-accent);
     }
   }
 
@@ -293,6 +295,10 @@
 
   .bb-compare-ts {
     margin-top: 6px;
+  }
+
+  .bb-comp-row {
+    color: var(--bb-md-text);
   }
 
   /* ============================================================================================
@@ -322,6 +328,7 @@
     padding: 10px 12px;
     border-radius: 12px;
     background: var(--bb-md-tooltip-bg);
+    color: var(--bb-md-text);
     border: 1px solid var(--bb-md-tooltip-border);
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
 
@@ -559,7 +566,7 @@
     tbody td {
       padding: 9px 10px;
       vertical-align: middle;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      border-bottom: 1px solid var(--bb-md-border);
     }
 
   }
@@ -651,38 +658,23 @@
     height: 28px;
     padding: 2px 6px;
     border-radius: 8px;
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.10);
-    color: rgba(255, 255, 255, 0.9);
+    background: var(--bb-control-bg);
+    border: 1px solid var(--bb-control-border);
+    color: var(--bb-control-text);
   }
 
   .bb-odds-select:focus {
     outline: none;
-    border-color: rgba(255, 255, 255, 0.18);
+    border-color: var(--bb-theme-accent);
   }
 
   .bb-pill {
     cursor: pointer;
   }
 
-  .bb-odds-select {
-    min-width: 96px;
-    height: 28px;
-    padding: 2px 6px;
-    border-radius: 6px;
-    background: #161616;
-    color: #f3f3f3;
-    border: 1px solid rgba(255, 255, 255, 0.10);
-  }
-
-  .bb-odds-select:focus {
-    outline: none;
-    border-color: rgba(255, 255, 255, 0.18);
-  }
-
   .bb-odds-select option {
-    background: #1f1f1f;
-    color: rgba(255, 255, 255, 0.92);
+    background: var(--bb-control-bg);
+    color: var(--bb-control-text);
   }
 
   /* ============================================================================================
@@ -769,7 +761,7 @@
 
     background: linear-gradient(to right,
             transparent,
-            rgba(255, 255, 255, 0.55),
+            var(--bb-theme-accent),
             transparent);
     opacity: 0.9;
 }
@@ -788,7 +780,7 @@
     gap: 0.75rem;
     align-items: baseline;
     padding: 0.3rem 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    border-bottom: 1px solid var(--bb-md-border);
   }
 
   .nn-meta-label {
@@ -898,10 +890,10 @@
     height: 1rem;
     margin-left: 0.38rem;
     padding: 0;
-    border: 1px solid rgba(255, 255, 255, 0.28);
+    border: 1px solid var(--bb-control-border);
     border-radius: 50%;
     background: transparent;
-    color: rgba(255, 255, 255, 0.78);
+    color: var(--bb-md-muted);
     cursor: help;
     font-size: 0.68rem;
     font-weight: 700;
@@ -912,7 +904,7 @@
   
   .nn-feature-help:focus {
     opacity: 1;
-    border-color: rgba(255, 255, 255, 0.5);
-    color: rgba(255, 255, 255, 0.95);
+    border-color: var(--bb-theme-accent);
+    color: var(--bb-text-strong);
   }
 }
