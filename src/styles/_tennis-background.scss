@@ -1,5 +1,5 @@
 // One pre-rendered stadium image for the base themes. No vector rasterisation,
-// fixed attachment, filters, blend modes, animation or decorative DOM layers.
+// fixed background attachment, filters, blend modes, animation or extra DOM.
 :root:not([data-bb-theme]),
 :root[data-bb-theme='dark'] {
     --bb-court-pattern: url('../assets/backgrounds/tennis-stadium-dark-v1.webp');
@@ -28,7 +28,7 @@
 }
 
 :root:is(:not([data-bb-theme]), [data-bb-theme='dark'], [data-bb-theme='light']) {
-    body {
+    body::before {
         background-image: var(--bb-court-pattern);
         background-size: cover;
         background-position: center center;
@@ -36,7 +36,7 @@
     }
 }
 
-:root:is([data-bb-theme='wimbledon'], [data-bb-theme='roland-garros'], [data-bb-theme='us-open']) body {
+:root:is([data-bb-theme='wimbledon'], [data-bb-theme='roland-garros'], [data-bb-theme='us-open']) body::before {
     // A constant-colour wash subdues the artwork without a filter, blend mode,
     // fixed attachment or input-intercepting overlay. Both layers are static.
     background-image: linear-gradient(var(--bb-court-shade), var(--bb-court-shade)), var(--bb-court-pattern);
@@ -47,6 +47,24 @@
 
 :root:is(:not([data-bb-theme]), [data-bb-theme='dark'], [data-bb-theme='light'],
     [data-bb-theme='wimbledon'], [data-bb-theme='roland-garros'], [data-bb-theme='us-open']) {
+    // Body is viewport-height even when a report overflows it. Keep one bounded
+    // backdrop fixed to the viewport instead of stretching/rasterising it over
+    // the entire document. Isolation keeps -1 above the body fill but below UI.
+    body {
+        isolation: isolate;
+    }
+
+    body::before {
+        content: '';
+        position: fixed;
+        inset: 0;
+        z-index: -1;
+        pointer-events: none;
+        background-color: var(--bb-body-bg);
+        contain: strict;
+        will-change: transform;
+    }
+
     // Only outer page skins become clear. Cards, table rows and dialogs stay opaque.
     main.main-content,
     app-competition-page,
@@ -59,7 +77,8 @@
 
 @media (forced-colors: active), (prefers-contrast: more), print {
     :root:is(:not([data-bb-theme]), [data-bb-theme='dark'], [data-bb-theme='light'],
-        [data-bb-theme='wimbledon'], [data-bb-theme='roland-garros'], [data-bb-theme='us-open']) body {
+        [data-bb-theme='wimbledon'], [data-bb-theme='roland-garros'], [data-bb-theme='us-open']) body::before {
+        content: none !important;
         background-image: none !important;
     }
 }
