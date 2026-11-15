@@ -4,6 +4,38 @@
 
 // Neutral by default; individual dialog variants can opt into a persistent heading.
 .bb-modal-heading { display: contents; }
+.bb-modal-title-row { display: contents; }
+
+// Reserve the close control's space without adding a separate toolbar row.
+.bb-modal-title-row--actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0 10px;
+  margin: 6px 34px 12px;
+
+  .bb-modal-title {
+    min-width: 0;
+    max-width: 100%;
+    margin: 0;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+  .bb-modal-title::after { display: none; }
+  &::after {
+    content: '';
+    flex: 0 0 100%;
+    height: 2px;
+    margin-top: 6px;
+    background: linear-gradient(to right, transparent, var(--bb-theme-accent), transparent) center / min(420px, 92%) 2px no-repeat;
+    opacity: .9;
+  }
+}
+
+@media (max-width: 600px) {
+  .bb-modal-title-row--actions { margin-inline: 28px; gap: 0 8px; }
+}
 
 /* Subtitle spacing only inside the modal shell */
 .bb-modal-subtitle {

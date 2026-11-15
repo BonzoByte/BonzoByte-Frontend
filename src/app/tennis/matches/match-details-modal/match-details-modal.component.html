@@ -1,7 +1,7 @@
 <!-- MATCH DETAILS MODAL (Shell version) -->
-<app-bb-modal-shell *ngIf="isOpen" [title]="'matchDetails.title' | translate" [closeLabel]="'common.close' | translate" modalClass="bb-modal--match-details" (closed)="close()">
+<app-bb-modal-shell *ngIf="isOpen" [title]="'matchDetails.title' | translate" [closeLabel]="'common.close' | translate" [headingActions]="true" modalClass="bb-modal--match-details" (closed)="close()">
     <p *ngIf="isPreview" class="bb-hint" role="note">{{ 'popularity.previewNotice' | translate }}</p>
-    <app-copy-match-link *ngIf="!isPreview" [matchTPId]="discussionMatchId" [matchId]="canonicalMatchId" [view]="activeTab === 'discussions' ? 'discussion' : 'details'"></app-copy-match-link>
+    <app-copy-match-link bbTitleActions *ngIf="!isPreview" [inline]="true" [matchTPId]="discussionMatchId" [matchId]="canonicalMatchId" [view]="activeTab === 'discussions' ? 'discussion' : 'details'"></app-copy-match-link>
     <!-- =================================================================================================
        REUSABLE TEMPLATES
     ================================================================================================== -->

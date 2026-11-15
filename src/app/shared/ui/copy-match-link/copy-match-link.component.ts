@@ -10,11 +10,12 @@ import { ManualCopyComponent } from '../manual-copy/manual-copy.component';
 
 @Component({
     selector: 'app-copy-match-link', standalone: true, imports: [CommonModule, TranslateModule, ManualCopyComponent],
+    host: { '[class.match-link-inline]': 'inline' },
     template: `<div class="match-link-tools" *ngIf="validTarget">
       <button type="button" class="bb-btn match-link-button" (click)="copy()" [disabled]="busy || !link"
         [attr.aria-busy]="busy"
         [attr.aria-label]="'matchLink.copy' | translate" [title]="'matchLink.copy' | translate">
-        <span class="bi bi-link-45deg" aria-hidden="true"></span> {{ 'matchLink.copy' | translate }}
+        <span class="bi bi-link-45deg" aria-hidden="true"></span><span class="match-link-label">{{ 'matchLink.copy' | translate }}</span>
       </button>
       <span class="match-link-status" role="status" aria-live="polite">{{ (resolving ? 'matchLink.preparing' : prepareFailed ? 'matchLink.prepareFailed' : '') | translate }}</span>
       <button *ngIf="prepareFailed" type="button" class="bb-btn" (click)="resolve()">{{ 'discussions.retry' | translate }}</button>
@@ -27,12 +28,19 @@ import { ManualCopyComponent } from '../manual-copy/manual-copy.component';
       .match-link-button:disabled { cursor: wait; } .match-link-status { font-size: 12px; }
       .match-link-status:empty { display: none; }
       .match-link-manual { flex-basis: 100%; min-width: 0; font-size: 12px; }
-      button:focus-visible { outline: 2px solid var(--bb-accent, #8edcff); outline-offset: 3px; }`],
+      button:focus-visible { outline: 2px solid var(--bb-accent, #8edcff); outline-offset: 3px; }
+      :host(.match-link-inline) { display: inline-block; margin: 0; max-width: 100%; min-width: 0; }
+      :host(.match-link-inline) .match-link-button { min-height: 30px; padding: 6px 10px; white-space: nowrap; }
+      @media (max-width: 600px) {
+        :host(.match-link-inline) .match-link-button { width: 32px; height: 32px; padding: 6px; justify-content: center; }
+        :host(.match-link-inline) .match-link-label { display: none; }
+      }`],
 })
 export class CopyMatchLinkComponent implements OnChanges, OnDestroy {
     @Input({ required: true }) matchTPId!: number;
     @Input() matchId?: number | null;
     @Input() view: MatchLinkView = 'details';
+    @Input() inline = false;
     busy = false;
     copied = false;
     manual = false;

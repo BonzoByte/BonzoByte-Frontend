@@ -15,6 +15,8 @@ let bbModalScrollLocks = 0;
 export class BbModalShellComponent implements OnInit, OnDestroy {
   @Input({ required: true }) title!: string;
   @Input() subtitle?: string;
+  /** Optional compact title-row controls; normal dialogs keep their existing layout. */
+  @Input() headingActions = false;
   @Input() closeLabel = 'Close';
   @Input() closeOnEsc = true;
   @Input() closeDisabled = false;
