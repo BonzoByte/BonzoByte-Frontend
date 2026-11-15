@@ -311,7 +311,7 @@
                 </section>
 
                 <aside *ngIf="showHistoricalPlNote && historicalPlNoticePreference.isVisible" class="historical-pl-note" role="note">
-                    <span><span aria-hidden="true">† </span>{{ 'matchGrid.plHistoricalNote' | translate }}</span>
+                    <span><span aria-hidden="true">ⓘ </span>{{ 'matchGrid.plHistoricalNote' | translate }}</span>
                     <button type="button" class="historical-pl-note__dismiss"
                         [attr.aria-label]="'common.close' | translate" [title]="'common.close' | translate"
                         (click)="historicalPlNoticePreference.setVisible(false)">×</button>
@@ -501,7 +501,9 @@
                             <td class="col-center model-pl-cell" [ngClass]="view.plClass"
                                 [title]="view.plTitle">
                                 {{ view.pl }}
-                                <sup *ngIf="view.historicalPl" class="historical-pl-marker" aria-hidden="true">†</sup>
+                                <span *ngIf="view.plClass === 'pl-negative'" aria-hidden="true"> ↓</span>
+                                <span *ngIf="view.plClass === 'pl-positive'" aria-hidden="true"> ↑</span>
+                                <sup *ngIf="view.historicalPl" class="historical-pl-marker" aria-hidden="true">ⓘ</sup>
                             </td>
 
                             <td class="col-center prediction-pick-cell" *ngIf="showFavouriteColumn">

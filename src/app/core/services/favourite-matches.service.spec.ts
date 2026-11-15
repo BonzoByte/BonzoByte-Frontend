@@ -1,18 +1,20 @@
 import { TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { HttpClient, provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Subject } from 'rxjs';
 import { FavouriteMatchesService, FavouriteMatchRows } from './favourite-matches.service';
 
 describe('Private match favourites', () => {
     let service: FavouriteMatchesService, http: HttpTestingController;
     let users: BehaviorSubject<any>, events: Map<string, () => void>;
-    let snack: jasmine.SpyObj<any>, confirmation: { dismiss: jasmine.Spy };
+    let snack: jasmine.SpyObj<any>, confirmation: { dismiss: jasmine.Spy; onAction: () => Subject<void>; afterDismissed: () => Subject<void> };
+    let action: Subject<void>, dismissed: Subject<void>;
     const base = '/api/favourites/matches';
     beforeEach(() => {
         TestBed.configureTestingModule({ providers: [provideHttpClient(), provideHttpClientTesting()] });
         http = TestBed.inject(HttpTestingController); users = new BehaviorSubject<any>(null); events = new Map();
-        confirmation = { dismiss: jasmine.createSpy('dismiss') };
+        action = new Subject(); dismissed = new Subject();
+        confirmation = { dismiss: jasmine.createSpy('dismiss'), onAction: () => action, afterDismissed: () => dismissed };
         snack = jasmine.createSpyObj('LocalizedSnackbarService', ['open']);
         snack.open.and.returnValue(confirmation);
         service = new FavouriteMatchesService(TestBed.inject(HttpClient), { user$: users } as any,
@@ -48,10 +50,21 @@ describe('Private match favourites', () => {
         const request = http.expectOne(base + '/42'); expect(request.request.method).toBe('DELETE');
         request.flush({ matchTPId: 42, saved: false, count: 0 });
         expect(service.count()).toBe(0); expect(service.undoId()).toBe(42);
-        service.undo(); http.expectOne(base + '/42').flush({ matchTPId: 42, saved: true, count: 1 });
+        expect(service.message()).toBeNull();
+        expect(snack.open).toHaveBeenCalledOnceWith('favourites.removed', 'favourites.undo', { duration: 10000, panelClass: 'success-snackbar' });
+        action.next(); action.next(); http.expectOne(base + '/42').flush({ matchTPId: 42, saved: true, count: 1 });
         expect(service.count()).toBe(1); expect(service.undoId()).toBeNull();
         tick(10000); expect(service.message()).toBeNull();
     }));
+    it('expires the removal Undo when its toast closes', () => {
+        signIn([42]); service.toggle(42); http.expectOne(base + '/42').flush({ matchTPId: 42, saved: false, count: 0 });
+        dismissed.next(); expect(service.undoId()).toBeNull(); action.next(); http.expectNone(base + '/42');
+    });
+    it('never replays a toast action for a different account', () => {
+        signIn([42]); service.toggle(42); http.expectOne(base + '/42').flush({ matchTPId: 42, saved: false, count: 0 });
+        users.next({ _id: 'fixture-b' }); http.expectOne(base).flush({ ids: [], count: 0, limit: 1000 });
+        action.next(); http.expectNone(base + '/42'); expect(service.undoId()).toBeNull();
+    });
     it('does not show a success toast before the server confirms; clears it on account change', () => {
         signIn(); service.toggle(42);
         expect(snack.open).not.toHaveBeenCalled();

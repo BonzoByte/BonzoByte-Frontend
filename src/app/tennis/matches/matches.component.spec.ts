@@ -431,8 +431,9 @@ describe('MatchesComponent model P/L benchmark', () => {
     expect(component.formatPL(historical)).toBe('+1,00u');
     expect(component.isHistoricalPL(historical)).toBeTrue();
     expect(component.getVerifiedMarketOdds(historical)).toBeNull();
-    expect(component.getPredictionMarketContext(historical)).toBeNull();
-    expect(component.getMarketEdge(historical)).toBeNull();
+    expect(component.getPredictionMarketContext(historical)?.gapPoints).toBe(25);
+    expect(component.getMarketEdge(historical)?.side).toBe('p1');
+    expect((component as any).hasValueBet(historical)).toBeTrue();
     expect(component.getPLTooltip(historical)).toContain('Teorijski povijesni P/L');
     component.plBasis = 'median';
     expect(component.formatPL(historical)).toBe('+0,80u');
@@ -442,6 +443,19 @@ describe('MatchesComponent model P/L benchmark', () => {
     expect(summary.eligibleCount).toBe(2);
     expect(summary.units).toBeCloseTo(-0.2, 10);
     expect(JSON.stringify(historical)).toBe(original);
+  });
+
+  it('requires both clean prices and a valid NN, but not a pre-match timestamp, for the value filter', () => {
+    const component = createComponent();
+    const row = completed({ player1Odds: null, player2Odds: null, legacyPlayer1Odds: 1.8, legacyPlayer2Odds: 2.2,
+      marketOddsVerified: false, recoveryOddsCertifiedPrematch: false, marketBookieCount: 1 });
+    expect((component as any).hasValueBet(row)).toBeTrue();
+    for (const extra of [{ legacyPlayer1Odds: null }, { legacyPlayer2Odds: 1 },
+      { modelProbabilityPlayer1: null, modelProbabilityPlayer2: null }, { predictionEligible: false }, { qualityStatus: 'NeedsReview' }]) {
+      expect((component as any).hasValueBet({ ...row, ...extra })).withContext(JSON.stringify(extra)).toBeFalse();
+    }
+    expect(component.getVerifiedMarketOdds(row)).toBeNull();
+    expect(row.recoveryOddsCertifiedPrematch).toBeFalse();
   });
 
   it('keeps historical P/L unavailable for missing pairs, invalid prices, unresolved results or absent NN outputs', () => {

@@ -2941,7 +2941,12 @@ export class MatchesComponent implements OnInit, OnDestroy {
     }
 
     private parseOdds(match: any): [number | null, number | null] {
-        if (match?.recoveryOddsCertifiedPrematch === false) return [null, null];
+        // A reviewed source pair remains usable as a historical market benchmark
+        // without a quote timestamp. Do not relabel it as certified prematch.
+        if (match?.recoveryOddsCertifiedPrematch === false) {
+            const pair = this.getDisplayMarketOdds(match);
+            return pair ? [pair.player1, pair.player2] : [null, null];
+        }
         const [o1, o2] = this.parseDualNumbers(match?.oddsText);
         // 0, null, negativno -> invalid
         const v1 = o1 && o1 > 1 ? o1 : null;

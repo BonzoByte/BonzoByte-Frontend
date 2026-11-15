@@ -1,7 +1,7 @@
 import { DOCUMENT } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { Inject, Injectable, OnDestroy, Optional, computed, signal } from '@angular/core';
-import { Observable, Subject, Subscription, defer, finalize, from, map, mergeMap, of, switchMap, takeUntil, throwError, timeout, toArray } from 'rxjs';
+import { Observable, Subject, Subscription, defer, finalize, from, map, mergeMap, of, switchMap, take, takeUntil, throwError, timeout, toArray } from 'rxjs';
 import { environment } from '@env/environment';
 import { Match } from '../models/tennis.model';
 import { AuthService } from './auth.service';
@@ -38,6 +38,7 @@ export class FavouriteMatchesService implements OnDestroy {
     private rowLoads = 0;
     private messageTimer?: ReturnType<typeof setTimeout>;
     private confirmation?: ReturnType<LocalizedSnackbarService['open']>;
+    private confirmationEvents = new Subscription();
     private readonly focus = () => {
         if (this.signedIn() && !this.pending().size && !this.rowLoads) this.refresh();
     };
@@ -159,12 +160,26 @@ export class FavouriteMatchesService implements OnDestroy {
 
     private notify(message: 'added' | 'removed' | 'failed' | 'limit', undoId: number | null = null): void {
         this.dismissMessage();
-        if (message === 'added' && this.snack) {
+        if ((message === 'added' || message === 'removed') && this.snack) {
             try {
-                this.confirmation = this.snack.open('favourites.added', '', { duration: 3500, panelClass: 'success-snackbar' });
+                const actor = this.actor;
+                const ref = this.snack.open(`favourites.${message}`, message === 'removed' ? 'favourites.undo' : '',
+                    { duration: message === 'removed' ? 10000 : 3500, panelClass: 'success-snackbar' });
+                this.confirmation = ref;
+                this.undoId.set(undoId);
+                if (message === 'removed') {
+                    this.confirmationEvents.add(ref.onAction().pipe(take(1)).subscribe(() => {
+                        if (this.actor === actor && this.confirmation === ref && this.undoId() === undoId) this.undo();
+                    }));
+                }
+                this.confirmationEvents.add(ref.afterDismissed().pipe(take(1)).subscribe(() => {
+                    if (this.confirmation === ref) { this.confirmation = undefined; this.undoId.set(null); }
+                }));
                 return;
             } catch {
                 // Keep feedback available if the notification surface cannot open.
+                this.confirmationEvents.unsubscribe(); this.confirmationEvents = new Subscription();
+                this.confirmation?.dismiss(); this.confirmation = undefined;
             }
         }
         this.message.set(message); this.undoId.set(undoId);
@@ -172,6 +187,7 @@ export class FavouriteMatchesService implements OnDestroy {
     }
     dismissMessage(): void {
         clearTimeout(this.messageTimer); this.message.set(null); this.undoId.set(null);
+        this.confirmationEvents.unsubscribe(); this.confirmationEvents = new Subscription();
         this.confirmation?.dismiss(); this.confirmation = undefined;
     }
     ngOnDestroy(): void {
