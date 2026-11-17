@@ -1465,7 +1465,7 @@
     "gap": "vs trž. {{value}} p.b.",
     "legacyOdds": "Privremeni stari koeficijenti",
     "oddsPair": "Igrač 1: {{p1}} · Igrač 2: {{p2}}",
-    "legacyOddsNote": "Vrednosti su iz stare TennisPrediction arhive i još nisu proverene ni obogaćene podacima iz MatchOdds.",
+    "legacyOddsNote": "Ove starije arhivirane kvote još nisu proverene ni dopunjene detaljnim kladioničarskim ponudama.",
     "archiveOddsUnavailable": "Koeficijenti nisu dostupni u ovoj arhivi.",
     "na": "n/d",
     "medianConsensus": "Tržišni konsenzus (medijani koeficijenata)",
@@ -1674,6 +1674,10 @@
       "roland-garros": "Roland Garros",
       "us-open": "US Open"
     }
+  },
+  "researchData": {
+    "notice": "BonzoByteovi istorijski podaci, kvote, povezivanja igrača, proračuni i modeli mogu sadržati greške. Istorijski P/L i ROI predstavljaju hipotetička poređenja sa arhiviranim kladioničarskim kvotama, a ne dokaz ostvarivog prinosa ili obećanje buduće dobiti. Radimo na kvalitetu podataka i proceni pouzdanijih izvora. Ispravke zasnovane na dokazima mogu promeniti istorijske podatke i prikazane pokazatelje, bez obzira na to povećavaju li ili smanjuju ROI.",
+    "reconstruction": "Hronološka retrospektivna rekonstrukcija sa godišnje prilagođenim modelima odabranim nakon istorijskog istraživanja, a ne netaknuti prospektivni test ili dokaz ostvarivog prinosa. Arhivirane medijane kladioničarskih kvota služe kao istorijske referentne cene; dostupnost pre meča nije potvrđena. Pravila prihvatljivosti kvota navedena su zasebno. Nedostajuće predikcije i nepotpuni ili neprovereni ishodi izostavljaju se, nikada se ne zamenjuju sa 50%."
   },
   "reports": {
     "copy": {
@@ -1950,7 +1954,7 @@
       "surfaceContext": "Kontekst podloge",
       "legacyH2h": "H2H starijeg sistema",
       "undatedArchiveClosingProxyResearchOnlyNotEvidenceOfAn": "Samo istraživanje uz arhivsku zamensku procenu završnih koeficijenata bez vremenske oznake; nije dokaz dostupnosti koeficijenta pre meča niti garancija dobiti.",
-      "canonicalFinishedTennispredictionRowsOnlyPlayer1IsTheWinner": "Samo kanonski završeni zapisi TennisPredictiona; igrač 1 je pobednik.",
+      "canonicalFinishedTennispredictionRowsOnlyPlayer1IsTheWinner": "Samo kanonski zapisi završenih mečeva; igrač 1 je pobednik.",
       "eachBookmakerContributesOneMedianPlayer1Player2Pair": "Svaka kladionica daje jedan medijanski par koeficijenata za igrača 1 i igrača 2 iz svojih valjanih snimki; istraživački konsenzus medijan je tih medijana, a marža se uklanja na tom sintetičkom paru.",
       "bothPlayerSidesAreEvaluatedFromComplementaryModelProbabilitiesThe": "Oba igrača vrednuju se prema komplementarnim verovatnoćama modela; odabire se igrač s većom razlikom između modela i fer tržišne verovatnoće, a oklada se zadržava samo ako je izvorna očekivana vrednost pozitivna i zadovoljen je prag grupe.",
       "descriptiveLegacyProductionWpComparisonFairOddsAreADe": "Opisno poređenje starijeg produkcijskog WP-a. Fer koeficijenti osnovica su bez marže, dok obračunati P/L uz fiksni ulog koristi zabeleženi konsenzusni medijanski koeficijent. Koeficijenti bez vremenske oznake nisu dokaz dostupne ponude pre meča.",

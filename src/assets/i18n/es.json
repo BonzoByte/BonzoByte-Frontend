@@ -1258,7 +1258,7 @@
     "gap": "vs merc. {{value}} pp",
     "legacyOdds": "Cuotas antiguas provisionales",
     "oddsPair": "Jugador 1: {{p1}} · Jugador 2: {{p2}}",
-    "legacyOddsNote": "Estos valores proceden del archivo antiguo de TennisPrediction y aún no están verificados ni enriquecidos desde MatchOdds.",
+    "legacyOddsNote": "Estas cuotas antiguas archivadas aún no se han verificado ni completado con ofertas detalladas de casas de apuestas.",
     "archiveOddsUnavailable": "Las cuotas no están disponibles en este archivo.",
     "na": "n/d",
     "medianConsensus": "Consenso del mercado (cuotas medianas)",
@@ -1786,6 +1786,10 @@
       }
     }
   },
+  "researchData": {
+    "notice": "Los datos históricos, cuotas, asociaciones de jugadores, cálculos y modelos de BonzoByte pueden contener errores. El P/L y el ROI históricos son comparaciones hipotéticas con cuotas archivadas, no pruebas de rendimientos alcanzables ni promesas de beneficios futuros. Trabajamos para mejorar la calidad de los datos y evaluar fuentes más fiables. Las correcciones basadas en pruebas pueden cambiar los datos históricos y los indicadores publicados, tanto si aumentan como si reducen el ROI.",
+    "reconstruction": "Reconstrucción retrospectiva cronológica con modelos ajustados anualmente y seleccionados tras una investigación histórica; no es una prueba prospectiva intacta ni demuestra rendimientos alcanzables. Las medianas archivadas de cuotas sirven como precios de referencia históricos; su disponibilidad antes del partido no está confirmada. Las reglas de admisibilidad de cuotas se indican por separado. Se excluyen las predicciones ausentes y los resultados incompletos o no verificados; nunca se sustituyen por un 50%."
+  },
   "reports": {
     "copy": {
       "analytics": "Analítica",
@@ -2061,7 +2065,7 @@
       "surfaceContext": "Contexto de superficie",
       "legacyH2h": "H2H anterior",
       "undatedArchiveClosingProxyResearchOnlyNotEvidenceOfAn": "Solo investigación con una aproximación de cierre del archivo sin fecha; no demuestra una cuota disponible antes del partido ni garantiza beneficios.",
-      "canonicalFinishedTennispredictionRowsOnlyPlayer1IsTheWinner": "Solo filas canónicas de partidos finalizados de TennisPrediction; el jugador 1 es el ganador.",
+      "canonicalFinishedTennispredictionRowsOnlyPlayer1IsTheWinner": "Solo registros canónicos de partidos finalizados; el jugador 1 es el ganador.",
       "eachBookmakerContributesOneMedianPlayer1Player2Pair": "Cada casa aporta un par mediano jugador 1/jugador 2 de sus instantáneas limpias; el consenso de investigación es la mediana de esas medianas y se elimina el margen del par sintético.",
       "bothPlayerSidesAreEvaluatedFromComplementaryModelProbabilitiesThe": "Se evalúan ambos jugadores con probabilidades complementarias del modelo; se elige el lado con mayor diferencia entre probabilidad del modelo y probabilidad justa de mercado. Solo se conserva la apuesta si su valor esperado bruto es positivo y alcanza el umbral de la cohorte.",
       "descriptiveLegacyProductionWpComparisonFairOddsAreADe": "Comparación descriptiva del WP de producción anterior. Las cuotas justas son una referencia sin margen, mientras que el P/L fijo realizado utiliza la cuota mediana de consenso registrada. Las cuotas sin fecha no prueban una oferta disponible antes del partido.",

@@ -1258,7 +1258,7 @@
     "gap": "vs merc. {{value}} pp",
     "legacyOdds": "Odds legadas provisórias",
     "oddsPair": "Jogador 1: {{p1}} · Jogador 2: {{p2}}",
-    "legacyOddsNote": "Esses valores vêm do arquivo legado do TennisPrediction e ainda não foram verificados nem enriquecidos pelo MatchOdds.",
+    "legacyOddsNote": "Estas odds antigas arquivadas ainda não foram verificadas nem complementadas com ofertas detalhadas de casas de apostas.",
     "archiveOddsUnavailable": "As odds estão indisponíveis neste arquivo.",
     "na": "n/d",
     "medianConsensus": "Consenso do mercado (odds medianas)",
@@ -1786,6 +1786,10 @@
       }
     }
   },
+  "researchData": {
+    "notice": "Os dados históricos, odds, associações de jogadores, cálculos e modelos do BonzoByte podem conter erros. P/L e ROI históricos são comparações hipotéticas com odds arquivadas, não provas de retornos alcançáveis nem promessas de lucro futuro. Trabalhamos para melhorar a qualidade dos dados e avaliar fontes mais confiáveis. Correções fundamentadas em evidências podem alterar dados históricos e indicadores publicados, aumentando ou reduzindo o ROI.",
+    "reconstruction": "Reconstrução retrospectiva cronológica com modelos ajustados anualmente e selecionados após pesquisa histórica; não é um teste prospectivo intocado nem prova de retornos alcançáveis. As medianas arquivadas das odds servem como preços de referência históricos; a disponibilidade antes da partida não está confirmada. As regras de elegibilidade das odds são informadas separadamente. Previsões ausentes e resultados incompletos ou não verificados são excluídos, nunca substituídos por 50%."
+  },
   "reports": {
     "copy": {
       "analytics": "Análises",
@@ -2061,7 +2065,7 @@
       "surfaceContext": "Contexto do piso",
       "legacyH2h": "H2H anterior",
       "undatedArchiveClosingProxyResearchOnlyNotEvidenceOfAn": "Somente pesquisa com uma aproximação de fechamento do arquivo sem data; não comprova uma odd disponível antes da partida nem garante lucro.",
-      "canonicalFinishedTennispredictionRowsOnlyPlayer1IsTheWinner": "Somente linhas canônicas de partidas concluídas do TennisPrediction; o jogador 1 é o vencedor.",
+      "canonicalFinishedTennispredictionRowsOnlyPlayer1IsTheWinner": "Somente registros canônicos de partidas concluídas; o jogador 1 é o vencedor.",
       "eachBookmakerContributesOneMedianPlayer1Player2Pair": "Cada casa fornece um par mediano jogador 1/jogador 2 de suas capturas limpas; o consenso da pesquisa é a mediana dessas medianas, com a margem removida do par sintético.",
       "bothPlayerSidesAreEvaluatedFromComplementaryModelProbabilitiesThe": "Ambos os jogadores são avaliados com probabilidades complementares do modelo; seleciona-se o lado com a maior diferença entre a probabilidade do modelo e a probabilidade justa do mercado. A aposta só é mantida se o valor esperado bruto for positivo e o limiar da coorte for atingido.",
       "descriptiveLegacyProductionWpComparisonFairOddsAreADe": "Comparação descritiva do WP de produção anterior. As odds justas são uma referência sem margem, enquanto o P/L realizado com aposta fixa usa a odd mediana de consenso registrada. Odds sem data não comprovam uma cotação disponível antes da partida.",

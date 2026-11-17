@@ -3,10 +3,13 @@ import { Injectable } from '@angular/core';
 import { RegionalSettingsService } from '../services/regional-settings.service';
 import { sourceCalendarDate } from './regional-format';
 import en from '../../../assets/i18n/en.json';
+import { LEGACY_RECONSTRUCTION_COPY, neutralResearchCopy, normalizeResearchCopy } from './public-research-copy';
 
 const normalizeCopy = (value: string) => value.trim().replace(/\s+/g, ' ');
 const sourceKeys = new Map(Object.entries(en.reports.copy).map(([key, value]) =>
   [normalizeCopy(value), `reports.copy.${key}`]));
+sourceKeys.set('Canonical finished rows only; player 1 is the winner.',
+  'reports.copy.canonicalFinishedTennispredictionRowsOnlyPlayer1IsTheWinner');
 
 /** Presentation adapter for read-only research artifacts. Never mutates their contents. */
 @Injectable({ providedIn: 'root' })
@@ -20,14 +23,21 @@ export class ReportPresentationService {
 
   source(value: string | null | undefined): string {
     if (value == null) return '';
-    const key = sourceKeys.get(normalizeCopy(value));
+    const neutral = neutralResearchCopy(value);
+    const normalized = normalizeResearchCopy(neutral);
+    const key = sourceKeys.get(normalized);
     if (key) return this.regional.text(key);
+    // The same paragraph can prefix later reports' additional admission warnings.
+    // Keep every suffix (including holds, coverage and price warnings) intact.
+    if (normalized === LEGACY_RECONSTRUCTION_COPY || normalized.startsWith(LEGACY_RECONSTRUCTION_COPY + ' ')) {
+      return this.regional.text('researchData.reconstruction') + normalized.slice(LEGACY_RECONSTRUCTION_COPY.length);
+    }
     const boundary = /^(Acceptance|Test) \/ out-of-sample from (\d{4}-\d{2}-\d{2})$/.exec(value);
     if (boundary && sourceCalendarDate(boundary[2])) {
       return this.text(boundary[1] === 'Test' ? 'testBoundary' : 'acceptanceBoundary', { date: this.regional.date(boundary[2]) });
     }
     // Unrecognized/new report wording remains verbatim, never an old conclusion by position or ID.
-    return value;
+    return neutral === value.trim() ? value : neutral;
   }
 
   surface(value: string): string {

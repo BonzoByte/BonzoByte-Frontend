@@ -1258,7 +1258,7 @@
     "gap": "vs mercato {{value}} pp",
     "legacyOdds": "Quote precedenti provvisorie",
     "oddsPair": "Giocatore 1: {{p1}} · Giocatore 2: {{p2}}",
-    "legacyOddsNote": "Questi valori provengono dall'archivio precedente di TennisPrediction e non sono ancora verificati o arricchiti da MatchOdds.",
+    "legacyOddsNote": "Queste quote storiche archiviate non sono ancora state verificate né integrate con offerte dettagliate dei bookmaker.",
     "archiveOddsUnavailable": "Quote non disponibili in questo archivio.",
     "na": "n/d",
     "medianConsensus": "Consenso di mercato (quote mediane)",
@@ -1786,6 +1786,10 @@
       }
     }
   },
+  "researchData": {
+    "notice": "Dati storici, quote, associazioni dei giocatori, calcoli e modelli di BonzoByte possono contenere errori. P/L e ROI storici sono confronti ipotetici con quote archiviate, non prove di rendimenti conseguibili né promesse di profitti futuri. Lavoriamo per migliorare la qualità dei dati e valutare fonti più affidabili. Correzioni basate su evidenze possono modificare i dati storici e gli indicatori pubblicati, sia aumentando sia riducendo il ROI.",
+    "reconstruction": "Ricostruzione retrospettiva cronologica con modelli adattati annualmente e selezionati dopo una ricerca storica; non è un test prospettico intatto né prova rendimenti conseguibili. Le mediane archiviate delle quote fungono da prezzi di riferimento storici; la disponibilità prima dell’incontro non è confermata. Le regole di ammissibilità delle quote sono indicate separatamente. Le previsioni mancanti e gli esiti incompleti o non verificati sono esclusi, mai sostituiti con il 50%."
+  },
   "reports": {
     "copy": {
       "analytics": "Analisi",
@@ -2061,7 +2065,7 @@
       "surfaceContext": "Contesto della superficie",
       "legacyH2h": "H2H precedente",
       "undatedArchiveClosingProxyResearchOnlyNotEvidenceOfAn": "Solo ricerca su approssimazioni archiviate di quote di chiusura senza data; non prova di una quota utilizzabile prima dell'incontro né garanzia di profitto.",
-      "canonicalFinishedTennispredictionRowsOnlyPlayer1IsTheWinner": "Solo righe canoniche concluse di TennisPrediction; il giocatore 1 è il vincitore.",
+      "canonicalFinishedTennispredictionRowsOnlyPlayer1IsTheWinner": "Solo record canonici di incontri conclusi; il giocatore 1 è il vincitore.",
       "eachBookmakerContributesOneMedianPlayer1Player2Pair": "Ogni bookmaker contribuisce con una coppia mediana giocatore 1/giocatore 2 dalle proprie istantanee valide; il consenso di ricerca è la mediana di queste mediane, da cui si rimuove il margine come coppia sintetica.",
       "bothPlayerSidesAreEvaluatedFromComplementaryModelProbabilitiesThe": "Entrambi i lati sono valutati con probabilità complementari del modello; si sceglie quello con il maggior vantaggio tra modello e probabilità equa di mercato. La puntata resta solo se il valore atteso grezzo è positivo e la soglia della coorte è raggiunta.",
       "descriptiveLegacyProductionWpComparisonFairOddsAreADe": "Confronto descrittivo della WP di produzione precedente. Le quote eque sono un riferimento senza margine, mentre il P/L realizzato a puntata fissa usa la quota mediana di consenso registrata. Le quote senza data non provano che l'offerta fosse disponibile prima dell'incontro.",

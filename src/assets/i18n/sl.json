@@ -1258,7 +1258,7 @@
     "gap": "glede na trg {{value}} o. t.",
     "legacyOdds": "Začasne stare kvote",
     "oddsPair": "Igralec 1: {{p1}} · Igralec 2: {{p2}}",
-    "legacyOddsNote": "Te vrednosti izvirajo iz starega arhiva TennisPrediction in še niso preverjene ali dopolnjene iz MatchOdds.",
+    "legacyOddsNote": "Te starejše arhivirane kvote še niso preverjene ali dopolnjene s podrobnimi stavnimi ponudbami.",
     "archiveOddsUnavailable": "V tem arhivu kvote niso na voljo.",
     "na": "ni podatka",
     "medianConsensus": "Tržno soglasje (mediane kvot)",
@@ -1786,6 +1786,10 @@
       }
     }
   },
+  "researchData": {
+    "notice": "Zgodovinski podatki, kvote, povezave igralcev, izračuni in modeli BonzoByte lahko vsebujejo napake. Zgodovinska P/L in ROI sta hipotetični primerjavi z arhiviranimi stavnimi kvotami, ne dokaz dosegljivega donosa ali obljuba prihodnjega dobička. Izboljšujemo kakovost podatkov in ocenjujemo zanesljivejše vire. Popravki na podlagi dokazov lahko spremenijo zgodovinske podatke in prikazane kazalnike, ne glede na to, ali ROI povečajo ali zmanjšajo.",
+    "reconstruction": "Kronološka retrospektivna rekonstrukcija z letno prilagojenimi modeli, izbranimi po zgodovinski raziskavi, ne nedotaknjen prospektivni preizkus ali dokaz dosegljivega donosa. Arhivirane mediane stavnih kvot so zgodovinske referenčne cene; razpoložljivost pred tekmo ni potrjena. Pravila upravičenosti kvot so navedena posebej. Manjkajoče napovedi ter nepopolni ali nepreverjeni izidi so izključeni in nikoli nadomeščeni s 50%."
+  },
   "reports": {
     "copy": {
       "analytics": "Analitika",
@@ -2061,7 +2065,7 @@
       "surfaceContext": "Kontekst podlage",
       "legacyH2h": "Starejši H2H",
       "undatedArchiveClosingProxyResearchOnlyNotEvidenceOfAn": "Samo raziskava arhivskega približka zaključnih cen brez datuma; ni dokaz izvedljive cene pred dvobojem in ne zagotavlja dobička.",
-      "canonicalFinishedTennispredictionRowsOnlyPlayer1IsTheWinner": "Samo kanonični končani zapisi TennisPrediction; igralec 1 je zmagovalec.",
+      "canonicalFinishedTennispredictionRowsOnlyPlayer1IsTheWinner": "Samo kanonični zapisi končanih tekem; igralec 1 je zmagovalec.",
       "eachBookmakerContributesOneMedianPlayer1Player2Pair": "Vsaka stavnica prispeva en mediani par za igralca 1 in 2 iz svojih čistih posnetkov; raziskovalno soglasje je mediana teh median, iz katere se marža odstrani kot iz sintetičnega para.",
       "bothPlayerSidesAreEvaluatedFromComplementaryModelProbabilitiesThe": "Obe strani se ovrednotita s komplementarnima verjetnostma modela; izbrana je stran z večjo razliko model minus poštena tržna verjetnost. Stava se ohrani le pri pozitivni surovi pričakovani vrednosti in doseženem pragu skupine.",
       "descriptiveLegacyProductionWpComparisonFairOddsAreADe": "Opisna primerjava starejše produkcijske WP. Poštene kvote so primerjava brez marže, realizirani P/L pri stalnem vložku pa uporablja zabeleženo soglasno mediano cene. Kvote brez datuma ne dokazujejo dosegljive ponudbe pred dvobojem.",

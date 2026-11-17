@@ -1608,7 +1608,7 @@
     "gap": "vs mkt {{value}} pp",
     "legacyOdds": "Temporary legacy odds",
     "oddsPair": "Player 1: {{p1}} · Player 2: {{p2}}",
-    "legacyOddsNote": "These values come from the legacy TennisPrediction archive and are not yet verified or enriched from MatchOdds.",
+    "legacyOddsNote": "These legacy archived odds have not yet been verified or enriched with detailed bookmaker offers.",
     "archiveOddsUnavailable": "Odds are not available in this archive.",
     "na": "n/a",
     "medianConsensus": "Market consensus (median odds)",
@@ -1818,6 +1818,10 @@
       "roland-garros": "Roland Garros",
       "us-open": "US Open"
     }
+  },
+  "researchData": {
+    "notice": "BonzoByte's historical data, odds, player mappings, calculations and models may contain errors. Historical P/L and ROI are hypothetical comparisons with archived bookmaker prices, not evidence of achievable returns or a promise of future profit. We work to improve data quality and evaluate more reliable sources. Evidence-based corrections may change historical data and reported metrics, whether the change increases or reduces ROI.",
+    "reconstruction": "Chronological retrospective reconstruction using yearly fitted models selected after historical research, not an untouched prospective holdout or proof of achievable returns. Archived bookmaker medians serve as historical reference prices; pre-match availability is unconfirmed. Quote-eligibility rules are stated separately. Missing predictions and incomplete or unverified outcomes are excluded, never replaced by 50%."
   },
   "reports": {
     "copy": {
@@ -2094,7 +2098,7 @@
       "surfaceContext": "Surface context",
       "legacyH2h": "Legacy H2H",
       "undatedArchiveClosingProxyResearchOnlyNotEvidenceOfAn": "Undated archive-closing-proxy research only; not evidence of an executable pre-match price and no guaranteed profit.",
-      "canonicalFinishedTennispredictionRowsOnlyPlayer1IsTheWinner": "Canonical finished TennisPrediction rows only; player 1 is the winner.",
+      "canonicalFinishedTennispredictionRowsOnlyPlayer1IsTheWinner": "Canonical finished match records only; player 1 is the winner.",
       "eachBookmakerContributesOneMedianPlayer1Player2Pair": "Each bookmaker contributes one median Player 1/Player 2 pair across its clean snapshots; the research consensus is the median of those bookmaker medians and is de-vigged as a synthetic pair.",
       "bothPlayerSidesAreEvaluatedFromComplementaryModelProbabilitiesThe": "Both player sides are evaluated from complementary model probabilities; the side with the larger model-minus-market fair-probability edge is selected, and a wager is retained only when raw expected value is positive and the cohort threshold is met.",
       "descriptiveLegacyProductionWpComparisonFairOddsAreADe": "Descriptive legacy production-WP comparison. Fair odds are a de-vig benchmark, while realized flat P/L uses the recorded consensus median price. Undated odds are not proof of an executable pre-match quote.",

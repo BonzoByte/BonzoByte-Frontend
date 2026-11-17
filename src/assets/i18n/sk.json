@@ -1258,7 +1258,7 @@
     "gap": "oproti trhu {{value}} p. b.",
     "legacyOdds": "Dočasné staršie kurzy",
     "oddsPair": "Hráč 1: {{p1}} · Hráč 2: {{p2}}",
-    "legacyOddsNote": "Tieto hodnoty pochádzajú zo staršieho archívu TennisPrediction a zatiaľ nie sú overené ani obohatené z MatchOdds.",
+    "legacyOddsNote": "Tieto staršie archivované kurzy zatiaľ neboli overené ani doplnené podrobnými ponukami stávkových kancelárií.",
     "archiveOddsUnavailable": "V tomto archíve nie sú kurzy dostupné.",
     "na": "nedostupné",
     "medianConsensus": "Trhový konsenzus (mediány kurzov)",
@@ -1786,6 +1786,10 @@
       }
     }
   },
+  "researchData": {
+    "notice": "Historické údaje, kurzy, priradenia hráčov, výpočty a modely BonzoByte môžu obsahovať chyby. Historické P/L a ROI sú hypotetické porovnania s archivovanými kurzami, nie dôkaz dosiahnuteľných výnosov ani prísľub budúceho zisku. Pracujeme na kvalite údajov a hodnotení spoľahlivejších zdrojov. Opravy podložené dôkazmi môžu zmeniť historické údaje a vykazované ukazovatele bez ohľadu na to, či ROI zvýšia alebo znížia.",
+    "reconstruction": "Chronologická retrospektívna rekonštrukcia s každoročne upravenými modelmi vybranými po historickom výskume; nejde o nedotknutý prospektívny test ani dôkaz dosiahnuteľných výnosov. Archivované mediány kurzov slúžia ako historické referenčné ceny; dostupnosť pred zápasom nie je potvrdená. Pravidlá prípustnosti kurzov sú uvedené samostatne. Chýbajúce predikcie a neúplné alebo neoverené výsledky sú vylúčené, nikdy nenahradené 50%."
+  },
   "reports": {
     "copy": {
       "analytics": "Analytika",
@@ -2061,7 +2065,7 @@
       "surfaceContext": "Kontext povrchu",
       "legacyH2h": "Staršie H2H",
       "undatedArchiveClosingProxyResearchOnlyNotEvidenceOfAn": "Iba výskum nedatovanej archívnej náhrady záverečného kurzu; nie dôkaz dostupného kurzu pred zápasom ani záruka zisku.",
-      "canonicalFinishedTennispredictionRowsOnlyPlayer1IsTheWinner": "Iba kanonické ukončené záznamy TennisPrediction; hráč 1 je víťaz.",
+      "canonicalFinishedTennispredictionRowsOnlyPlayer1IsTheWinner": "Iba kanonické záznamy ukončených zápasov; hráč 1 je víťaz.",
       "eachBookmakerContributesOneMedianPlayer1Player2Pair": "Každá kancelária prispieva jedným mediánovým párom hráč 1/hráč 2 zo svojich čistých záznamov; výskumný konsenzus je medián týchto mediánov, z ktorého sa marža odstráni ako zo syntetického páru.",
       "bothPlayerSidesAreEvaluatedFromComplementaryModelProbabilitiesThe": "Obe strany sa hodnotia z doplnkových pravdepodobností modelu; vyberá sa strana s väčším rozdielom model mínus férová trhová pravdepodobnosť. Stávka sa zachová iba pri kladnej surovej očakávanej hodnote a splnení prahu skupiny.",
       "descriptiveLegacyProductionWpComparisonFairOddsAreADe": "Opisné porovnanie staršieho produkčného WP. Férové kurzy sú porovnaním bez marže, realizované P/L pri rovnakom vklade však používa zaznamenaný medián konsenzuálneho kurzu. Nedatované kurzy nedokazujú dostupnú ponuku pred zápasom.",

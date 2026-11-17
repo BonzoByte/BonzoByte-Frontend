@@ -1465,7 +1465,7 @@
     "gap": "ggü. Markt {{value}} Pp.",
     "legacyOdds": "Vorläufige Altquoten",
     "oddsPair": "Spieler 1: {{p1}} · Spieler 2: {{p2}}",
-    "legacyOddsNote": "Diese Werte stammen aus dem alten TennisPrediction-Archiv und sind noch nicht anhand von MatchOdds verifiziert oder ergänzt.",
+    "legacyOddsNote": "Diese älteren archivierten Quoten wurden noch nicht überprüft oder um detaillierte Buchmacherangebote ergänzt.",
     "archiveOddsUnavailable": "In diesem Archiv sind keine Quoten verfügbar.",
     "na": "k. A.",
     "medianConsensus": "Marktkonsens (Medianquoten)",
@@ -1674,6 +1674,10 @@
       "roland-garros": "Roland Garros",
       "us-open": "US Open"
     }
+  },
+  "researchData": {
+    "notice": "Historische Daten, Quoten, Spielerzuordnungen, Berechnungen und Modelle von BonzoByte können Fehler enthalten. Historische P/L und ROI sind hypothetische Vergleiche mit archivierten Buchmacherquoten, kein Nachweis erzielbarer Renditen und kein Versprechen künftiger Gewinne. Wir verbessern die Datenqualität und prüfen zuverlässigere Quellen. Evidenzbasierte Korrekturen können historische Daten und ausgewiesene Kennzahlen ändern, unabhängig davon, ob der ROI dadurch steigt oder sinkt.",
+    "reconstruction": "Chronologische retrospektive Rekonstruktion mit jährlich angepassten Modellen, die nach historischer Forschung ausgewählt wurden; kein unangetasteter prospektiver Test und kein Nachweis erzielbarer Renditen. Archivierte Mediane der Buchmacherquoten dienen als historische Referenzpreise; ihre Verfügbarkeit vor dem Spiel ist unbestätigt. Regeln zur Zulässigkeit von Quoten werden gesondert angegeben. Fehlende Prognosen sowie unvollständige oder ungeprüfte Ergebnisse werden ausgeschlossen und niemals durch 50% ersetzt."
   },
   "reports": {
     "copy": {
@@ -1950,7 +1954,7 @@
       "surfaceContext": "Belagskontext",
       "legacyH2h": "Altes H2H",
       "undatedArchiveClosingProxyResearchOnlyNotEvidenceOfAn": "Nur Forschung anhand undatierter Archiv-/Schlussquotennäherungen; kein Nachweis einer vor dem Match ausführbaren Quote und kein garantierter Gewinn.",
-      "canonicalFinishedTennispredictionRowsOnlyPlayer1IsTheWinner": "Nur kanonische abgeschlossene TennisPrediction-Einträge; Spieler 1 ist der Sieger.",
+      "canonicalFinishedTennispredictionRowsOnlyPlayer1IsTheWinner": "Nur kanonische Datensätze abgeschlossener Spiele; Spieler 1 ist der Sieger.",
       "eachBookmakerContributesOneMedianPlayer1Player2Pair": "Jeder Buchmacher liefert ein Medianpaar für Spieler 1/Spieler 2 aus seinen bereinigten Aufzeichnungen; der Forschungskonsens ist der Median dieser Buchmachermediane und wird als synthetisches Paar um die Marge bereinigt.",
       "bothPlayerSidesAreEvaluatedFromComplementaryModelProbabilitiesThe": "Beide Spielerseiten werden anhand komplementärer Modellwahrscheinlichkeiten bewertet. Ausgewählt wird die Seite mit dem größeren Vorteil der Modellwahrscheinlichkeit gegenüber der fairen Marktwahrscheinlichkeit; eine Wette bleibt nur enthalten, wenn der rohe Erwartungswert positiv ist und die Kohortenschwelle erreicht wird.",
       "descriptiveLegacyProductionWpComparisonFairOddsAreADe": "Beschreibender Vergleich der alten produktiven WP. Faire Quoten sind eine margenbereinigte Referenz, während der realisierte P/L bei Einheitseinsatz die aufgezeichnete Konsens-Medianquote verwendet. Undatierte Quoten belegen keine vor dem Match tatsächlich verfügbare Quote.",

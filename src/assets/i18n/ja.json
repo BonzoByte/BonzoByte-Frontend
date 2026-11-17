@@ -1258,7 +1258,7 @@
     "gap": "市場比{{value}}ポイント",
     "legacyOdds": "暫定の旧オッズ",
     "oddsPair": "選手1：{{p1}} · 選手2：{{p2}}",
-    "legacyOddsNote": "これらの値は旧TennisPredictionアーカイブに由来し、MatchOddsによる検証や補完はまだ行われていません。",
+    "legacyOddsNote": "これらの旧アーカイブのオッズは、詳細なブックメーカーの提示情報による検証や補完がまだ行われていません。",
     "archiveOddsUnavailable": "このアーカイブにオッズはありません。",
     "na": "該当なし",
     "medianConsensus": "市場コンセンサス（オッズ中央値）",
@@ -1786,6 +1786,10 @@
       }
     }
   },
+  "researchData": {
+    "notice": "BonzoByteの過去データ、オッズ、選手の対応付け、計算、モデルには誤りが含まれる可能性があります。過去のP/LとROIは保存されたブックメーカーのオッズとの仮想的な比較であり、実現可能な収益の証明や将来の利益の約束ではありません。データ品質の向上と、より信頼できる情報源の評価に取り組んでいます。根拠に基づく訂正により、ROIが上がる場合も下がる場合も、過去データや公表指標が変わることがあります。",
+    "reconstruction": "過去の研究後に選択した年別調整モデルによる時系列の遡及的再構成です。未使用の前向き検証や実現可能な収益の証明ではありません。保存されたブックメーカーのオッズの中央値は過去の参照価格であり、試合前に利用できたかは未確認です。オッズの採用条件は別途記載しています。欠落した予測や不完全・未検証の結果は除外し、50%で置き換えることはありません。"
+  },
   "reports": {
     "copy": {
       "analytics": "分析",
@@ -2061,7 +2065,7 @@
       "surfaceContext": "サーフェス情報",
       "legacyH2h": "旧H2H",
       "undatedArchiveClosingProxyResearchOnlyNotEvidenceOfAn": "日時不明のアーカイブ終値近似を用いた研究のみです。試合前に利用可能なオッズの証拠でも、利益の保証でもありません。",
-      "canonicalFinishedTennispredictionRowsOnlyPlayer1IsTheWinner": "TennisPredictionの正規化済み終了試合レコードのみを使用し、選手1が勝者です。",
+      "canonicalFinishedTennispredictionRowsOnlyPlayer1IsTheWinner": "正規化済みの終了試合レコードのみを使用し、選手1が勝者です。",
       "eachBookmakerContributesOneMedianPlayer1Player2Pair": "各ブックメーカーの有効なスナップショットから選手1・選手2の中央値ペアを1組ずつ取得します。研究用の合意値はそれらの中央値の中央値であり、合成ペアとしてマージンを除去します。",
       "bothPlayerSidesAreEvaluatedFromComplementaryModelProbabilitiesThe": "両選手を相補的なモデル確率で評価し、モデル確率と公正な市場確率の差が大きい側を選択します。未調整の期待値が正で、コホートのしきい値を満たす場合だけベットを保持します。",
       "descriptiveLegacyProductionWpComparisonFairOddsAreADe": "旧本番WPの記述的比較です。フェアオッズはマージン除去後の基準値ですが、実現した固定賭け金P/Lには記録済み合意中央値オッズを使います。日時不明のオッズは試合前に利用可能な価格の証拠ではありません。",

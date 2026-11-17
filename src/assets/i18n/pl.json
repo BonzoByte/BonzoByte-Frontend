@@ -1258,7 +1258,7 @@
     "gap": "wzgl. rynku {{value}} pp",
     "legacyOdds": "Tymczasowe stare kursy",
     "oddsPair": "Zawodnik 1: {{p1}} · Zawodnik 2: {{p2}}",
-    "legacyOddsNote": "Wartości pochodzą ze starszego archiwum TennisPrediction i nie zostały jeszcze zweryfikowane ani wzbogacone danymi z MatchOdds.",
+    "legacyOddsNote": "Te starsze archiwalne kursy nie zostały jeszcze zweryfikowane ani uzupełnione szczegółowymi ofertami bukmacherów.",
     "archiveOddsUnavailable": "Kursy są niedostępne w tym archiwum.",
     "na": "brak danych",
     "medianConsensus": "Konsensus rynkowy (mediany kursów)",
@@ -1786,6 +1786,10 @@
       }
     }
   },
+  "researchData": {
+    "notice": "Dane historyczne, kursy, przypisania graczy, obliczenia i modele BonzoByte mogą zawierać błędy. Historyczne P/L i ROI to hipotetyczne porównania z archiwalnymi kursami, a nie dowód osiągalnych zwrotów ani obietnica przyszłych zysków. Pracujemy nad jakością danych i oceną bardziej wiarygodnych źródeł. Korekty oparte na dowodach mogą zmieniać dane historyczne i publikowane wskaźniki niezależnie od tego, czy zwiększają, czy zmniejszają ROI.",
+    "reconstruction": "Chronologiczna rekonstrukcja retrospektywna z modelami dopasowywanymi co roku i wybranymi po badaniach historycznych; nie jest to nietknięty test prospektywny ani dowód osiągalnych zwrotów. Archiwalne mediany kursów służą jako historyczne ceny odniesienia; dostępność przed meczem nie jest potwierdzona. Zasady kwalifikowania kursów podano osobno. Brakujące predykcje oraz niepełne lub niezweryfikowane wyniki są wykluczane, nigdy nie są zastępowane przez 50%."
+  },
   "reports": {
     "copy": {
       "analytics": "Analityka",
@@ -2061,7 +2065,7 @@
       "surfaceContext": "Kontekst nawierzchni",
       "legacyH2h": "Starsze H2H",
       "undatedArchiveClosingProxyResearchOnlyNotEvidenceOfAn": "Wyłącznie badanie archiwalnego przybliżenia kursu zamknięcia bez daty; nie dowód dostępności kursu przed meczem ani gwarancja zysku.",
-      "canonicalFinishedTennispredictionRowsOnlyPlayer1IsTheWinner": "Tylko kanoniczne zakończone rekordy TennisPrediction; zawodnik 1 jest zwycięzcą.",
+      "canonicalFinishedTennispredictionRowsOnlyPlayer1IsTheWinner": "Tylko kanoniczne rekordy zakończonych meczów; gracz 1 jest zwycięzcą.",
       "eachBookmakerContributesOneMedianPlayer1Player2Pair": "Każdy bukmacher wnosi jedną medianową parę zawodnik 1/zawodnik 2 ze swoich poprawnych zapisów; konsensus badawczy to mediana tych median, pozbawiona marży jako para syntetyczna.",
       "bothPlayerSidesAreEvaluatedFromComplementaryModelProbabilitiesThe": "Obie strony są oceniane z dopełniających się prawdopodobieństw modelu; wybierana jest strona z większą przewagą modelu nad uczciwym prawdopodobieństwem rynku. Zakład pozostaje tylko przy dodatniej surowej wartości oczekiwanej i spełnieniu progu kohorty.",
       "descriptiveLegacyProductionWpComparisonFairOddsAreADe": "Opisowe porównanie starszego produkcyjnego WP. Uczciwe kursy stanowią odniesienie bez marży, a zrealizowany P/L przy stałej stawce używa zapisanej mediany konsensusu kursów. Kursy bez daty nie dowodzą dostępności oferty przed meczem.",

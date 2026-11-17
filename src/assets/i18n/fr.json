@@ -1258,7 +1258,7 @@
     "gap": "vs marché {{value}} pp",
     "legacyOdds": "Anciennes cotes provisoires",
     "oddsPair": "Joueur 1 : {{p1}} · Joueur 2 : {{p2}}",
-    "legacyOddsNote": "Ces valeurs proviennent de l’ancienne archive TennisPrediction et ne sont pas encore vérifiées ni enrichies à partir de MatchOdds.",
+    "legacyOddsNote": "Ces anciennes cotes archivées ne sont pas encore vérifiées ni complétées par des offres détaillées de bookmakers.",
     "archiveOddsUnavailable": "Les cotes sont indisponibles dans cette archive.",
     "na": "n/d",
     "medianConsensus": "Consensus du marché (cotes médianes)",
@@ -1786,6 +1786,10 @@
       }
     }
   },
+  "researchData": {
+    "notice": "Les données historiques, cotes, associations de joueurs, calculs et modèles de BonzoByte peuvent contenir des erreurs. Le P/L et le ROI historiques sont des comparaisons hypothétiques avec des cotes archivées, pas une preuve de rendements réalisables ni une promesse de gains futurs. Nous améliorons la qualité des données et évaluons des sources plus fiables. Des corrections étayées peuvent modifier les données historiques et les indicateurs affichés, à la hausse comme à la baisse du ROI.",
+    "reconstruction": "Reconstruction rétrospective chronologique à partir de modèles ajustés annuellement et sélectionnés après recherche historique ; ni test prospectif intact ni preuve de rendements réalisables. Les médianes archivées des cotes servent de prix de référence historiques ; leur disponibilité avant le match n’est pas confirmée. Les règles d’admissibilité des cotes sont indiquées séparément. Les prédictions manquantes et les résultats incomplets ou non vérifiés sont exclus, jamais remplacés par 50%."
+  },
   "reports": {
     "copy": {
       "analytics": "Analyses",
@@ -2061,7 +2065,7 @@
       "surfaceContext": "Contexte de surface",
       "legacyH2h": "Ancien H2H",
       "undatedArchiveClosingProxyResearchOnlyNotEvidenceOfAn": "Recherche uniquement sur une approximation de clôture d’archive non datée ; ni preuve d’une cote disponible avant le match, ni garantie de bénéfice.",
-      "canonicalFinishedTennispredictionRowsOnlyPlayer1IsTheWinner": "Uniquement les lignes canoniques de matchs terminés de TennisPrediction ; le joueur 1 est le vainqueur.",
+      "canonicalFinishedTennispredictionRowsOnlyPlayer1IsTheWinner": "Uniquement les enregistrements canoniques de matchs terminés ; le joueur 1 est le vainqueur.",
       "eachBookmakerContributesOneMedianPlayer1Player2Pair": "Chaque bookmaker fournit une paire médiane joueur 1/joueur 2 issue de ses instantanés propres ; le consensus de recherche est la médiane de ces médianes, dont la marge est retirée en tant que paire synthétique.",
       "bothPlayerSidesAreEvaluatedFromComplementaryModelProbabilitiesThe": "Les deux joueurs sont évalués avec des probabilités complémentaires du modèle ; le côté ayant le plus grand écart entre probabilité du modèle et probabilité équitable du marché est choisi. La mise est retenue uniquement si sa valeur attendue brute est positive et si le seuil de cohorte est atteint.",
       "descriptiveLegacyProductionWpComparisonFairOddsAreADe": "Comparaison descriptive de l’ancien WP de production. Les cotes équitables constituent une référence sans marge, tandis que le P/L réalisé à mise fixe utilise la cote médiane de consensus enregistrée. Des cotes non datées ne prouvent pas une offre disponible avant le match.",

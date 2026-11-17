@@ -1258,7 +1258,7 @@
     "gap": "piachoz képest {{value}} szp",
     "legacyOdds": "Ideiglenes korábbi szorzók",
     "oddsPair": "1. játékos: {{p1}} · 2. játékos: {{p2}}",
-    "legacyOddsNote": "Ezek az értékek a régi TennisPrediction-archívumból származnak, és még nincsenek ellenőrizve vagy MatchOdds-adatokkal kiegészítve.",
+    "legacyOddsNote": "Ezeket a régebbi archivált oddsokat még nem ellenőriztük és nem egészítettük ki részletes bukmékeri ajánlatokkal.",
     "archiveOddsUnavailable": "Ebben az archívumban nem érhetők el szorzók.",
     "na": "n. a.",
     "medianConsensus": "Piaci konszenzus (mediánszorzók)",
@@ -1786,6 +1786,10 @@
       }
     }
   },
+  "researchData": {
+    "notice": "A BonzoByte múltbeli adatai, oddsai, játékos-hozzárendelései, számításai és modelljei hibákat tartalmazhatnak. A múltbeli P/L és ROI archivált bukmékeri oddsokkal végzett hipotetikus összehasonlítás, nem az elérhető hozam bizonyítéka vagy jövőbeli nyereség ígérete. Az adatminőség javításán és megbízhatóbb források értékelésén dolgozunk. A bizonyítékokon alapuló javítások megváltoztathatják a múltbeli adatokat és a közölt mutatókat, akár növelik, akár csökkentik a ROI-t.",
+    "reconstruction": "Időrendi retrospektív rekonstrukció évente illesztett, a történeti kutatás után kiválasztott modellekkel; nem érintetlen prospektív teszt vagy elérhető hozam bizonyítéka. Az archivált bukmékeri oddsmediánok múltbeli referenciaárak; a mérkőzés előtti elérhetőségük nem igazolt. Az oddsok beválasztási szabályai külön szerepelnek. A hiányzó előrejelzések és a hiányos vagy ellenőrizetlen eredmények kimaradnak, soha nem helyettesítjük őket 50%-kal."
+  },
   "reports": {
     "copy": {
       "analytics": "Elemzések",
@@ -2061,7 +2065,7 @@
       "surfaceContext": "Borítási környezet",
       "legacyH2h": "Korábbi H2H",
       "undatedArchiveClosingProxyResearchOnlyNotEvidenceOfAn": "Csak dátum nélküli archív záróár-közelítésen alapuló kutatás; nem bizonyít mérkőzés előtt elérhető árat és nem garantál nyereséget.",
-      "canonicalFinishedTennispredictionRowsOnlyPlayer1IsTheWinner": "Csak kanonikus, befejezett TennisPrediction-rekordok; az 1. játékos a győztes.",
+      "canonicalFinishedTennispredictionRowsOnlyPlayer1IsTheWinner": "Csak befejezett mérkőzések kanonikus rekordjai; az 1. játékos a győztes.",
       "eachBookmakerContributesOneMedianPlayer1Player2Pair": "Minden fogadóiroda egy medián 1. játékos/2. játékos párt ad a tisztított pillanatképeiből; a kutatási konszenzus ezek mediánja, amelyből szintetikus párként távolítjuk el az árrést.",
       "bothPlayerSidesAreEvaluatedFromComplementaryModelProbabilitiesThe": "Mindkét oldalt egymást kiegészítő modellvalószínűségekkel értékeljük; a nagyobb modell mínusz fair piaci valószínűségi előnyű oldalt választjuk. Fogadás csak pozitív nyers várható értéknél és a csoportküszöb elérésekor marad meg.",
       "descriptiveLegacyProductionWpComparisonFairOddsAreADe": "A korábbi éles WP leíró összevetése. A fair szorzó árrésmentes viszonyítás, míg a realizált fix tétes P/L a rögzített konszenzusos mediánárat használja. A dátum nélküli szorzók nem bizonyítanak mérkőzés előtt elérhető ajánlatot.",
