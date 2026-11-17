@@ -110,6 +110,10 @@
                         (keydown)="onDateDMYKeydown($event)"
                         (keydown.enter)="commitDateInputDMY()" [disabled]="loading || !minDate || !maxDate" />
 
+                    <app-archive-calendar [selectedISO]="currentDateISO" [minISO]="calendarMinISO" [maxISO]="calendarMaxISO"
+                        [availableDates]="availableDates" [disabled]="loading || !minDate || !maxDate"
+                        (dateSelected)="selectCalendarDate($event)" (todayRequested)="goToToday()"></app-archive-calendar>
+
                     <button (click)="nextDay()" class="link-button" [disabled]="isNextDisabled || loading">
                         <img src="assets/icons/right.svg" [attr.alt]="'matches.next' | translate" class="arrow-icon logreg" />
                     </button>
@@ -360,10 +364,8 @@
                         <col class="c-type" *ngIf="showTypeColumn && !grouped" />
                         <col class="c-tournament" *ngIf="!grouped && viewMode !== 'tournament'" />
                         <col class="c-round" *ngIf="grouped || viewMode === 'tournament'" />
-                        <col class="c-matchup"
-                            [style.width.px]="grouped ? groupedMatchupWidthPx : null" />
-                        <col class="c-result"
-                            [style.width.px]="grouped ? groupedResultWidthPx : null" />
+                        <col class="c-matchup" />
+                        <col class="c-result" />
                         <col class="c-odds" />
                         <col class="c-prob-market" />
                         <col class="c-model-pl" />
@@ -392,9 +394,9 @@
                                 [attr.title]="'matchGrid.predictionHeader' | translate">
                                 {{ 'matches.predictionMarket' | translate }}
                             </th>
-                            <th class="col-center"
+                            <th class="col-center model-pl-header" scope="col" [attr.aria-label]="plLabel"
                                 [title]="'matchGrid.plHeader' | translate:{ label: plLabel }">
-                                {{ plLabel }}
+                                P/L
                             </th>
                             <th class="col-center prediction-pick-cell" *ngIf="showFavouriteColumn" scope="col"
                                 [attr.aria-label]="'competition.makePick' | translate" [title]="'competition.makePick' | translate">◎</th>
@@ -410,7 +412,7 @@
 
                     <tbody>
                         <ng-container *ngFor="let match of rows; let rowIndex = index">
-                        <tr *ngIf="rowPresentation(match) as view">
+                        <tr *ngIf="rowPresentation(match) as view" [attr.data-match-id]="match.matchTPId">
                             <td class="match-date-cell" [title]="view.dateTitle">{{ view.date }}</td>
                             <td *ngIf="showTypeColumn && !grouped">{{ match.tournamentTypeName }}</td>
 
@@ -501,9 +503,6 @@
                             <td class="col-center model-pl-cell" [ngClass]="view.plClass"
                                 [title]="view.plTitle">
                                 {{ view.pl }}
-                                <span *ngIf="view.plClass === 'pl-negative'" aria-hidden="true"> ↓</span>
-                                <span *ngIf="view.plClass === 'pl-positive'" aria-hidden="true"> ↑</span>
-                                <sup *ngIf="view.historicalPl" class="historical-pl-marker" aria-hidden="true">ⓘ</sup>
                             </td>
 
                             <td class="col-center prediction-pick-cell" *ngIf="showFavouriteColumn">
@@ -560,7 +559,7 @@
                     </ng-container>
 
                     <ng-template #groupedDailyView>
-                        <div class="tournament-groups-scroll" tabindex="0"
+                        <div class="tournament-groups-scroll" bbSharedMatchColumns tabindex="0"
                             (scroll)="onResultsScroll($event)"
                             [attr.aria-label]="'matchGrid.groupedAria' | translate">
                             <ng-container *ngIf="tournamentMatchGroups as groups">
@@ -592,7 +591,7 @@
                                             *ngIf="group.modelPl.eligibleCount > 0"
                                             [ngClass]="getPlTone(group.modelPl.units)"
                                             [title]="getGroupPlTooltip(group)">
-                                            {{ plLabel }} {{ formatSignedUnits(group.modelPl.units) }}
+                                            P/L {{ formatSignedUnits(group.modelPl.units, false) }}
                                             <small>ROI {{ formatSignedPercent(group.modelPl.roiPercent) }} · {{ regional.number(group.modelPl.eligibleCount, 0, true) }}/{{ regional.number(group.modelPl.totalCount, 0, true) }}</small>
                                         </span>
                                         <span class="stars" role="img"

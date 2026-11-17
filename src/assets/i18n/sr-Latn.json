@@ -1,4 +1,13 @@
 {
+  "matchCalendar": {
+    "open": "Izaberi datum mečeva",
+    "months": "Izaberi mesec",
+    "years": "Izaberi godinu",
+    "today": "Danas",
+    "todayHint": "Današnji mečevi u izabranoj vremenskoj zoni",
+    "availableOnly": "Dani sa dostupnim mečevima",
+    "todayUnavailable": "Današnja arhiva još nije dostupna. Prikazujemo {{date}}, poslednji dostupan dan."
+  },
   "leaderboardHub": {
     "intro": "Tri takmičenja. Odvojene rang-liste i bodovanje.",
     "arcadeNote": "Mesečna rang-lista igrice prema μ − 3σ. Broje se samo provereni rangirani izazovi, ne i vežba. Probna rang-lista nema nagrade.",

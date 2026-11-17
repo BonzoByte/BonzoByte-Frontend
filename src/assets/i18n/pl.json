@@ -1,4 +1,13 @@
 {
+  "matchCalendar": {
+    "open": "Wybierz datę meczów",
+    "months": "Wybierz miesiąc",
+    "years": "Wybierz rok",
+    "today": "Dzisiaj",
+    "todayHint": "Dzisiejsze mecze w wybranej strefie czasowej",
+    "availableOnly": "Dni z dostępnymi meczami",
+    "todayUnavailable": "Dzisiejsze archiwum nie jest jeszcze dostępne. Wyświetlany jest {{date}}, ostatni dostępny dzień."
+  },
   "leaderboardHub": {
     "intro": "Trzy konkursy. Oddzielne rankingi i punktacja.",
     "arcadeNote": "Miesięczny ranking gry według μ − 3σ. Liczą się tylko zweryfikowane wyzwania rankingowe, nie trening. Ranking próbny nie oferuje nagród.",

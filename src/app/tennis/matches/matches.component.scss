@@ -40,7 +40,7 @@
 }
 
 .matches-page .match-table col.c-model-pl {
-    width: 72px !important;
+    width: 64px !important;
 }
 
 .matches-page .match-table col.c-details {
@@ -385,6 +385,7 @@
 .tournament-group__header {
     box-sizing: border-box;
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
     gap: 24px;
@@ -485,6 +486,19 @@
 
 .tournament-group .match-table {
     margin: -1px 0 0;
+}
+
+// All visible tournament grids share the largest intrinsic width per column.
+.matches-page .tournament-group .match-table th,
+.matches-page .tournament-group .match-table td {
+    min-width: 0 !important;
+    padding-left: 4px !important;
+    padding-right: 4px !important;
+}
+
+.matches-page .match-table td.model-pl-cell,
+.matches-page .match-table th.model-pl-header {
+    text-align: right !important;
 }
 
 .responsive-label {
@@ -638,10 +652,8 @@
 .historical-pl-note__dismiss:hover { background: var(--bb-surface-2); }
 .historical-pl-note__dismiss:focus-visible { outline: 2px solid var(--bb-accent,#80d5ff); outline-offset: 2px; }
 
-.historical-pl-marker { margin-left: 2px; }
-
 .model-pl-cell {
-    min-width: 72px;
+    min-width: 64px;
     padding-right: 6px;
     padding-left: 6px;
     color: rgba(220, 230, 226, 0.42);

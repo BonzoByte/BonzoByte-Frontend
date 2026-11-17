@@ -1,4 +1,13 @@
 {
+  "matchCalendar": {
+    "open": "Elegir fecha de partidos",
+    "months": "Elegir mes",
+    "years": "Elegir año",
+    "today": "Hoy",
+    "todayHint": "Partidos de hoy en tu zona horaria",
+    "availableOnly": "Días con partidos disponibles",
+    "todayUnavailable": "El archivo de hoy aún no está disponible. Se muestra {{date}}, el último día disponible."
+  },
   "leaderboardHub": {
     "intro": "Tres competiciones. Clasificaciones y puntuaciones separadas.",
     "arcadeNote": "Clasificación mensual del juego según μ − 3σ. Solo cuentan los desafíos puntuables verificados, no los entrenamientos. La clasificación de prueba no tiene premios.",

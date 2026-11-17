@@ -1,4 +1,13 @@
 {
+  "matchCalendar": {
+    "open": "Choose match date",
+    "months": "Choose month",
+    "years": "Choose year",
+    "today": "Today",
+    "todayHint": "Today's matches in your selected time zone",
+    "availableOnly": "Available match days",
+    "todayUnavailable": "Today's archive is not available yet. Showing {{date}}, the latest available day."
+  },
   "leaderboardHub": {
     "intro": "Three competitions. Separate standings and scoring.",
     "arcadeNote": "Monthly game-only ranking by μ − 3σ. Only verified rated challenges count; practice is excluded. Trial standings have no prizes.",

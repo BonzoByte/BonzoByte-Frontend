@@ -1,4 +1,13 @@
 {
+  "matchCalendar": {
+    "open": "Vybrat datum zápasů",
+    "months": "Vybrat měsíc",
+    "years": "Vybrat rok",
+    "today": "Dnes",
+    "todayHint": "Dnešní zápasy ve zvoleném časovém pásmu",
+    "availableOnly": "Dny s dostupnými zápasy",
+    "todayUnavailable": "Dnešní archiv zatím není dostupný. Zobrazuje se {{date}}, poslední dostupný den."
+  },
   "leaderboardHub": {
     "intro": "Tři soutěže. Oddělené žebříčky a bodování.",
     "arcadeNote": "Měsíční žebříček hry podle μ − 3σ. Počítají se jen ověřené hodnocené výzvy, ne trénink. Zkušební žebříček je bez cen.",

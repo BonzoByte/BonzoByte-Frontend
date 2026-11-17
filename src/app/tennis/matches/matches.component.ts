@@ -44,6 +44,9 @@ import { FilterUndoService } from '../../core/services/filter-undo.service';
 import { ReadRecoveryService } from '../../core/services/read-recovery.service';
 import { ViewRecoveryActionsComponent } from '../../shared/ui/view-recovery-actions/view-recovery-actions.component';
 import { MatchPlayersCellComponent, MatchTournamentCellComponent, MatchResultCellComponent } from '../../shared/ui/match-grid-cells/match-grid-cells.component';
+import { ArchiveCalendarComponent } from '../../shared/ui/archive-calendar/archive-calendar.component';
+import { SharedMatchColumnsDirective } from '../../shared/ui/match-grid-cells/shared-match-columns.directive';
+import { LocalizedSnackbarService } from '../../core/i18n/localized-snackbar.service';
 
 type MatchBrowseState = Pick<MatchesComponent, 'currentDateISO' | 'searchTerm' | 'sortField' | 'sortDirection' |
     'dailyDisplayMode' | 'filterMode' | 'isFiltered' | 'filterApplied' | 'filteredPage' | 'activeDateFilter' |
@@ -126,6 +129,8 @@ type MatchFilterMode = 'auto' | 'custom';
         TranslateModule,
         FormsModule,
         NgbDatepickerModule,
+        ArchiveCalendarComponent,
+        SharedMatchColumnsDirective,
         MatchFilterModalComponent,
         MatchDetailsModalComponent,
         PlayerModalComponent,
@@ -490,7 +495,8 @@ export class MatchesComponent implements OnInit, OnDestroy {
         public historicalPlNoticePreference: HistoricalPlNoticePreferenceService = new HistoricalPlNoticePreferenceService(),
         private browseMemory: BrowseMemoryService = new BrowseMemoryService(),
         @Optional() @Inject(FilterUndoService) private filterUndo: FilterUndoService | null = null,
-        @Optional() @Inject(ReadRecoveryService) private recovery: ReadRecoveryService | null = null) {
+        @Optional() @Inject(ReadRecoveryService) private recovery: ReadRecoveryService | null = null,
+        @Optional() @Inject(LocalizedSnackbarService) private calendarNotice: LocalizedSnackbarService | null = null) {
         this.predictionOverviewVisible$ = predictionOverviewPreference.visible$;
         this.quickFilterPreferences = quickFilterPreference.current;
     }
@@ -2730,6 +2736,27 @@ export class MatchesComponent implements OnInit, OnDestroy {
         this.filteredAvailableDates = [...(this.availableDates || [])];
     }
 
+    get calendarMinISO(): string { return this.minDate ? this.toISOFromDateLocal(this.minDate) : ''; }
+    get calendarMaxISO(): string { return this.maxDate ? this.toISOFromDateLocal(this.maxDate) : ''; }
+
+    selectCalendarDate(iso: string): void {
+        if (this.loading || this.viewMode !== 'daily' || !this.isoToDateLocal(iso)) return;
+        this.currentDateDMY = this.toDMYFromISO(iso);
+        this.commitDateInputDMY();
+    }
+
+    goToToday(): void {
+        if (this.loading || this.viewMode !== 'daily' || !this.availableDates.length) return;
+        const today = dayAt(Date.now(), this.regional.timeZone());
+        // Missing today's archive is an explicit fallback, never a false date label.
+        const target = this.availableDates.includes(today) ? today
+            : [...this.availableDates].reverse().find(day => day <= today) || this.availableDates[0];
+        if (target === this.currentDateISO) this.loadMatchesForDate(this.isoToDateLocal(target)!);
+        else this.selectCalendarDate(target);
+        if (target !== today) this.calendarNotice?.open('matchCalendar.todayUnavailable', '', { duration: 5000 },
+            { date: this.toDMYFromISO(target) });
+    }
+
     commitDateInputDMY(): void {
         const iso = this.parseDMYtoISO(this.currentDateDMY);
 
@@ -3410,7 +3437,7 @@ export class MatchesComponent implements OnInit, OnDestroy {
         if (pl == null) return '—';
 
         const sign = pl > 0 ? '+' : '';
-        return `${sign}${this.regional.number(pl, 2)}u`;
+        return `${sign}${this.regional.number(pl, 2)}`;
     }
 
     getPLClass(match: Match): string {
@@ -3475,9 +3502,9 @@ export class MatchesComponent implements OnInit, OnDestroy {
             (match.qualityReason ? ' ' + this.regional.text('matchGrid.qualityReason', { reason: match.qualityReason }) : '');
     }
 
-    formatSignedUnits(value: number): string {
+    formatSignedUnits(value: number, includeUnit = true): string {
         const stable = Math.abs(value) < 0.005 ? 0 : value;
-        return `${stable > 0 ? '+' : ''}${this.regional.number(stable, 2)}u`;
+        return `${stable > 0 ? '+' : ''}${this.regional.number(stable, 2)}${includeUnit ? 'u' : ''}`;
     }
 
     formatSignedPercent(value: number): string {

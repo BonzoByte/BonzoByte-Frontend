@@ -1,4 +1,13 @@
 {
+  "matchCalendar": {
+    "open": "Izberi datum tekem",
+    "months": "Izberi mesec",
+    "years": "Izberi leto",
+    "today": "Danes",
+    "todayHint": "Današnje tekme v izbranem časovnem pasu",
+    "availableOnly": "Dnevi z razpoložljivimi tekmami",
+    "todayUnavailable": "Današnji arhiv še ni na voljo. Prikazan je {{date}}, zadnji razpoložljivi dan."
+  },
   "leaderboardHub": {
     "intro": "Tri tekmovanja. Ločene lestvice in točkovanje.",
     "arcadeNote": "Mesečna lestvica igre po μ − 3σ. Štejejo le preverjeni rangirani izzivi, ne vadba. Poskusna lestvica nima nagrad.",

@@ -1,4 +1,13 @@
 {
+  "matchCalendar": {
+    "open": "Escolher data das partidas",
+    "months": "Escolher mês",
+    "years": "Escolher ano",
+    "today": "Hoje",
+    "todayHint": "Partidas de hoje no seu fuso horário",
+    "availableOnly": "Dias com partidas disponíveis",
+    "todayUnavailable": "O arquivo de hoje ainda não está disponível. Exibindo {{date}}, o último dia disponível."
+  },
   "leaderboardHub": {
     "intro": "Três competições. Classificações e pontuações separadas.",
     "arcadeNote": "Classificação mensal do jogo por μ − 3σ. Apenas desafios ranqueados verificados contam, não os treinos. A classificação de teste não oferece prêmios.",

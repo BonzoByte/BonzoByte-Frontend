@@ -1,4 +1,13 @@
 {
+  "matchCalendar": {
+    "open": "Spieldatum wählen",
+    "months": "Monat wählen",
+    "years": "Jahr wählen",
+    "today": "Heute",
+    "todayHint": "Heutige Spiele in deiner gewählten Zeitzone",
+    "availableOnly": "Verfügbare Spieltage",
+    "todayUnavailable": "Das heutige Archiv ist noch nicht verfügbar. Angezeigt wird {{date}}, der letzte verfügbare Tag."
+  },
   "leaderboardHub": {
     "intro": "Drei Wettbewerbe. Getrennte Ranglisten und Wertungen.",
     "arcadeNote": "Monatliche Spielrangliste nach μ − 3σ. Nur überprüfte Ranglisten-Duelle zählen, kein Training. Für die Test-Rangliste gibt es keine Preise.",

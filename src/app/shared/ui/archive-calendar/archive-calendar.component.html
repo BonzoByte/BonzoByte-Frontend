@@ -1,0 +1,52 @@
+<button #toggle type="button" class="archive-calendar-toggle" [disabled]="disabled"
+  [attr.aria-label]="regional.text('matchCalendar.open')" [title]="regional.text('matchCalendar.open')"
+  aria-haspopup="dialog" [attr.aria-expanded]="open" (click)="toggleOpen()">
+  <i class="bi bi-calendar3" aria-hidden="true"></i>
+</button>
+<button type="button" class="archive-calendar-today" [disabled]="disabled" (click)="today()"
+  [title]="regional.text('matchCalendar.todayHint')">{{ regional.text('matchCalendar.today') }}</button>
+
+<section *ngIf="open" #panel class="archive-calendar-panel" role="dialog" tabindex="-1"
+  [attr.aria-label]="regional.text('matchCalendar.open')" [style.left.px]="left" [style.top.px]="top" [style.max-height.px]="maxHeight">
+  <div class="calendar-caption">
+    <span>{{ regional.text('matchCalendar.open') }}</span>
+    <button type="button" class="calendar-close" (click)="close()" [attr.aria-label]="regional.text('common.close')">×</button>
+  </div>
+  <div class="calendar-navigation">
+    <button type="button" class="calendar-step" [disabled]="!canMove(-1)" (click)="move(-1)"
+      [attr.aria-label]="regional.text('matches.previous')">‹</button>
+    <div class="calendar-heading" aria-live="polite">
+      <button *ngIf="view === 'days'" type="button" (click)="chooseView('months')"
+        [attr.aria-label]="regional.text('matchCalendar.months')">{{ monthNames()[month] }} <span aria-hidden="true">⌄</span></button>
+      <button *ngIf="view !== 'years'" type="button" (click)="chooseView('years')"
+        [attr.aria-label]="regional.text('matchCalendar.years')">{{ year }} <span aria-hidden="true">⌄</span></button>
+      <span *ngIf="view === 'years'">{{ heading }}</span>
+    </div>
+    <button type="button" class="calendar-step" [disabled]="!canMove(1)" (click)="move(1)"
+      [attr.aria-label]="regional.text('matches.next')">›</button>
+  </div>
+
+  <ng-container *ngIf="view === 'days'">
+    <div class="calendar-weekdays" aria-hidden="true"><span *ngFor="let weekday of weekdays()">{{ weekday }}</span></div>
+    <div class="calendar-days" role="group" [attr.aria-label]="heading">
+      <button *ngFor="let day of days" type="button" [disabled]="day.disabled" [attr.data-date]="day.iso"
+        [class.is-outside]="day.outside" [class.is-selected]="day.iso === selectedISO" [class.is-today]="day.iso === todayISO"
+        [attr.aria-label]="dayLabel(day)" [attr.aria-pressed]="day.iso === selectedISO" [attr.aria-current]="day.iso === todayISO ? 'date' : null"
+        [attr.tabindex]="day.iso === focusISO ? 0 : -1" (keydown)="onDayKey($event, day)" (click)="chooseDay(day)">{{ day.number }}</button>
+    </div>
+  </ng-container>
+
+  <div *ngIf="view === 'months'" class="calendar-choices calendar-months" role="group" [attr.aria-label]="regional.text('matchCalendar.months')">
+    <button *ngFor="let name of monthNames(); let index = index" type="button" [disabled]="monthDisabled(index)"
+      [class.is-selected]="index === month" (click)="chooseMonth(index)">{{ name }}</button>
+  </div>
+  <div *ngIf="view === 'years'" class="calendar-choices calendar-years" role="group" [attr.aria-label]="regional.text('matchCalendar.years')">
+    <button *ngFor="let choice of years" type="button" [disabled]="yearDisabled(choice)"
+      [class.is-selected]="choice === year" (click)="chooseYear(choice)">{{ choice }}</button>
+  </div>
+
+  <div class="calendar-footer">
+    <button type="button" (click)="today()">{{ regional.text('matchCalendar.today') }}</button>
+    <span>{{ regional.text('matchCalendar.availableOnly') }}</span>
+  </div>
+</section>

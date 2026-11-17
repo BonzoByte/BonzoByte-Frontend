@@ -1,4 +1,13 @@
 {
+  "matchCalendar": {
+    "open": "Choisir la date des matchs",
+    "months": "Choisir le mois",
+    "years": "Choisir l’année",
+    "today": "Aujourd’hui",
+    "todayHint": "Les matchs du jour dans votre fuseau horaire",
+    "availableOnly": "Jours de matchs disponibles",
+    "todayUnavailable": "L’archive du jour n’est pas encore disponible. Affichage du {{date}}, dernier jour disponible."
+  },
   "leaderboardHub": {
     "intro": "Trois compétitions. Classements et scores distincts.",
     "arcadeNote": "Classement mensuel du jeu selon μ − 3σ. Seuls les défis classés vérifiés comptent, pas les entraînements. Le classement d’essai n’offre aucun prix.",

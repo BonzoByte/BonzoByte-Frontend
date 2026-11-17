@@ -406,12 +406,12 @@ describe('MatchesComponent model P/L benchmark', () => {
     const component = createComponent();
     component.plBasis = 'median';
 
-    expect(component.formatPL(completed())).toBe('+0,50u');
+    expect(component.formatPL(completed())).toBe('+0,50');
     expect(component.getPLClass(completed())).toBe('pl-positive');
     expect(component.getPLTooltip(completed())).toContain('Tržišni medijan koeficijenta: 1,50');
 
     const miss = completed({ modelProbabilityPlayer1: 30, modelProbabilityPlayer2: 70 });
-    expect(component.formatPL(miss)).toBe('-1,00u');
+    expect(component.formatPL(miss)).toBe('-1,00');
     expect(component.getPLClass(miss)).toBe('pl-negative');
   });
 
@@ -428,7 +428,7 @@ describe('MatchesComponent model P/L benchmark', () => {
     const historical = completed({ player1Odds: null, player2Odds: null, legacyPlayer1Odds: 1.8, legacyPlayer2Odds: 1.8,
       marketOddsVerified: false, recoveryOddsCertifiedPrematch: false, marketBookieCount: 1 });
     const original = JSON.stringify(historical);
-    expect(component.formatPL(historical)).toBe('+1,00u');
+    expect(component.formatPL(historical)).toBe('+1,00');
     expect(component.isHistoricalPL(historical)).toBeTrue();
     expect(component.getVerifiedMarketOdds(historical)).toBeNull();
     expect(component.getPredictionMarketContext(historical)?.gapPoints).toBe(25);
@@ -436,9 +436,9 @@ describe('MatchesComponent model P/L benchmark', () => {
     expect((component as any).hasValueBet(historical)).toBeTrue();
     expect(component.getPLTooltip(historical)).toContain('Teorijski povijesni P/L');
     component.plBasis = 'median';
-    expect(component.formatPL(historical)).toBe('+0,80u');
+    expect(component.formatPL(historical)).toBe('+0,80');
     const miss = { ...historical, modelProbabilityPlayer1: 25, modelProbabilityPlayer2: 75 };
-    expect(component.formatPL(miss)).toBe('-1,00u');
+    expect(component.formatPL(miss)).toBe('-1,00');
     const summary = component.getModelPlSummary([historical, miss]);
     expect(summary.eligibleCount).toBe(2);
     expect(summary.units).toBeCloseTo(-0.2, 10);
@@ -526,13 +526,13 @@ describe('MatchesComponent model P/L benchmark', () => {
     const component = createComponent();
     expect(component.plBasis).toBe('fair');
     expect(component.plLabel).toBe('Fer P/L');
-    expect(component.formatPL(completed({ player1Odds: 1.8, player2Odds: 1.8 }))).toBe('+1,00u');
-    expect(component.formatPL(completed())).toBe('+0,60u');
+    expect(component.formatPL(completed({ player1Odds: 1.8, player2Odds: 1.8 }))).toBe('+1,00');
+    expect(component.formatPL(completed())).toBe('+0,60');
     expect(component.getPLTooltip(completed())).toContain('Fer koeficijent bez marže: 1,60');
     expect(component.getPLTooltip(completed())).toContain('Hipotetski');
     component.plBasis = 'median';
     expect(component.plLabel).toBe('Medijan P/L');
-    expect(component.formatPL(completed())).toBe('+0,50u');
+    expect(component.formatPL(completed())).toBe('+0,50');
   });
 
   it('uses fair P/L for either predicted side and group ROI without changing coverage', () => {

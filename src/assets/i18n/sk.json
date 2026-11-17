@@ -1,4 +1,13 @@
 {
+  "matchCalendar": {
+    "open": "Vybrať dátum zápasov",
+    "months": "Vybrať mesiac",
+    "years": "Vybrať rok",
+    "today": "Dnes",
+    "todayHint": "Dnešné zápasy vo vybranom časovom pásme",
+    "availableOnly": "Dni s dostupnými zápasmi",
+    "todayUnavailable": "Dnešný archív zatiaľ nie je dostupný. Zobrazuje sa {{date}}, posledný dostupný deň."
+  },
   "leaderboardHub": {
     "intro": "Tri súťaže. Oddelené rebríčky a bodovanie.",
     "arcadeNote": "Mesačný rebríček hry podľa μ − 3σ. Počítajú sa len overené hodnotené výzvy, nie tréning. Skúšobný rebríček je bez cien.",

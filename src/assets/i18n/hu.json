@@ -1,4 +1,13 @@
 {
+  "matchCalendar": {
+    "open": "Mérkőzésnap kiválasztása",
+    "months": "Hónap kiválasztása",
+    "years": "Év kiválasztása",
+    "today": "Ma",
+    "todayHint": "Mai mérkőzések a kiválasztott időzónában",
+    "availableOnly": "Elérhető mérkőzésnapok",
+    "todayUnavailable": "A mai archívum még nem érhető el. Az utolsó elérhető nap látható: {{date}}."
+  },
   "leaderboardHub": {
     "intro": "Három verseny. Külön ranglisták és pontozás.",
     "arcadeNote": "A játék havi ranglistája μ − 3σ alapján. Csak az ellenőrzött rangsorolt kihívások számítanak, a gyakorlás nem. A próbaranglistához nem jár díj.",
