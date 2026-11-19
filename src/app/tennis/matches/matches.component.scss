@@ -652,6 +652,12 @@
 .historical-pl-note__dismiss:hover { background: var(--bb-surface-2); }
 .historical-pl-note__dismiss:focus-visible { outline: 2px solid var(--bb-accent,#80d5ff); outline-offset: 2px; }
 
+/* Leave a lane for the fixed results-scroll control, so it cannot cover Close. */
+.model-guidance-note { display: flex; align-items: flex-start; gap: 10px; padding-right: 54px; }
+.model-guidance-note__copy { flex: 1; min-width: 0; }
+.model-guidance-note__copy p { margin: 0; }
+.model-guidance-note__copy p + p { margin-top: 6px; }
+
 .model-pl-cell {
     min-width: 64px;
     padding-right: 6px;

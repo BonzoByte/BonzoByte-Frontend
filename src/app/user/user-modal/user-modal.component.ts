@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { PROBABILITY_FIRST } from '../../core/helpers/model-odds';
+import { ModelGuidancePreferenceService } from '../../core/services/model-guidance-preference.service';
 import { TranslateModule } from '@ngx-translate/core';
 import { LocalizedSnackbarService } from '../../core/i18n/localized-snackbar.service';
 import { authErrorKey } from '../../core/i18n/auth-error-key';
@@ -119,7 +120,8 @@ export class UserModalComponent implements OnInit, OnDestroy {
         private timeZoneNoticePreference: TimeZoneNoticePreferenceService,
         public adDisplayPreference: AdDisplayPreferenceService,
         public regional: RegionalSettingsService,
-        @Optional() @Inject(DraftUnloadGuardService) private unloadGuard: DraftUnloadGuardService | null = null
+        @Optional() @Inject(DraftUnloadGuardService) private unloadGuard: DraftUnloadGuardService | null = null,
+        private modelGuidancePreference: ModelGuidancePreferenceService = new ModelGuidancePreferenceService()
     ) {
         this.selectedTheme = themeService.selectedTheme;
         this.predictionOverviewVisible = predictionOverviewPreference.isVisible;
@@ -156,6 +158,7 @@ export class UserModalComponent implements OnInit, OnDestroy {
             showOnlineStatus: [{ value: this.currentUser.presencePrivacy?.showOnlineStatus === true,
                 disabled: this.currentUser.isVerified !== true && this.currentUser.presencePrivacy?.showOnlineStatus !== true }],
             timeZoneNoticeVisible: [this.timeZoneNoticePreference.isVisible],
+            modelGuidanceVisible: [this.modelGuidancePreference.isVisible],
             hideAds: [{ value: this.adDisplayPreference.isHidden(u), disabled: !this.adDisplayPreference.canHide(u) }],
             quickFilterOdds: [this.quickFilterPreference.current.odds],
             quickFilterValue: [this.quickFilterPreference.current.value],
@@ -237,7 +240,7 @@ export class UserModalComponent implements OnInit, OnDestroy {
         const state: Record<string, string | boolean> = {
             nickname: String(this.userForm.get('nickname')?.value || '').trim()
         };
-        for (const key of ['predictionOverviewVisible', 'shareSettledPicks', 'showOnlineStatus', 'timeZoneNoticeVisible',
+        for (const key of ['predictionOverviewVisible', 'shareSettledPicks', 'showOnlineStatus', 'timeZoneNoticeVisible', 'modelGuidanceVisible',
             'hideAds', 'quickFilterOdds', 'quickFilterValue', 'quickFilterStatus'])
             state[key] = this.userForm.get(key)?.value === true;
         return state;
@@ -368,6 +371,8 @@ export class UserModalComponent implements OnInit, OnDestroy {
             requestedPredictionOverviewVisibility !== this.predictionOverviewPreference.isVisible;
         const requestedTimeZoneNoticeVisibility = !!this.userForm.get('timeZoneNoticeVisible')?.value;
         const timeZoneNoticeChanged = requestedTimeZoneNoticeVisibility !== this.timeZoneNoticePreference.isVisible;
+        const requestedModelGuidanceVisibility = !!this.userForm.get('modelGuidanceVisible')?.value;
+        const modelGuidanceChanged = requestedModelGuidanceVisibility !== this.modelGuidancePreference.isVisible;
         const requestedHideAds = !!this.userForm.get('hideAds')?.value;
         const requestedQuickFilters: QuickFilterPreferences = {
             odds: !!this.userForm.get('quickFilterOdds')?.value,
@@ -394,6 +399,7 @@ export class UserModalComponent implements OnInit, OnDestroy {
             }
             if (quickFiltersChanged) this.quickFilterPreference.set(requestedQuickFilters);
             if (timeZoneNoticeChanged) this.timeZoneNoticePreference.setVisible(requestedTimeZoneNoticeVisibility);
+            if (modelGuidanceChanged) this.modelGuidancePreference.setVisible(requestedModelGuidanceVisibility);
             this.adDisplayPreference.setHidden(this.authService.getUser(), requestedHideAds);
 
             this.userForm.markAsPristine();
@@ -428,6 +434,7 @@ export class UserModalComponent implements OnInit, OnDestroy {
                     }
                     if (quickFiltersChanged) this.quickFilterPreference.set(requestedQuickFilters);
                     if (timeZoneNoticeChanged) this.timeZoneNoticePreference.setVisible(requestedTimeZoneNoticeVisibility);
+                    if (modelGuidanceChanged) this.modelGuidancePreference.setVisible(requestedModelGuidanceVisibility);
                     this.adDisplayPreference.setHidden(this.authService.getUser(), requestedHideAds);
 
                     this.errorMessage = '';
@@ -512,6 +519,7 @@ export class UserModalComponent implements OnInit, OnDestroy {
         const defaults = {
             predictionOverviewVisible: true,
             timeZoneNoticeVisible: true,
+            modelGuidanceVisible: true,
             hideAds: this.adDisplayPreference.canHide(this.membershipUser),
             quickFilterOdds: false,
             quickFilterValue: false,

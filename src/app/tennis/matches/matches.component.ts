@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { CommonModule } from '@angular/common';
 import { PROBABILITY_FIRST, modelDecimalOdds } from '../../core/helpers/model-odds';
+import { ModelGuidancePreferenceService } from '../../core/services/model-guidance-preference.service';
 import { Component, ElementRef, HostListener, Inject, Input, OnDestroy, OnInit, Optional, ViewChild, ViewEncapsulation } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { NgbDatepickerModule, NgbDateStruct } from '@ng-bootstrap/ng-bootstrap';
@@ -498,7 +499,8 @@ export class MatchesComponent implements OnInit, OnDestroy {
         private browseMemory: BrowseMemoryService = new BrowseMemoryService(),
         @Optional() @Inject(FilterUndoService) private filterUndo: FilterUndoService | null = null,
         @Optional() @Inject(ReadRecoveryService) private recovery: ReadRecoveryService | null = null,
-        @Optional() @Inject(LocalizedSnackbarService) private calendarNotice: LocalizedSnackbarService | null = null) {
+        @Optional() @Inject(LocalizedSnackbarService) private calendarNotice: LocalizedSnackbarService | null = null,
+        public modelGuidancePreference: ModelGuidancePreferenceService = new ModelGuidancePreferenceService()) {
         this.predictionOverviewVisible$ = predictionOverviewPreference.visible$;
         this.quickFilterPreferences = quickFilterPreference.current;
     }

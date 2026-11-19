@@ -314,8 +314,12 @@
                     <span class="prediction-summary__note">{{ 'matchGrid.confidenceNote' | translate }}</span>
                 </section>
 
-                <aside *ngIf="probabilityFirst && !loading && matches.length" class="historical-pl-note" role="note">
+                <aside *ngIf="probabilityFirst && !loading && matches.length && modelGuidancePreference.isVisible"
+                    class="historical-pl-note model-guidance-note" role="note">
                     <span>{{ 'modelPerformance.modelOddsHint' | translate }}</span>
+                    <button type="button" class="historical-pl-note__dismiss"
+                        [attr.aria-label]="'common.close' | translate" [title]="'common.close' | translate"
+                        (click)="modelGuidancePreference.setVisible(false)">×</button>
                 </aside>
                 <aside *ngIf="!probabilityFirst && showHistoricalPlNote && historicalPlNoticePreference.isVisible" class="historical-pl-note" role="note">
                     <span><span aria-hidden="true">ⓘ </span>{{ 'matchGrid.plHistoricalNote' | translate }}</span>

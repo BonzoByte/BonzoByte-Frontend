@@ -14,6 +14,15 @@ function load(relative,probabilityFirst=true){
   vm.runInNewContext(code,{module,exports:module.exports,require,Object,Number,Array,console},{filename});return module.exports;
 }
 const helper='src/app/core/helpers/model-odds.ts';
+test('model performance opens at 60 percent without locking the threshold',()=>{
+  const filename=path.join(root,'src/app/tennis/model-performance/model-performance.component.ts'),module={exports:{}};
+  const code=ts.transpileModule(fs.readFileSync(filename,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,experimentalDecorators:true}}).outputText;
+  vm.runInNewContext(code,{module,exports:module.exports,require:name=>name==='@angular/core'?{Component:()=>value=>value}:{},Object,Number,Array,console},{filename});
+  const Component=module.exports.ModelPerformanceComponent;
+  const first=new Component(null,null);assert.equal(first.threshold,60);
+  first.scope='ATP';assert.equal(first.threshold,60);first.scope='WTA';assert.equal(first.threshold,60);
+  first.threshold=70;assert.equal(first.threshold,70);assert.equal(new Component(null,null).threshold,60);
+});
 test('model odds use explicit probability units and reject invalid values',()=>{
   const {modelDecimalOdds:odds}=load(helper);
   assert.equal(odds(.5,'fraction'),2);assert.equal(odds(50,'percent'),2);

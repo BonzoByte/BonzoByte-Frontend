@@ -174,6 +174,16 @@
           </small>
         </div>
 
+        <div class="form-row bb-preference-row" *ngIf="probabilityFirst">
+          <label class="bb-preference-toggle" for="model-guidance-visible">
+            <input id="model-guidance-visible" type="checkbox" formControlName="modelGuidanceVisible" />
+            <span>
+              <strong>{{ 'modelPerformance.noticeSettingTitle' | translate }}</strong>
+              <small>{{ 'modelPerformance.noticeSettingHint' | translate }}</small>
+            </span>
+          </label>
+        </div>
+
         <div class="form-row bb-preference-row" *ngIf="adDisplayPreference.demoAvailable">
           <label class="bb-preference-toggle" for="hide-ads">
             <input id="hide-ads" type="checkbox" formControlName="hideAds" />

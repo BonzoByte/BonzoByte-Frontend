@@ -16,7 +16,7 @@ interface PerformanceReport {schema:string;generatedAtUtc:string;window:{fromInc
   templateUrl:'./model-performance.component.html',styleUrls:['./model-performance.component.scss']})
 export class ModelPerformanceComponent implements OnInit,OnDestroy {
   report:PerformanceReport|null=null;
-  loading=true;error=false;scope='ALL';threshold=50;granularity:'year'|'quarter'='year';
+  loading=true;error=false;scope='ALL';threshold=60;granularity:'year'|'quarter'='year';
   curve:ChartData<'line'>={datasets:[]};calibration:ChartData<'scatter'>={datasets:[]};
   private request?:Subscription;private language?:Subscription;
   readonly curveOptions:ChartOptions<'line'>={responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},scales:{x:{type:'linear',min:50,max:95,ticks:{color:'#8296a2',stepSize:5,callback:value=>'≥'+value+'%'},grid:{display:false}},y:{min:0,max:100,ticks:{color:'#8296a2',callback:value=>value+'%'},grid:{color:'rgba(130,150,162,.15)'}}},plugins:{legend:{labels:{color:'#8296a2',usePointStyle:true}}}};
