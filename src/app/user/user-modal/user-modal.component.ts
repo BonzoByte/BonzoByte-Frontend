@@ -1,4 +1,5 @@
 import { CommonModule } from '@angular/common';
+import { PROBABILITY_FIRST } from '../../core/helpers/model-odds';
 import { TranslateModule } from '@ngx-translate/core';
 import { LocalizedSnackbarService } from '../../core/i18n/localized-snackbar.service';
 import { authErrorKey } from '../../core/i18n/auth-error-key';
@@ -103,6 +104,7 @@ export class UserModalComponent implements OnInit, OnDestroy {
     // states
     isSaving = false;
     isSendingReset = false;
+    readonly probabilityFirst = PROBABILITY_FIRST;
     readonly themes = BONZOBYTE_THEMES;
     selectedTheme: BonzoByteTheme;
     predictionOverviewVisible: boolean;

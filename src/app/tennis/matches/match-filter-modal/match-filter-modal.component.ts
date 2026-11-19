@@ -14,14 +14,15 @@ import {
 import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
 import { BbModalShellComponent } from '../../../shared/ui/bb-modal-shell.component/bb-modal-shell.component';
+import { PROBABILITY_FIRST } from '../../../core/helpers/model-odds';
 
 export type MatchStatus = 'all' | 'completed' | 'incomplete' | 'not-played' | 'pending';
 export type OddsFilter = 'all' | 'with' | 'without';
 export type ValueFilter = 'all' | 'valueOnly';
 export type ConfidenceFilter = 'all' | '60' | '70' | '80';
-export const DEFAULT_MATCH_STATUS: MatchStatus = 'completed';
-export const DEFAULT_ODDS_FILTER: OddsFilter = 'with';
-export const DEFAULT_VALUE_FILTER: ValueFilter = 'valueOnly';
+export const DEFAULT_MATCH_STATUS: MatchStatus = PROBABILITY_FIRST ? 'all' : 'completed';
+export const DEFAULT_ODDS_FILTER: OddsFilter = PROBABILITY_FIRST ? 'all' : 'with';
+export const DEFAULT_VALUE_FILTER: ValueFilter = PROBABILITY_FIRST ? 'all' : 'valueOnly';
 export type FilterPayload = {
     plBasis?: 'fair' | 'median';
     startDate: string | null;
@@ -44,6 +45,7 @@ export type FilterPayload = {
     encapsulation: ViewEncapsulation.None
 })
 export class MatchFilterModalComponent implements OnChanges, OnInit, OnDestroy {
+    readonly probabilityFirst = PROBABILITY_FIRST;
     @Output() closed = new EventEmitter<void>();
     @Output() filterApplied = new EventEmitter<FilterPayload>();
     @Output() resetFilter = new EventEmitter<void>();

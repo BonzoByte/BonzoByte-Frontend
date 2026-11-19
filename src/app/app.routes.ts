@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { PROBABILITY_FIRST } from './core/helpers/model-odds';
 export const routes: Routes = [
     { path: 'fantasy', canDeactivate: [(component: { canLeave(): boolean }) => component.canLeave()], loadComponent: () => import('./fantasy/fantasy-page.component').then(m => m.FantasyPageComponent) },
     { path: 'tennis-break', loadComponent: () => import('./arcade/tennis-break.component').then(m => m.TennisBreakComponent) },
@@ -75,7 +76,9 @@ export const routes: Routes = [
     {
         path: 'simulation',
         loadComponent: () =>
-            import('./tennis/simulation/simulation.component').then(m => m.SimulationComponent),
+            PROBABILITY_FIRST
+              ? import('./tennis/model-performance/model-performance.component').then(m => m.ModelPerformanceComponent)
+              : import('./tennis/simulation/simulation.component').then(m => m.SimulationComponent),
     },
     { path: '**', redirectTo: '' }
 ];

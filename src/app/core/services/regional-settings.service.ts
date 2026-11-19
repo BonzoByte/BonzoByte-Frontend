@@ -6,6 +6,8 @@ import { regionalDate, regionalDateInput, regionalNumber, regionalUsd } from '..
 import { DEFAULT_LANGUAGE, isSupportedLanguage, languageSettings, SUPPORTED_LANGUAGES, UiLanguage } from '../i18n/supported-languages';
 import { ARCHIVE_TIME_ZONE, detectedTimeZone, SourceTimePrecision, validTimeZone } from '../i18n/archive-day-window';
 import { dateTimeInstant, instantParts, matchDisplayTime } from '../i18n/display-time';
+import { PROBABILITY_FIRST } from '../helpers/model-odds';
+import { probabilityFirstCopy } from '../i18n/probability-first-copy';
 
 export const LANGUAGE_STORAGE_KEY = 'bonzobyte.ui.language.v1';
 export const TIME_ZONE_STORAGE_KEY = 'bonzobyte.ui.timeZone.v1';
@@ -35,6 +37,11 @@ export class RegionalSettingsService {
   constructor(private translate: TranslateService, @Inject(DOCUMENT) private document: Document) {
     // Bundled dictionaries avoid loading races during startup or language changes.
     for (const language of SUPPORTED_LANGUAGES) translate.setTranslation(language.code, language.messages, true);
+    if (PROBABILITY_FIRST) for (const language of SUPPORTED_LANGUAGES) {
+      const copy=probabilityFirstCopy(language.code);
+      translate.setTranslation(language.code,{modelPerformance:copy,navigation:{simulation:copy.title},
+        matches:{predictionMarket:copy.forecast},predictionHistory:{notice:copy.historyNotice}},true);
+    }
     translate.setDefaultLang(DEFAULT_LANGUAGE.code);
     let saved: string | null = null;
     try { saved = document.defaultView?.localStorage.getItem(LANGUAGE_STORAGE_KEY) ?? null; } catch { /* Storage may be disabled. */ }

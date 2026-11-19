@@ -423,18 +423,18 @@
                     </div>
 
                     <div class="bb-comp-row">
-                        <div class="bb-comp-left">{{ oddsText(v.p1.odds) }}</div>
-                        <div class="bb-comp-mid">{{ 'matches.odds' | translate }}</div>
-                        <div class="bb-comp-right">{{ oddsText(v.p2.odds) }}</div>
+                        <div class="bb-comp-left">{{ probabilityFirst ? modelOddsText(v.p1.nnProb) : oddsText(v.p1.odds) }}</div>
+                        <div class="bb-comp-mid" [title]="(probabilityFirst ? 'modelPerformance.modelOddsHint' : 'matches.odds') | translate">{{ (probabilityFirst ? 'modelPerformance.modelOdds' : 'matches.odds') | translate }}</div>
+                        <div class="bb-comp-right">{{ probabilityFirst ? modelOddsText(v.p2.nnProb) : oddsText(v.p2.odds) }}</div>
                     </div>
 
-                    <div class="bb-comp-row">
+                    <div class="bb-comp-row" *ngIf="!probabilityFirst">
                         <div class="bb-comp-left">{{ edgeText(v.edgeP1) }}</div>
                         <div class="bb-comp-mid">{{ 'matchDetails.edge' | translate }}</div>
                         <div class="bb-comp-right">{{ edgeText(v.edgeP2) }}</div>
                     </div>
 
-                    <div class="bb-comp-row">
+                    <div class="bb-comp-row" *ngIf="!probabilityFirst">
                         <div class="bb-comp-left">
                             <span *ngIf="v.betSide === 'p1'" class="bb-bet-icon" [title]="'matchDetails.valueBet' | translate">✓</span>
                         </div>
@@ -444,7 +444,7 @@
                         </div>
                     </div>
 
-                    <div class="bb-comp-row">
+                    <div class="bb-comp-row" *ngIf="!probabilityFirst">
                         <div class="bb-comp-left">
                             <span *ngIf="v.pl !== undefined && v.pl > 0" class="bb-pl bb-pl-positive">+{{
                                 v.pl | number:'1.2-2':regional.locale() }}</span>
@@ -981,6 +981,7 @@
             ODDS TAB
             ========================================================================================= -->
             <section *ngIf="activeTab === 'odds'" class="bb-panel">
+                <p *ngIf="probabilityFirst" class="bb-hint" role="note">{{ 'modelPerformance.oddsWarning' | translate }}</p>
                 <ng-container *ngTemplateOutlet="playersHeader; context: { v: v }"></ng-container>
 
                 <!-- Controls -->

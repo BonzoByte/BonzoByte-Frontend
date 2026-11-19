@@ -21,6 +21,7 @@ import {
     BookieOfferDTOv2,
 } from 'src/app/core/models/match-details.model';
 import { CommonModule } from '@angular/common';
+import { PROBABILITY_FIRST, modelDecimalOdds } from '../../../core/helpers/model-odds';
 import { FormsModule } from '@angular/forms';
 import { StaticArchivesService } from '../../../core/services/static-archives.service';
 import { Observable, of } from 'rxjs';
@@ -1068,6 +1069,12 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
     nnPct(prob01: number | undefined): string {
         if (typeof prob01 !== 'number' || !isFinite(prob01)) return '—';
         return `${this.regional.number(prob01 * 100, 0)}%`;
+    }
+
+    readonly probabilityFirst = PROBABILITY_FIRST;
+    modelOddsText(probability: number | undefined): string {
+        const value = modelDecimalOdds(probability, 'fraction');
+        return value == null ? '—' : this.regional.number(value, 2);
     }
 
     oddsText(odds: number | undefined): string {

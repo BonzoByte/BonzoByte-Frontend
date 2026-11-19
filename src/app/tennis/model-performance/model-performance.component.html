@@ -1,0 +1,32 @@
+<main class="performance-page">
+  <header class="performance-hero">
+    <div><span class="performance-kicker">BONZOBYTE RESEARCH</span><h1>{{ 'modelPerformance.title' | translate }}</h1><p>{{ 'modelPerformance.subtitle' | translate }}</p></div>
+    <div *ngIf="report" class="performance-source"><span>{{ 'modelPerformance.source' | translate }}: {{ regional.date(report.window.fromInclusive) }} – {{ regional.date(report.window.throughInclusive) }}</span></div>
+  </header>
+  <section class="performance-notice" role="note"><p>{{ 'modelPerformance.disclosure' | translate }}</p><p>{{ 'modelPerformance.historyNotice' | translate }}</p></section>
+  <p *ngIf="loading" role="status">{{ 'common.loading' | translate }}</p>
+  <section *ngIf="error" class="performance-panel" role="alert"><p>{{ 'modelPerformance.error' | translate }}</p><button type="button" (click)="load()">{{ 'common.retry' | translate }}</button></section>
+  <ng-container *ngIf="report && !loading && !error">
+    <section class="performance-controls">
+      <div class="performance-scopes" role="group" [attr.aria-label]="'details.type' | translate"><button *ngFor="let tour of ['ALL','ATP','WTA']" type="button" [class.is-active]="scope===tour" [attr.aria-pressed]="scope===tour" (click)="scope=tour;refresh()">{{ tour==='ALL'?('common.all' | translate):tour }}</button></div>
+      <label>{{ 'modelPerformance.threshold' | translate }} <select [(ngModel)]="threshold" (ngModelChange)="refresh()"><option *ngFor="let value of thresholds" [ngValue]="value">≥{{ value }}%</option></select></label>
+      <small>{{ 'modelPerformance.thresholdHint' | translate }}</small>
+    </section>
+    <section class="performance-cards" *ngIf="cohort as c">
+      <article><span>{{ 'modelPerformance.forecasts' | translate }}</span><strong>{{ count(c.matches) }}</strong><small>{{ 'modelPerformance.correct' | translate }}: {{ count(c.correct) }}</small></article>
+      <article><span>{{ 'modelPerformance.accuracy' | translate }}</span><strong>{{ pct(c.accuracy) }}</strong><small>{{ 'modelPerformance.meanConfidence' | translate }}: {{ pct(c.meanConfidence) }}</small></article>
+      <article><span>{{ 'modelPerformance.coverage' | translate }}</span><strong>{{ pct(c.coverage) }}</strong><small>{{ count(report.scopes[scope].eligibleMatches) }} {{ 'modelPerformance.forecasts' | translate }}</small></article>
+      <article><span>{{ 'modelPerformance.brier' | translate }}</span><strong>{{ num(c.brier) }}</strong><small>{{ 'modelPerformance.lowerBetter' | translate }}</small></article>
+      <article><span>{{ 'modelPerformance.logLoss' | translate }}</span><strong>{{ num(c.logLoss) }}</strong><small>{{ 'modelPerformance.lowerBetter' | translate }}</small></article>
+    </section>
+    <div class="performance-charts">
+      <section class="performance-panel"><h2>{{ 'modelPerformance.thresholdsTitle' | translate }}</h2><div class="performance-chart"><canvas baseChart [type]="'line'" [data]="curve" [options]="curveOptions" role="img" [attr.aria-label]="'modelPerformance.thresholdsTitle' | translate"></canvas></div></section>
+      <section class="performance-panel"><h2>{{ 'modelPerformance.calibrationTitle' | translate }}</h2><div class="performance-chart"><canvas baseChart [type]="'scatter'" [data]="calibration" [options]="calibrationOptions" role="img" [attr.aria-label]="'modelPerformance.calibrationTitle' | translate"></canvas></div></section>
+    </div>
+    <section class="performance-panel"><div class="performance-table-heading"><h2>{{ 'modelPerformance.calendar' | translate }}</h2><select [(ngModel)]="granularity" [attr.aria-label]="'modelPerformance.period' | translate"><option value="year">{{ 'modelPerformance.year' | translate }}</option><option value="quarter">{{ 'modelPerformance.quarter' | translate }}</option></select></div>
+      <div class="performance-table"><table><thead><tr><th>{{ 'modelPerformance.period' | translate }}</th><th>{{ 'modelPerformance.forecasts' | translate }}</th><th>{{ 'modelPerformance.correct' | translate }}</th><th>{{ 'modelPerformance.accuracy' | translate }}</th><th>{{ 'modelPerformance.coverage' | translate }}</th><th>{{ 'modelPerformance.brier' | translate }}</th></tr></thead><tbody><tr *ngFor="let row of periods"><th>{{ row.period }}</th><td>{{ count(row.matches) }}</td><td>{{ count(row.correct) }}</td><td>{{ pct(row.accuracy) }}</td><td>{{ pct(row.coverage) }}</td><td>{{ num(row.brier) }}</td></tr></tbody></table></div>
+    </section>
+    <section class="performance-panel" *ngIf="cohort as c"><h2>{{ 'modelPerformance.surfaces' | translate }}</h2><div class="performance-table"><table><thead><tr><th>{{ 'details.surface' | translate }}</th><th>{{ 'modelPerformance.forecasts' | translate }}</th><th>{{ 'modelPerformance.accuracy' | translate }}</th><th>{{ 'modelPerformance.coverage' | translate }}</th></tr></thead><tbody><tr *ngFor="let row of c.surfaces"><th>{{ ('surfaces.' + row.surface.toLowerCase()) | translate }}</th><td>{{ count(row.matches) }}</td><td>{{ pct(row.accuracy) }}</td><td>{{ pct(row.coverage) }}</td></tr></tbody></table></div></section>
+    <p class="performance-footnote">{{ 'modelPerformance.sourceCoverage' | translate }}: {{ count(report.scopes['ALL'].eligibleMatches) }} / {{ count(report.sourceMatches) }} · {{ 'modelPerformance.excluded' | translate }}: {{ count(excluded) }}</p>
+  </ng-container>
+</main>

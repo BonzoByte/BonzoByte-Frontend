@@ -201,11 +201,11 @@
         <div class="form-row bb-preference-row">
           <label>{{ 'profile.shortcuts' | translate }}</label>
           <div class="bb-preference-grid" [attr.aria-label]="'profile.shortcuts' | translate">
-            <label class="bb-preference-toggle" for="quick-filter-odds">
+            <label *ngIf="!probabilityFirst" class="bb-preference-toggle" for="quick-filter-odds">
               <input id="quick-filter-odds" type="checkbox" formControlName="quickFilterOdds" />
               <span><strong>{{ 'profile.odds' | translate }}</strong><small>{{ 'profile.oddsHint' | translate }}</small></span>
             </label>
-            <label class="bb-preference-toggle" for="quick-filter-value">
+            <label *ngIf="!probabilityFirst" class="bb-preference-toggle" for="quick-filter-value">
               <input id="quick-filter-value" type="checkbox" formControlName="quickFilterValue" />
               <span><strong>{{ 'profile.value' | translate }}</strong><small>{{ 'profile.valueHint' | translate }}</small></span>
             </label>

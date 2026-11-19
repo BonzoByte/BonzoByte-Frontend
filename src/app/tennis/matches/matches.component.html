@@ -35,7 +35,7 @@
                         (click)="setQuickTourFilter('wta')">WTA</button>
                 </div>
 
-                <ng-container *ngIf="viewMode === 'daily' && quickFilterPreferences.odds">
+                <ng-container *ngIf="!probabilityFirst && viewMode === 'daily' && quickFilterPreferences.odds">
                 <span class="daily-layout-divider" aria-hidden="true"></span>
                 <span class="quick-filter-label">{{ 'matches.odds' | translate }}</span>
 
@@ -55,7 +55,7 @@
                 </div>
                 </ng-container>
 
-                <ng-container *ngIf="viewMode === 'daily' && quickFilterPreferences.value">
+                <ng-container *ngIf="!probabilityFirst && viewMode === 'daily' && quickFilterPreferences.value">
                 <span class="daily-layout-divider" aria-hidden="true"></span>
                 <span class="quick-filter-label">{{ 'matchGrid.edge' | translate }}</span>
 
@@ -290,7 +290,7 @@
                     <div class="prediction-summary__intro">
                         <span class="prediction-summary__eyebrow">{{ 'matchGrid.model' | translate }}</span>
                         <strong>{{ 'matchGrid.overview' | translate }}</strong>
-                        <span>{{ 'matchGrid.overviewText' | translate }}</span>
+                        <span>{{ (probabilityFirst ? 'modelPerformance.forecastHint' : 'matchGrid.overviewText') | translate }}</span>
                     </div>
 
                     <div class="prediction-summary__metrics">
@@ -314,7 +314,10 @@
                     <span class="prediction-summary__note">{{ 'matchGrid.confidenceNote' | translate }}</span>
                 </section>
 
-                <aside *ngIf="showHistoricalPlNote && historicalPlNoticePreference.isVisible" class="historical-pl-note" role="note">
+                <aside *ngIf="probabilityFirst && !loading && matches.length" class="historical-pl-note" role="note">
+                    <span>{{ 'modelPerformance.modelOddsHint' | translate }}</span>
+                </aside>
+                <aside *ngIf="!probabilityFirst && showHistoricalPlNote && historicalPlNoticePreference.isVisible" class="historical-pl-note" role="note">
                     <span><span aria-hidden="true">ⓘ </span>{{ 'matchGrid.plHistoricalNote' | translate }}</span>
                     <button type="button" class="historical-pl-note__dismiss"
                         [attr.aria-label]="'common.close' | translate" [title]="'common.close' | translate"
@@ -368,7 +371,7 @@
                         <col class="c-result" />
                         <col class="c-odds" />
                         <col class="c-prob-market" />
-                        <col class="c-model-pl" />
+                        <col class="c-model-pl" *ngIf="!probabilityFirst" />
                         <col class="c-prediction-pick" *ngIf="showFavouriteColumn" />
                         <col class="c-favourite" *ngIf="showFavouriteColumn" />
                         <col class="c-discussions" />
@@ -389,12 +392,12 @@
                             <th class="col-center">{{ 'common.matchup' | translate }}</th>
                             <th class="col-center">{{ 'common.result' | translate }}</th>
                             <th class="col-center"
-                                [attr.title]="'matchGrid.oddsHeader' | translate">{{ 'matches.oddsShort' | translate }}</th>
+                                [attr.title]="(probabilityFirst ? 'modelPerformance.modelOddsHint' : 'matchGrid.oddsHeader') | translate">{{ (probabilityFirst ? 'modelPerformance.modelOdds' : 'matches.oddsShort') | translate }}</th>
                             <th class="col-center"
-                                [attr.title]="'matchGrid.predictionHeader' | translate">
+                                [attr.title]="(probabilityFirst ? 'modelPerformance.forecastHint' : 'matchGrid.predictionHeader') | translate">
                                 {{ 'matches.predictionMarket' | translate }}
                             </th>
-                            <th class="col-center model-pl-header" scope="col" [attr.aria-label]="plLabel"
+                            <th *ngIf="!probabilityFirst" class="col-center model-pl-header" scope="col" [attr.aria-label]="plLabel"
                                 [title]="'matchGrid.plHeader' | translate:{ label: plLabel }">
                                 P/L
                             </th>
@@ -450,7 +453,7 @@
                                     </div>
                                 </ng-container>
                                 <ng-template #noVerifiedOdds>
-                                    <span class="market-odds-cell__unavailable" [attr.aria-label]="'matchGrid.oddsUnavailable' | translate"></span>
+                                    <span class="market-odds-cell__unavailable" [attr.aria-label]="(probabilityFirst ? 'matchGrid.noPrediction' : 'matchGrid.oddsUnavailable') | translate">—</span>
                                 </ng-template>
                             </td>
 
@@ -488,7 +491,7 @@
                                     </div>
                                 </ng-container>
                                 <ng-template #marketOnly>
-                                    <div class="prediction-cell__market prediction-cell__market--muted">
+                                    <div *ngIf="!probabilityFirst" class="prediction-cell__market prediction-cell__market--muted">
                                         <ng-container *ngIf="view.marketLabel as oddsLabel; else noMarketData">
                                             <span>{{ 'matchGrid.marketOdds' | translate }}</span>
                                             <strong>{{ oddsLabel }}</strong>
@@ -500,7 +503,7 @@
                                 </ng-template>
                             </td>
 
-                            <td class="col-center model-pl-cell" [ngClass]="view.plClass"
+                            <td *ngIf="!probabilityFirst" class="col-center model-pl-cell" [ngClass]="view.plClass"
                                 [title]="view.plTitle">
                                 {{ view.pl }}
                             </td>
@@ -588,7 +591,7 @@
                                         </span>
                                         <span>{{ regional.plural('matches.count', group.matches.length) }}</span>
                                         <span class="tournament-group__pl"
-                                            *ngIf="group.modelPl.eligibleCount > 0"
+                                            *ngIf="!probabilityFirst && group.modelPl.eligibleCount > 0"
                                             [ngClass]="getPlTone(group.modelPl.units)"
                                             [title]="getGroupPlTooltip(group)">
                                             P/L {{ formatSignedUnits(group.modelPl.units, false) }}

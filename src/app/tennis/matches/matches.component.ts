@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { CommonModule } from '@angular/common';
+import { PROBABILITY_FIRST, modelDecimalOdds } from '../../core/helpers/model-odds';
 import { Component, ElementRef, HostListener, Inject, Input, OnDestroy, OnInit, Optional, ViewChild, ViewEncapsulation } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { NgbDatepickerModule, NgbDateStruct } from '@ng-bootstrap/ng-bootstrap';
@@ -192,6 +193,7 @@ export class MatchesComponent implements OnInit, OnDestroy {
     activeTournamentLevelIds: number[] = [1, 2, 3, 4];
     activeStrengthStars: number[] = [0, 1, 2, 3, 4, 5];
     activeStatus: MatchStatus = DEFAULT_MATCH_STATUS;
+    readonly probabilityFirst = PROBABILITY_FIRST;
     activeOdds: 'all' | 'with' | 'without' = DEFAULT_ODDS_FILTER;
     tournamentHeaderLevel = '';
     filteredAvailableDates: string[] = [];
@@ -243,7 +245,7 @@ export class MatchesComponent implements OnInit, OnDestroy {
     }
     matchGridColumnCount(grouped: boolean): number {
         // Eight fixed columns (including discussions), tournament OR round, optional tour.
-        return 9 + (this.showTypeColumn && !grouped ? 1 : 0) + (this.showFavouriteColumn ? 2 : 0);
+        return 9 - (this.probabilityFirst ? 1 : 0) + (this.showTypeColumn && !grouped ? 1 : 0) + (this.showFavouriteColumn ? 2 : 0);
     }
 
     playerMatchesTPId: number | null = null;
@@ -1946,8 +1948,8 @@ export class MatchesComponent implements OnInit, OnDestroy {
         this.activeTournamentTypeIds = (filter.tournamentTypeIds || []).map(Number);
         this.activeStrengthStars = (filter.strengthStars || []).map(Number);
         this.activeStatus = filter.status ?? DEFAULT_MATCH_STATUS;
-        this.activeOdds = filter.odds ?? DEFAULT_ODDS_FILTER;
-        this.valueFilter = filter.valueFilter ?? DEFAULT_VALUE_FILTER;
+        this.activeOdds = this.probabilityFirst ? 'all' : filter.odds ?? DEFAULT_ODDS_FILTER;
+        this.valueFilter = this.probabilityFirst ? 'all' : filter.valueFilter ?? DEFAULT_VALUE_FILTER;
         this.activeConfidence = filter.confidence ?? 'all';
         if (filter.plBasis) this.plBasis = filter.plBasis;
 
@@ -2183,7 +2185,7 @@ export class MatchesComponent implements OnInit, OnDestroy {
             }
 
             // ODDS
-            if (this.activeOdds !== 'all') {
+            if (!this.probabilityFirst && this.activeOdds !== 'all') {
                 const has = this.hasOdds(m);
                 if (this.activeOdds === 'with' && !has) return false;
                 if (this.activeOdds === 'without' && has) return false;
@@ -2197,7 +2199,7 @@ export class MatchesComponent implements OnInit, OnDestroy {
             }
 
       // Value-only requires at least one side with edge >= MIN_EDGE.
-            if (this.valueFilter === 'valueOnly') {
+            if (!this.probabilityFirst && this.valueFilter === 'valueOnly') {
                 if (!this.hasValueBet(m)) return false;
             }
 
@@ -2261,6 +2263,7 @@ export class MatchesComponent implements OnInit, OnDestroy {
     }
 
     get showPredictionViewNotice(): boolean {
+        if (this.probabilityFirst) return false;
         return !this.predictionViewNoticeDismissed && this.viewMode === 'daily' &&
             this.filterMode === 'auto' &&
             this.isFiltered &&
@@ -2701,6 +2704,12 @@ export class MatchesComponent implements OnInit, OnDestroy {
             return;
         }
         if (this.filterMode !== 'auto') return;
+        if (this.probabilityFirst) {
+            this.activeStatus = 'all'; this.activeOdds = 'all'; this.valueFilter = 'all';
+            this.isFiltered = false; this.filterApplied = false;
+            this.filteredAvailableDates = [...(this.availableDates || [])];
+            return;
+        }
 
         const latestIso = this.availableDates?.[this.availableDates.length - 1]
             || (this.maxDate ? this.toISOFromDateLocal(this.maxDate) : '');
@@ -3016,6 +3025,7 @@ export class MatchesComponent implements OnInit, OnDestroy {
             (match.qualityStatus && match.predictionEligible !== true)) return null;
         const [p1, p2] = this.parseProbs(match);
         if (p1 == null || p2 == null) return null;
+        if (this.probabilityFirst && p1 === p2) return null;
 
         const side: 'p1' | 'p2' = p1 >= p2 ? 'p1' : 'p2';
         const confidence = side === 'p1' ? p1 : p2;
@@ -3046,9 +3056,15 @@ export class MatchesComponent implements OnInit, OnDestroy {
         if (cached?.context === context && cached.keys.length === Object.keys(record).length &&
             cached.keys.every(key => Object.prototype.hasOwnProperty.call(record,key) && Object.is(cached.snapshot[key], record[key]))) return cached.view;
 
-        const odds = this.getDisplayMarketOdds(match);
+        const probabilities = this.parseProbs(match);
+        const firstPrice = modelDecimalOdds(probabilities[0], 'percent');
+        const secondPrice = modelDecimalOdds(probabilities[1], 'percent');
+        const odds = this.probabilityFirst
+            ? (this.getPrediction(match) && firstPrice != null && secondPrice != null
+                ? {player1:firstPrice, player2:secondPrice, verified:true} : null)
+            : this.getDisplayMarketOdds(match);
         const strength = this.getStrengthStars(match);
-        const market = this.getPredictionMarketContext(match);
+        const market = this.probabilityFirst ? null : this.getPredictionMarketContext(match);
         const view:MatchRowPresentation = {
             date:this.getLocalizedDateMaybeTime(match.dateTime,match.sourceTimePrecision),
             dateTitle:this.matchTimeTitle(match), tournament:this.formatTournamentGridLabel(match), strength,
@@ -3064,12 +3080,12 @@ export class MatchesComponent implements OnInit, OnDestroy {
             player2Flag:this.flagCode(match.player2CountryISO2).toLowerCase(),
             result:this.getDisplayResult(match), sets:this.formatResultDetails(match.resultDetails),
             qualityHold:this.hasResultQualityHold(match), qualityTitle:this.getResultQualityTooltip(match),
-            oddsTitle:this.getMarketOddsTooltip(match),
+            oddsTitle:this.probabilityFirst ? this.regional.text('modelPerformance.modelOddsHint') : this.getMarketOddsTooltip(match),
             odds:odds?{verified:odds.verified,player1:this.getDecimalOddsParts(odds.player1),player2:this.getDecimalOddsParts(odds.player2)}:null,
             prediction:this.getPrediction(match), predictionClass:this.getPredictionClass(match),
             predictionTitle:this.getPredictionTooltip(match), outcome:this.getPredictionOutcomeLabel(match),
             market, marketDecimal:market?this.formatDecimalOdds(market.decimalOdds):'', marketLabel:this.getMarketOddsLabel(match),
-            pl:this.formatPL(match), plClass:this.getPLClass(match), plTitle:this.getPLTooltip(match), historicalPl:this.isHistoricalPL(match),
+            pl:this.probabilityFirst?'—':this.formatPL(match), plClass:this.probabilityFirst?'':this.getPLClass(match), plTitle:this.probabilityFirst?'':this.getPLTooltip(match), historicalPl:!this.probabilityFirst&&this.isHistoricalPL(match),
         };
         this.rowPresentationCache.set(match,{context,keys:Object.keys(record),snapshot:{...record},view});
         return view;
@@ -3142,7 +3158,7 @@ export class MatchesComponent implements OnInit, OnDestroy {
                         ? 'outcomeNotPlayed'
                         : 'outcomePending';
         const market = this.getPredictionMarketContext(match);
-        const marketText = market
+        const marketText = this.probabilityFirst ? this.regional.text('modelPerformance.forecastHint') : market
             ? this.regional.text('matchGrid.marketBenchmark', {
                 side: market.side.toUpperCase(),
                 probability: this.regional.number(market.fairProbability, 2),

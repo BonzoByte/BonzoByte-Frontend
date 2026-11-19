@@ -4,7 +4,7 @@
         {{ errorMessage | translate }}
     </div>
 
-    <div class="bb-section">
+    <div class="bb-section" *ngIf="!probabilityFirst">
         <div class="bb-section-head"><span class="bb-section-title">{{ 'matchFilter.plBasis' | translate }}</span></div>
         <div class="bb-chip-row">
             <label class="bb-chip"><input type="radio" name="plBasis" value="fair" [(ngModel)]="selectedPlBasis" /><span>{{ 'matchFilter.fair' | translate }}</span></label>
@@ -12,7 +12,7 @@
         </div>
         <div class="bb-hint">{{ 'matchFilter.plHint' | translate }}</div>
     </div>
-    <div class="bb-hr"></div>
+    <div class="bb-hr" *ngIf="!probabilityFirst"></div>
     <!-- MODEL CONFIDENCE -->
     <div class="bb-section">
         <div class="bb-section-head">
@@ -86,10 +86,10 @@
         </div>
     </div>
 
-    <div class="bb-hr"></div>
+    <div class="bb-hr" *ngIf="!probabilityFirst"></div>
 
     <!-- ODDS -->
-    <div class="bb-section">
+    <div class="bb-section" *ngIf="!probabilityFirst">
         <div class="bb-section-head">
             <span class="bb-section-title">{{ 'matchFilter.odds' | translate }}</span>
         </div>
@@ -112,10 +112,10 @@
         </div>
     </div>
 
-    <div class="bb-hr"></div>
+    <div class="bb-hr" *ngIf="!probabilityFirst"></div>
 
     <!-- VALUE (edge) -->
-    <div class="bb-section">
+    <div class="bb-section" *ngIf="!probabilityFirst">
         <div class="bb-section-head">
             <span class="bb-section-title">{{ 'matchFilter.value' | translate }}</span>
         </div>
