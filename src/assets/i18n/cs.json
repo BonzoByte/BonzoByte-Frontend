@@ -1,4 +1,7 @@
 {
+  "archiveCoverage": {
+    "notice": "Online seznamy a podrobnosti zápasů: {{from}}–{{through}}. Souhrnné statistiky zahrnují celou historii. Starší archivy se stále přenášejí."
+  },
   "matchCalendar": {
     "open": "Vybrat datum zápasů",
     "months": "Vybrat měsíc",

@@ -1,4 +1,7 @@
 {
+  "archiveCoverage": {
+    "notice": "Listes et détails des matchs en ligne : {{from}}–{{through}}. Les statistiques récapitulatives couvrent tout l’historique. Le transfert des anciennes archives est encore en cours."
+  },
   "matchCalendar": {
     "open": "Choisir la date des matchs",
     "months": "Choisir le mois",

@@ -21,6 +21,7 @@ import {
     BookieOfferDTOv2,
 } from 'src/app/core/models/match-details.model';
 import { CommonModule } from '@angular/common';
+import { ArchiveCoverageComponent } from '@app/shared/ui/archive-coverage/archive-coverage.component';
 import { PROBABILITY_FIRST, modelDecimalOdds } from '../../../core/helpers/model-odds';
 import { FormsModule } from '@angular/forms';
 import { StaticArchivesService } from '../../../core/services/static-archives.service';
@@ -482,7 +483,7 @@ interface Vm {
 @Component({
     selector: 'app-match-details-modal',
     standalone: true,
-    imports: [CommonModule, FormsModule, BbModalShellComponent, TranslateModule, DiscussionThreadComponent, CopyMatchLinkComponent],
+    imports: [CommonModule, FormsModule, BbModalShellComponent, TranslateModule, DiscussionThreadComponent, CopyMatchLinkComponent, ArchiveCoverageComponent],
     templateUrl: './match-details-modal.component.html',
     styleUrls: ['./match-details-modal.component.scss'],
 })

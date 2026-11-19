@@ -1,4 +1,5 @@
 import { CommonModule } from '@angular/common';
+import { ArchiveCoverageComponent } from '../../shared/ui/archive-coverage/archive-coverage.component';
 import { Component, ElementRef, Inject, OnDestroy, OnInit, Optional, ViewChild, ViewEncapsulation } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
@@ -29,6 +30,7 @@ const PLAYER_PAGE_SIZE_STORAGE_KEY = 'bonzobyte.players.page-size.v1';
   templateUrl: './players.component.html',
   styleUrls: ['./players.component.scss'],
   imports: [
+    ArchiveCoverageComponent,
     ViewRecoveryActionsComponent,
     CommonModule,
     TranslateModule,

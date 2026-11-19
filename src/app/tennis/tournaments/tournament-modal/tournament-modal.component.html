@@ -8,6 +8,7 @@
   </div>
 
   <div class="bb-modal-body">
+    <app-archive-coverage *ngIf="!isPreview"></app-archive-coverage>
     <p *ngIf="isPreview" role="note">{{ 'popularity.previewNotice' | translate }}</p>
     <div class="bb-tournament-overview-wrap">
 

@@ -1,4 +1,7 @@
 {
+  "archiveCoverage": {
+    "notice": "Online-Spiellisten und Spieldetails: {{from}}–{{through}}. Zusammenfassende Statistiken umfassen den gesamten historischen Datenbestand. Ältere Archive werden noch übertragen."
+  },
   "matchCalendar": {
     "open": "Spieldatum wählen",
     "months": "Monat wählen",

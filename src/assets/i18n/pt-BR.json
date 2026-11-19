@@ -1,4 +1,7 @@
 {
+  "archiveCoverage": {
+    "notice": "Listas e detalhes de partidas online: {{from}}–{{through}}. As estatísticas resumidas abrangem todo o histórico. Os arquivos antigos ainda estão sendo transferidos."
+  },
   "matchCalendar": {
     "open": "Escolher data das partidas",
     "months": "Escolher mês",

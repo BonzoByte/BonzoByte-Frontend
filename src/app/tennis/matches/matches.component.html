@@ -224,6 +224,7 @@
             <button type="button" (click)="discussions?.retryCounts()">{{ 'discussions.retry' | translate }}</button>
         </aside>
         <div class="matches-content" [class.is-blurred]="loading">
+            <app-archive-coverage></app-archive-coverage>
 
             <div class="table-wrapper" [class.is-empty]="!loading && filteredMatches.length === 0 && unavailableFavouriteIds.length === 0">
                 <ng-container *ngIf="viewMode === 'favourites'">

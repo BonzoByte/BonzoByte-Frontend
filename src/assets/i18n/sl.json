@@ -1,4 +1,7 @@
 {
+  "archiveCoverage": {
+    "notice": "Spletni seznami in podrobnosti dvobojev: {{from}}–{{through}}. Povzetki statistik zajemajo celotno zgodovino. Starejši arhivi se še prenašajo."
+  },
   "matchCalendar": {
     "open": "Izberi datum tekem",
     "months": "Izberi mesec",

@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { CommonModule } from '@angular/common';
+import { ArchiveCoverageComponent } from '../../shared/ui/archive-coverage/archive-coverage.component';
 import { PROBABILITY_FIRST, modelDecimalOdds } from '../../core/helpers/model-odds';
 import { ModelGuidancePreferenceService } from '../../core/services/model-guidance-preference.service';
 import { Component, ElementRef, HostListener, Inject, Input, OnDestroy, OnInit, Optional, ViewChild, ViewEncapsulation } from '@angular/core';
@@ -124,6 +125,7 @@ type MatchFilterMode = 'auto' | 'custom';
     templateUrl: './matches.component.html',
     styleUrls: ['./matches.component.scss'],
     imports: [
+        ArchiveCoverageComponent,
         MatchPlayersCellComponent, MatchTournamentCellComponent, MatchResultCellComponent,
         ViewRecoveryActionsComponent,
         AdRemovalModalComponent,

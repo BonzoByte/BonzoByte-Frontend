@@ -10,6 +10,7 @@ import {
   OnDestroy
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ArchiveCoverageComponent } from '@app/shared/ui/archive-coverage/archive-coverage.component';
 
 import { BbModalShellComponent } from '@app/shared/ui/bb-modal-shell.component/bb-modal-shell.component';
 import { StaticArchivesService } from '@app/core/services/static-archives.service';
@@ -53,7 +54,7 @@ interface PlayerOverviewStatItem {
 @Component({
   selector: 'app-player-modal',
   standalone: true,
-  imports: [CommonModule, BbModalShellComponent, FormsModule, RecentMatchesComponent, TranslateModule],
+  imports: [CommonModule, BbModalShellComponent, FormsModule, RecentMatchesComponent, TranslateModule, ArchiveCoverageComponent],
   templateUrl: './player-modal.component.html',
   styleUrls: ['./player-modal.component.scss']
 })

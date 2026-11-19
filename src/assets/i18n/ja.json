@@ -1,4 +1,7 @@
 {
+  "archiveCoverage": {
+    "notice": "オンラインの試合一覧と詳細：{{from}}～{{through}}。集計統計は履歴データ全体を対象としています。過去のアーカイブは引き続き転送中です。"
+  },
   "matchCalendar": {
     "open": "試合日を選択",
     "months": "月を選択",

@@ -1,6 +1,7 @@
 <!-- MATCH DETAILS MODAL (Shell version) -->
 <app-bb-modal-shell *ngIf="isOpen" [title]="'matchDetails.title' | translate" [closeLabel]="'common.close' | translate" [headingActions]="true" modalClass="bb-modal--match-details" (closed)="close()">
     <p *ngIf="isPreview" class="bb-hint" role="note">{{ 'popularity.previewNotice' | translate }}</p>
+    <app-archive-coverage *ngIf="!isPreview"></app-archive-coverage>
     <app-copy-match-link bbTitleActions *ngIf="!isPreview" [inline]="true" [matchTPId]="discussionMatchId" [matchId]="canonicalMatchId" [view]="activeTab === 'discussions' ? 'discussion' : 'details'"></app-copy-match-link>
     <!-- =================================================================================================
        REUSABLE TEMPLATES

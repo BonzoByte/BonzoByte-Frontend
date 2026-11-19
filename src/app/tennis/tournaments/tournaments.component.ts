@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { CommonModule } from '@angular/common';
+import { ArchiveCoverageComponent } from '../../shared/ui/archive-coverage/archive-coverage.component';
 import { Component, ElementRef, Inject, OnDestroy, OnInit, Optional, ViewChild, ViewEncapsulation } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
@@ -59,6 +60,7 @@ const TOURNAMENT_SORT_FIELDS: readonly SortField[] = [
   templateUrl: './tournaments.component.html',
   styleUrls: ['./tournaments.component.scss'],
   imports: [
+    ArchiveCoverageComponent,
     ViewRecoveryActionsComponent,
     CommonModule,
     TranslateModule,

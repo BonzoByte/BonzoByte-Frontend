@@ -1,4 +1,7 @@
 {
+  "archiveCoverage": {
+    "notice": "Online match lists and details: {{from}}–{{through}}. Summary statistics cover the full historical dataset. Older archives are still being transferred."
+  },
   "matchCalendar": {
     "open": "Choose match date",
     "months": "Choose month",

@@ -1,4 +1,7 @@
 {
+  "archiveCoverage": {
+    "notice": "Elenchi e dettagli delle partite online: {{from}}–{{through}}. Le statistiche riepilogative coprono l’intero storico. Il trasferimento degli archivi precedenti è ancora in corso."
+  },
   "matchCalendar": {
     "open": "Scegli la data delle partite",
     "months": "Scegli il mese",

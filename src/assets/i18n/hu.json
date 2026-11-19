@@ -1,4 +1,7 @@
 {
+  "archiveCoverage": {
+    "notice": "Online mérkőzéslisták és részletek: {{from}}–{{through}}. Az összesített statisztikák a teljes történeti adatállományt lefedik. A régebbi archívumok átvitele még folyamatban van."
+  },
   "matchCalendar": {
     "open": "Mérkőzésnap kiválasztása",
     "months": "Hónap kiválasztása",

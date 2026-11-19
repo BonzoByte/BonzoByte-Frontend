@@ -1,4 +1,7 @@
 {
+  "archiveCoverage": {
+    "notice": "Listy i szczegóły meczów online: {{from}}–{{through}}. Statystyki zbiorcze obejmują całą historię. Starsze archiwa są nadal przesyłane."
+  },
   "matchCalendar": {
     "open": "Wybierz datę meczów",
     "months": "Wybierz miesiąc",

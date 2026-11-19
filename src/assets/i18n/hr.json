@@ -1,4 +1,7 @@
 {
+  "archiveCoverage": {
+    "notice": "Online popisi i detalji mečeva: {{from}}–{{through}}. Sažetne statistike obuhvaćaju cijelu povijest. Starije arhive još se prenose."
+  },
   "matchCalendar": {
     "open": "Odaberi datum mečeva",
     "months": "Odaberi mjesec",
