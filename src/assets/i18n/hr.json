@@ -1,5 +1,6 @@
 {
   "community": {
+    "pins": { "label": "Prikvačeno", "pin": "Prikvači temu", "unpin": "Otkvači temu", "note": "Moderatori su istaknuli ovu temu na vrhu rubrike.", "saved": "Tema je prikvačena na vrh rubrike.", "removed": "Tema je otkvačena i ponovno se prikazuje prema zadnjoj aktivnosti." },
     "hub": {
       "moderation": "Moderatorska ploča", "following": "Praćene teme", "follow": "Prati temu", "unfollow": "Prestani pratiti",
       "moderationNote": "Javne prijave foruma i mečeva na jednom mjestu. Skrivanje objave i rješavanje prijave odvojene su radnje; rješavanje ne uklanja objavu.",

@@ -6,7 +6,7 @@ import { DiscussionPage, DiscussionPostResult } from './discussions.service';
 
 export type CommunityCategory = 'matches' | 'play' | 'equipment' | 'terrace';
 export interface CommunityTopic { id: number; title: string; category: CommunityCategory; language: 'hr' | 'en';
-  createdAt: string; lastActivityAt: string; commentCount?: number; }
+  createdAt: string; lastActivityAt: string; commentCount?: number; pinned?: boolean; }
 export interface CommunityMatch { id: number; title: string | null; commentCount: number; lastActivityAt: string; }
 export interface CommunityList<T> { items: T[]; hasMore: boolean; nextAfter: string | null; }
 export interface CommunityTopicPage extends DiscussionPage { topic: CommunityTopic; }
@@ -27,6 +27,7 @@ export class CommunityService {
   following(after?: string, limit = 20) { return this.http.get<CommunityFollowing>(`${this.base}/following`,
     { params: { limit, ...(after ? { after } : {}) } }).pipe(timeout(30000)); }
   follow(id: number, following: boolean) { return this.http.put<{ following: boolean }>(`${this.base}/topics/${id}/follow`, { following }).pipe(timeout(30000)); }
+  pin(id: number, pinned: boolean) { return this.http.put<{ topic: CommunityTopic }>(`${this.base}/topics/${id}/pin`, { pinned }).pipe(timeout(30000)); }
   read(id: number, through: number) { return this.http.put<{ readThrough: number }>(`${this.base}/topics/${id}/read`, { through }).pipe(timeout(30000)); }
   moderationSummary() { return this.http.get<CommunityCounts>(`${this.base}/moderation/summary`).pipe(timeout(30000)); }
   moderation(source: 'all' | CommunityScope, status: 'open' | 'resolved' | 'all', after?: string) {

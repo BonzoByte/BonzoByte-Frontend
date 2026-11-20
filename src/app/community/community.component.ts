@@ -102,6 +102,14 @@ export class CommunityComponent implements OnDestroy, AfterViewInit {
       next: result => { if (this.page?.topic.id === id && revision === this.revision) { this.page = { ...this.page, following: result.following }; this.refreshBadges(); } },
       error: e => { if (revision === this.revision) this.error = this.errorKey(e); } });
   }
+  togglePin(): void {
+    if (!this.page || !this.canModerate || !this.canWrite || this.busy) return;
+    const id = this.page.topic.id, revision = this.revision; this.busy = true; this.error = ''; this.notice = '';
+    this.mutation = this.api.pin(id, !this.page.topic.pinned).pipe(finalize(() => { if (revision === this.revision) this.busy = false; })).subscribe({
+      next: result => { if (revision === this.revision && this.page?.topic.id === id) {
+        this.page = { ...this.page, topic: result.topic }; this.notice = result.topic.pinned ? 'community.pins.saved' : 'community.pins.removed';
+      } }, error: e => { if (revision === this.revision) this.error = this.errorKey(e); } });
+  }
   login(): void { this.document.defaultView?.dispatchEvent(new CustomEvent('openLogin')); }
   load(more = false): void {
     this.stopObserver(); this.readRequest?.unsubscribe(); this.deliveredThrough = 0;

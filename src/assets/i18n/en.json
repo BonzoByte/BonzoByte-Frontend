@@ -1,5 +1,6 @@
 {
   "community": {
+    "pins": { "label": "Pinned", "pin": "Pin topic", "unpin": "Unpin topic", "note": "Moderators have highlighted this topic at the top of its section.", "saved": "Topic pinned to the top of its section.", "removed": "Topic unpinned. It is listed by latest activity again." },
     "hub": {
       "moderation": "Moderator dashboard", "following": "Followed topics", "follow": "Follow topic", "unfollow": "Unfollow",
       "moderationNote": "Public forum and match reports in one place. Hiding a post and resolving a report are separate actions; resolving does not remove the post.",
