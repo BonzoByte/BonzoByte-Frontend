@@ -1,16 +1,24 @@
 <section class="community-page">
   <header class="club-hero"><div><p class="eyebrow">BONZOBYTE KLUB</p><h1>{{ 'community.title' | translate }}</h1>
     <p>{{ 'community.intro' | translate }}</p></div><span class="club-mark" aria-hidden="true">◎</span></header>
-  <nav class="category-grid" [attr.aria-label]="'community.categories' | translate">
+  <nav class="club-toolbar" [attr.aria-label]="'community.title' | translate">
+    <button type="button" (click)="selectView('topics')" [attr.aria-pressed]="view==='topics'">{{'community.discussions' | translate}}</button>
+    <button *ngIf="canWrite" type="button" (click)="selectView('following')" [attr.aria-pressed]="view==='following'">{{'community.hub.following' | translate}} <span *ngIf="unreadCount" class="count">{{unreadCount}}</span></button>
+    <button *ngIf="canModerate" type="button" (click)="selectView('moderation')" [attr.aria-pressed]="view==='moderation'">{{'community.hub.moderation' | translate}} <span *ngIf="reportCount" class="count">{{reportCount}}</span></button>
+  </nav>
+  <app-community-hub *ngIf="view==='moderation' && canModerate || view==='following' && canWrite" [view]="view==='moderation'?'moderation':'following'" [actor]="user?._id || ''"
+    (openReport)="openReported($event)" (openTopic)="openFollowed($event)" (changed)="refreshBadges()" />
+  <p *ngIf="view!=='topics' && !user" class="feedback">{{'community.signIn' | translate}}</p>
+  <nav *ngIf="view==='topics'" class="category-grid" [attr.aria-label]="'community.categories' | translate">
     <a *ngFor="let c of categories" [routerLink]="['/community']" [queryParams]="{category:c.id}" [class.active]="category===c.id"
       [attr.aria-current]="category===c.id ? 'page' : null"><span class="category-icon" aria-hidden="true">{{c.icon}}</span>
       <strong>{{'community.'+c.id+'.title' | translate}}</strong><small>{{'community.'+c.id+'.description' | translate}}</small></a>
   </nav>
-  <aside class="club-rules"><span>{{'community.rules' | translate}}</span><details><summary>{{'community.about' | translate}}</summary>
+  <aside *ngIf="view==='topics'" class="club-rules"><span>{{'community.rules' | translate}}</span><details><summary>{{'community.about' | translate}}</summary>
     <p>{{'community.rulesMore' | translate}}</p><p>{{'community.corner' | translate}}</p></details></aside>
   <div *ngIf="error" class="feedback error" role="alert">{{error | translate}} <button type="button" (click)="load()" [disabled]="busy">{{'community.refresh' | translate}}</button></div>
   <p *ngIf="notice" class="feedback" role="status">{{notice | translate}}</p>
-  <div class="club-layout" [class.single]="page || composing || category!=='matches'">
+  <div *ngIf="view==='topics'" class="club-layout" [class.single]="page || composing || category!=='matches'">
     <section class="club-panel" [attr.aria-busy]="loading" [attr.aria-label]="'community.discussions' | translate">
       <ng-container *ngIf="!page && !composing">
         <div class="panel-heading"><div><p class="eyebrow">{{'community.discussions' | translate}}</p><h2>{{'community.'+category+'.title' | translate}}</h2></div>
@@ -35,8 +43,10 @@
         <div class="panel-heading"><a [routerLink]="['/community']" [queryParams]="{category:page.topic.category}">← {{'community.back' | translate}}</a>
           <button type="button" (click)="load()" [disabled]="loading || busy">{{'community.refresh' | translate}}</button></div>
         <span class="language-tag">{{page.topic.language.toUpperCase()}}</span><h2 class="topic-title">{{page.topic.title}}</h2>
+        <div class="topic-tools"><button *ngIf="canWrite" type="button" (click)="toggleFollow()" [disabled]="busy" [attr.aria-pressed]="page.following">{{(page.following?'community.hub.unfollow':'community.hub.follow') | translate}}</button>
+          <button *ngIf="isJump" type="button" (click)="fromStart()">{{'community.hub.fromStart' | translate}}</button></div>
         <button *ngIf="page.comments[0]?.canDelete && page.comments[0]?.sequence===1 || canModerate" type="button" class="danger" (click)="action={kind:'topic'}">{{'community.removeTopic' | translate}}</button>
-        <article *ngFor="let comment of page.comments" class="comment" [id]="'post-'+comment.id">
+        <article *ngFor="let comment of page.comments" #forumPost class="comment" [class.linked-post]="comment.id===targetPost" [id]="'post-'+comment.id" [attr.data-sequence]="comment.sequence" tabindex="-1">
           <header><strong>{{comment.author?.nickname || ('community.member' | translate)}}</strong><time [attr.datetime]="comment.createdAt">{{regional.matchDateTime(comment.createdAt)}}</time><span class="post-number">#{{comment.sequence}}</span></header>
           <blockquote *ngIf="comment.replyTo && !comment.deleted && !comment.hidden">{{comment.replyTo.authorName || ('community.member' | translate)}}: {{comment.replyTo.body || ('community.removed' | translate)}}</blockquote>
           <p class="comment-body" *ngIf="!comment.hidden && !comment.deleted; else removed">{{comment.body}}</p><ng-template #removed><p class="muted">{{'community.removed' | translate}}</p></ng-template>
@@ -73,6 +83,4 @@
       <a routerLink="/matches" class="browse-matches">{{'community.browseMatches' | translate}} →</a>
     </aside>
   </div>
-  <section *ngIf="canModerate" class="club-panel moderation"><button type="button" (click)="showReports()">{{'community.moderation' | translate}}</button>
-    <p *ngIf="reports && !reports.length">{{'community.noReports' | translate}}</p><div *ngFor="let report of reports"><p>{{report.reason || ('community.report' | translate)}}</p><button type="button" (click)="viewReport(report.matchTPId)">{{'community.openTopic' | translate}}</button></div></section>
 </section>

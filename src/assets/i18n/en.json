@@ -1,5 +1,15 @@
 {
   "community": {
+    "hub": {
+      "moderation": "Moderator dashboard", "following": "Followed topics", "follow": "Follow topic", "unfollow": "Unfollow",
+      "moderationNote": "Public forum and match reports in one place. Hiding a post and resolving a report are separate actions; resolving does not remove the post.",
+      "followingNote": "New replies in topics you follow appear here. Posting follows a topic automatically unless you unfollow it. No email notifications.",
+      "source": "Source", "status": "Status", "allSources": "Forum and matches", "forum": "Forum", "match": "Match",
+      "open": "Open", "resolved": "Resolved", "allStatuses": "All statuses", "resolve": "Mark resolved", "reopen": "Reopen report",
+      "openPost": "Open post", "reportReason": "Report reason", "noReason": "No reason provided", "hidden": "This post is hidden. Restore it to make it visible again.",
+      "unavailableTitle": "Conversation unavailable", "noReports": "No reports match these filters.", "unread": "New replies",
+      "noFollowing": "You are not following any topics yet. Open a topic and choose Follow topic.", "fromStart": "Show from the beginning"
+    },
     "title": "Community", "intro": "Tennis is more than the score. Talk matches, playing the game and everything in between.",
     "categories": "Community sections", "discussions": "Club conversations", "newTopic": "New topic",
     "matches": { "title": "Matches & tournaments", "description": "The tour, major events and match conversations.", "suggestion": "What are you watching this week? Start a tournament topic or share your thoughts on a match." },

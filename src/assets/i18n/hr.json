@@ -1,5 +1,15 @@
 {
   "community": {
+    "hub": {
+      "moderation": "Moderatorska ploča", "following": "Praćene teme", "follow": "Prati temu", "unfollow": "Prestani pratiti",
+      "moderationNote": "Javne prijave foruma i mečeva na jednom mjestu. Skrivanje objave i rješavanje prijave odvojene su radnje; rješavanje ne uklanja objavu.",
+      "followingNote": "Ovdje se prikazuju novi odgovori u temama koje pratiš. Objava automatski uključuje praćenje, osim ako ga isključiš. Ne šaljemo e-mail obavijesti.",
+      "source": "Izvor", "status": "Status", "allSources": "Forum i mečevi", "forum": "Forum", "match": "Meč",
+      "open": "Otvorena", "resolved": "Riješena", "allStatuses": "Svi statusi", "resolve": "Označi riješenom", "reopen": "Ponovno otvori prijavu",
+      "openPost": "Otvori objavu", "reportReason": "Razlog prijave", "noReason": "Razlog nije naveden", "hidden": "Objava je skrivena. Vrati je da ponovno bude vidljiva.",
+      "unavailableTitle": "Razgovor nije dostupan", "noReports": "Nema prijava za odabrane filtre.", "unread": "Novi odgovori",
+      "noFollowing": "Još ne pratiš nijednu temu. Otvori temu i odaberi Prati temu.", "fromStart": "Prikaži od početka"
+    },
     "title": "Zajednica", "intro": "Tenis je više od rezultata. Razgovarajmo o mečevima, igri i svemu između.",
     "categories": "Rubrike zajednice", "discussions": "Razgovori u klubu", "newTopic": "Nova tema",
     "matches": { "title": "Mečevi i turniri", "description": "Tour, veliki turniri i razgovori uz mečeve.", "suggestion": "Što pratimo ovaj tjedan? Otvori temu o turniru ili podijeli dojam o meču." },

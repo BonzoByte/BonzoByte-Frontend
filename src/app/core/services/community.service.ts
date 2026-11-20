@@ -10,11 +10,30 @@ export interface CommunityTopic { id: number; title: string; category: Community
 export interface CommunityMatch { id: number; title: string | null; commentCount: number; lastActivityAt: string; }
 export interface CommunityList<T> { items: T[]; hasMore: boolean; nextAfter: string | null; }
 export interface CommunityTopicPage extends DiscussionPage { topic: CommunityTopic; }
+export type CommunityScope = 'forum' | 'match';
+export interface CommunityCounts { forum: number; match: number; total: number; }
+export interface CommunityReport { id: string; scope: CommunityScope; commentId: string; threadId: number; title: string | null;
+  reason: string; createdAt: string; resolved: boolean; resolvedAt: string | null;
+  comment: { body: string; authorName: string | null; sequence: number | null; deleted: boolean; hidden: boolean; available: boolean }; }
+export interface CommunityReportPage extends CommunityList<CommunityReport> { openCounts: CommunityCounts; }
+export interface FollowedCommunityTopic { matchTPId: number; title: string | null; category: CommunityCategory; language: string;
+  unread: boolean; lastActivityAt: string | null; firstUnreadSequence: number | null; }
+export interface CommunityFollowing { unreadCount: number; threads: FollowedCommunityTopic[]; hasMore: boolean; nextAfter: string | null; }
 @Injectable({ providedIn: 'root' })
 export class CommunityService {
   private base = `${environment.apiUrl}/community`;
   constructor(private http: HttpClient) {}
   access() { return this.http.get<{ canModerate: boolean }>(`${this.base}/access`).pipe(timeout(30000)); }
+  following(after?: string, limit = 20) { return this.http.get<CommunityFollowing>(`${this.base}/following`,
+    { params: { limit, ...(after ? { after } : {}) } }).pipe(timeout(30000)); }
+  follow(id: number, following: boolean) { return this.http.put<{ following: boolean }>(`${this.base}/topics/${id}/follow`, { following }).pipe(timeout(30000)); }
+  read(id: number, through: number) { return this.http.put<{ readThrough: number }>(`${this.base}/topics/${id}/read`, { through }).pipe(timeout(30000)); }
+  moderationSummary() { return this.http.get<CommunityCounts>(`${this.base}/moderation/summary`).pipe(timeout(30000)); }
+  moderation(source: 'all' | CommunityScope, status: 'open' | 'resolved' | 'all', after?: string) {
+    return this.http.get<CommunityReportPage>(`${this.base}/moderation`, { params: { source, status, ...(after ? { after } : {}) } }).pipe(timeout(30000));
+  }
+  resolveReport(row: CommunityReport, resolved: boolean) { return this.http.patch(`${this.base}/moderation/${row.scope}/reports/${row.id}`, { resolved }).pipe(timeout(30000)); }
+  moderateComment(row: CommunityReport, hidden: boolean) { return this.http.put(`${this.base}/moderation/${row.scope}/comments/${row.commentId}/hide`, { hidden }).pipe(timeout(30000)); }
   topics(category: CommunityCategory, after?: string) {
     let params = new HttpParams().set('category', category);
     if (after) params = params.set('after', after);

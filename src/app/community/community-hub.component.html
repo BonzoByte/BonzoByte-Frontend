@@ -1,0 +1,37 @@
+<section class="hub" [attr.aria-busy]="loading || busy">
+  <div class="hub-heading"><div><p class="eyebrow">BONZOBYTE KLUB</p><h2>{{(view==='moderation'?'community.hub.moderation':'community.hub.following') | translate}}</h2></div>
+    <button type="button" (click)="load()" [disabled]="busy || loading">{{'community.refresh' | translate}}</button></div>
+  <p class="muted">{{(view==='moderation'?'community.hub.moderationNote':'community.hub.followingNote') | translate}}</p>
+  <div *ngIf="view==='moderation'" class="filters">
+    <div class="filter-field"><label for="moderation-source">{{'community.hub.source' | translate}}</label><select id="moderation-source" [(ngModel)]="source" (ngModelChange)="load()" [disabled]="busy">
+      <option value="all">{{'community.hub.allSources' | translate}}</option><option value="forum">{{'community.hub.forum' | translate}}</option><option value="match">{{'community.hub.match' | translate}}</option></select></div>
+    <div class="filter-field"><label for="moderation-status">{{'community.hub.status' | translate}}</label><select id="moderation-status" [(ngModel)]="status" (ngModelChange)="load()" [disabled]="busy">
+      <option value="open">{{'community.hub.open' | translate}}</option><option value="resolved">{{'community.hub.resolved' | translate}}</option><option value="all">{{'community.hub.allStatuses' | translate}}</option></select></div>
+  </div>
+  <p *ngIf="error" class="error" role="alert">{{error | translate}}</p><p *ngIf="loading" role="status">{{'community.loading' | translate}}</p>
+  <ng-container *ngIf="view==='moderation'">
+    <article *ngFor="let row of reports" class="report-card" [attr.data-scope]="row.scope">
+      <header><span class="tag">{{'community.hub.'+row.scope | translate}}</span><span class="tag" [class.open]="!row.resolved">{{(row.resolved?'community.hub.resolved':'community.hub.open') | translate}}</span>
+        <time>{{regional.matchDateTime(row.createdAt)}}</time></header>
+      <h3>{{row.title || ('community.hub.unavailableTitle' | translate)}}</h3>
+      <p class="reason"><strong>{{'community.hub.reportReason' | translate}}:</strong> {{row.reason || ('community.hub.noReason' | translate)}}</p>
+      <blockquote *ngIf="row.comment.body; else unavailable"><strong>{{row.comment.authorName || ('community.member' | translate)}}</strong><p>{{row.comment.body}}</p></blockquote>
+      <ng-template #unavailable><p class="muted">{{(row.comment.hidden?'community.hub.hidden':'community.removed') | translate}}</p></ng-template>
+      <div class="actions"><button type="button" (click)="openReport.emit(row)" [disabled]="busy || !row.comment.available">{{'community.hub.openPost' | translate}}</button>
+        <button *ngIf="row.comment.available && !row.comment.deleted" type="button" (click)="pending=row" [disabled]="busy">{{(row.comment.hidden?'community.unhide':'community.hide') | translate}}</button>
+        <button type="button" (click)="resolve(row)" [disabled]="busy">{{(row.resolved?'community.hub.reopen':'community.hub.resolve') | translate}}</button></div>
+      <div *ngIf="pending===row" class="confirm" role="region"><p>{{'community.confirmNote' | translate}}</p>
+        <button type="button" (click)="hide(row)" [disabled]="busy">{{'community.confirm' | translate}}</button> <button type="button" (click)="pending=null" [disabled]="busy">{{'community.cancel' | translate}}</button></div>
+    </article>
+    <p *ngIf="!loading && !error && !reports.length" class="empty">{{'community.hub.noReports' | translate}}</p>
+  </ng-container>
+  <ng-container *ngIf="view==='following'">
+    <article *ngFor="let topic of topics" class="follow-card" [class.unread]="topic.unread">
+      <button type="button" class="topic-link" (click)="openTopic.emit(topic)" [disabled]="busy"><span *ngIf="topic.unread" class="tag open">{{'community.hub.unread' | translate}}</span>
+        <strong>{{topic.title || ('community.hub.unavailableTitle' | translate)}}</strong><small>{{'community.'+topic.category+'.title' | translate}} · {{regional.matchDateTime(topic.lastActivityAt)}}</small></button>
+      <button type="button" (click)="unfollow(topic)" [disabled]="busy">{{'community.hub.unfollow' | translate}}</button>
+    </article>
+    <p *ngIf="!loading && !error && !topics.length" class="empty">{{'community.hub.noFollowing' | translate}}</p>
+  </ng-container>
+  <button *ngIf="nextAfter" type="button" (click)="load(true)" [disabled]="loading || busy">{{'community.more' | translate}}</button>
+</section>
