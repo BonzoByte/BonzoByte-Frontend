@@ -1,5 +1,6 @@
 {
   "community": {
+    "edits": { "edit": "Edit", "label": "Edit comment", "save": "Save changes", "edited": "edited", "saved": "Changes saved.", "note": "You are updating an existing comment. The edit label and time will be visible to everyone.", "conflict": "This comment changed in another tab. Your draft is still here: copy it before cancelling and refreshing the topic." },
     "pins": { "label": "Pinned", "pin": "Pin topic", "unpin": "Unpin topic", "note": "Moderators have highlighted this topic at the top of its section.", "saved": "Topic pinned to the top of its section.", "removed": "Topic unpinned. It is listed by latest activity again." },
     "hub": {
       "moderation": "Moderator dashboard", "following": "Followed topics", "follow": "Follow topic", "unfollow": "Unfollow",

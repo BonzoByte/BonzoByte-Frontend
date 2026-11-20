@@ -32,6 +32,7 @@ export class CommunityComponent implements OnDestroy, AfterViewInit {
   page: CommunityTopicPage | null = null;
   loading = false; matchLoading = false; busy = false; error = ''; matchError = false; notice = '';
   composing = false; title = ''; body = ''; language = 'hr'; reply: DiscussionComment | null = null;
+  editing: { id: string; version: number; original: string } | null = null; editBody = ''; editError = '';
   action: { kind: 'delete' | 'report' | 'hide' | 'topic'; comment?: DiscussionComment } | null = null;
   reason = '';
   private subscriptions = new Subscription(); private request?: Subscription; private matchRequest?: Subscription;
@@ -49,7 +50,7 @@ export class CommunityComponent implements OnDestroy, AfterViewInit {
       if (changed) { this.revision++; this.mutation?.unsubscribe(); this.busy = false;
         this.stopObserver(); this.readRequest?.unsubscribe(); this.followRequest?.unsubscribe(); this.badgeAgain = false; this.unreadRequest?.unsubscribe();
         this.unreadCount = 0; this.reportCount = 0;
-        this.body = ''; this.title = ''; this.reply = null; this.composing = false; this.action = null;
+        this.body = ''; this.title = ''; this.reply = null; this.composing = false; this.action = null; this.cancelEdit();
         this.postKey = ''; this.createKey = ''; this.notice = ''; this.error = ''; this.load(); }
     }));
     this.subscriptions.add(route.queryParamMap.subscribe(params => {
@@ -68,6 +69,9 @@ export class CommunityComponent implements OnDestroy, AfterViewInit {
   ngAfterViewInit(): void { this.subscriptions.add(this.posts.changes.subscribe(() => this.watchPosts())); this.watchPosts(); }
   get canWrite(): boolean { return !!this.user?.isVerified; }
   get bodyLength(): number { return discussionTextLength(this.body); }
+  get editLength(): number { return discussionTextLength(this.editBody); }
+  get canSaveEdit(): boolean { return !!this.editing && this.canWrite && !this.busy && !!this.editBody.trim()
+    && this.editLength <= 1000 && this.editBody.trim() !== this.editing.original; }
   get canSend(): boolean { return this.canWrite && !this.busy && this.body.trim().length > 0 && this.bodyLength <= 1000
     && (!this.composing || (this.title.trim().length > 0 && discussionTextLength(this.title) <= 120)); }
   select(category: CommunityCategory): void { if (!this.busy) void this.router.navigate(['/community'], { queryParams: { category } }); }
@@ -112,6 +116,7 @@ export class CommunityComponent implements OnDestroy, AfterViewInit {
   }
   login(): void { this.document.defaultView?.dispatchEvent(new CustomEvent('openLogin')); }
   load(more = false): void {
+    this.cancelEdit();
     this.stopObserver(); this.readRequest?.unsubscribe(); this.deliveredThrough = 0;
     this.request?.unsubscribe(); this.loading = true; this.error = '';
     if (this.view !== 'topics') { this.page = null; this.loading = false; this.matchRequest?.unsubscribe(); return; }
@@ -141,6 +146,28 @@ export class CommunityComponent implements OnDestroy, AfterViewInit {
   openMatch(match: CommunityMatch): void { this.discussions.open({ matchTPId: match.id, title: match.title || undefined }); }
   startTopic(): void { this.composing = true; this.title = ''; this.body = ''; this.reply = null; this.createKey = ''; this.notice = ''; }
   edited(): void { this.postKey = ''; this.createKey = ''; }
+  beginEdit(comment: DiscussionComment): void {
+    if (!this.canWrite || this.busy || this.editing || !comment.canDelete || comment.hidden || comment.deleted) return;
+    this.editing = { id: comment.id, version: comment.editVersion ?? 0, original: comment.body };
+    this.editBody = comment.body; this.editError = ''; this.action = null; this.notice = '';
+    setTimeout(() => this.document.getElementById('edit-'+comment.id)?.focus());
+  }
+  cancelEdit(): void { this.editing = null; this.editBody = ''; this.editError = ''; }
+  saveEdit(): void {
+    if (!this.canSaveEdit || !this.editing || !this.page) return;
+    const target = this.editing, topic = this.page.topic.id, revision = this.revision;
+    this.busy = true; this.editError = '';
+    this.mutation = this.api.edit(target.id, this.editBody.trim(), target.version).pipe(finalize(() => { if (revision === this.revision) this.busy = false; })).subscribe({
+      next: result => {
+        if (revision !== this.revision || this.page?.topic.id !== topic || this.editing?.id !== target.id) return;
+        const saved = result.comment;
+        this.page = { ...this.page, comments: this.page.comments.map(comment => comment.id === saved.id
+          ? { ...comment, body: saved.body, editedAt: saved.editedAt, editVersion: saved.editVersion }
+          : comment.replyTo?.id === saved.id ? { ...comment, replyTo: { ...comment.replyTo, body: saved.body, editedAt: saved.editedAt } } : comment) };
+        this.cancelEdit(); this.notice = 'community.edits.saved';
+      }, error: e => { if (revision === this.revision && this.editing?.id === target.id)
+        this.editError = e?.status === 409 ? 'community.edits.conflict' : this.errorKey(e); } });
+  }
   send(): void {
     if (!this.canSend) return;
     const body = this.body.trim(), revision = this.revision; this.busy = true; this.error = '';

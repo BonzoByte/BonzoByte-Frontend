@@ -10,6 +10,7 @@ export interface CommunityTopic { id: number; title: string; category: Community
 export interface CommunityMatch { id: number; title: string | null; commentCount: number; lastActivityAt: string; }
 export interface CommunityList<T> { items: T[]; hasMore: boolean; nextAfter: string | null; }
 export interface CommunityTopicPage extends DiscussionPage { topic: CommunityTopic; }
+export interface CommunityEditResult { comment: { id: string; threadId: number; body: string; editedAt: string | null; editVersion: number }; }
 export type CommunityScope = 'forum' | 'match';
 export interface CommunityCounts { forum: number; match: number; total: number; }
 export interface CommunityReport { id: string; scope: CommunityScope; commentId: string; threadId: number; title: string | null;
@@ -51,6 +52,7 @@ export class CommunityService {
     return this.http.post<DiscussionPostResult>(`${this.base}/topics/${id}`, { body, clientRequestId, ...(replyToId ? { replyToId } : {}) }).pipe(timeout(75000));
   }
   remove(id: string) { return this.http.delete(`${this.base}/comments/${id}`).pipe(timeout(30000)); }
+  edit(id: string, body: string, version: number) { return this.http.patch<CommunityEditResult>(`${this.base}/comments/${id}`, { body, version }).pipe(timeout(30000)); }
   report(id: string, reason: string) { return this.http.post(`${this.base}/comments/${id}/report`, { reason }).pipe(timeout(30000)); }
   hide(id: string, hidden: boolean) { return this.http.post(`${this.base}/comments/${id}/hide`, { hidden }).pipe(timeout(30000)); }
   reports(after?: string) { return this.http.get<{ reports: { id: string; commentId: string; matchTPId: number; reason: string; createdAt: string }[]; hasMore: boolean; nextAfter: string }>(`${this.base}/reports`, { params: after ? { after } : {} }).pipe(timeout(30000)); }

@@ -1,5 +1,6 @@
 {
   "community": {
+    "edits": { "edit": "Uredi", "label": "Uredi komentar", "save": "Spremi izmjene", "edited": "uređeno", "saved": "Izmjene su spremljene.", "note": "Mijenjaš postojeći komentar. Oznaka i vrijeme izmjene bit će vidljivi svima.", "conflict": "Komentar je u međuvremenu promijenjen u drugoj kartici. Nacrt je sačuvan ovdje: kopiraj ga prije odustajanja i osvježavanja teme." },
     "pins": { "label": "Prikvačeno", "pin": "Prikvači temu", "unpin": "Otkvači temu", "note": "Moderatori su istaknuli ovu temu na vrhu rubrike.", "saved": "Tema je prikvačena na vrh rubrike.", "removed": "Tema je otkvačena i ponovno se prikazuje prema zadnjoj aktivnosti." },
     "hub": {
       "moderation": "Moderatorska ploča", "following": "Praćene teme", "follow": "Prati temu", "unfollow": "Prestani pratiti",

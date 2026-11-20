@@ -41,7 +41,7 @@
       </ng-container>
       <ng-container *ngIf="page">
         <div class="panel-heading"><a [routerLink]="['/community']" [queryParams]="{category:page.topic.category}">← {{'community.back' | translate}}</a>
-          <button type="button" (click)="load()" [disabled]="loading || busy">{{'community.refresh' | translate}}</button></div>
+          <button type="button" (click)="load()" [disabled]="loading || busy || !!editing">{{'community.refresh' | translate}}</button></div>
         <span class="language-tag">{{page.topic.language.toUpperCase()}}</span><h2 class="topic-title">{{page.topic.title}}</h2>
         <p *ngIf="page.topic.pinned" class="topic-pin"><span class="pin-tag"><i class="bi bi-pin-angle-fill" aria-hidden="true"></i> {{'community.pins.label' | translate}}</span><small>{{'community.pins.note' | translate}}</small></p>
         <div class="topic-tools"><button *ngIf="canWrite" type="button" (click)="toggleFollow()" [disabled]="busy" [attr.aria-pressed]="page.following">{{(page.following?'community.hub.unfollow':'community.hub.follow') | translate}}</button>
@@ -49,17 +49,29 @@
           <button *ngIf="isJump" type="button" (click)="fromStart()">{{'community.hub.fromStart' | translate}}</button></div>
         <button *ngIf="page.comments[0]?.canDelete && page.comments[0]?.sequence===1 || canModerate" type="button" class="danger" (click)="action={kind:'topic'}">{{'community.removeTopic' | translate}}</button>
         <article *ngFor="let comment of page.comments" #forumPost class="comment" [class.linked-post]="comment.id===targetPost" [id]="'post-'+comment.id" [attr.data-sequence]="comment.sequence" tabindex="-1">
-          <header><strong>{{comment.author?.nickname || ('community.member' | translate)}}</strong><time [attr.datetime]="comment.createdAt">{{regional.matchDateTime(comment.createdAt)}}</time><span class="post-number">#{{comment.sequence}}</span></header>
-          <blockquote *ngIf="comment.replyTo && !comment.deleted && !comment.hidden">{{comment.replyTo.authorName || ('community.member' | translate)}}: {{comment.replyTo.body || ('community.removed' | translate)}}</blockquote>
-          <p class="comment-body" *ngIf="!comment.hidden && !comment.deleted; else removed">{{comment.body}}</p><ng-template #removed><p class="muted">{{'community.removed' | translate}}</p></ng-template>
-          <footer *ngIf="canWrite"><button *ngIf="!comment.replyTo && !comment.deleted && !comment.hidden" type="button" (click)="reply=comment; edited()" [disabled]="busy">{{'community.reply' | translate}}</button>
+          <header><strong>{{comment.author?.nickname || ('community.member' | translate)}}</strong><time [attr.datetime]="comment.createdAt">{{regional.matchDateTime(comment.createdAt)}}</time>
+            <time *ngIf="comment.editedAt && !comment.hidden && !comment.deleted" class="edited-note" [attr.datetime]="comment.editedAt">{{'community.edits.edited' | translate}} · {{regional.matchDateTime(comment.editedAt)}}</time><span class="post-number">#{{comment.sequence}}</span></header>
+          <blockquote *ngIf="comment.replyTo && !comment.deleted && !comment.hidden">{{comment.replyTo.authorName || ('community.member' | translate)}}: {{comment.replyTo.body || ('community.removed' | translate)}} <small *ngIf="comment.replyTo.editedAt">({{'community.edits.edited' | translate}})</small></blockquote>
+          <ng-container *ngIf="editing?.id!==comment.id">
+            <p class="comment-body" *ngIf="!comment.hidden && !comment.deleted; else removed">{{comment.body}}</p><ng-template #removed><p class="muted">{{'community.removed' | translate}}</p></ng-template>
+          </ng-container>
+          <form *ngIf="editing?.id===comment.id" class="comment-editor" (ngSubmit)="saveEdit()">
+            <label [for]="'edit-'+comment.id">{{'community.edits.label' | translate}}</label>
+            <textarea [id]="'edit-'+comment.id" name="editBody" [(ngModel)]="editBody" rows="5" maxlength="32000" [disabled]="busy"></textarea>
+            <div class="edit-status"><small [class.danger]="editLength>1000">{{editLength}} / 1000</small><span>{{'community.edits.note' | translate}}</span></div>
+            <p *ngIf="editError" class="feedback error" role="alert">{{editError | translate}}</p>
+            <div class="edit-actions"><button class="primary" type="submit" [disabled]="!canSaveEdit">{{'community.edits.save' | translate}}</button>
+              <button type="button" (click)="cancelEdit()" [disabled]="busy">{{'community.cancel' | translate}}</button></div>
+          </form>
+          <footer *ngIf="canWrite && !editing"><button *ngIf="!comment.replyTo && !comment.deleted && !comment.hidden" type="button" (click)="reply=comment; edited()" [disabled]="busy">{{'community.reply' | translate}}</button>
+            <button *ngIf="comment.canDelete && !comment.hidden && !comment.deleted" type="button" class="edit-comment" (click)="beginEdit(comment)" [disabled]="busy"><i class="bi bi-pencil" aria-hidden="true"></i> {{'community.edits.edit' | translate}}</button>
             <button *ngIf="comment.canDelete" type="button" (click)="action={kind:'delete',comment:comment}" [disabled]="busy">{{'community.delete' | translate}}</button>
             <button *ngIf="!comment.deleted && !comment.hidden && !comment.canDelete" type="button" (click)="action={kind:'report',comment:comment}; reason=''">{{'community.report' | translate}}</button>
             <button *ngIf="comment.canHide" type="button" (click)="action={kind:'hide',comment:comment}">{{(comment.hidden?'community.unhide':'community.hide') | translate}}</button></footer>
         </article>
-        <button *ngIf="page.hasMore" type="button" (click)="load(true)" [disabled]="loading || busy">{{'community.more' | translate}}</button>
+        <button *ngIf="page.hasMore" type="button" (click)="load(true)" [disabled]="loading || busy || !!editing">{{'community.more' | translate}}</button>
       </ng-container>
-      <form *ngIf="(page || composing) && canWrite" class="composer" (ngSubmit)="send()">
+      <form *ngIf="(page || composing) && canWrite && !editing" class="composer" (ngSubmit)="send()">
         <div *ngIf="reply" class="reply-target"><span>{{'community.replyTo' | translate}} {{reply.author?.nickname}}</span><button type="button" (click)="reply=null; edited()" [disabled]="busy">×</button></div>
         <label for="post-body">{{(composing?'community.firstPost':'community.yourReply') | translate}}</label>
         <textarea id="post-body" [(ngModel)]="body" name="body" (ngModelChange)="edited()" rows="5" maxlength="32000" [disabled]="busy"></textarea>

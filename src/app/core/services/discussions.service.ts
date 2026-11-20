@@ -9,11 +9,12 @@ import { User } from '../models/user.model';
 import { CommentLinkTarget, parseCommentLinkTarget } from '../helpers/comment-link';
 import { AuthService } from './auth.service';
 
-export interface DiscussionReply { id: string; authorName: string | null; body?: string | null; }
+export interface DiscussionReply { id: string; authorName: string | null; body?: string | null; editedAt?: string | null; }
 export interface DiscussionComment {
     id: string; sequence: number;
     author: { id: string; nickname: string; avatarUrl: string | null } | null;
     body: string; createdAt: string; replyTo: DiscussionReply | null;
+    editedAt?: string | null; editVersion?: number;
     deleted: boolean; hidden: boolean; canDelete: boolean; canHide: boolean;
 }
 export interface DiscussionPage {
