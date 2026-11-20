@@ -2,6 +2,7 @@
 import { CommonModule } from '@angular/common';
 import { ArchiveCoverageComponent } from '../../shared/ui/archive-coverage/archive-coverage.component';
 import { PROBABILITY_FIRST, modelDecimalOdds } from '../../core/helpers/model-odds';
+import { summarizeTournamentForecasts, TournamentForecastSummary } from '../../core/helpers/tournament-forecast-summary';
 import { ModelGuidancePreferenceService } from '../../core/services/model-guidance-preference.service';
 import { Component, ElementRef, HostListener, Inject, Input, OnDestroy, OnInit, Optional, ViewChild, ViewEncapsulation } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -115,6 +116,7 @@ interface TournamentMatchGroup {
     strengthStars: number;
     matches: Match[];
     modelPl: ModelPlSummary;
+    forecastSummary?: TournamentForecastSummary;
 }
 
 type MatchFilterMode = 'auto' | 'custom';
@@ -3686,7 +3688,16 @@ export class MatchesComponent implements OnInit, OnDestroy {
         const language = this.regional.language();
         if (cached?.rows === this.filteredMatches && cached.count === this.filteredMatches.length &&
             cached.language === language && cached.basis === this.plBasis &&
-            cached.sortField === this.sortField && cached.sortDirection === this.sortDirection) return cached.groups;
+            cached.sortField === this.sortField && cached.sortDirection === this.sortDirection) {
+            // A result/eligibility update may replace fields on an existing row.
+            // Refresh only this display summary, without changing archive data or grading rules.
+            for (const group of cached.groups) {
+                const next = this.getTournamentForecastSummary(group.matches), previous = group.forecastSummary;
+                if (!previous || (Object.keys(next) as (keyof TournamentForecastSummary)[]).some(key => next[key] !== previous[key]))
+                    group.forecastSummary = next;
+            }
+            return cached.groups;
+        }
         const groups = new Map<string, TournamentMatchGroup>();
 
         for (const match of this.filteredMatches) {
@@ -3718,6 +3729,7 @@ export class MatchesComponent implements OnInit, OnDestroy {
 
         for (const group of groups.values()) {
             group.modelPl = this.getModelPlSummary(group.matches);
+            group.forecastSummary = this.getTournamentForecastSummary(group.matches);
         }
 
         const result = [...groups.values()].sort((left, right) =>
@@ -3729,6 +3741,28 @@ export class MatchesComponent implements OnInit, OnDestroy {
 
     trackTournamentGroup(_index: number, group: TournamentMatchGroup): string {
         return group.key;
+    }
+
+    getTournamentForecastSummary(matches: readonly Match[]): TournamentForecastSummary {
+        return summarizeTournamentForecasts(matches, match => {
+            const [first, second] = this.parseProbs(match);
+            const forecast = this.getPrediction(match) !== null && first !== second;
+            return { forecast, outcome: forecast ? this.getPredictionOutcome(match) : null,
+                pending: forecast && this.getMatchOutcomeStatus(match) === 'pending' };
+        });
+    }
+
+    getTournamentForecastTooltip(group: TournamentMatchGroup): string {
+        const summary = group.forecastSummary;
+        if (!summary) return '';
+        return [
+            this.regional.text('matchGrid.groupForecastScope'),
+            this.regional.text('matchGrid.groupForecastCounts', Object.fromEntries(
+                ['correct', 'graded', 'forecasts', 'total', 'pending', 'excluded'].map(key =>
+                    [key, this.regional.number(summary[key as keyof TournamentForecastSummary], 0, true)]))),
+            ...(summary.accuracy === null ? [this.regional.text('matchGrid.groupAccuracyUnavailable')] : []),
+            this.regional.text('matchGrid.groupForecastGrading'),
+        ].join('\n');
     }
 
     get groupedMatchupWidthPx(): number {

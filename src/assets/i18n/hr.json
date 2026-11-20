@@ -1648,6 +1648,12 @@
     "groupStake": "Virtualni ulog: 1u po prihvatljivoj predikciji modela",
     "groupCoverage": "Pokrivenost: {{eligible}}/{{total}} prikazanih mečeva",
     "groupEligibility": "Samo valjani završeni mečevi s prognozom modela i prihvaćenim parom medijana kvota. Datum kvote nije uvjet za povijesni P/L.",
+    "groupAccuracy": "Uspješnost",
+    "groupAccuracyUnavailable": "Još nema ocijenjenih prognoza.",
+    "groupForecastPending": "Čeka ishod: {{count}}",
+    "groupForecastScope": "Samo trenutačno prikazani mečevi (odabrani datum i filtri), a ne cijeli turnir.",
+    "groupForecastCounts": "Pogoci: {{correct}}/{{graded}} ocijenjenih · Prognoze: {{forecasts}}/{{total}} · Čeka ishod: {{pending}} · Ostalo neocijenjeno: {{excluded}}.",
+    "groupForecastGrading": "Koriste se iste prihvatljive prognoze i provjereni završeni rezultati kao u gridu. Prognoze koje nedostaju ili su izjednačene, nepotvrđeni rezultati, predaje i neodigrani mečevi ne ulaze u postotak. Kladioničarske kvote se ne koriste. Povijesna uspješnost ne jamči buduće rezultate.",
     "incomplete": "Nedovršeno",
     "notPlayed": "Neodigrano",
     "pending": "Na čekanju"

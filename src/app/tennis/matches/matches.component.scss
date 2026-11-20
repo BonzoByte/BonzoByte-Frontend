@@ -440,6 +440,10 @@
 
 .tournament-group__meta {
     gap: 8px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    min-width: 0;
+    max-width: 100%;
     color: rgba(235, 242, 246, 0.82);
     font-size: 13px;
     font-weight: 600;
@@ -474,6 +478,26 @@
     font-size: 9px;
     font-weight: 600;
 }
+
+.tournament-group__accuracy,
+.tournament-group__awaiting {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 6px;
+    padding: 3px 7px;
+    border: 1px solid currentColor;
+    border-radius: 999px;
+    background: rgba(14, 26, 32, .22);
+    font-size: 11px;
+    line-height: 1.35;
+    font-variant-numeric: tabular-nums;
+}
+.tournament-group__accuracy strong { color: inherit; font-size: 12px; }
+.tournament-group__accuracy small { font-size: 10px; opacity: .8; }
+.tournament-group__accuracy:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
+.tournament-group__awaiting { border-color: transparent; background: transparent; padding-inline: 0; }
+.tournament-group__meta > .tournament-group__accuracy::before,
+.tournament-group__meta > .tournament-group__awaiting::before { content: none !important; }
 
 .match-table-scroll--grouped {
     flex: none;

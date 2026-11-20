@@ -1648,6 +1648,12 @@
     "groupStake": "Virtual stake: 1u per eligible model prediction",
     "groupCoverage": "Coverage: {{eligible}}/{{total}} shown matches",
     "groupEligibility": "Only valid completed matches with a model prediction and an accepted median-odds pair. Quote timestamps are not required for historical P/L.",
+    "groupAccuracy": "Accuracy",
+    "groupAccuracyUnavailable": "No graded forecasts yet.",
+    "groupForecastPending": "Awaiting result: {{count}}",
+    "groupForecastScope": "Currently shown matches only (selected date and filters), not the entire tournament.",
+    "groupForecastCounts": "Correct: {{correct}}/{{graded}} graded · Forecasts: {{forecasts}}/{{total}} · Awaiting result: {{pending}} · Other not graded: {{excluded}}.",
+    "groupForecastGrading": "Uses the same eligible forecasts and verified completed results as the grid. Missing or tied forecasts, unverified scores, retirements and unplayed matches do not enter the percentage. Bookmaker odds are not used. Historical accuracy does not guarantee future results.",
     "incomplete": "Incomplete",
     "notPlayed": "Not played",
     "pending": "Pending"

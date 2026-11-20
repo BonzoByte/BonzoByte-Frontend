@@ -595,6 +595,20 @@
                                             <span>{{ surfaceName }}</span>
                                         </span>
                                         <span>{{ regional.plural('matches.count', group.matches.length) }}</span>
+                                        <ng-container *ngIf="group.forecastSummary as summary">
+                                            <span class="tournament-group__accuracy" tabindex="0"
+                                                [title]="getTournamentForecastTooltip(group)"
+                                                [attr.aria-label]="getTournamentForecastTooltip(group)">
+                                                <span>{{ 'matchGrid.groupAccuracy' | translate }}</span>
+                                                <strong>{{ summary.accuracy === null ? '—' : regional.number(summary.accuracy, 1) + '%' }}</strong>
+                                                <small *ngIf="summary.graded > 0">{{ regional.number(summary.correct, 0, true) }}/{{ regional.number(summary.graded, 0, true) }}</small>
+                                            </span>
+                                            <span *ngIf="summary.pending > 0" class="tournament-group__awaiting"
+                                                [title]="getTournamentForecastTooltip(group)">
+                                                <span aria-hidden="true">◷</span>
+                                                {{ 'matchGrid.groupForecastPending' | translate:{ count: regional.number(summary.pending, 0, true) } }}
+                                            </span>
+                                        </ng-container>
                                         <span class="tournament-group__pl"
                                             *ngIf="!probabilityFirst && group.modelPl.eligibleCount > 0"
                                             [ngClass]="getPlTone(group.modelPl.units)"
