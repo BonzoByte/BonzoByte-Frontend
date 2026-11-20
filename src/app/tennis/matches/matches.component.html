@@ -210,7 +210,7 @@
                 <span>{{ ('favourites.' + message) | translate:{limit: regional.number(saved.limit(), 0, true)} }}</span>
                 <button type="button" *ngIf="saved.undoId() !== null" (click)="saved.undo()"
                     [disabled]="favouriteDisabled(saved.undoId()!)">{{ 'favourites.undo' | translate }}</button>
-                <button type="button" (click)="saved.dismissMessage()" [attr.aria-label]="'favourites.dismiss' | translate">×</button>
+                <button type="button" class="bb-notice-close" (click)="saved.dismissMessage()" [attr.aria-label]="'favourites.dismiss' | translate">×</button>
             </aside>
             <aside class="favourites-feedback" *ngIf="viewMode !== 'favourites' && saved.signedIn() && saved.error()" role="alert">
                 <span>{{ 'favourites.readFailed' | translate }}</span>
@@ -219,10 +219,6 @@
         </ng-container>
 
         <!-- CONTENT (this is what gets blurred) -->
-        <aside *ngIf="discussions?.countErrors()?.size" class="favourites-feedback" role="status">
-            <span>{{ 'discussions.countFailed' | translate }}</span>
-            <button type="button" (click)="discussions?.retryCounts()">{{ 'discussions.retry' | translate }}</button>
-        </aside>
         <div class="matches-content" [class.is-blurred]="loading">
             <app-archive-coverage></app-archive-coverage>
 
@@ -251,7 +247,7 @@
                         <span class="prediction-view-notice__label">{{ 'timeZone.noticeTitle' | translate }}</span>
                         <span>{{ 'timeZone.dayNote' | translate:{zone: regional.timeZone()} }}</span>
                         <span *ngIf="viewMode === 'daily' && !loading && unresolvedTimeCount">{{ 'timeZone.unconverted' | translate:{count: regional.number(unresolvedTimeCount, 0, true)} }}</span>
-                        <button type="button" class="time-zone-notice__dismiss"
+                        <button type="button" class="time-zone-notice__dismiss bb-notice-close"
                             [attr.aria-label]="'timeZone.hideNotice' | translate" [title]="'timeZone.hideNotice' | translate"
                             (click)="timeZoneNoticePreference.setVisible(false)">&times;</button>
                     </aside>
@@ -276,7 +272,7 @@
                         <button type="button" (click)="showAllMatchesForCurrentDay()">{{ 'matchGrid.showAll' | translate }}</button>
                         <button type="button" (click)="openFilterModal()">{{ 'matchGrid.adjustFilters' | translate }}</button>
                     </span>
-                    <button type="button" class="prediction-view-notice__dismiss"
+                    <button type="button" class="prediction-view-notice__dismiss bb-notice-close"
                         [attr.aria-label]="'matchGrid.dismissNotice' | translate" [attr.title]="'matchGrid.dismissNotice' | translate"
                         (click)="dismissPredictionViewNotice()">&times;</button>
                 </aside>
@@ -284,7 +280,7 @@
                 <section *ngIf="viewMode !== 'favourites' && !loading && filteredMatches.length > 0 && (predictionOverviewVisible$ | async)"
                     class="prediction-summary"
                     [attr.aria-label]="'matchGrid.overviewAria' | translate">
-                    <button type="button" class="prediction-summary__dismiss"
+                    <button type="button" class="prediction-summary__dismiss bb-notice-close"
                         [attr.title]="'matchGrid.hideOverview' | translate"
                         [attr.aria-label]="'matchGrid.hideOverview' | translate"
                         (click)="dismissPredictionOverview()">&times;</button>
@@ -318,13 +314,13 @@
                 <aside *ngIf="probabilityFirst && !loading && matches.length && modelGuidancePreference.isVisible"
                     class="historical-pl-note model-guidance-note" role="note">
                     <span>{{ 'modelPerformance.modelOddsHint' | translate }}</span>
-                    <button type="button" class="historical-pl-note__dismiss"
+                    <button type="button" class="historical-pl-note__dismiss bb-notice-close"
                         [attr.aria-label]="'common.close' | translate" [title]="'common.close' | translate"
                         (click)="modelGuidancePreference.setVisible(false)">×</button>
                 </aside>
                 <aside *ngIf="!probabilityFirst && showHistoricalPlNote && historicalPlNoticePreference.isVisible" class="historical-pl-note" role="note">
                     <span><span aria-hidden="true">ⓘ </span>{{ 'matchGrid.plHistoricalNote' | translate }}</span>
-                    <button type="button" class="historical-pl-note__dismiss"
+                    <button type="button" class="historical-pl-note__dismiss bb-notice-close"
                         [attr.aria-label]="'common.close' | translate" [title]="'common.close' | translate"
                         (click)="historicalPlNoticePreference.setVisible(false)">×</button>
                 </aside>
@@ -348,7 +344,7 @@
                     [attr.aria-label]="'demoAds.preview' | translate">
                     <strong>{{ 'demoAds.preview' | translate }}</strong>
                     <span class="demo-ad-preview-controls__hint">{{ adNoticeCopyKey | translate }}</span>
-                    <button type="button" class="demo-ad-preview-controls__close" (click)="requestHideAds()"
+                    <button type="button" class="demo-ad-preview-controls__close bb-notice-close" (click)="requestHideAds()"
                         [attr.aria-label]="'demoAds.remove' | translate" [title]="'demoAds.remove' | translate">×</button>
                 </aside>
 

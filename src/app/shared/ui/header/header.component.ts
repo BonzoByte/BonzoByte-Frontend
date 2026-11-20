@@ -15,6 +15,7 @@ import { accountAllowsDemoAds } from '../../../core/helpers/demo-ad-layout';
 import { membershipTier, membershipCountdown, TrialCountdown } from '../../../core/helpers/membership';
 import { TimeZoneNoticePreferenceService } from '../../../core/services/time-zone-notice-preference.service';
 import { environment } from '../../../../environments/environment';
+import { COMMUNITY_ENABLED } from '../../../core/helpers/community-enabled';
 import { FavouriteMatchesService } from '../../../core/services/favourite-matches.service';
 import { PredictionDialogComponent } from '../../../competition/prediction-dialog.component';
 import { DiscussionInboxComponent } from '../../../discussions/discussion-inbox.component';
@@ -51,6 +52,7 @@ export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
     readonly siteInsights = inject(SiteInsightsService);
     get siteInsightsLabel(): string { return this.regional.language() === 'hr' ? 'Posjećenost' : 'Site audience'; }
     readonly billingLab = environment.billingLab;
+    readonly communityEnabled = COMMUNITY_ENABLED;
     @Output() closed = new EventEmitter<void>();
     @Output() userModalOpened = new EventEmitter<void>();
     @ViewChild('languagePicker') private languagePicker?: ElementRef<HTMLDetailsElement>;

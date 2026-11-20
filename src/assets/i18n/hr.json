@@ -1,4 +1,27 @@
 {
+  "community": {
+    "title": "Zajednica", "intro": "Tenis je više od rezultata. Razgovarajmo o mečevima, igri i svemu između.",
+    "categories": "Rubrike zajednice", "discussions": "Razgovori u klubu", "newTopic": "Nova tema",
+    "matches": { "title": "Mečevi i turniri", "description": "Tour, veliki turniri i razgovori uz mečeve.", "suggestion": "Što pratimo ovaj tjedan? Otvori temu o turniru ili podijeli dojam o meču." },
+    "play": { "title": "Igramo tenis", "description": "Pronađi partnera, razmijeni iskustva i savjete.", "suggestion": "Tražiš partnera? Navedi grad, razinu igre, singl ili parove i okvirne termine. Kontakt dogovorite privatno, bez objave broja telefona i kućne adrese." },
+    "equipment": { "title": "Oprema i tereni", "description": "Reketi, žice, obuća i mjesta za igru.", "suggestion": "Koji ti reket odgovara, kada mijenjaš žice ili koji teren preporučuješ? Podijeli vlastito iskustvo." },
+    "terrace": { "title": "Klupska terasa", "description": "Predstavljanja i opušteni razgovori između setova.", "suggestion": "Predstavi se: gledaš li tenis, igraš ili oboje? Dobrodošle su i teme izvan tenisa, uz poštovanje drugih." },
+    "rules": "Gosti mogu čitati. Za objavu je potreban potvrđen račun, bez obvezne pretplate.",
+    "about": "Pravila i BonzoByte kutak", "rulesMore": "Razgovaraj s poštovanjem. Bez vrijeđanja, spama, oglašavanja i tuđih privatnih podataka. Neprimjerene objave prijavi moderatoru. Objave su javne; prognoze i mišljenja nisu jamstvo ishoda.",
+    "corner": "BonzoByte kutak: za pitanja o aplikaciji i prijedloge otvori temu na Klupskoj terasi. Privatne poruke ostaju odvojene i zadržavaju postojeća pravila pristupa.",
+    "refresh": "Osvježi", "loading": "Učitavam razgovore…", "readOnly": "Slobodno razgledaj. Prijavi se potvrđenim računom da se uključiš u razgovor.",
+    "verify": "Za objavu je potreban potvrđen račun.", "signIn": "Prijavi se", "first": "Ovdje počinje prvi razgovor", "posts": "{{count}} objava",
+    "more": "Učitaj još", "back": "Natrag na rubriku", "topicTitle": "Naslov teme", "language": "Jezik razgovora", "cancel": "Odustani",
+    "firstPost": "Prva objava", "yourReply": "Tvoj odgovor", "publish": "Objavi", "sending": "Spremam…", "member": "Član", "removed": "Objava je uklonjena ili skrivena.",
+    "reply": "Odgovori", "replyTo": "Odgovor članu", "delete": "Ukloni", "report": "Prijavi", "hide": "Sakrij", "unhide": "Vrati objavu", "removeTopic": "Ukloni temu",
+    "confirm": "Potvrdi", "confirmNote": "Potvrdi promjenu. Uklonjena objava više neće biti javno vidljiva.", "reportNote": "Prijava je namijenjena moderatorima. Ne navodi osjetljive osobne podatke.", "reason": "Razlog (neobavezno)",
+    "reported": "Prijava je poslana moderatorima.", "sent": "Objava je spremljena.", "sentMore": "Objava je spremljena na kraju razgovora. Učitaj preostale objave da je vidiš.",
+    "linked": "Jedan meč, jedan razgovor", "matchThreads": "Rasprave uz mečeve", "sameThread": "Ovdje otvaraš istu raspravu kao u detaljima meča. Komentari se ne kopiraju i privatne poruke nisu prikazane.",
+    "noMatches": "Još nema javnih komentara uz mečeve. Razgovor možeš započeti u popisu mečeva.", "match": "Meč #{{id}}", "browseMatches": "Otvori mečeve",
+    "failed": "Razgovore trenutačno nije moguće dohvatiti. Napisani tekst ostaje u obrascu; pokušaj ponovno.", "rateLimit": "Malo predahni prije nove objave pa pokušaj ponovno.",
+    "invalid": "Provjeri unos: naslov do 120 znakova, objava do 1000, bez HTML oznaka.", "notFound": "Ovaj razgovor trenutačno nije dostupan ili je uklonjen.",
+    "moderation": "Pregled prijava", "noReports": "Nema prijava.", "openTopic": "Otvori temu"
+  },
   "archiveCoverage": {
     "notice": "Online popisi i detalji mečeva: {{from}}–{{through}}. Sažetne statistike obuhvaćaju cijelu povijest. Starije arhive još se prenose."
   },

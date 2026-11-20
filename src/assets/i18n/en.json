@@ -1,4 +1,27 @@
 {
+  "community": {
+    "title": "Community", "intro": "Tennis is more than the score. Talk matches, playing the game and everything in between.",
+    "categories": "Community sections", "discussions": "Club conversations", "newTopic": "New topic",
+    "matches": { "title": "Matches & tournaments", "description": "The tour, major events and match conversations.", "suggestion": "What are you watching this week? Start a tournament topic or share your thoughts on a match." },
+    "play": { "title": "Let's play tennis", "description": "Find a hitting partner, share experience and tips.", "suggestion": "Looking for a partner? Include your city, playing level, singles or doubles and approximate availability. Arrange contact privately; do not publish a phone number or home address." },
+    "equipment": { "title": "Gear & courts", "description": "Rackets, strings, shoes and places to play.", "suggestion": "Which racket suits you, when do you change strings or which courts do you recommend? Share your own experience." },
+    "terrace": { "title": "Club terrace", "description": "Introductions and relaxed conversations between sets.", "suggestion": "Introduce yourself: do you watch tennis, play or both? Off-topic conversations are welcome too, with respect for others." },
+    "rules": "Guests can read. Posting needs a verified account, not a paid subscription.",
+    "about": "Guidelines & BonzoByte corner", "rulesMore": "Be respectful. No abuse, spam, advertising or other people's private information. Report inappropriate posts to a moderator. Posts are public; forecasts and opinions do not guarantee outcomes.",
+    "corner": "BonzoByte corner: start a Club terrace topic for app questions and suggestions. Private messages remain separate, under the existing access rules.",
+    "refresh": "Refresh", "loading": "Loading conversations…", "readOnly": "Have a look around. Sign in with a verified account to join the conversation.",
+    "verify": "Posting requires a verified account.", "signIn": "Sign in", "first": "The first conversation starts here", "posts": "{{count}} posts",
+    "more": "Load more", "back": "Back to section", "topicTitle": "Topic title", "language": "Conversation language", "cancel": "Cancel",
+    "firstPost": "First post", "yourReply": "Your reply", "publish": "Publish", "sending": "Saving…", "member": "Member", "removed": "This post was removed or hidden.",
+    "reply": "Reply", "replyTo": "Replying to", "delete": "Remove", "report": "Report", "hide": "Hide", "unhide": "Restore post", "removeTopic": "Remove topic",
+    "confirm": "Confirm", "confirmNote": "Confirm this change. Removed content will no longer be publicly visible.", "reportNote": "Reports go to moderators. Do not include sensitive personal information.", "reason": "Reason (optional)",
+    "reported": "Your report was sent to moderators.", "sent": "Your post was saved.", "sentMore": "Your post was saved at the end of the conversation. Load the remaining posts to see it.",
+    "linked": "One match, one conversation", "matchThreads": "Match discussions", "sameThread": "These open the same discussions as match details. Comments are not copied and private messages are never shown here.",
+    "noMatches": "No public match comments yet. You can start a conversation from the matches page.", "match": "Match #{{id}}", "browseMatches": "Browse matches",
+    "failed": "Conversations are temporarily unavailable. Your text stays in the form; please try again.", "rateLimit": "Please pause briefly before posting again.",
+    "invalid": "Check your text: titles up to 120 characters, posts up to 1000, without HTML tags.", "notFound": "This conversation is unavailable or has been removed.",
+    "moderation": "Review reports", "noReports": "No reports.", "openTopic": "Open topic"
+  },
   "archiveCoverage": {
     "notice": "Online match lists and details: {{from}}–{{through}}. Summary statistics cover the full historical dataset. Older archives are still being transferred."
   },

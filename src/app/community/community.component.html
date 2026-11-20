@@ -1,0 +1,78 @@
+<section class="community-page">
+  <header class="club-hero"><div><p class="eyebrow">BONZOBYTE KLUB</p><h1>{{ 'community.title' | translate }}</h1>
+    <p>{{ 'community.intro' | translate }}</p></div><span class="club-mark" aria-hidden="true">◎</span></header>
+  <nav class="category-grid" [attr.aria-label]="'community.categories' | translate">
+    <a *ngFor="let c of categories" [routerLink]="['/community']" [queryParams]="{category:c.id}" [class.active]="category===c.id"
+      [attr.aria-current]="category===c.id ? 'page' : null"><span class="category-icon" aria-hidden="true">{{c.icon}}</span>
+      <strong>{{'community.'+c.id+'.title' | translate}}</strong><small>{{'community.'+c.id+'.description' | translate}}</small></a>
+  </nav>
+  <aside class="club-rules"><span>{{'community.rules' | translate}}</span><details><summary>{{'community.about' | translate}}</summary>
+    <p>{{'community.rulesMore' | translate}}</p><p>{{'community.corner' | translate}}</p></details></aside>
+  <div *ngIf="error" class="feedback error" role="alert">{{error | translate}} <button type="button" (click)="load()" [disabled]="busy">{{'community.refresh' | translate}}</button></div>
+  <p *ngIf="notice" class="feedback" role="status">{{notice | translate}}</p>
+  <div class="club-layout" [class.single]="page || composing || category!=='matches'">
+    <section class="club-panel" [attr.aria-busy]="loading" [attr.aria-label]="'community.discussions' | translate">
+      <ng-container *ngIf="!page && !composing">
+        <div class="panel-heading"><div><p class="eyebrow">{{'community.discussions' | translate}}</p><h2>{{'community.'+category+'.title' | translate}}</h2></div>
+          <button class="primary" type="button" (click)="canWrite ? startTopic() : login()">{{'community.newTopic' | translate}}</button></div>
+        <p *ngIf="!canWrite" class="muted">{{(user ? 'community.verify' : 'community.readOnly') | translate}}</p>
+        <p *ngIf="loading" role="status">{{'community.loading' | translate}}</p>
+        <div class="topic-list"><a *ngFor="let topic of topics" [routerLink]="['/community']" [queryParams]="{category:topic.category,topic:topic.id}" class="topic-card">
+          <div><span class="language-tag">{{topic.language.toUpperCase()}}</span><h3>{{topic.title}}</h3></div>
+          <div class="topic-meta"><span>{{'community.posts' | translate:{count:topic.commentCount} }}</span><time [attr.datetime]="topic.lastActivityAt">{{regional.matchDateTime(topic.lastActivityAt)}}</time></div>
+        </a></div>
+        <div *ngIf="!loading && !error && !topics.length" class="empty"><span aria-hidden="true">✦</span><h3>{{'community.first' | translate}}</h3>
+          <p>{{'community.'+category+'.suggestion' | translate}}</p></div>
+        <button *ngIf="list?.hasMore" type="button" (click)="load(true)" [disabled]="loading">{{'community.more' | translate}}</button>
+      </ng-container>
+      <ng-container *ngIf="composing">
+        <div class="panel-heading"><h2>{{'community.newTopic' | translate}}</h2><button type="button" (click)="composing=false" [disabled]="busy">{{'community.cancel' | translate}}</button></div>
+        <p class="muted">{{'community.'+category+'.suggestion' | translate}}</p>
+        <label for="topic-title">{{'community.topicTitle' | translate}}</label><input id="topic-title" [(ngModel)]="title" (ngModelChange)="edited()" maxlength="160" [disabled]="busy" />
+        <label for="topic-language">{{'community.language' | translate}}</label><select id="topic-language" [(ngModel)]="language" (ngModelChange)="edited()" [disabled]="busy"><option value="hr">Hrvatski</option><option value="en">English</option></select>
+      </ng-container>
+      <ng-container *ngIf="page">
+        <div class="panel-heading"><a [routerLink]="['/community']" [queryParams]="{category:page.topic.category}">← {{'community.back' | translate}}</a>
+          <button type="button" (click)="load()" [disabled]="loading || busy">{{'community.refresh' | translate}}</button></div>
+        <span class="language-tag">{{page.topic.language.toUpperCase()}}</span><h2 class="topic-title">{{page.topic.title}}</h2>
+        <button *ngIf="page.comments[0]?.canDelete && page.comments[0]?.sequence===1 || canModerate" type="button" class="danger" (click)="action={kind:'topic'}">{{'community.removeTopic' | translate}}</button>
+        <article *ngFor="let comment of page.comments" class="comment" [id]="'post-'+comment.id">
+          <header><strong>{{comment.author?.nickname || ('community.member' | translate)}}</strong><time [attr.datetime]="comment.createdAt">{{regional.matchDateTime(comment.createdAt)}}</time><span class="post-number">#{{comment.sequence}}</span></header>
+          <blockquote *ngIf="comment.replyTo && !comment.deleted && !comment.hidden">{{comment.replyTo.authorName || ('community.member' | translate)}}: {{comment.replyTo.body || ('community.removed' | translate)}}</blockquote>
+          <p class="comment-body" *ngIf="!comment.hidden && !comment.deleted; else removed">{{comment.body}}</p><ng-template #removed><p class="muted">{{'community.removed' | translate}}</p></ng-template>
+          <footer *ngIf="canWrite"><button *ngIf="!comment.replyTo && !comment.deleted && !comment.hidden" type="button" (click)="reply=comment; edited()" [disabled]="busy">{{'community.reply' | translate}}</button>
+            <button *ngIf="comment.canDelete" type="button" (click)="action={kind:'delete',comment:comment}" [disabled]="busy">{{'community.delete' | translate}}</button>
+            <button *ngIf="!comment.deleted && !comment.hidden && !comment.canDelete" type="button" (click)="action={kind:'report',comment:comment}; reason=''">{{'community.report' | translate}}</button>
+            <button *ngIf="comment.canHide" type="button" (click)="action={kind:'hide',comment:comment}">{{(comment.hidden?'community.unhide':'community.hide') | translate}}</button></footer>
+        </article>
+        <button *ngIf="page.hasMore" type="button" (click)="load(true)" [disabled]="loading || busy">{{'community.more' | translate}}</button>
+      </ng-container>
+      <form *ngIf="(page || composing) && canWrite" class="composer" (ngSubmit)="send()">
+        <div *ngIf="reply" class="reply-target"><span>{{'community.replyTo' | translate}} {{reply.author?.nickname}}</span><button type="button" (click)="reply=null; edited()" [disabled]="busy">×</button></div>
+        <label for="post-body">{{(composing?'community.firstPost':'community.yourReply') | translate}}</label>
+        <textarea id="post-body" [(ngModel)]="body" name="body" (ngModelChange)="edited()" rows="5" maxlength="32000" [disabled]="busy"></textarea>
+        <div class="composer-footer"><small [class.danger]="bodyLength>1000">{{bodyLength}} / 1000</small><button class="primary" type="submit" [disabled]="!canSend">{{(busy?'community.sending':'community.publish') | translate}}</button></div>
+      </form>
+      <p *ngIf="page && !canWrite" class="sign-in-note">{{(user ? 'community.verify' : 'community.readOnly') | translate}} <button *ngIf="!user" type="button" (click)="login()">{{'community.signIn' | translate}}</button></p>
+      <section *ngIf="action" class="action-confirm" role="region" [attr.aria-label]="'community.confirm' | translate">
+        <p>{{(action.kind==='report'?'community.reportNote':'community.confirmNote') | translate}}</p>
+        <label *ngIf="action.kind==='report'" for="report-reason">{{'community.reason' | translate}}</label>
+        <textarea *ngIf="action.kind==='report'" id="report-reason" [(ngModel)]="reason" maxlength="500" rows="2"></textarea>
+        <button type="button" (click)="confirmAction()" [disabled]="busy">{{'community.confirm' | translate}}</button>
+        <button type="button" (click)="action=null" [disabled]="busy">{{'community.cancel' | translate}}</button>
+      </section>
+    </section>
+    <aside *ngIf="!page && !composing && category==='matches'" class="club-panel match-feed" [attr.aria-busy]="matchLoading">
+      <p class="eyebrow">{{'community.linked' | translate}}</p><h2>{{'community.matchThreads' | translate}}</h2><p class="muted">{{'community.sameThread' | translate}}</p>
+      <p *ngIf="matchLoading" role="status">{{'community.loading' | translate}}</p>
+      <p *ngIf="!matchLoading && !matchError && !matches.length" class="muted">{{'community.noMatches' | translate}}</p>
+      <div *ngIf="matchError" role="alert">{{'community.failed' | translate}} <button type="button" (click)="loadMatches()">{{'community.refresh' | translate}}</button></div>
+      <button *ngFor="let match of matches" class="match-thread" type="button" (click)="openMatch(match)"><strong>{{match.title || ('community.match' | translate:{id:match.id})}}</strong>
+        <small>{{'community.posts' | translate:{count:match.commentCount} }}</small></button>
+      <button *ngIf="matchList?.hasMore" type="button" (click)="loadMatches(true)" [disabled]="matchLoading">{{'community.more' | translate}}</button>
+      <a routerLink="/matches" class="browse-matches">{{'community.browseMatches' | translate}} →</a>
+    </aside>
+  </div>
+  <section *ngIf="canModerate" class="club-panel moderation"><button type="button" (click)="showReports()">{{'community.moderation' | translate}}</button>
+    <p *ngIf="reports && !reports.length">{{'community.noReports' | translate}}</p><div *ngFor="let report of reports"><p>{{report.reason || ('community.report' | translate)}}</p><button type="button" (click)="viewReport(report.matchTPId)">{{'community.openTopic' | translate}}</button></div></section>
+</section>

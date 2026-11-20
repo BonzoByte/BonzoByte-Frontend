@@ -59,8 +59,8 @@
         &:focus-visible { outline: 2px solid var(--bb-theme-accent); outline-offset: 2px; }
     }
 
-    .matches-page .prediction-view-notice__dismiss,
-    .matches-page .time-zone-notice__dismiss {
+    .matches-page .prediction-view-notice__dismiss:not(.bb-notice-close),
+    .matches-page .time-zone-notice__dismiss:not(.bb-notice-close) {
         color: #295a46;
 
         &:hover { background: #dcefe5; }

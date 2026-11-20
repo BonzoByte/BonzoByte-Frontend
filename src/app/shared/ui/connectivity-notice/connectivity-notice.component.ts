@@ -12,7 +12,7 @@ import { NoticeCountdown } from '../../../core/i18n/notice-countdown';
           <span>{{ 'viewRecovery.preserved' | translate }}</span>
           <button *ngIf="!offline() && recovery.hasFailure()" type="button" class="retry-read" (click)="recovery.retry()">{{ 'viewRecovery.retry' | translate }}</button>
         </div>
-        <button type="button" class="dismiss-notice" [attr.aria-label]="'common.close' | translate" (click)="dismiss()">×</button>
+        <button type="button" class="dismiss-notice bb-notice-close" [attr.aria-label]="'common.close' | translate" (click)="dismiss()">×</button>
       </aside>`,
     styles: [`
       :host { display: contents; }
@@ -23,7 +23,7 @@ import { NoticeCountdown } from '../../../core/i18n/notice-countdown';
         font-size: 12px; line-height: 1.5; overflow-wrap: anywhere; }
       .connectivity-notice div { flex: 1; min-width: 0; } strong, span { display: block; }
       span { color: var(--bb-text-muted, #b3c0cc); }
-      button { flex-shrink: 0; width: 32px; height: 32px; border: 0; border-radius: 5px; background: transparent;
+      button:not(.bb-notice-close) { flex-shrink: 0; width: 32px; height: 32px; border: 0; border-radius: 5px; background: transparent;
         color: inherit; cursor: pointer; font: inherit; font-size: 22px; }
       button:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
       .retry-read { width: auto; height: auto; margin-top: 6px; padding: 5px 10px; font-size: 12px;

@@ -13,7 +13,7 @@ import { TranslateModule } from '@ngx-translate/core';
                 <span>{{ 'demoAds.label' | translate }}</span>
                 <div class="demo-ad__actions">
                     <span class="demo-ad__slot" aria-hidden="true">#{{ slot }}</span>
-                    <button type="button" class="demo-ad__close"
+                    <button type="button" class="demo-ad__close bb-notice-close"
                         [attr.aria-label]="'demoAds.remove' | translate" [title]="'demoAds.remove' | translate"
                         (click)="$event.stopPropagation(); dismissed.emit()">
                         <span aria-hidden="true">×</span>
@@ -48,14 +48,6 @@ import { TranslateModule } from '@ngx-translate/core';
         }
         .demo-ad__slot { font-variant-numeric: tabular-nums; }
         .demo-ad__actions { display: flex; align-items: center; gap: 8px; }
-        .demo-ad__close {
-            display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
-            width: 32px; height: 32px; padding: 0; border: 1px solid transparent; border-radius: 6px;
-            background: transparent; color: var(--bb-text, #e8edf2); cursor: pointer;
-            font: inherit; font-size: 22px; line-height: 1; letter-spacing: normal;
-        }
-        .demo-ad__close:hover { border-color: var(--bb-border-strong, #56616b); }
-        .demo-ad__close:focus-visible { outline: 2px solid var(--bb-text, #e8edf2); outline-offset: 2px; }
         .demo-ad__creative { display: flex; align-items: center; gap: 18px; padding: 3px 0 10px; }
         .demo-ad__copy { min-width: 0; flex: 1; }
         .demo-ad__art {

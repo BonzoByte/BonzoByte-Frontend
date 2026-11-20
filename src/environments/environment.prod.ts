@@ -1,5 +1,6 @@
 export const environment = {
     production: true,
+    communityEnabled: true,
     siteAnalyticsEnabled: false,
     analyticsEnabled: false, // Enable only after privacy notice and GA property settings are reviewed.
     billingLab: false,

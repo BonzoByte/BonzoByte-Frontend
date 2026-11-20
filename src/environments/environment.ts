@@ -1,5 +1,7 @@
 export const environment = {
   production: false,
+  communityEnabled: true,
+  probabilityFirst: true,
   siteAnalyticsEnabled: false,
   analyticsEnabled: false, // Real tracking is disabled during development; consent UI can be tested.
   billingLab: false,

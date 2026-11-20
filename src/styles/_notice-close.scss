@@ -1,0 +1,33 @@
+// One visual treatment for dismissible information banners (not modal actions).
+:root button.bb-notice-close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    flex: 0 0 auto;
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+    min-height: 32px;
+    padding: 0;
+    border: 1px solid var(--bb-border-strong, #56616b);
+    border-radius: 6px;
+    background: var(--bb-surface-2, #1b232b);
+    color: var(--bb-text, #e8edf2);
+    font: inherit;
+    font-size: 20px;
+    font-weight: 600;
+    line-height: 1;
+    letter-spacing: normal;
+    text-decoration: none;
+    cursor: pointer;
+}
+:root button.bb-notice-close:hover {
+    border-color: var(--bb-theme-accent, #8ad4ff);
+    background: var(--bb-surface-3, #252f39);
+}
+:root button.bb-notice-close:focus-visible {
+    outline: 2px solid var(--bb-theme-accent, #8ad4ff);
+    outline-offset: 2px;
+}
+:root button.bb-notice-close:disabled { opacity: .5; cursor: default; }
