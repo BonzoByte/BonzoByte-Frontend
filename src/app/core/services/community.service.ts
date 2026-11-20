@@ -53,6 +53,7 @@ export class CommunityService {
   }
   remove(id: string) { return this.http.delete(`${this.base}/comments/${id}`).pipe(timeout(30000)); }
   edit(id: string, body: string, version: number) { return this.http.patch<CommunityEditResult>(`${this.base}/comments/${id}`, { body, version }).pipe(timeout(30000)); }
+  react(id: string, liked: boolean) { return this.http.put<{ commentId: string; reaction: { count: number; liked: boolean } }>(`${this.base}/comments/${id}/reaction`, { liked }).pipe(timeout(30000)); }
   report(id: string, reason: string) { return this.http.post(`${this.base}/comments/${id}/report`, { reason }).pipe(timeout(30000)); }
   hide(id: string, hidden: boolean) { return this.http.post(`${this.base}/comments/${id}/hide`, { hidden }).pipe(timeout(30000)); }
   reports(after?: string) { return this.http.get<{ reports: { id: string; commentId: string; matchTPId: number; reason: string; createdAt: string }[]; hasMore: boolean; nextAfter: string }>(`${this.base}/reports`, { params: after ? { after } : {} }).pipe(timeout(30000)); }

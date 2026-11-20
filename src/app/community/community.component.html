@@ -63,6 +63,18 @@
             <div class="edit-actions"><button class="primary" type="submit" [disabled]="!canSaveEdit">{{'community.edits.save' | translate}}</button>
               <button type="button" (click)="cancelEdit()" [disabled]="busy">{{'community.cancel' | translate}}</button></div>
           </form>
+          <div *ngIf="!comment.hidden && !comment.deleted && comment.author" class="comment-reactions">
+            <button *ngIf="canWrite && comment.author.id!==user?._id; else reactionTotal" type="button" class="reaction-toggle"
+              [attr.aria-pressed]="comment.reaction?.liked || false" [disabled]="busy || !!editing"
+              [attr.aria-label]="(comment.reaction?.liked?'community.reactions.undo':'community.reactions.like') | translate"
+              [title]="(comment.reaction?.liked?'community.reactions.undo':'community.reactions.like') | translate" (click)="toggleReaction(comment)">
+              <span aria-hidden="true">🎾</span> {{(comment.reaction?.liked?'community.reactions.liked':'community.reactions.like') | translate}}
+              <span class="reaction-number" aria-live="polite">{{comment.reaction?.count || 0}}</span>
+            </button>
+            <ng-template #reactionTotal><span class="reaction-total" [title]="(canWrite?'community.reactions.own':'community.reactions.signIn') | translate">
+              <span aria-hidden="true">🎾</span> {{'community.reactions.like' | translate}} <span class="reaction-number">{{comment.reaction?.count || 0}}</span>
+            </span></ng-template>
+          </div>
           <footer *ngIf="canWrite && !editing"><button *ngIf="!comment.replyTo && !comment.deleted && !comment.hidden" type="button" (click)="reply=comment; edited()" [disabled]="busy">{{'community.reply' | translate}}</button>
             <button *ngIf="comment.canDelete && !comment.hidden && !comment.deleted" type="button" class="edit-comment" (click)="beginEdit(comment)" [disabled]="busy"><i class="bi bi-pencil" aria-hidden="true"></i> {{'community.edits.edit' | translate}}</button>
             <button *ngIf="comment.canDelete" type="button" (click)="action={kind:'delete',comment:comment}" [disabled]="busy">{{'community.delete' | translate}}</button>

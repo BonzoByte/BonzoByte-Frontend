@@ -153,6 +153,16 @@ export class CommunityComponent implements OnDestroy, AfterViewInit {
     setTimeout(() => this.document.getElementById('edit-'+comment.id)?.focus());
   }
   cancelEdit(): void { this.editing = null; this.editBody = ''; this.editError = ''; }
+  toggleReaction(comment: DiscussionComment): void {
+    if (!this.page || !this.canWrite || this.busy || this.editing || comment.hidden || comment.deleted
+      || !comment.author || comment.author.id === this.user?._id) return;
+    const topic = this.page.topic.id, revision = this.revision; this.busy = true; this.error = '';
+    // Send a desired state, not a blind toggle: retrying a lost response cannot double-count.
+    this.mutation = this.api.react(comment.id, !comment.reaction?.liked).pipe(finalize(() => { if (revision === this.revision) this.busy = false; })).subscribe({
+      next: result => { if (revision === this.revision && this.page?.topic.id === topic)
+        this.page = { ...this.page, comments: this.page.comments.map(row => row.id === result.commentId ? { ...row, reaction: result.reaction } : row) }; },
+      error: e => { if (revision === this.revision) this.error = this.errorKey(e); } });
+  }
   saveEdit(): void {
     if (!this.canSaveEdit || !this.editing || !this.page) return;
     const target = this.editing, topic = this.page.topic.id, revision = this.revision;

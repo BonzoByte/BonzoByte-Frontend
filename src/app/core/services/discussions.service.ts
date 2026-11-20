@@ -15,6 +15,7 @@ export interface DiscussionComment {
     author: { id: string; nickname: string; avatarUrl: string | null } | null;
     body: string; createdAt: string; replyTo: DiscussionReply | null;
     editedAt?: string | null; editVersion?: number;
+    reaction?: { count: number; liked: boolean };
     deleted: boolean; hidden: boolean; canDelete: boolean; canHide: boolean;
 }
 export interface DiscussionPage {
