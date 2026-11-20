@@ -1,6 +1,7 @@
 // Optimized build, same-origin gated API. No direct Render/R2/localhost fallback.
 export const environment = {
     production: true,
+    siteAnalyticsEnabled: true,
     probabilityFirst: true,
     analyticsEnabled: false,
     closedBeta: true,

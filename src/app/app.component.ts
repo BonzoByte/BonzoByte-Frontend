@@ -22,6 +22,7 @@ import { savedDeletionReceipt } from './core/services/account-deletion.service';
 import { PageTitleService } from './core/services/page-title.service';
 import { ConnectivityNoticeComponent } from './shared/ui/connectivity-notice/connectivity-notice.component';
 import { AppUpdateNoticeComponent } from './shared/ui/app-update-notice/app-update-notice.component';
+import { SiteInsightsService } from './core/services/site-insights.service';
 
 @Component({
     selector: 'app-root',
@@ -65,7 +66,8 @@ export class AppComponent implements OnInit, OnDestroy {
         private referrals: ReferralService,
         private analytics: ConsentedAnalyticsService,
         private popularity: PopularityService,
-        private pageTitles: PageTitleService
+        private pageTitles: PageTitleService,
+        private siteInsights: SiteInsightsService
     ) { }
 
     ngOnInit(): void {
@@ -77,12 +79,15 @@ export class AppComponent implements OnInit, OnDestroy {
         // Before initial navigation router.url can still be '/' on an auth deep link.
         // Subscribe to choices now, but wait for the actual route before tracking it.
         this.analytics.start();
+        this.siteInsights.start();
         if (this.router.navigated) this.analytics.page(this.router.url);
+        if (this.router.navigated) this.siteInsights.page(this.router.url);
         // Only allowlisted section names may reach the consent-controlled analytics service.
         this.routerSub = this.router.events
             .pipe(filter((e): e is NavigationEnd => e instanceof NavigationEnd))
             .subscribe(e => {
                 this.analytics.page(e.urlAfterRedirects);
+                this.siteInsights.page(e.urlAfterRedirects);
             });
     }
 

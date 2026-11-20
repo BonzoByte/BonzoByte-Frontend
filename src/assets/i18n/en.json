@@ -528,7 +528,12 @@
   },
   "privacy": {
     "title": "Your privacy, your choice",
-    "summary": "We use browser storage for sign-in, security and your chosen settings. Google Analytics and contributions to BonzoByte's Popularity rankings are separate, optional choices. You can use BonzoByte and view public rankings without allowing either.",
+    "summary": "We use browser storage for sign-in, security and your chosen settings. Google Analytics, Popularity contributions and BonzoByte visit measurement are separate optional purposes. You can use BonzoByte without allowing them.",
+    "siteAnalytics": "Optional visit measurement — BonzoByte",
+    "siteAnalyticsText": "When enabled and accepted, our backend measures views of named sections using a random browser identifier lasting at most 30 days. It estimates browsers, not people, and does not store full IP addresses, fingerprints, search terms or complete URLs. Signed-in activity uses a separate protected account hash. Records expire after 32 days; database cleanup can be delayed. Registered-account counts are separate from optional visit tracking. New confirmed external accounts may generate a private owner notification containing no user name or email address.",
+    "siteAnalyticsWithdraw": "Withdrawal stops future measurement and requests deletion of records linked to this browser identifier. A temporary pending-deletion identifier may be kept only to retry that request. Existing records also expire automatically. Signup notices last up to 90 days; account erasure removes their account link. Only the approved site owners can view the private report.",
+    "excludeBrowser": "Exclude this browser from BonzoByte visit statistics",
+    "excludeBrowserText": "This preference does not grant tracking consent or account privileges. It remains after logout. An internal account enables it automatically. Each browser/profile has its own setting; clearing site data removes it. Localhost, preview deployments and automated checks are excluded from production visit measurement.",
     "preview": "Google Analytics is currently off. Popularity contributions are a separate choice. We will ask again before enabling Google Analytics.",
     "reject": "Reject all optional",
     "accept": "Accept all optional",

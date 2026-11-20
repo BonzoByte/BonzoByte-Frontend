@@ -1,5 +1,6 @@
 export const environment = {
     production: true,
+    siteAnalyticsEnabled: false,
     analyticsEnabled: false, // Enable only after privacy notice and GA property settings are reviewed.
     billingLab: false,
     // Safe public launch: no ad requests while site approval/CMP integration is pending.

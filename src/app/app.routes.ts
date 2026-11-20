@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { PROBABILITY_FIRST } from './core/helpers/model-odds';
 export const routes: Routes = [
+    { path: 'site-insights', loadComponent: () => import('./site-insights/site-insights.component').then(m => m.SiteInsightsComponent) },
     { path: 'fantasy', canDeactivate: [(component: { canLeave(): boolean }) => component.canLeave()], loadComponent: () => import('./fantasy/fantasy-page.component').then(m => m.FantasyPageComponent) },
     { path: 'tennis-break', loadComponent: () => import('./arcade/tennis-break.component').then(m => m.TennisBreakComponent) },
     { path: 'auth/callback', loadComponent: () => import('./auth/oauth-success/oauth-success.component').then(m => m.OauthSuccessComponent) },

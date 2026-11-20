@@ -18,6 +18,15 @@
     <label class="privacy-toggle"><input type="checkbox" name="popularity" [(ngModel)]="popularity" aria-describedby="privacy-popularity-description">
       <strong>{{ copy.popularity }}</strong></label>
     <p id="privacy-popularity-description">{{ copy.popularityText }}</p>
+    <ng-container *ngIf="privacy.options.siteAnalyticsEnabled">
+      <label class="privacy-toggle"><input type="checkbox" name="siteAnalytics" [(ngModel)]="siteAnalytics" aria-describedby="privacy-site-description">
+        <strong>{{ copy.siteAnalytics }}</strong></label>
+      <p id="privacy-site-description">{{ copy.siteAnalyticsText }}</p>
+      <p>{{ copy.siteAnalyticsWithdraw }}</p>
+    </ng-container>
+    <label class="privacy-toggle"><input type="checkbox" name="excludeBrowser" [checked]="siteInsights.excluded()"
+      (change)="siteInsights.setExcluded($any($event.target).checked)"><strong>{{ copy.excludeBrowser }}</strong></label>
+    <p>{{ copy.excludeBrowserText }}</p>
     <p>{{ copy.duration }}</p>
     <details><summary>{{ copy.storageTitle }}</summary>
       <h5>{{ copy.necessary }}</h5><p>{{ copy.necessaryText }}</p>

@@ -6,6 +6,7 @@ import { PrivacyConsentService } from '../../../core/services/privacy-consent.se
 import { BbModalShellComponent } from '../bb-modal-shell.component/bb-modal-shell.component';
 import en from '../../../../assets/i18n/en.json';
 import hr from '../../../../assets/i18n/hr.json';
+import { SiteInsightsService } from '../../../core/services/site-insights.service';
 
 @Component({ selector: 'app-privacy', standalone: true,
     imports: [CommonModule, FormsModule, TranslateModule, BbModalShellComponent],
@@ -13,20 +14,22 @@ import hr from '../../../../assets/i18n/hr.json';
 export class PrivacyComponent {
     analytics = false;
     popularity = false;
-    constructor(readonly privacy: PrivacyConsentService, private readonly translate: TranslateService) {
+    siteAnalytics = false;
+    constructor(readonly privacy: PrivacyConsentService, private readonly translate: TranslateService, readonly siteInsights: SiteInsightsService) {
         effect(() => { if (privacy.settingsOpen()) this.loadChoices(); });
     }
     // Other dictionaries still contain the former GA-only notice. Use the reviewed
     // English fallback for this entire panel until their new-purpose copy is ready.
     get copy(): typeof en.privacy { return this.translate.currentLang === 'hr' ? hr.privacy : en.privacy; }
     open(): void { this.privacy.open(); this.loadChoices(); }
-    acceptAll(): void { this.privacy.save(true, true); }
-    rejectAll(): void { this.privacy.save(false, false); }
-    saveChoices(): void { this.privacy.save(this.analytics, this.popularity); }
+    acceptAll(): void { this.privacy.save(true, true, true); }
+    rejectAll(): void { this.privacy.save(false, false, false); }
+    saveChoices(): void { this.privacy.save(this.analytics, this.popularity, this.siteAnalytics); }
     save(): void { this.saveChoices(); }
     private loadChoices(): void {
         const choice = this.privacy.choice();
         this.analytics = choice?.analytics ?? false;
         this.popularity = choice?.popularity ?? false;
+        this.siteAnalytics = choice?.siteAnalytics ?? false;
     }
 }

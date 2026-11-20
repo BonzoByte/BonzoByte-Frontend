@@ -528,7 +528,12 @@
   },
   "privacy": {
     "title": "Tvoja privatnost, tvoj izbor",
-    "summary": "Pohranu u pregledniku koristimo za prijavu, sigurnost i odabrane postavke. Google Analytics i doprinos BonzoByteovim ljestvicama popularnosti dva su odvojena, neobavezna izbora. BonzoByte i javne ljestvice možeš koristiti bez dopuštanja ijednog.",
+    "summary": "Pohranu u pregledniku koristimo za prijavu, sigurnost i odabrane postavke. Google Analytics, doprinos popularnosti i BonzoByteovo mjerenje posjeta odvojene su neobavezne svrhe. BonzoByte možeš koristiti bez njihova dopuštanja.",
+    "siteAnalytics": "Neobavezno mjerenje posjeta — BonzoByte",
+    "siteAnalyticsText": "Kada je uključeno i dopušteno, naš backend broji preglede imenovanih rubrika uz slučajnu oznaku preglednika koja traje najviše 30 dana. Procjenjuje preglednike, ne ljude, i ne sprema pune IP adrese, fingerprint, pretrage ni cijele URL-ove. Prijavljena aktivnost koristi zaseban zaštićeni sažetak računa. Zapisi istječu nakon 32 dana; čišćenje baze može kasniti. Brojanje registriranih računa odvojeno je od neobaveznog praćenja posjeta. Novi potvrđeni vanjski računi mogu pokrenuti privatnu obavijest vlasniku bez imena i email adrese korisnika.",
+    "siteAnalyticsWithdraw": "Povlačenje zaustavlja buduće mjerenje i traži brisanje zapisa povezanih s oznakom ovog preglednika. Privremena oznaka za brisanje može ostati samo radi ponavljanja tog zahtjeva. Postojeći zapisi imaju i automatski istek. Obavijesti o registraciji čuvaju se do 90 dana; brisanje računa uklanja njihovu poveznicu s računom. Privatni izvještaj vide samo odobreni vlasnici stranice.",
+    "excludeBrowser": "Isključi ovaj preglednik iz BonzoByteove statistike posjeta",
+    "excludeBrowserText": "Ovaj izbor ne daje privolu za praćenje niti dodatna prava računa. Ostaje nakon odjave. Interni račun uključuje ga automatski. Svaki preglednik/profil ima zasebnu postavku; brisanje podataka stranice uklanja je. Localhost, preview izdanja i automatizirane provjere isključeni su iz produkcijskog mjerenja posjeta.",
     "preview": "Google Analytics trenutačno je isključen. Doprinos popularnosti zaseban je izbor. Prije uključivanja Google Analyticsa ponovno ćemo zatražiti vaš odabir.",
     "reject": "Odbij sve neobavezno",
     "accept": "Dopusti sve neobavezno",

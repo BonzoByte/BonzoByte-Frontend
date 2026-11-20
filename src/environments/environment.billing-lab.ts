@@ -1,4 +1,5 @@
 export const environment = {
+  siteAnalyticsEnabled: false,
   production: false, billingLab: true,
   advertising: { enabled: true, mode: 'demo' as const },
   analyticsEnabled: false,

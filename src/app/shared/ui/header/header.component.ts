@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { AfterViewInit, Component, ElementRef, EventEmitter, HostListener, NgZone, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, EventEmitter, HostListener, NgZone, OnDestroy, OnInit, Output, ViewChild, inject } from '@angular/core';
+import { SiteInsightsService } from '../../../core/services/site-insights.service';
 import { NavigationEnd, Router, RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { filter, Subscription } from 'rxjs';
@@ -47,6 +48,8 @@ import {
     ]
 })
 export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
+    readonly siteInsights = inject(SiteInsightsService);
+    get siteInsightsLabel(): string { return this.regional.language() === 'hr' ? 'Posjećenost' : 'Site audience'; }
     readonly billingLab = environment.billingLab;
     @Output() closed = new EventEmitter<void>();
     @Output() userModalOpened = new EventEmitter<void>();
