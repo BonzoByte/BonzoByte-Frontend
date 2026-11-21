@@ -225,7 +225,7 @@ export class MatchesComponent implements OnInit, OnDestroy {
     readonly predictionOverviewVisible$: Observable<boolean>;
     quickFilterPreferences: QuickFilterPreferences;
 
-    // Demo content stays local; visibility is shared with the account settings modal.
+    // The subscription preview remains local. Public cards are inert examples.
     get demoAdsAvailable(): boolean { return this.adDisplayPreference.demoAvailable; }
     get adNoticeCopyKey(): string {
         const user = this.auth.getUser();
@@ -233,15 +233,23 @@ export class MatchesComponent implements OnInit, OnDestroy {
             : this.adDisplayPreference.canHide(user) ? 'demoAds.adFreeHint' : 'demoAds.memberHint';
     }
     showAdRemovalModal = false;
+    get showPublicDemoAds(): boolean {
+        return this.viewMode === 'daily' && !this.loading && this.adDisplayPreference.showPublicDemoCards(this.auth.getUser());
+    }
     get showDemoAds(): boolean {
-        return this.demoAdsAvailable && !this.loading && !this.adDisplayPreference.isHidden(this.auth.getUser());
+        return this.showPublicDemoAds
+            || (this.demoAdsAvailable && !this.loading && !this.adDisplayPreference.isHidden(this.auth.getUser()));
     }
     requestHideAds(): void {
-        if (!this.adDisplayPreference.setHidden(this.auth.getUser(), true)) this.showAdRemovalModal = true;
+        if (this.adDisplayPreference.publicDemoAvailable) {
+            this.adDisplayPreference.hidePublicDemoCards();
+        } else if (!this.adDisplayPreference.setHidden(this.auth.getUser(), true)) {
+            this.showAdRemovalModal = true;
+        }
         this.refreshScrollNavigation();
     }
     demoAdSlotAfter(index: number, total: number, mode: 'matches' | 'groups'): number | null {
-        return this.showDemoAds ? demoAdSlotAfter(index, total, mode) : null;
+        return this.showDemoAds ? demoAdSlotAfter(index, total, mode, this.adDisplayPreference.publicDemoAvailable) : null;
     }
     onAdRemovalAction(action: AdRemovalAction): void {
         this.showAdRemovalModal = false;

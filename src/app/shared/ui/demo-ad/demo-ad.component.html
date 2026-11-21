@@ -1,0 +1,60 @@
+<aside class="demo-ad bb-glass-surface" [attr.data-creative]="creative" [attr.aria-label]="'demoAds.label' | translate">
+    <div class="demo-ad__label">
+        <span>{{ 'demoAds.label' | translate }}</span>
+        <button type="button" class="bb-notice-close"
+            [attr.aria-label]="'demoAds.closeExamples' | translate" [title]="'demoAds.closeExamples' | translate"
+            (click)="$event.stopPropagation(); dismissed.emit()">
+            <span aria-hidden="true">×</span>
+        </button>
+    </div>
+    <div class="demo-ad__creative">
+        <div class="demo-ad__art" aria-hidden="true">
+            @switch (creative) {
+                @case ('equipment') {
+                    <svg viewBox="0 0 220 108" focusable="false">
+                        <path d="M0 79 220 5M0 96 220 22M0 108 220 39" stroke="#bcffe0" opacity=".12"/>
+                        <ellipse cx="147" cy="92" rx="67" ry="8" fill="#071c1c" opacity=".5"/>
+                        <g transform="translate(126 48) rotate(34)" stroke-linejoin="round">
+                            <ellipse cy="-12" rx="25" ry="32" fill="#102d2c" stroke="#b7fbd0" stroke-width="4"/>
+                            <path d="M-16-35v45M-8-42v56M0-43v61M8-42v56M16-35v45M-21-28h42M-23-18h46M-23-8h46M-20 2h40M-14 12h28" stroke="#a4dfc1" opacity=".65"/>
+                            <path d="M-15 13 0 39 15 13M0 36v26" stroke="#b7fbd0" fill="none" stroke-width="3"/>
+                            <path d="M0 48v18" stroke="#101d20" stroke-width="8" stroke-linecap="round"/>
+                            <path d="M-3 52h6m-6 5h6m-6 5h6" stroke="#c4e1d4" opacity=".65"/>
+                        </g>
+                        <circle cx="169" cy="75" r="14" fill="#d9f775"/>
+                        <path d="M157 67c12-2 17 8 17 21" stroke="#faffda" stroke-width="2" fill="none"/>
+                        <circle cx="173" cy="72" r="10" fill="#f9ffc7" opacity=".15"/>
+                    </svg>
+                }
+                @case ('court') {
+                    <svg viewBox="0 0 220 108" focusable="false">
+                        <path d="M0 0h220v16L0 49Z" fill="#f9c398" opacity=".15"/>
+                        <path d="M42 21h125l41 63H12Z" fill="#9f4d36" stroke="#f8d6b4" stroke-width="2"/>
+                        <path d="M57 21 37 84m115-63 24 63M28 51h159M49 42h112m-119 21h128M107 42v21" stroke="#ffe1bd" stroke-width="1.6" fill="none"/>
+                        <path d="M21 42v16m174-16v16m-174-8h174" stroke="#21190f" stroke-width="2.2"/>
+                        <path d="M23 48h170l-6 8H27Z" fill="#241711" opacity=".48"/>
+                        <path d="M12 92h197m-190 6h178" stroke="#ffc29b" opacity=".24"/>
+                        <circle cx="133" cy="70" r="4" fill="#f7f58e"/>
+                    </svg>
+                }
+                @case ('training') {
+                    <svg viewBox="0 0 220 108" focusable="false">
+                        <path d="M0 86h220M0 94h220M30 0v108m60-108v108m60-108v108m60-108v108" stroke="#8fcaff" opacity=".14"/>
+                        <path d="M24 84C81 74 117 3 167 26" stroke="#7ed9ff" stroke-width="2.5" stroke-dasharray="4 6" fill="none"/>
+                        <path d="M17 72C66 76 114 15 157 16M44 96c39-11 89-56 119-56" stroke="#9be7ff" opacity=".3" fill="none"/>
+                        <circle cx="173" cy="31" r="21" fill="#d7f774"/>
+                        <circle cx="167" cy="26" r="14" fill="#f2ffa0" opacity=".5"/>
+                        <path d="M157 43c-3-15 9-28 27-30m-1 37c-2-9 2-19 11-24" stroke="#faffdf" stroke-width="2.4" fill="none"/>
+                        <path d="m20 88 9-16 9 16Zm25 0 8-12 8 12Z" fill="#fbce81"/>
+                    </svg>
+                }
+            }
+        </div>
+        <div class="demo-ad__copy">
+            <span class="demo-ad__brand">{{ brands[creative] }}</span>
+            <strong>{{ ('demoAds.creatives.' + creative + '.title') | translate }}</strong>
+            <p>{{ ('demoAds.creatives.' + creative + '.body') | translate }}</p>
+        </div>
+    </div>
+    <p class="demo-ad__disclaimer">{{ 'demoAds.note' | translate }}</p>
+</aside>

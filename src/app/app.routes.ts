@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 import { PROBABILITY_FIRST } from './core/helpers/model-odds';
 import { COMMUNITY_ENABLED } from './core/helpers/community-enabled';
 export const routes: Routes = [
+    { path: 'privacy-policy', loadComponent: () => import('./shared/ui/privacy/privacy-policy.component').then(m => m.PrivacyPolicyComponent) },
     { path: 'community', canMatch: [() => COMMUNITY_ENABLED], loadComponent: () => import('./community/community.component').then(m => m.CommunityComponent) },
     { path: 'site-insights', loadComponent: () => import('./site-insights/site-insights.component').then(m => m.SiteInsightsComponent) },
     { path: 'fantasy', canDeactivate: [(component: { canLeave(): boolean }) => component.canLeave()], loadComponent: () => import('./fantasy/fantasy-page.component').then(m => m.FantasyPageComponent) },

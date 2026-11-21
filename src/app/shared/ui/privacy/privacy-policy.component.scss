@@ -1,0 +1,39 @@
+:host {
+  display: block;
+  padding: clamp(12px, 4vw, 36px) 12px;
+}
+
+.privacy-policy {
+  width: min(100%, 800px);
+  margin-inline: auto;
+  padding: clamp(16px, 4vw, 32px);
+  border: 1px solid var(--bb-border-strong);
+  border-radius: 14px;
+  color: var(--bb-text);
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+h1 { font-size: clamp(1.55rem, 4vw, 2rem); }
+h2 { font-size: 1rem; margin-block: 1.5rem 0.25rem; }
+p { margin-block: 0 0.75rem; }
+
+a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+.privacy-policy-settings {
+  padding: 6px 10px;
+  border: 1px solid var(--bb-border-strong);
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+}
+
+:is(a, button):focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}

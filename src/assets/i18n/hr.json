@@ -564,6 +564,9 @@
     }
   },
   "privacy": {
+    "policyTitle": "Obavijest o privatnosti",
+    "advertising": "Oglašavanje",
+    "advertisingText": "BonzoByte trenutačno ne prikazuje oglase putem Google AdSensea. Ogledne kartice na popisu mečeva su izmišljene. Ne vode oglašivačima i ne prate tvoju aktivnost. Odabiri za neobaveznu analitiku i popularnost ne daju privolu za oglašavanje.",
     "title": "Tvoja privatnost, tvoj izbor",
     "summary": "Pohranu u pregledniku koristimo za prijavu, sigurnost i odabrane postavke. Google Analytics, doprinos popularnosti i BonzoByteovo mjerenje posjeta odvojene su neobavezne svrhe. BonzoByte možeš koristiti bez njihova dopuštanja.",
     "siteAnalytics": "Neobavezno mjerenje posjeta — BonzoByte",
@@ -750,16 +753,16 @@
   "demoAds": {
     "creatives": {
       "equipment": {
-        "title": "Teniska oprema · demo",
-        "body": "Reketi, žice i oprema za tvoj sljedeći meč."
+        "title": "Kolekcija Baseline",
+        "body": "Reket za precizne udarce, teksturirane žice i grip za duge izmjene."
       },
       "court": {
-        "title": "Rezervacija terena · demo",
-        "body": "Pronađi vrijeme za svoj sljedeći trening."
+        "title": "Zemlja pod reflektorima",
+        "body": "Večernji tenis na crvenoj zemlji, od zagrijavanja do zadnjeg poena."
       },
       "training": {
-        "title": "Teniski trening · demo",
-        "body": "Usavrši servis, kretanje i sigurnost u igri."
+        "title": "Usavrši drugi servis",
+        "body": "Teniska radionica za bolju rotaciju, preciznost i sigurnost u važnim poenima."
       }
     },
     "hideAll": "Sakrij oglase i obavijest",
@@ -774,7 +777,8 @@
     "close": "Zatvori oglas",
     "label": "Oglas · probni prikaz",
     "title": "Prostor za budućeg sponzora",
-    "note": "Ogledni oglas. Bez praćenja oglašivača.",
+    "note": "Izmišljeni primjer. Bez ponude, poveznica i praćenja oglasa.",
+    "closeExamples": "Sakrij ogledne kartice",
     "preview": "Korištenje bez oglasa",
     "previewHint": "Lokalna proba, dostupna i računima bez oglasa.",
     "accountDefault": "Prema postavkama računa"

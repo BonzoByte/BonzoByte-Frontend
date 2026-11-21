@@ -97,6 +97,7 @@
   text-decoration: underline;
   text-underline-offset: 3px;
 }
+.privacy-policy-link:not(:hover) { text-decoration: none; }
 .tennis-break-link { text-decoration: none; }
 
 .footer-link:focus-visible {

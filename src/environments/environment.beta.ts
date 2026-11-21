@@ -7,7 +7,7 @@ export const environment = {
     analyticsEnabled: false,
     closedBeta: true,
     billingLab: false,
-    advertising: { enabled: false, mode: 'off' as const },
+    advertising: { enabled: false, mode: 'off' as const, publicDemoCards: true },
     apiUrl: '/api',
     archivesMode: 'api',
     apiBase: '/api/archives',

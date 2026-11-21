@@ -340,7 +340,7 @@
                     <app-view-recovery-actions [showClear]="true" (clearFilters)="clearEmptyViewFilters()"></app-view-recovery-actions>
                 </div>
 
-                <aside class="demo-ad-preview-controls bb-dismissible-notice" *ngIf="showDemoAds && filteredMatches.length > 0"
+                <aside class="demo-ad-preview-controls bb-dismissible-notice" *ngIf="demoAdsAvailable && showDemoAds && filteredMatches.length > 0"
                     [attr.aria-label]="'demoAds.preview' | translate">
                     <strong>{{ 'demoAds.preview' | translate }}</strong>
                     <span class="demo-ad-preview-controls__hint">{{ adNoticeCopyKey | translate }}</span>

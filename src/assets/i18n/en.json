@@ -564,6 +564,9 @@
     }
   },
   "privacy": {
+    "policyTitle": "Privacy notice",
+    "advertising": "Advertising",
+    "advertisingText": "BonzoByte does not currently serve ads through Google AdSense. The demo cards on the match list are fictional. They do not link to advertisers or track what you do. Your optional analytics and popularity choices do not grant permission for advertising.",
     "title": "Your privacy, your choice",
     "summary": "We use browser storage for sign-in, security and your chosen settings. Google Analytics, Popularity contributions and BonzoByte visit measurement are separate optional purposes. You can use BonzoByte without allowing them.",
     "siteAnalytics": "Optional visit measurement — BonzoByte",
@@ -750,16 +753,16 @@
   "demoAds": {
     "creatives": {
       "equipment": {
-        "title": "Demo tennis equipment",
-        "body": "Rackets, strings and essentials for your next match."
+        "title": "The Baseline Series",
+        "body": "A control-focused racket, textured strings and a grip built for long rallies."
       },
       "court": {
-        "title": "Demo court booking",
-        "body": "Make time for your next practice session."
+        "title": "Clay under the lights",
+        "body": "An evening on red clay, from your first warm-up to the last point."
       },
       "training": {
-        "title": "Demo tennis coaching",
-        "body": "Work on your serve, movement and match confidence."
+        "title": "Build a better second serve",
+        "body": "A tennis clinic for spin, placement and confidence on the big points."
       }
     },
     "hideAll": "Hide ads and notice",
@@ -774,7 +777,8 @@
     "close": "Close ad",
     "label": "Advertisement · demo",
     "title": "Space for a future sponsor",
-    "note": "Example advertisement. No advertiser tracking.",
+    "note": "Fictional example. No offer, links or ad tracking.",
+    "closeExamples": "Hide demo cards",
     "preview": "Ad-free viewing",
     "previewHint": "Local preview, also available on ad-free accounts.",
     "accountDefault": "Use account settings"

@@ -1,0 +1,42 @@
+<article class="privacy-policy bb-glass-surface bb-glass-surface--readable">
+  <h1>{{ copy.policyTitle }}</h1>
+  <p>{{ copy.summary }}</p>
+  <button type="button" class="privacy-policy-settings" aria-haspopup="dialog" (click)="privacy.open()">
+    {{ copy.settings }}
+  </button>
+
+  <h2>{{ copy.necessary }}</h2>
+  <p>{{ copy.necessaryText }}</p>
+  <h2>{{ copy.preferences }}</h2>
+  <p>{{ copy.preferencesText }}</p>
+  <p>{{ copy.referralText }}</p>
+
+  <h2>{{ copy.analytics }}</h2>
+  <p>{{ copy.analyticsText }}</p>
+  @if (!privacy.options.analyticsEnabled) {
+    <p>{{ copy.preview }}</p>
+  }
+  <p>{{ copy.withdraw }}</p>
+  <h2>{{ copy.popularity }}</h2>
+  <p>{{ copy.popularityText }}</p>
+  <p>{{ copy.popularityWithdraw }}</p>
+  @if (privacy.options.siteAnalyticsEnabled) {
+    <h2>{{ copy.siteAnalytics }}</h2>
+    <p>{{ copy.siteAnalyticsText }}</p>
+    <p>{{ copy.siteAnalyticsWithdraw }}</p>
+  }
+  <p>{{ copy.duration }}</p>
+
+  <h2>{{ copy.advertising }}</h2>
+  <p>{{ copy.advertisingText }}</p>
+
+  <h2>{{ copy.storageTitle }}</h2>
+  <p>{{ copy.storageText }}</p>
+  <p>{{ copy.externalText }}</p>
+  <ul>
+    <li><a href="https://policies.google.com/privacy">Google</a></li>
+    <li><a href="https://www.paypal.com/webapps/mpp/ua/privacy-full">PayPal</a></li>
+    <li><a href="https://www.cloudflare.com/privacypolicy/">Cloudflare</a></li>
+  </ul>
+  <p>{{ copy.contact }} <a [href]="'mailto:' + contactEmail">{{ contactEmail }}</a></p>
+</article>

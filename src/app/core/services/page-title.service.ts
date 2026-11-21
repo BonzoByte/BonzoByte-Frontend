@@ -51,7 +51,8 @@ export class PageTitleService {
     else {
       const key: Record<string, string> = { '/community': 'community.title', '/fantasy': 'fantasy.title', '/matches': 'navigation.matches', '/players': 'navigation.players',
         '/tournaments': 'navigation.tournaments', '/analytics': 'navigation.analytics', '/model-insights': 'navigation.modelInsights',
-        '/simulation': 'navigation.simulation', '/predictions': 'competition.mine', '/competition': 'competition.leaderboard', '/popular': 'popularity.title', '/favourites': 'favourites.title', '/tennis-break': 'tennisBreak.title' };
+        '/simulation': 'navigation.simulation', '/predictions': 'competition.mine', '/competition': 'competition.leaderboard', '/popular': 'popularity.title', '/favourites': 'favourites.title', '/tennis-break': 'tennisBreak.title',
+        '/privacy-policy': 'privacy.policyTitle' };
       if (key[path]) label = this.regional.text(key[path]);
       else if (path.startsWith('/players/matches/')) label = this.regional.text('navigation.players');
       else if (path.startsWith('/tournaments/matches/')) label = this.regional.text('navigation.tournaments');

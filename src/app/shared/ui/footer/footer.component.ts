@@ -3,6 +3,7 @@ import { DOCUMENT } from '@angular/common';
 import { AfterViewInit, Component, ElementRef, Inject, NgZone, OnDestroy, ViewChild } from '@angular/core';
 import { A11yModule } from '@angular/cdk/a11y';
 import { TranslateModule } from '@ngx-translate/core';
+import { RouterLink } from '@angular/router';
 import { ContactModalComponent } from '../../modals/contact-modal/contact-modal.component';
 import { BbModalShellComponent } from "@app/shared/ui/bb-modal-shell.component/bb-modal-shell.component";
 import { PrivacyConsentService } from '../../../core/services/privacy-consent.service';
@@ -12,7 +13,7 @@ import { CopyContactEmailComponent } from '../copy-contact-email/copy-contact-em
 @Component({
     selector: 'app-footer',
     standalone: true,
-    imports: [CommonModule, TranslateModule, ContactModalComponent, BbModalShellComponent, A11yModule, CopyContactEmailComponent],
+    imports: [CommonModule, TranslateModule, RouterLink, ContactModalComponent, BbModalShellComponent, A11yModule, CopyContactEmailComponent],
     templateUrl: './footer.component.html',
     styleUrls: ['./footer.component.scss']
 })
