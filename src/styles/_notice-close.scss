@@ -20,6 +20,9 @@
     line-height: 1;
     letter-spacing: normal;
     text-decoration: none;
+    appearance: none;
+    box-shadow: none;
+    filter: none;
     cursor: pointer;
 }
 :root button.bb-notice-close:hover {
@@ -31,3 +34,26 @@
     outline-offset: 2px;
 }
 :root button.bb-notice-close:disabled { opacity: .5; cursor: default; }
+
+// Content may wrap or use a grid; Close keeps one reserved, centred lane.
+:root .bb-dismissible-notice {
+    position: relative;
+    box-sizing: border-box;
+    min-width: 0;
+    min-height: 48px;
+    flex-shrink: 0;
+    margin-block: 6px;
+    padding: 7px 48px 7px 12px;
+    border: 1px solid var(--bb-border, #40505b);
+    border-radius: 8px;
+    background: var(--bb-surface-2, #1b232b);
+    box-shadow: none;
+}
+
+:root .bb-dismissible-notice > button.bb-notice-close {
+    position: absolute;
+    top: 50%;
+    right: 8px;
+    margin: 0;
+    transform: translateY(-50%);
+}

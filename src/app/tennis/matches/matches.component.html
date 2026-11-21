@@ -222,7 +222,7 @@
         <div class="matches-content" [class.is-blurred]="loading">
             <app-archive-coverage></app-archive-coverage>
 
-            <div class="table-wrapper" [class.is-empty]="!loading && filteredMatches.length === 0 && unavailableFavouriteIds.length === 0">
+            <div class="table-wrapper" (scroll)="onNoticeAreaScroll()" [class.is-empty]="!loading && filteredMatches.length === 0 && unavailableFavouriteIds.length === 0">
                 <ng-container *ngIf="viewMode === 'favourites'">
                     <div *ngIf="!showFavouriteColumn" class="favourites-state favourites-state--login" role="status">
                         <p>{{ 'favourites.signInHint' | translate }}</p>
@@ -242,7 +242,7 @@
                     </div>
                 </ng-container>
                 <div class="time-zone-status" *ngIf="viewMode !== 'favourites'" aria-live="polite">
-                    <aside *ngIf="timeZoneNoticePreference.visible$ | async" class="time-zone-notice"
+                    <aside *ngIf="timeZoneNoticePreference.visible$ | async" class="time-zone-notice bb-dismissible-notice"
                         [attr.aria-label]="'timeZone.noticeTitle' | translate">
                         <span class="prediction-view-notice__label">{{ 'timeZone.noticeTitle' | translate }}</span>
                         <span>{{ 'timeZone.dayNote' | translate:{zone: regional.timeZone()} }}</span>
@@ -259,7 +259,7 @@
                         <app-view-recovery-actions [showRetry]="true" [loading]="loading" (retry)="retryCurrentRead()"></app-view-recovery-actions>
                     </div>
                 </div>
-                <aside *ngIf="!loading && showPredictionViewNotice" class="prediction-view-notice"
+                <aside *ngIf="!loading && showPredictionViewNotice" class="prediction-view-notice bb-dismissible-notice"
                     [attr.aria-label]="'matchGrid.noticeAria' | translate">
                     <span class="prediction-view-notice__label">{{ 'matchGrid.noticeTitle' | translate }}</span>
                     <span class="prediction-view-notice__count">
@@ -278,7 +278,7 @@
                 </aside>
 
                 <section *ngIf="viewMode !== 'favourites' && !loading && filteredMatches.length > 0 && (predictionOverviewVisible$ | async)"
-                    class="prediction-summary"
+                    class="prediction-summary bb-dismissible-notice"
                     [attr.aria-label]="'matchGrid.overviewAria' | translate">
                     <button type="button" class="prediction-summary__dismiss bb-notice-close"
                         [attr.title]="'matchGrid.hideOverview' | translate"
@@ -312,13 +312,13 @@
                 </section>
 
                 <aside *ngIf="probabilityFirst && !loading && matches.length && modelGuidancePreference.isVisible"
-                    class="historical-pl-note model-guidance-note" role="note">
+                    class="historical-pl-note model-guidance-note bb-dismissible-notice" role="note">
                     <span>{{ 'modelPerformance.modelOddsHint' | translate }}</span>
                     <button type="button" class="historical-pl-note__dismiss bb-notice-close"
                         [attr.aria-label]="'common.close' | translate" [title]="'common.close' | translate"
                         (click)="modelGuidancePreference.setVisible(false)">×</button>
                 </aside>
-                <aside *ngIf="!probabilityFirst && showHistoricalPlNote && historicalPlNoticePreference.isVisible" class="historical-pl-note" role="note">
+                <aside *ngIf="!probabilityFirst && showHistoricalPlNote && historicalPlNoticePreference.isVisible" class="historical-pl-note bb-dismissible-notice" role="note">
                     <span><span aria-hidden="true">ⓘ </span>{{ 'matchGrid.plHistoricalNote' | translate }}</span>
                     <button type="button" class="historical-pl-note__dismiss bb-notice-close"
                         [attr.aria-label]="'common.close' | translate" [title]="'common.close' | translate"
@@ -340,7 +340,7 @@
                     <app-view-recovery-actions [showClear]="true" (clearFilters)="clearEmptyViewFilters()"></app-view-recovery-actions>
                 </div>
 
-                <aside class="demo-ad-preview-controls" *ngIf="showDemoAds && filteredMatches.length > 0"
+                <aside class="demo-ad-preview-controls bb-dismissible-notice" *ngIf="showDemoAds && filteredMatches.length > 0"
                     [attr.aria-label]="'demoAds.preview' | translate">
                     <strong>{{ 'demoAds.preview' | translate }}</strong>
                     <span class="demo-ad-preview-controls__hint">{{ adNoticeCopyKey | translate }}</span>

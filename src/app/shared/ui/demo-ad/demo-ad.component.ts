@@ -8,7 +8,7 @@ import { TranslateModule } from '@ngx-translate/core';
     imports: [TranslateModule],
     changeDetection: ChangeDetectionStrategy.OnPush,
     template: `
-        <aside class="demo-ad" [attr.data-creative]="creative" [attr.aria-label]="'demoAds.label' | translate">
+        <aside class="demo-ad bb-glass-surface" [attr.data-creative]="creative" [attr.aria-label]="'demoAds.label' | translate">
             <div class="demo-ad__label">
                 <span>{{ 'demoAds.label' | translate }}</span>
                 <div class="demo-ad__actions">
@@ -36,7 +36,7 @@ import { TranslateModule } from '@ngx-translate/core';
             --demo-accent: #7dcfa4;
             box-sizing: border-box; min-height: 148px; padding: 8px 18px 12px;
             border: 1px solid var(--bb-border-strong, #56616b); border-radius: 9px;
-            background: var(--bb-surface-2, #1b232b); color: var(--bb-text, #e8edf2);
+            color: var(--bb-text, #e8edf2);
             text-align: left; white-space: normal; overflow-wrap: anywhere;
         }
         .demo-ad[data-creative="court"] { --demo-accent: #e4b580; }

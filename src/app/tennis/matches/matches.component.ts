@@ -912,6 +912,10 @@ export class MatchesComponent implements OnInit, OnDestroy {
         this.refreshScrollNavigation(event.currentTarget as HTMLElement);
     }
 
+    onNoticeAreaScroll(): void {
+        this.scheduleScrollNavigationRefresh();
+    }
+
     scrollResultsTo(edge: 'top' | 'bottom'): void {
         const scroller = this.getResultsScroller();
         if (!scroller) return;
@@ -956,7 +960,13 @@ export class MatchesComponent implements OnInit, OnDestroy {
 
         const threshold = 2;
         const maxScrollTop = Math.max(0, scroller.scrollHeight - scroller.clientHeight);
-        const hasOverflow = maxScrollTop > threshold;
+        // The floating controls belong to the visible results area, never the
+        // notices above it (including when the notice area itself is scrolled).
+        const bounds = scroller.getBoundingClientRect();
+        const wrapper = scroller.closest('.table-wrapper')?.getBoundingClientRect();
+        const visibleHeight = Math.min(bounds.bottom, wrapper?.bottom ?? window.innerHeight, window.innerHeight)
+            - Math.max(bounds.top, wrapper?.top ?? 0, 0);
+        const hasOverflow = visibleHeight >= 80 && maxScrollTop > threshold;
 
         this.showScrollUp = hasOverflow && scroller.scrollTop > threshold;
         this.showScrollDown = hasOverflow && scroller.scrollTop < maxScrollTop - threshold;

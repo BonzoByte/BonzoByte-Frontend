@@ -29,8 +29,13 @@
 .matches-page .match-table tbody tr.demo-ad-row > td {
     padding: 12px 0;
     border: 0;
-    background: var(--bb-page-bg, #10151b);
+    background: transparent;
     white-space: normal;
+}
+
+// Only ad placeholders opt out of row tint; actual match rows are unchanged.
+:root .matches-page .match-table tbody tr.demo-ad-row {
+    background: transparent !important;
 }
 
 .matches-page .demo-ad-group {

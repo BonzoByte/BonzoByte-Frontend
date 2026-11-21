@@ -1,4 +1,4 @@
-<section *ngIf="!privacy.choice() && !privacy.settingsOpen()" class="privacy-banner" role="region" [attr.aria-label]="copy.title">
+<section *ngIf="!privacy.choice() && !privacy.settingsOpen()" class="privacy-banner bb-glass-surface bb-glass-surface--readable" role="region" [attr.aria-label]="copy.title">
   <div class="privacy-copy"><strong>{{ copy.title }}</strong><p>{{ copy.summary }}</p>
     <p *ngIf="!privacy.options.analyticsEnabled" class="privacy-note">{{ copy.preview }}</p></div>
   <div class="privacy-actions">

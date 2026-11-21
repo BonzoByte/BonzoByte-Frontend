@@ -12,6 +12,7 @@
 @use '@angular/cdk' as cdk;
 @use './styles/demo-ads';
 @use './styles/notice-close';
+@use './styles/glass-surfaces';
 @use './styles/page-feedback';
 @use './styles/skip-link';
 @use './styles/message-autosize';
@@ -2644,7 +2645,6 @@ main.main-content:has(> app-match-link-page) {
 }
 
 :where(
-    .prediction-summary,
     .analytics-inline-stat,
     .mi-stat-card,
     .mi-meta,

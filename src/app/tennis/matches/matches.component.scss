@@ -226,11 +226,19 @@
     flex-direction: column;
     align-items: stretch;
     justify-content: flex-start;
-    overflow: hidden;
+    overflow-x: hidden;
+    overflow-y: auto;
     padding-top: 0;
     padding-right: 16px;
     padding-bottom: 12px;
     padding-left: 16px;
+}
+
+// When several notices wrap on a short screen, scroll the notice area instead
+// of squeezing their contents or reducing the results viewport to zero.
+.matches-page .table-wrapper > .tournament-groups-scroll,
+.matches-page .table-wrapper > .match-table-scroll:not(.match-table-scroll--grouped) {
+    min-height: 120px;
 }
 
 .matches-page .table-wrapper.is-empty {
@@ -659,8 +667,7 @@
 
 .historical-pl-note > span { flex: 1; min-width: 0; }
 
-/* Leave a lane for the fixed results-scroll control, so it cannot cover Close. */
-.model-guidance-note { display: flex; align-items: center; gap: 10px; padding-right: 54px; }
+.model-guidance-note { display: flex; align-items: center; gap: 10px; }
 .model-guidance-note__copy { flex: 1; min-width: 0; }
 .model-guidance-note__copy p { margin: 0; }
 .model-guidance-note__copy p + p { margin-top: 6px; }
@@ -799,13 +806,6 @@
     white-space: nowrap;
 }
 
-.time-zone-notice__dismiss,
-.prediction-view-notice__dismiss {
-    position: absolute;
-    top: 4px;
-    right: 4px;
-}
-
 .prediction-view-notice__actions button {
     padding: 2px 7px;
     border: 1px solid rgba(117, 226, 189, 0.28);
@@ -853,12 +853,6 @@
         radial-gradient(circle at 8% 0%, rgba(63, 185, 148, 0.16), transparent 42%),
         linear-gradient(135deg, rgba(19, 34, 31, 0.96), rgba(15, 18, 21, 0.96));
     box-shadow: 0 10px 28px rgba(0, 0, 0, 0.2);
-}
-
-.prediction-summary__dismiss {
-    position: absolute;
-    top: 7px;
-    right: 9px;
 }
 
 .prediction-summary__intro {
@@ -1069,13 +1063,14 @@
 
 .matches-scroll-nav {
     position: fixed;
-    top: 50%;
+    top: auto;
+    bottom: calc(var(--footer-h, 36px) + 12px);
     right: 24px;
     z-index: 900;
     display: flex;
     flex-direction: column;
     gap: 8px;
-    transform: translateY(-50%);
+    transform: none;
 }
 
 .matches-scroll-nav__button {

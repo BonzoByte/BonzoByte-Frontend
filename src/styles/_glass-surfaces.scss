@@ -1,0 +1,33 @@
+// Opt-in decorative surfaces. Grids, modal dialogs and form controls keep their
+// existing treatment; only the background is filtered, never the content.
+:root {
+    --bb-glass-fill: 70%;
+    --bb-glass-readable-fill: 80%;
+    --bb-glass-backdrop: blur(4px);
+}
+:root[data-bb-theme='light'] {
+    --bb-glass-fill: 84%;
+    --bb-glass-readable-fill: 90%;
+}
+:root .bb-glass-surface--readable { --bb-glass-fill: var(--bb-glass-readable-fill); }
+
+:root :is(.bb-dismissible-notice, .bb-glass-surface) {
+    background: var(--bb-surface-2, #1b232b);
+}
+@supports (background: color-mix(in srgb, black 70%, transparent)) {
+    :root :is(.bb-dismissible-notice, .bb-glass-surface) {
+        background: color-mix(in srgb, var(--bb-surface-2, #1b232b) var(--bb-glass-fill), transparent);
+        -webkit-backdrop-filter: var(--bb-glass-backdrop);
+        backdrop-filter: var(--bb-glass-backdrop);
+    }
+}
+@media (max-width: 768px) {
+    :root { --bb-glass-backdrop: blur(3px); }
+}
+@media (prefers-contrast: more), (forced-colors: active), (prefers-reduced-transparency: reduce), (prefers-reduced-motion: reduce), print {
+    :root, :root[data-bb-theme] {
+        --bb-glass-fill: 100%;
+        --bb-glass-readable-fill: 100%;
+        --bb-glass-backdrop: none;
+    }
+}

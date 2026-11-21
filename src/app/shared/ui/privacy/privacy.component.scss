@@ -1,7 +1,7 @@
 :host { display: contents; }
 .privacy-banner { position: fixed; z-index: 13000; bottom: calc(var(--footer-h, 36px) + 12px); left: 12px; right: 12px;
   max-width: 1080px; margin: 0 auto; display: flex; align-items: center; gap: 20px; padding: 18px 20px;
-  color: var(--bb-text); background: var(--bb-surface-1); border: 1px solid var(--bb-border-strong);
+  color: var(--bb-text); border: 1px solid var(--bb-border-strong);
   border-radius: 14px; box-shadow: 0 8px 32px #0005; line-height: 1.5; font-size: 13px; }
 .privacy-copy { flex: 1; min-width: 0; }
 .privacy-copy p { margin: 5px 0 0; }

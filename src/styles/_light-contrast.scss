@@ -42,8 +42,7 @@
     .matches-page .prediction-view-notice,
     .matches-page .time-zone-notice {
         color: #29453a;
-        background: #edf5f1;
-        border-color: rgba(18, 84, 63, 0.28);
+        border-color: var(--bb-border);
     }
 
     .matches-page .prediction-view-notice__label { color: #12543f; }
