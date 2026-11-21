@@ -791,6 +791,8 @@
     "label": "Time zone",
     "automatic": "Automatic ({{zone}})",
     "dayNote": "Times and day shown in {{zone}}.",
+    "notBefore": "Not before {{time}}",
+    "notBeforeHint": "Scheduled time, not a confirmed actual start.",
     "unconverted": "No reliable start time: {{count}}. Kept on the recorded date.",
     "partial": "Some match data is unavailable for these dates: {{days}}.",
     "original": "Start time unavailable or ambiguous; recorded Zagreb date retained.",

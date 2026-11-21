@@ -791,6 +791,8 @@
     "label": "Vremenska zona",
     "automatic": "Automatski ({{zone}})",
     "dayNote": "Vrijeme i dan prikazani su u zoni {{zone}}.",
+    "notBefore": "Ne prije {{time}}",
+    "notBeforeHint": "Planirani termin, ne potvrđeni stvarni početak.",
     "unconverted": "Bez pouzdanog sata početka: {{count}}. Zadržan je izvorni datum.",
     "partial": "Dio podataka o mečevima nije dostupan za ove datume: {{days}}.",
     "original": "Sat početka nije poznat ili je dvosmislen; zadržan je zagrebački datum.",

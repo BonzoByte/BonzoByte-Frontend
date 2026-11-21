@@ -94,7 +94,7 @@ interface ModelPlSummary {
 }
 
 interface MatchRowPresentation {
-    date: string; dateTitle: string; tournament: string; strength: number; strengthTitle: string;
+    date: string; dateTitle: string; plannedStart: string; plannedStartUtc: string | null; tournament: string; strength: number; strengthTitle: string;
     surface: string; surfaceClass: string; surfaceLabel: string; round: string; roundTitle: string;
     player1: string; player2: string; player1Compact: string; player2Compact: string;
     player1Flag: string; player2Flag: string; result: string; sets: string;
@@ -3089,9 +3089,15 @@ export class MatchesComponent implements OnInit, OnDestroy {
             : this.getDisplayMarketOdds(match);
         const strength = this.getStrengthStars(match);
         const market = this.probabilityFirst ? null : this.getPredictionMarketContext(match);
+        const plannedStartUtc = !match.isFinished && match.plannedStartKind === 'not-before' &&
+            /Z$/.test(match.plannedStartUtc ?? '') && matchDisplayTime(match.plannedStartUtc!, 'minute').instant !== null
+            ? match.plannedStartUtc! : null;
+        const planned = plannedStartUtc ? this.regional.dateTime(plannedStartUtc, 'utc') : '';
         const view:MatchRowPresentation = {
-            date:this.getLocalizedDateMaybeTime(match.dateTime,match.sourceTimePrecision),
-            dateTitle:this.matchTimeTitle(match), tournament:this.formatTournamentGridLabel(match), strength,
+            date:planned ? planned.replace(/ \d{2}:\d{2}$/,'') : this.getLocalizedDateMaybeTime(match.dateTime,match.sourceTimePrecision),
+            dateTitle:planned ? this.regional.text('timeZone.notBeforeHint') : this.matchTimeTitle(match),
+            plannedStart:planned ? this.regional.text('timeZone.notBefore',{time:planned.slice(-5)}) : '',
+            plannedStartUtc, tournament:this.formatTournamentGridLabel(match), strength,
             strengthTitle:this.regional.text('matchGrid.strengthStars',{value:this.regional.number(strength,1)}),
             surface:this.formatSurface(match.surface), surfaceClass:this.surfaceIndicatorClass(match.surface),
             surfaceLabel:this.localizedSurface(match.surface), round:this.formatMatchRoundShort(match),

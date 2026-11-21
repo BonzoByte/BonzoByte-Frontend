@@ -137,6 +137,8 @@ export interface Surface {
 
 export interface Match {
   sourceTimePrecision?: 'minute' | 'second' | 'date' | 'unknown' | null;
+  plannedStartUtc?: string | null;
+  plannedStartKind?: 'not-before' | null;
   matchTPId: number;
   // _id: number;
   isFinished: boolean;

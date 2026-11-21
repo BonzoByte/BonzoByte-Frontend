@@ -417,7 +417,10 @@
                     <tbody>
                         <ng-container *ngFor="let match of rows; let rowIndex = index">
                         <tr *ngIf="rowPresentation(match) as view" [attr.data-match-id]="match.matchTPId">
-                            <td class="match-date-cell" [title]="view.dateTitle">{{ view.date }}</td>
+                            <td class="match-date-cell" [title]="view.dateTitle">{{ view.date }}
+                                <time *ngIf="view.plannedStartUtc" class="match-planned-start"
+                                    [attr.datetime]="view.plannedStartUtc">{{ view.plannedStart }}</time>
+                            </td>
                             <td *ngIf="showTypeColumn && !grouped">{{ match.tournamentTypeName }}</td>
 
                             <td *ngIf="!grouped && viewMode !== 'tournament'" class="col-center tournament-cell strength-cell">

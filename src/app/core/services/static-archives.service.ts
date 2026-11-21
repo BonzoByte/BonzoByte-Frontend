@@ -3,7 +3,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable, map, shareReplay, catchError, of, switchMap, throwError, forkJoin } from 'rxjs';
+import { Observable, map, shareReplay, catchError, of, switchMap, throwError, forkJoin, timeout } from 'rxjs';
 import { Match, PlayerIndex, TournamentIndex } from '../models/tennis.model';
 import brotliDecompress from 'brotli/decompress';
 import { decodeArchiveJson } from '../helpers/decode-archive-json';
@@ -27,6 +27,7 @@ import {
 import { formatDecimal } from '../helpers/localized-number';
 import { planArchiveDay } from '../i18n/archive-day-window';
 import { DailySnapshot, mergeUserDay, UserDayArchive } from '../i18n/user-day-archive';
+import { applyPlannedMatchSchedule, isRecentScheduleDay } from '../helpers/planned-match-schedule';
 
 export interface DailyArchiveIndex {
   minDate: string;
@@ -266,27 +267,31 @@ export class StaticArchivesService {
     if (cached && cached.expiresAt > Date.now()) return cached.request$;
     if (cached) this.dailyCache.delete(yyyymmdd);
 
-    let request$: Observable<Match[]>;
+    let rows$: Observable<Match[]>;
 
     console.log('getDaily requested:', dateKey, 'normalized:', yyyymmdd);
 
     if (this.mode === 'api') {
-      request$ = this.http
+      rows$ = this.http
         .get<any>(`${this.apiBase}/daily/${yyyymmdd}`)
         .pipe(
           map(r => (Array.isArray(r) ? r : (r?.matches ?? []))),
-          map(arr => (arr || []).map((m: any) => this.normalizeApiMatch(m))),
-          shareReplay(1)
+          map(arr => (arr || []).map((m: any) => this.normalizeApiMatch(m)))
         );
     } else {
-      request$ = this.http
+      rows$ = this.http
         .get(`${this.dailyStaticBase}/${yyyymmdd}.br`, { responseType: 'arraybuffer' })
         .pipe(
           map(buf => this.decodeBrotliJson<any[]>(buf)),
-          map(rows => (rows || []).map(r => this.mapLiteRowToMatch(r))),
-          shareReplay(1)
+          map(rows => (rows || []).map(r => this.mapLiteRowToMatch(r)))
         );
     }
+    const request$ = (isRecentScheduleDay(yyyymmdd)
+      ? forkJoin([
+        rows$,
+        this.http.get<unknown>(`/assets/match-schedule/${yyyymmdd}.json`).pipe(timeout(2500), catchError(() => of(null)))
+      ]).pipe(map(([rows, schedule]) => applyPlannedMatchSchedule(rows, schedule, yyyymmdd)))
+      : rows$).pipe(shareReplay(1));
 
     this.dailyCache.set(yyyymmdd, {
       expiresAt: Date.now() + this.dailyCacheTtlMs,
@@ -816,6 +821,8 @@ export class StaticArchivesService {
 
       dateTime: r?.l02 ?? null,
       sourceTimePrecision: r?.sourceTimePrecision ?? null,
+      plannedStartUtc: typeof r?.plannedStartUtc === 'string' ? r.plannedStartUtc : null,
+      plannedStartKind: r?.plannedStartKind === 'not-before' ? 'not-before' : null,
 
       player1TPId: this.asNum(r?.l13) as any,
       player1Name: (r?.l14 ?? '').toString(),
