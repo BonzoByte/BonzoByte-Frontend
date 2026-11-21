@@ -8,13 +8,17 @@ const feed = {schema:scheduleSchema,day,observedAt:new Date(now).toISOString(),s
 const match = {matchTPId:30,player1TPId:11,player2TPId:12,isFinished:false,result:null,resultDetails:null,
     dateTime:'2026-11-21',sourceTimePrecision:'unknown',player1Odds:1.7,player2Odds:2.05};
 
-test('adds display metadata only for the exact pair and still-open match', () => {
+test('adds only display metadata for the exact pair regardless of result or elapsed time', () => {
     const backwards = {...match,player1TPId:12,player2TPId:11};
-    const completed = {...match,isFinished:true};
+    const completed = {...match,isFinished:true,result:'2:0'};
     const live = {...match,resultDetails:'6:3'};
-    const [enriched,...unchanged] = applyPlannedMatchSchedule([match,backwards,completed,live],feed,day,now);
-    assert.deepEqual(enriched,{...match,plannedStartUtc:slot[3],plannedStartKind:'not-before'});
-    [backwards,completed,live].forEach((original,i)=>assert.equal(unchanged[i],original));
+    const elapsed = '2026-11-21T14:00:00.000Z';
+    const [enriched,wrong,final,partial] = applyPlannedMatchSchedule([match,backwards,completed,live],{...feed,slots:[[30,11,12,elapsed]]},day,now);
+    const extra = {plannedStartUtc:elapsed,plannedStartKind:'not-before'};
+    assert.deepEqual(enriched,{...match,...extra});
+    assert.equal(wrong,backwards);
+    assert.deepEqual(final,{...completed,...extra});
+    assert.deepEqual(partial,{...live,...extra});
 });
 
 test('fails closed for stale, ambiguous, out-of-day and malformed data', () => {

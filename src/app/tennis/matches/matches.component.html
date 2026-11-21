@@ -419,7 +419,7 @@
                         <tr *ngIf="rowPresentation(match) as view" [attr.data-match-id]="match.matchTPId">
                             <td class="match-date-cell" [title]="view.dateTitle">{{ view.date }}
                                 <time *ngIf="view.plannedStartUtc" class="match-planned-start"
-                                    [attr.datetime]="view.plannedStartUtc">{{ view.plannedStart }}</time>
+                                    [attr.aria-label]="view.dateTitle" [attr.datetime]="view.plannedStartUtc">{{ view.plannedStart }}</time>
                             </td>
                             <td *ngIf="showTypeColumn && !grouped">{{ match.tournamentTypeName }}</td>
 

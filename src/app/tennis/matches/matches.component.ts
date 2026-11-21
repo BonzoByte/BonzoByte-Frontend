@@ -3089,14 +3089,15 @@ export class MatchesComponent implements OnInit, OnDestroy {
             : this.getDisplayMarketOdds(match);
         const strength = this.getStrengthStars(match);
         const market = this.probabilityFirst ? null : this.getPredictionMarketContext(match);
-        const plannedStartUtc = !match.isFinished && match.plannedStartKind === 'not-before' &&
+        const plannedStartUtc = match.plannedStartKind === 'not-before' &&
+            matchDisplayTime(match.dateTime, match.sourceTimePrecision).instant === null &&
             /Z$/.test(match.plannedStartUtc ?? '') && matchDisplayTime(match.plannedStartUtc!, 'minute').instant !== null
             ? match.plannedStartUtc! : null;
         const planned = plannedStartUtc ? this.regional.dateTime(plannedStartUtc, 'utc') : '';
         const view:MatchRowPresentation = {
             date:planned ? planned.replace(/ \d{2}:\d{2}$/,'') : this.getLocalizedDateMaybeTime(match.dateTime,match.sourceTimePrecision),
-            dateTitle:planned ? this.regional.text('timeZone.notBeforeHint') : this.matchTimeTitle(match),
-            plannedStart:planned ? this.regional.text('timeZone.notBefore',{time:planned.slice(-5)}) : '',
+            dateTitle:planned ? this.regional.text('timeZone.notBeforeHint',{time:planned.slice(-5)}) : this.matchTimeTitle(match),
+            plannedStart:planned ? planned.slice(-5) : '',
             plannedStartUtc, tournament:this.formatTournamentGridLabel(match), strength,
             strengthTitle:this.regional.text('matchGrid.strengthStars',{value:this.regional.number(strength,1)}),
             surface:this.formatSurface(match.surface), surfaceClass:this.surfaceIndicatorClass(match.surface),

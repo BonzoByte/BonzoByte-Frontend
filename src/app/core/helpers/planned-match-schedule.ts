@@ -26,13 +26,12 @@ export function applyPlannedMatchSchedule(rows: Match[], payload: unknown, day: 
     if (!Array.isArray(entry) || entry.length !== 4) return rows;
     const [match, player1, player2, start] = entry;
     if (!id(match) || !id(player1) || !id(player2) || player1 === player2 || byId.has(match) ||
-        !utc(start, minuteUtc) || archiveDay(Date.parse(start)) !== day || Date.parse(start) <= Date.parse(observedAt)) return rows;
+        !utc(start, minuteUtc) || archiveDay(Date.parse(start)) !== day) return rows;
     byId.set(match, { player1, player2, start });
   }
   return rows.map(row => {
     const slot = byId.get(row.matchTPId);
-    return slot && row.isFinished === false && !row.result && !row.resultDetails &&
-      row.player1TPId === slot.player1 && row.player2TPId === slot.player2
+    return slot && row.player1TPId === slot.player1 && row.player2TPId === slot.player2
       ? { ...row, plannedStartKind: 'not-before', plannedStartUtc: slot.start }
       : row;
   });
