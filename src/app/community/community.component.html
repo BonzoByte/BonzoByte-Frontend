@@ -84,9 +84,14 @@
         <button *ngIf="page.hasMore" type="button" (click)="load(true)" [disabled]="loading || busy || !!editing">{{'community.more' | translate}}</button>
       </ng-container>
       <form *ngIf="(page || composing) && canWrite && !editing" class="composer" (ngSubmit)="send()">
-        <div *ngIf="reply" class="reply-target"><span>{{'community.replyTo' | translate}} {{reply.author?.nickname}}</span><button type="button" (click)="reply=null; edited()" [disabled]="busy">×</button></div>
+        <div *ngIf="reply" class="reply-target"><span>{{'community.replyTo' | translate}} {{reply.author?.nickname}}</span><button type="button" (click)="clearReply()" [disabled]="busy" [attr.aria-label]="'community.drafts.withoutQuote' | translate">×</button></div>
+        <p *ngIf="unresolvedReplyId" class="feedback draft-quote-warning">{{'community.drafts.quoteMissing' | translate}} <button type="button" (click)="clearReply()" [disabled]="busy">{{'community.drafts.withoutQuote' | translate}}</button></p>
         <label for="post-body">{{(composing?'community.firstPost':'community.yourReply') | translate}}</label>
         <textarea id="post-body" [(ngModel)]="body" name="body" (ngModelChange)="edited()" rows="5" maxlength="32000" [disabled]="busy"></textarea>
+        <div *ngIf="!composing && draftState!=='none'" class="draft-note" [class.draft-warning]="draftState==='unavailable'">
+          <span role="status">{{('community.drafts.'+draftState) | translate}}</span>
+          <button type="button" (click)="discardReplyDraft()" [disabled]="busy">{{'community.drafts.discard' | translate}}</button>
+        </div>
         <div class="composer-footer"><small [class.danger]="bodyLength>1000">{{bodyLength}} / 1000</small><button class="primary" type="submit" [disabled]="!canSend">{{(busy?'community.sending':'community.publish') | translate}}</button></div>
       </form>
       <p *ngIf="page && !canWrite" class="sign-in-note">{{(user ? 'community.verify' : 'community.readOnly') | translate}} <button *ngIf="!user" type="button" (click)="login()">{{'community.signIn' | translate}}</button></p>

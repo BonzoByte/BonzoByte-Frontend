@@ -1,5 +1,6 @@
 {
   "community": {
+    "drafts": { "saved": "Draft saved in this browser (up to 30 days).", "restored": "Your local draft for this topic was restored.", "unavailable": "This browser cannot save the draft. Copy your text before leaving.", "discard": "Discard draft", "quoteMissing": "The previously quoted comment is not available on this page. Load it or remove the quote before posting.", "withoutQuote": "Remove quote" },
     "reactions": { "like": "Like", "liked": "Liked", "undo": "Remove reaction", "signIn": "Sign in with a verified account to react.", "own": "Other members' reactions to your comment." },
     "edits": { "edit": "Edit", "label": "Edit comment", "save": "Save changes", "edited": "edited", "saved": "Changes saved.", "note": "You are updating an existing comment. The edit label and time will be visible to everyone.", "conflict": "This comment changed in another tab. Your draft is still here: copy it before cancelling and refreshing the topic." },
     "pins": { "label": "Pinned", "pin": "Pin topic", "unpin": "Unpin topic", "note": "Moderators have highlighted this topic at the top of its section.", "saved": "Topic pinned to the top of its section.", "removed": "Topic unpinned. It is listed by latest activity again." },

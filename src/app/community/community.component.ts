@@ -11,6 +11,7 @@ import { AuthService } from '../core/services/auth.service';
 import { User } from '../core/models/user.model';
 import { RegionalSettingsService } from '../core/services/regional-settings.service';
 import { discussionTextLength } from '../core/helpers/discussion-text';
+import { CommunityReplyDraftStore } from '../core/helpers/community-reply-drafts';
 
 @Component({ selector: 'app-community', standalone: true, imports: [CommonModule, FormsModule, RouterLink, TranslateModule, CommunityHubComponent],
   templateUrl: './community.component.html', styleUrl: './community.component.scss' })
@@ -33,6 +34,10 @@ export class CommunityComponent implements OnDestroy, AfterViewInit {
   loading = false; matchLoading = false; busy = false; error = ''; matchError = false; notice = '';
   composing = false; title = ''; body = ''; language = 'hr'; reply: DiscussionComment | null = null;
   editing: { id: string; version: number; original: string } | null = null; editBody = ''; editError = '';
+  draftState: 'none' | 'saved' | 'restored' | 'unavailable' = 'none'; unresolvedReplyId = '';
+  private drafts = new CommunityReplyDraftStore(() => this.document.defaultView?.localStorage ?? null);
+  private lastDraftSignature = '';
+  private pageHide = () => this.saveReplyDraft();
   action: { kind: 'delete' | 'report' | 'hide' | 'topic'; comment?: DiscussionComment } | null = null;
   reason = '';
   private subscriptions = new Subscription(); private request?: Subscription; private matchRequest?: Subscription;
@@ -43,7 +48,7 @@ export class CommunityComponent implements OnDestroy, AfterViewInit {
     @Inject(DOCUMENT) private document: Document) {
     this.language = regional.language() === 'hr' ? 'hr' : 'en';
     this.subscriptions.add(auth.user$.subscribe(user => {
-      const changed = (this.user?._id || '') !== (user?._id || ''); this.user = user;
+      const changed = (this.user?._id || '') !== (user?._id || ''); if (changed) this.saveReplyDraft(); this.user = user;
       this.accessRequest?.unsubscribe(); this.canModerate = false;
       if (user) this.accessRequest = this.api.access().subscribe({ next: result => { this.canModerate = result.canModerate === true; this.refreshBadges(); this.watchPosts(); },
         error: () => this.canModerate = false });
@@ -51,9 +56,15 @@ export class CommunityComponent implements OnDestroy, AfterViewInit {
         this.stopObserver(); this.readRequest?.unsubscribe(); this.followRequest?.unsubscribe(); this.badgeAgain = false; this.unreadRequest?.unsubscribe();
         this.unreadCount = 0; this.reportCount = 0;
         this.body = ''; this.title = ''; this.reply = null; this.composing = false; this.action = null; this.cancelEdit();
+        this.page = null;
+        this.draftState = 'none'; this.unresolvedReplyId = '';
+        this.lastDraftSignature = '';
         this.postKey = ''; this.createKey = ''; this.notice = ''; this.error = ''; this.load(); }
     }));
     this.subscriptions.add(route.queryParamMap.subscribe(params => {
+      this.saveReplyDraft(); this.draftState = 'none'; this.unresolvedReplyId = '';
+      this.page = null;
+      this.lastDraftSignature = '';
       const category = params.get('category'); this.category = this.categories.some(c => c.id === category) ? category as CommunityCategory : 'matches';
       const value = params.get('topic'); this.routeId = value && /^[1-9]\d{0,15}$/.test(value) && Number.isSafeInteger(+value) ? +value : null;
       this.view = params.get('view') === 'moderation' ? 'moderation' : params.get('view') === 'following' ? 'following' : 'topics';
@@ -64,6 +75,7 @@ export class CommunityComponent implements OnDestroy, AfterViewInit {
       this.load();
     }));
     this.document.addEventListener('visibilitychange', this.visibility);
+    this.document.defaultView?.addEventListener('pagehide', this.pageHide);
     this.pollTimer = setInterval(() => { if (this.document.visibilityState !== 'hidden') this.refreshBadges(); }, 60000);
   }
   ngAfterViewInit(): void { this.subscriptions.add(this.posts.changes.subscribe(() => this.watchPosts())); this.watchPosts(); }
@@ -72,7 +84,7 @@ export class CommunityComponent implements OnDestroy, AfterViewInit {
   get editLength(): number { return discussionTextLength(this.editBody); }
   get canSaveEdit(): boolean { return !!this.editing && this.canWrite && !this.busy && !!this.editBody.trim()
     && this.editLength <= 1000 && this.editBody.trim() !== this.editing.original; }
-  get canSend(): boolean { return this.canWrite && !this.busy && this.body.trim().length > 0 && this.bodyLength <= 1000
+  get canSend(): boolean { return this.canWrite && !this.busy && !this.unresolvedReplyId && this.body.trim().length > 0 && this.bodyLength <= 1000
     && (!this.composing || (this.title.trim().length > 0 && discussionTextLength(this.title) <= 120)); }
   select(category: CommunityCategory): void { if (!this.busy) void this.router.navigate(['/community'], { queryParams: { category } }); }
   open(topic: CommunityTopic): void { if (!this.busy) void this.router.navigate(['/community'], { queryParams: { category: topic.category, topic: topic.id } }); }
@@ -116,6 +128,7 @@ export class CommunityComponent implements OnDestroy, AfterViewInit {
   }
   login(): void { this.document.defaultView?.dispatchEvent(new CustomEvent('openLogin')); }
   load(more = false): void {
+    if (!more) this.saveReplyDraft();
     this.cancelEdit();
     this.stopObserver(); this.readRequest?.unsubscribe(); this.deliveredThrough = 0;
     this.request?.unsubscribe(); this.loading = true; this.error = '';
@@ -125,6 +138,7 @@ export class CommunityComponent implements OnDestroy, AfterViewInit {
       if (!more) this.page = null;
       this.request = this.api.page(this.routeId, previous?.nextAfter || this.rangeAfter).subscribe({
         next: result => { this.page = { ...result, comments: [...(previous?.comments || []), ...result.comments] };
+          if (!more) this.restoreReplyDraft(); else this.resolveDraftReply();
           this.deliveredThrough = this.page.comments.at(-1)?.sequence || 0; this.loading = false;
           setTimeout(() => { this.watchPosts(); if (this.targetPost) this.document.getElementById('post-'+this.targetPost)?.scrollIntoView({ block: 'center', behavior: 'smooth' }); }); },
         error: e => { this.loading = false; this.error = this.errorKey(e); } });
@@ -145,7 +159,42 @@ export class CommunityComponent implements OnDestroy, AfterViewInit {
   }
   openMatch(match: CommunityMatch): void { this.discussions.open({ matchTPId: match.id, title: match.title || undefined }); }
   startTopic(): void { this.composing = true; this.title = ''; this.body = ''; this.reply = null; this.createKey = ''; this.notice = ''; }
-  edited(): void { this.postKey = ''; this.createKey = ''; }
+  edited(): void { this.postKey = ''; this.createKey = ''; this.saveReplyDraft(); }
+  private draftSignature(): string {
+    return JSON.stringify([this.user?._id, this.page?.topic.id, this.body, this.reply?.id || this.unresolvedReplyId || null, this.postKey || null]);
+  }
+  private saveReplyDraft(): void {
+    if (!this.canWrite || !this.user?._id || !this.page || this.composing) return;
+    const replyToId = this.reply?.id || this.unresolvedReplyId || null;
+    if (this.body.trim() || replyToId) this.postKey ||= crypto.randomUUID();
+    const signature = this.draftSignature();
+    // Passive navigation/pagehide must not overwrite a newer draft from another tab.
+    if (signature === this.lastDraftSignature) return;
+    const saved = this.drafts.save(this.user._id, this.page.topic.id, { body: this.body, replyToId, requestId: this.postKey || null });
+    if (saved) this.lastDraftSignature = signature;
+    this.draftState = !saved ? 'unavailable' : (this.body.trim() || replyToId ? 'saved' : 'none');
+  }
+  private restoreReplyDraft(): void {
+    if (!this.canWrite || !this.user?._id || !this.page || this.composing) return;
+    const result = this.drafts.load(this.user._id, this.page.topic.id);
+    if (!result.available) { this.draftState = 'unavailable'; return; }
+    if (!result.draft) { this.lastDraftSignature = this.draftSignature(); return; }
+    this.body = result.draft.body; this.postKey = result.draft.requestId || crypto.randomUUID(); this.reply = null;
+    this.unresolvedReplyId = result.draft.replyToId || ''; this.resolveDraftReply(); this.draftState = 'restored';
+    this.lastDraftSignature = result.draft.requestId ? this.draftSignature() : '';
+  }
+  private resolveDraftReply(): void {
+    if (!this.unresolvedReplyId || !this.page) return;
+    const comment = this.page.comments.find(row => row.id === this.unresolvedReplyId && !row.replyTo && !row.hidden && !row.deleted && row.author);
+    if (comment) { this.reply = comment; this.unresolvedReplyId = ''; }
+  }
+  clearReply(): void { this.reply = null; this.unresolvedReplyId = ''; this.edited(); }
+  discardReplyDraft(): void {
+    if (this.busy || !this.user?._id || !this.page) return;
+    const cleared = this.drafts.clear(this.user._id, this.page.topic.id);
+    this.body = ''; this.reply = null; this.unresolvedReplyId = ''; this.postKey = ''; this.draftState = cleared ? 'none' : 'unavailable';
+    this.lastDraftSignature = cleared ? this.draftSignature() : '';
+  }
   beginEdit(comment: DiscussionComment): void {
     if (!this.canWrite || this.busy || this.editing || !comment.canDelete || comment.hidden || comment.deleted) return;
     this.editing = { id: comment.id, version: comment.editVersion ?? 0, original: comment.body };
@@ -189,10 +238,13 @@ export class CommunityComponent implements OnDestroy, AfterViewInit {
           error: e => { if (revision === this.revision) this.error = this.errorKey(e); } });
     } else if (this.page) {
       this.postKey ||= crypto.randomUUID(); const id = this.page.topic.id;
+      const draftOwner = this.user?._id || '', submittedKey = this.postKey; this.saveReplyDraft();
       this.mutation = this.api.post(id, body, this.postKey, this.reply?.id)
         .pipe(finalize(() => { if (revision === this.revision) this.busy = false; })).subscribe({
-          next: result => { if (revision !== this.revision || !this.page || this.page.topic.id !== id) return;
+          next: result => { this.drafts.clear(draftOwner, id, submittedKey); if (revision !== this.revision || !this.page || this.page.topic.id !== id) return;
             this.body = ''; this.reply = null; this.postKey = ''; this.notice = 'community.sent';
+            this.draftState = 'none'; this.unresolvedReplyId = '';
+            this.lastDraftSignature = this.draftSignature();
             this.page = { ...this.page, following: result.following }; this.refreshBadges();
             // Keep chronological pagination contiguous; never append past unseen pages.
             if (!this.page.hasMore) { this.page = { ...this.page, total: result.total, nextAfter: result.comment.sequence,
@@ -245,7 +297,7 @@ export class CommunityComponent implements OnDestroy, AfterViewInit {
       if (revision === this.revision && this.page?.topic.id === id) { this.page = { ...this.page, readThrough: result.readThrough }; this.refreshBadges(); }
     }, error: () => {} });
   }
-  ngOnDestroy(): void { this.destroyed = true; this.revision++; this.stopObserver(); clearInterval(this.pollTimer); this.document.removeEventListener('visibilitychange', this.visibility);
+  ngOnDestroy(): void { this.saveReplyDraft(); this.document.defaultView?.removeEventListener('pagehide', this.pageHide); this.destroyed = true; this.revision++; this.stopObserver(); clearInterval(this.pollTimer); this.document.removeEventListener('visibilitychange', this.visibility);
     this.readRequest?.unsubscribe(); this.followRequest?.unsubscribe(); this.unreadRequest?.unsubscribe();
     this.subscriptions.unsubscribe(); this.request?.unsubscribe(); this.matchRequest?.unsubscribe(); this.mutation?.unsubscribe(); this.accessRequest?.unsubscribe(); }
 }
