@@ -25,19 +25,11 @@
                 <a *ngIf="communityEnabled" routerLink="/community" routerLinkActive="is-current" ariaCurrentWhenActive="page" class="logreg"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h18v13H9l-6 4V4ZM7 8h10M7 12h7" /></svg><span>{{ 'community.title' | translate }}</span></a>
                 <a routerLink="/popular" routerLinkActive="is-current" ariaCurrentWhenActive="page" class="logreg popular-trigger"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M13 2c1 6-5 6-5 11-2-1-2-3-2-3-4 7 0 12 6 12 7 0 11-7 6-13 0 3-2 4-2 4 1-5-1-8-3-11Z" /></svg><span>{{ 'popularity.title' | translate }}</span></a>
                 <a routerLink="/competition" routerLinkActive="is-current" ariaCurrentWhenActive="page" class="logreg"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 21V11h6V5h6v9h6v7H3ZM9 11v10M15 14v7M12 8v3" /></svg><span>{{ 'competition.leaderboard' | translate }}</span></a>
-                <a *ngIf="isLoggedIn && favourites.signedIn()" class="logreg favourites-trigger" routerLink="/favourites"
-                    routerLinkActive="is-current" ariaCurrentWhenActive="page"
-                    [attr.aria-label]="favourites.loading() || favourites.error() ? ('favourites.title' | translate) : ('favourites.openCount' | translate:{count: regional.number(favourites.count(), 0)})">
-                    <span class="favourites-star" aria-hidden="true">★</span>
-                    <span>{{ 'favourites.title' | translate }}</span>
-                    <span class="favourites-count" aria-hidden="true">{{ favourites.loading() || favourites.error() ? '—' : regional.number(favourites.count(), 0) }}</span>
-                </a>
             </div>
             <div *ngIf="!billingLab" class="nav-group personal-navigation" role="group"
                 [attr.aria-label]="'navigation.groups.personal' | translate">
                 <span class="nav-group-label">{{ 'navigation.groups.personal' | translate }}</span>
                 <a *ngIf="siteInsights.access().allowed" routerLink="/site-insights" routerLinkActive="is-current" ariaCurrentWhenActive="page" class="logreg"><span aria-hidden="true">▥</span><span>{{siteInsightsLabel}}</span></a>
-                <a *ngIf="isLoggedIn" class="logreg predictions-trigger" routerLink="/predictions" routerLinkActive="is-current" ariaCurrentWhenActive="page"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9" /><circle cx="12" cy="12" r="5" /><path d="m10 12 2 2 4-4" /></svg><span>{{ 'competition.mine' | translate }}</span></a>
                 <a routerLink="/tennis-break" routerLinkActive="is-current" ariaCurrentWhenActive="page" class="logreg tennis-break-link"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><ellipse cx="15" cy="8" rx="5" ry="7" transform="rotate(40 15 8)" /><path d="m10 13-7 8M8 16l2 2M11 7l6 5M13 4l7 5M11 11l6-7" /></svg><span>{{ 'tennisBreak.title' | translate }}</span></a>
                 <a routerLink="/fantasy" routerLinkActive="is-current" ariaCurrentWhenActive="page" class="logreg"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m8 3-6 4 3 5 3-2v11h8V10l3 2 3-5-6-4a4 4 0 0 1-8 0Z" /></svg><span>{{ 'fantasy.title' | translate }}</span></a>
             </div>
@@ -47,9 +39,26 @@
             <a routerLink="/" class="main-title brand-link" [attr.aria-label]="'navigation.home' | translate">
                 BonzoByte
             </a>
+            <span class="brand-beta" lang="en">Public Beta</span>
         </div>
 
         <div class="navbar-nav account-navigation">
+            <div *ngIf="isLoggedIn && !billingLab" class="personal-shortcuts" role="group"
+                [attr.aria-label]="'navigation.groups.personal' | translate">
+                <a *ngIf="favourites.signedIn()" class="favourites-trigger" routerLink="/favourites"
+                    routerLinkActive="is-current" ariaCurrentWhenActive="page"
+                    [title]="'favourites.title' | translate"
+                    [attr.aria-label]="favourites.loading() || favourites.error() ? ('favourites.title' | translate) : ('favourites.openCount' | translate:{count: regional.number(favourites.count(), 0)})">
+                    <span class="favourites-star" aria-hidden="true">★</span>
+                    <span class="personal-shortcut-label" aria-hidden="true">{{ 'favourites.title' | translate }}</span>
+                    <span class="favourites-count" aria-hidden="true">{{ favourites.loading() || favourites.error() ? '—' : regional.number(favourites.count(), 0) }}</span>
+                </a>
+                <a class="predictions-trigger" routerLink="/predictions" routerLinkActive="is-current" ariaCurrentWhenActive="page"
+                    [title]="'competition.mine' | translate" [attr.aria-label]="'competition.mine' | translate">
+                    <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9" /><circle cx="12" cy="12" r="5" /><path d="m10 12 2 2 4-4" /></svg>
+                    <span class="personal-shortcut-label" aria-hidden="true">{{ 'competition.mine' | translate }}</span>
+                </a>
+            </div>
             <details class="language-picker" #languagePicker (keydown.escape)="languagePicker.open = false">
                 <summary [attr.aria-label]="('language.label' | translate) + ': ' + regional.settings().nativeName" [title]="'language.label' | translate">
                     <span [class]="'fi fi-' + regional.settings().flagIso2" aria-hidden="true"></span>
