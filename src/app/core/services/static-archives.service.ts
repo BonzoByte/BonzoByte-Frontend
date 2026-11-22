@@ -287,10 +287,13 @@ export class StaticArchivesService {
         );
     }
     const request$ = (isRecentScheduleDay(yyyymmdd)
-      ? forkJoin([
-        rows$,
-        this.http.get<unknown>(`/assets/match-schedule/${yyyymmdd}.json`).pipe(timeout(2500), catchError(() => of(null)))
-      ]).pipe(map(([rows, schedule]) => applyPlannedMatchSchedule(rows, schedule, yyyymmdd)))
+      ? rows$.pipe(switchMap(rows => !rows.length ? of(rows) :
+        this.http.get<unknown>(`/api/match-schedule/${yyyymmdd}`).pipe(
+          timeout(2200),
+          catchError(() => this.http.get<unknown>(`/assets/match-schedule/${yyyymmdd}.json`).pipe(
+            timeout(1200), catchError(() => of(null)))),
+          map(schedule => applyPlannedMatchSchedule(rows, schedule, yyyymmdd))
+        )))
       : rows$).pipe(shareReplay(1));
 
     this.dailyCache.set(yyyymmdd, {
