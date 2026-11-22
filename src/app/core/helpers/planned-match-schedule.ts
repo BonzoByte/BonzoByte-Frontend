@@ -20,7 +20,7 @@ export function applyPlannedMatchSchedule(rows: Match[], payload: unknown, day: 
   const { schema, day: givenDay, observedAt, slots } = payload as Record<string, unknown>;
   if (schema !== scheduleSchema || givenDay !== day || !utc(observedAt, isoUtc) ||
       Date.parse(observedAt) > now + 120_000 || now - Date.parse(observedAt) > 36 * 3_600_000 ||
-      !Array.isArray(slots) || slots.length > 500) return rows;
+      !Array.isArray(slots) || !slots.length || slots.length > 500) return rows;
   const byId = new Map<number, Slot>();
   for (const entry of slots) {
     if (!Array.isArray(entry) || entry.length !== 4) return rows;
@@ -31,8 +31,9 @@ export function applyPlannedMatchSchedule(rows: Match[], payload: unknown, day: 
   }
   return rows.map(row => {
     const slot = byId.get(row.matchTPId);
-    return slot && row.player1TPId === slot.player1 && row.player2TPId === slot.player2
-      ? { ...row, plannedStartKind: 'not-before', plannedStartUtc: slot.start }
+    if (!slot) return { ...row, plannedStartChecked: true };
+    return row.player1TPId === slot.player1 && row.player2TPId === slot.player2
+      ? { ...row, plannedStartKind: 'not-before', plannedStartUtc: slot.start, plannedStartChecked: true }
       : row;
   });
 }

@@ -14,7 +14,7 @@ test('adds only display metadata for the exact pair regardless of result or elap
     const live = {...match,resultDetails:'6:3'};
     const elapsed = '2026-11-21T14:00:00.000Z';
     const [enriched,wrong,final,partial] = applyPlannedMatchSchedule([match,backwards,completed,live],{...feed,slots:[[30,11,12,elapsed]]},day,now);
-    const extra = {plannedStartUtc:elapsed,plannedStartKind:'not-before'};
+    const extra = {plannedStartUtc:elapsed,plannedStartKind:'not-before',plannedStartChecked:true};
     assert.deepEqual(enriched,{...match,...extra});
     assert.equal(wrong,backwards);
     assert.deepEqual(final,{...completed,...extra});

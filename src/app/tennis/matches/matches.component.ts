@@ -165,7 +165,8 @@ export class MatchesComponent implements OnInit, OnDestroy {
         context:string; keys:string[]; snapshot:Record<string,unknown>; view:MatchRowPresentation;
     }>();
     private static readonly predictionFields = ['qualityStatus','predictionEligible','modelProbabilityPlayer1',
-        'modelProbabilityPlayer2','probabilityText','player1Name','player2Name'] as const;
+        'modelProbabilityPlayer2','probabilityText','player1Name','player2Name','publicForecastIssuedAtUtc',
+        'isFinished','result','resultText','resultDetails','resultDetailsText'] as const;
     private readonly predictionPresentationCache = new WeakMap<Match, {
         language:string; inputs:unknown[]; value:MatchPrediction|null;
     }>();
@@ -3045,8 +3046,11 @@ export class MatchesComponent implements OnInit, OnDestroy {
     }
 
     private createPredictionPresentation(match: Match): MatchPrediction | null {
-        if (this.hasResultQualityHold(match) || match.predictionEligible === false ||
-            (match.qualityStatus && match.predictionEligible !== true)) return null;
+        const publicPrematch = this.probabilityFirst && match.qualityStatus === 'NotAssessed' &&
+            !this.isFinishedValue(match.isFinished) && !this.hasRecordedResultData(match) &&
+            typeof match.publicForecastIssuedAtUtc === 'string' && Number.isFinite(Date.parse(match.publicForecastIssuedAtUtc));
+        if (!publicPrematch && (this.hasResultQualityHold(match) || match.predictionEligible === false ||
+            (match.qualityStatus && match.predictionEligible !== true))) return null;
         const [p1, p2] = this.parseProbs(match);
         if (p1 == null || p2 == null) return null;
         if (this.probabilityFirst && p1 === p2) return null;
@@ -3353,6 +3357,7 @@ export class MatchesComponent implements OnInit, OnDestroy {
             return 'incomplete';
         }
 
+        if (match.qualityStatus === 'NotAssessed') return 'pending';
         return this.isHistoricalMatchDay(match) ? 'not-played' : 'pending';
     }
 
@@ -3539,6 +3544,8 @@ export class MatchesComponent implements OnInit, OnDestroy {
 
     hasResultQualityHold(match: Match): boolean {
         const status = match.qualityStatus;
+        // A pending result-less listing has not failed a result-quality test.
+        if (status === 'NotAssessed' && !this.isFinishedValue(match.isFinished) && !this.hasRecordedResultData(match)) return false;
         // Old archives have no quality contract; retain compatibility until republished.
         // An explicit new/unknown quality state, however, must never silently authorize grading.
         return !!status && !['Validated', 'Incomplete', 'NonRatedOutcome'].includes(status);
@@ -3881,6 +3888,8 @@ export class MatchesComponent implements OnInit, OnDestroy {
             isFinished: (m as any)?.isFinished ?? (m as any)?.l03,
             user: this.auth.getUser(),
             scheduledStart: m.dateTime,
+            plannedStartUtc: m.plannedStartUtc,
+            plannedStartChecked: m.plannedStartChecked,
         }).locked;
     }
 

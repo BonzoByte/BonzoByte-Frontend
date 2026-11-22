@@ -376,6 +376,8 @@ export class StaticArchivesService {
       isFinished: match?.isFinished,
       user: this.auth.getUser(),
       scheduledStart: match?.dateTime,
+      plannedStartUtc: match?.plannedStartUtc,
+      plannedStartChecked: match?.plannedStartChecked,
       lockHours,
     });
 

@@ -1,7 +1,7 @@
 const MILLISECONDS_PER_HOUR = 60 * 60 * 1000;
 const MILLISECONDS_PER_DAY = 24 * MILLISECONDS_PER_HOUR;
 
-export const DETAILS_LOCK_HOURS = 1;
+export const DETAILS_LOCK_HOURS = 2;
 
 export interface DetailsAccessUser {
   isAdmin?: boolean;
@@ -20,6 +20,7 @@ export interface ClientDetailsAccessDecision {
     | 'future-locked'
     | 'unknown-time-day-ended'
     | 'unknown-time-locked'
+    | 'unknown-time-open'
     | 'invalid-start';
   unlocksAt: string | null;
 }
@@ -28,20 +29,23 @@ export interface ClientDetailsAccessDecision {
  * Client-side projection of the backend policy, used only for the grid icon
  * and direct-static development mode. API mode always asks the backend.
  *
- * Legacy midnight values represent an unavailable source time for many rows.
- * Until the archive gains an explicit "start time known" field, midnight is
- * conservatively locked through the listed UTC day.
+ * The checked planned time takes precedence over the archive clock. A valid
+ * schedule with no entry for this match permits details but never enables picks.
  */
 export function evaluateClientDetailsAccess({
   isFinished,
   user,
   scheduledStart,
+  plannedStartUtc,
+  plannedStartChecked,
   nowMs = Date.now(),
   lockHours = DETAILS_LOCK_HOURS,
 }: {
   isFinished: unknown;
   user?: DetailsAccessUser | null;
   scheduledStart: unknown;
+  plannedStartUtc?: string | null;
+  plannedStartChecked?: boolean;
   nowMs?: number;
   lockHours?: number;
 }): ClientDetailsAccessDecision {
@@ -53,21 +57,26 @@ export function evaluateClientDetailsAccess({
     return { locked: false, reason: 'privileged', unlocksAt: null };
   }
 
-  const schedule = parseExpectedStart(scheduledStart);
+  const hasPlannedStart = plannedStartChecked === true && !!plannedStartUtc;
+  const schedule = parseExpectedStart(hasPlannedStart ? plannedStartUtc : scheduledStart);
   if (!Number.isFinite(nowMs) || !schedule) {
     return { locked: true, reason: 'invalid-start', unlocksAt: null };
+  }
+  if (plannedStartChecked && !hasPlannedStart && !schedule.hasKnownStartTime) {
+    return { locked: false, reason: 'unknown-time-open', unlocksAt: null };
   }
 
   const normalizedLockHours =
     Number.isFinite(lockHours) && lockHours >= 0 ? lockHours : DETAILS_LOCK_HOURS;
-  const unlockMs = schedule.hasKnownStartTime
+  const hasKnownStartTime = hasPlannedStart || schedule.hasKnownStartTime;
+  const unlockMs = hasKnownStartTime
     ? schedule.expectedStartMs - normalizedLockHours * MILLISECONDS_PER_HOUR
     : schedule.unknownTimeUnlockMs;
   const locked = nowMs < unlockMs;
 
   return {
     locked,
-    reason: schedule.hasKnownStartTime
+    reason: hasKnownStartTime
       ? (locked ? 'future-locked' : 'time-unlocked')
       : (locked ? 'unknown-time-locked' : 'unknown-time-day-ended'),
     unlocksAt: new Date(unlockMs).toISOString(),
