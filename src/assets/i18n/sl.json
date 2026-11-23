@@ -1176,6 +1176,7 @@
     "unnamed": "Igralec"
   },
   "matchGrid": {
+    "provisionalResult": "Začasni rezultat",
     "historicalNoticeText": "Zgodovinski prikaz: končani dvoboji z arhiviranimi kvotami, brez filtra prednosti pred dvobojem. P/L je teoretičen; ocene uporabljajo vse primerne dvoboje.",
     "recoveredHistoricalOdds": "Arhivirane zgodovinske kvote s preverjenim dvobojem in igralci. Uporabljajo se za teoretični zgodovinski P/L, ne za potrjeno primerjavo pred dvobojem.",
     "layout": "Prikaz dnevnih dvobojev",

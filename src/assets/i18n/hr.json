@@ -1573,6 +1573,7 @@
     "indoors": "Dvorana"
   },
   "matchGrid": {
+    "provisionalResult": "Privremeni rezultat",
     "historicalNoticeText": "Povijesni prikaz: završeni mečevi s arhiviranim kvotama, bez filtra predmečnog edgea. P/L je teorijski; rejting koristi sve prikladne mečeve.",
     "recoveredHistoricalOdds": "Arhivirane povijesne kvote s provjerenim mečem i igračima. Koriste se za teorijski povijesni P/L, ne za potvrđenu predmečnu usporedbu.",
     "layout": "Prikaz dnevnih mečeva",

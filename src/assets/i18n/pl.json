@@ -1176,6 +1176,7 @@
     "unnamed": "Zawodnik"
   },
   "matchGrid": {
+    "provisionalResult": "Wstępny wynik",
     "historicalNoticeText": "Widok historyczny: zakończone mecze z archiwalnymi kursami, bez filtra przewagi przedmeczowej. P/L jest teoretyczny; oceny wykorzystują wszystkie odpowiednie mecze.",
     "recoveredHistoricalOdds": "Archiwalne kursy historyczne z potwierdzonym dopasowaniem meczu i graczy. Służą do teoretycznego historycznego P/L, nie do potwierdzonego porównania przed meczem.",
     "layout": "Układ meczów dziennych",

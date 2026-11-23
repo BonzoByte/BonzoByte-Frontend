@@ -437,7 +437,7 @@
                             </td>
 
                             <td class="col-center match-result-cell">
-                                <app-match-result-cell [match]="match" [presentation]="view"></app-match-result-cell>
+                                <app-match-result-cell [match]="match" [presentation]="view" [provisional]="provisionalResult(match)"></app-match-result-cell>
                             </td>
 
                             <td class="col-center market-odds-cell" [title]="view.oddsTitle">

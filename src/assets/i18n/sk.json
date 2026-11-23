@@ -1176,6 +1176,7 @@
     "unnamed": "Hráč"
   },
   "matchGrid": {
+    "provisionalResult": "Predbežný výsledok",
     "historicalNoticeText": "Historický pohľad: ukončené zápasy s archivovanými kurzami, bez filtra predzápasovej výhody. P/L je teoretický; hodnotenia používajú všetky vhodné zápasy.",
     "recoveredHistoricalOdds": "Archivované historické kurzy s overeným priradením zápasu a hráčov. Slúžia na teoretický historický P/L, nie na potvrdené porovnanie pred zápasom.",
     "layout": "Rozloženie denných zápasov",

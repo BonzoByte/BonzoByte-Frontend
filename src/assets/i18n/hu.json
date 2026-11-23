@@ -1176,6 +1176,7 @@
     "unnamed": "Játékos"
   },
   "matchGrid": {
+    "provisionalResult": "Ideiglenes eredmény",
     "historicalNoticeText": "Történeti nézet: befejezett mérkőzések archivált oddsokkal, mérkőzés előtti előnyszűrő nélkül. A P/L elméleti; az értékelés minden alkalmas mérkőzést használ.",
     "recoveredHistoricalOdds": "Ellenőrzött mérkőzéshez és játékosokhoz rendelt archivált történeti oddsok. Elméleti történeti P/L-hez, nem igazolt mérkőzés előtti összehasonlításhoz.",
     "layout": "Napi mérkőzések elrendezése",

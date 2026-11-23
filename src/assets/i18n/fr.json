@@ -1176,6 +1176,7 @@
     "sets": "Sets"
   },
   "matchGrid": {
+    "provisionalResult": "Résultat provisoire",
     "historicalNoticeText": "Vue historique : matchs terminés avec cotes archivées, sans filtre d’avantage avant-match. Le P/L est théorique ; les notes utilisent tous les matchs admissibles.",
     "recoveredHistoricalOdds": "Cotes historiques archivées avec match et joueurs vérifiés. Utilisées pour le P/L historique théorique, pas pour une comparaison avant-match confirmée.",
     "layout": "Disposition des matchs du jour",

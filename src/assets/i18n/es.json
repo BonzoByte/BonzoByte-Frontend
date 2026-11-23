@@ -1176,6 +1176,7 @@
     "sets": "Sets"
   },
   "matchGrid": {
+    "provisionalResult": "Resultado provisional",
     "historicalNoticeText": "Vista histórica: partidos finalizados con cuotas archivadas, sin filtro de ventaja prepartido. El P/L es teórico; las valoraciones usan todos los partidos aptos.",
     "recoveredHistoricalOdds": "Cuotas históricas archivadas con partido y jugadores verificados. Se usan para el P/L histórico teórico, no para una comparación prepartido confirmada.",
     "layout": "Diseño de partidos diarios",

@@ -1176,6 +1176,7 @@
     "sets": "Sets"
   },
   "matchGrid": {
+    "provisionalResult": "Resultado provisório",
     "historicalNoticeText": "Visão histórica: partidas concluídas com cotações arquivadas, sem filtro de vantagem pré-jogo. O P/L é teórico; as avaliações usam todas as partidas elegíveis.",
     "recoveredHistoricalOdds": "Cotações históricas arquivadas com partida e jogadores verificados. Usadas para P/L histórico teórico, não para comparação pré-jogo confirmada.",
     "layout": "Layout das partidas diárias",

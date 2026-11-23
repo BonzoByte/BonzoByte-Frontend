@@ -1573,6 +1573,7 @@
     "indoors": "Indoors"
   },
   "matchGrid": {
+    "provisionalResult": "Provisional result",
     "historicalNoticeText": "Historical view: completed matches with archived odds, without the pre-match edge filter. P/L is theoretical; ratings use all eligible matches.",
     "recoveredHistoricalOdds": "Archived historical odds with checked match/player identity. Used for theoretical historical P/L, not a confirmed pre-match comparison.",
     "layout": "Daily matches layout",

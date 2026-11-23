@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { CommonModule } from '@angular/common';
+import { HttpClient } from '@angular/common/http';
 import { ArchiveCoverageComponent } from '../../shared/ui/archive-coverage/archive-coverage.component';
 import { PROBABILITY_FIRST, modelDecimalOdds } from '../../core/helpers/model-odds';
 import { summarizeTournamentForecasts, TournamentForecastSummary } from '../../core/helpers/tournament-forecast-summary';
@@ -24,8 +25,9 @@ import { StaticArchivesService } from '../../core/services/static-archives.servi
 import { AuthService } from 'src/app/core/services/auth.service';
 import { PredictionOverviewPreferenceService } from '../../core/services/prediction-overview-preference.service';
 import { QuickFilterPreferenceService, QuickFilterPreferences } from '../../core/services/quick-filter-preference.service';
-import { Subject, Subscription, Observable, of, takeUntil } from 'rxjs';
-import { catchError, debounceTime, distinctUntilChanged, map, switchMap } from 'rxjs/operators';
+import { Subject, Subscription, Observable, forkJoin, of, takeUntil, timer } from 'rxjs';
+import { catchError, debounceTime, distinctUntilChanged, map, switchMap, timeout } from 'rxjs/operators';
+import { ProvisionalScores, provisionalMatchResult, readProvisionalScores } from '../../core/helpers/provisional-match-result';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { evaluateClientDetailsAccess } from '../../core/helpers/match-details-access';
 import { compactPlayerGridLabel, playerGridFlagCode, playerGridLabel } from '../../core/helpers/player-grid-label';
@@ -379,6 +381,8 @@ export class MatchesComponent implements OnInit, OnDestroy {
     private sourceAvailableDates: string[] = [];
     private latestSourceMatches: Match[] | null = null;
     private dailyRequest?: Subscription;
+    private provisionalRequest?: Subscription;
+    private provisionalScores: ProvisionalScores = new Map();
     private dailyLoadingTimer?: number;
     unresolvedTimeCount = 0;
     missingArchiveDays: string[] = [];
@@ -516,7 +520,8 @@ export class MatchesComponent implements OnInit, OnDestroy {
         @Optional() @Inject(FilterUndoService) private filterUndo: FilterUndoService | null = null,
         @Optional() @Inject(ReadRecoveryService) private recovery: ReadRecoveryService | null = null,
         @Optional() @Inject(LocalizedSnackbarService) private calendarNotice: LocalizedSnackbarService | null = null,
-        public modelGuidancePreference: ModelGuidancePreferenceService = new ModelGuidancePreferenceService()) {
+        public modelGuidancePreference: ModelGuidancePreferenceService = new ModelGuidancePreferenceService(),
+        @Optional() @Inject(HttpClient) private provisionalHttp: HttpClient | null = null) {
         this.predictionOverviewVisible$ = predictionOverviewPreference.visible$;
         this.quickFilterPreferences = quickFilterPreference.current;
     }
@@ -993,6 +998,8 @@ export class MatchesComponent implements OnInit, OnDestroy {
             this.cancelBrowseRestore?.();
         }
         this.dailyRequest?.unsubscribe();
+        this.provisionalRequest?.unsubscribe();
+        this.provisionalScores = new Map();
         window.clearTimeout(this.dailyLoadingTimer);
         this.dailyLoadError = false;
         this.missingArchiveDays = [];
@@ -1019,6 +1026,7 @@ export class MatchesComponent implements OnInit, OnDestroy {
                 const rows = data.matches.map((m, i) => ({ ...(m as any), __idx: i }));
 
                 this.daySourceMatches = rows;
+                this.watchProvisionalScores(data.archiveDays);
 
                 // The archive response, not the previous day's rows, determines
                 // whether an automatic pre-match edge filter is meaningful.
@@ -3084,6 +3092,33 @@ export class MatchesComponent implements OnInit, OnDestroy {
         }
 
         return { side, playerName, confidence, label: this.regional.text('matchGrid.lean'), tone: 'lean' };
+    }
+
+    private watchProvisionalScores(sourceDays: readonly string[]): void {
+        const http = this.provisionalHttp;
+        if (!http) return;
+        const today = dayAt(Date.now(), 'Europe/Zagreb');
+        const days = [...new Set(sourceDays)].filter(day => day === today || day === shiftDay(today, -1));
+        if (!days.length) return;
+        this.provisionalRequest = timer(0, 60000).pipe(
+            switchMap(() => {
+                const current = dayAt(Date.now(), 'Europe/Zagreb');
+                const recent = days.filter(day => day === current || day === shiftDay(current, -1));
+                if (!recent.length || !this.hostElement.nativeElement.ownerDocument || this.viewMode !== 'daily') return of([]);
+                if (document.hidden) return of(null);
+                return forkJoin(recent.map(day => {
+                    const key = day.replaceAll('-', '');
+                    return http.get<unknown>(`/api/provisional-results/${key}`).pipe(timeout(4000),
+                        catchError(() => of(null)), map(data => readProvisionalScores(data, key)));
+                }));
+            }), takeUntil(this.destroy$)
+        ).subscribe(packets => {
+            if (packets) this.provisionalScores = new Map(packets.flatMap(packet => [...packet]));
+        });
+    }
+
+    provisionalResult(match: Match) {
+        return this.viewMode === 'daily' ? provisionalMatchResult(match, this.provisionalScores) : undefined;
     }
 
     /** Pure display values only. Account access, favourites and comments stay live. */

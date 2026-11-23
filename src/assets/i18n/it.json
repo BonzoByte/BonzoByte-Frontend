@@ -1176,6 +1176,7 @@
     "unnamed": "Giocatore"
   },
   "matchGrid": {
+    "provisionalResult": "Risultato provvisorio",
     "historicalNoticeText": "Vista storica: incontri conclusi con quote archiviate, senza filtro di vantaggio prepartita. Il P/L è teorico; le valutazioni usano tutti gli incontri idonei.",
     "recoveredHistoricalOdds": "Quote storiche archiviate con corrispondenza di incontro e giocatori verificata. Usate per il P/L storico teorico, non per un confronto prepartita confermato.",
     "layout": "Vista degli incontri giornalieri",

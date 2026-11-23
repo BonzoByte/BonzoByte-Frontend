@@ -1383,6 +1383,7 @@
     "indoors": "Halle"
   },
   "matchGrid": {
+    "provisionalResult": "Vorläufiges Ergebnis",
     "historicalNoticeText": "Historische Ansicht: abgeschlossene Spiele mit archivierten Quoten, ohne Vor-Spiel-Edge-Filter. P/L ist theoretisch; Ratings nutzen alle geeigneten Spiele.",
     "recoveredHistoricalOdds": "Archivierte historische Quoten mit geprüfter Spiel- und Spielerzuordnung. Für theoretischen historischen P/L, nicht für einen bestätigten Vor-Spiel-Vergleich.",
     "layout": "Ansicht der Tagesmatches",
