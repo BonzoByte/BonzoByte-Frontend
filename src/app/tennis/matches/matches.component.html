@@ -478,7 +478,7 @@
                                     </div>
                                 </ng-container>
                                 <ng-template #noPrediction>
-                                    <span class="prediction-cell__unavailable">{{ (view.qualityHold ? 'matchGrid.excluded' : 'matchGrid.noPrediction') | translate }}</span>
+                                    <span class="prediction-cell__unavailable">{{ view.predictionUnavailable }}</span>
                                 </ng-template>
 
                                 <ng-container *ngIf="view.market as market; else marketOnly">

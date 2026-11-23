@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
-import { applyRetrospectiveModelDisplay, modelDisplayDays, modelDisplaySchema } from '../src/app/core/helpers/model-display-probabilities.ts';
+import { applyRetrospectiveModelDisplay, dateModelDisplaySchema, modelDisplayDays, modelDisplaySchema } from '../src/app/core/helpers/model-display-probabilities.ts';
 
 const read = name => JSON.parse(readFileSync(new URL('../src/assets/model-display/' + name + '.json', import.meta.url), 'utf8'));
 const day = '20261119', feed = read(day);
@@ -43,4 +43,19 @@ test('malformed packets leave the archive untouched', () => {
         { ...feed, rows: [[...example.slice(0, 5), .53, .43]] },
         { ...feed, schema: 'unknown' }]) assert.equal(applyRetrospectiveModelDisplay(rows, broken, day), rows);
     assert.equal(modelDisplayDays({ schema: modelDisplaySchema, days: ['missing'] }).size, 0);
+});
+
+test('date-only estimates do not need a time and never become a timed prediction; exact player reversal is mapped',()=>{
+    const dateFeed={schema:dateModelDisplaySchema,day,rows:[example],held:[]};
+    const dateMatch={...match,dateTime:'2026-11-19',isFinished:false,result:null,resultDetails:null};
+    const [actual]=applyRetrospectiveModelDisplay([dateMatch],dateFeed,day);
+    assert.equal(actual.retrospectiveModelDisplay.dateOnly,true);
+    assert.equal(actual.publicForecastIssuedAtUtc,undefined);
+    assert.equal(actual.predictionEligible,false);
+    const backwards={...dateMatch,player1TPId:match.player2TPId,player2TPId:match.player1TPId};
+    const [swap]=applyRetrospectiveModelDisplay([backwards],dateFeed,day);
+    assert.equal(swap.retrospectiveModelDisplay.player1,actual.retrospectiveModelDisplay.player2);
+    const [held]=applyRetrospectiveModelDisplay([dateMatch],{...dateFeed,rows:[],held:[example.slice(0,5)]},day);
+    assert.equal(held.dateModelInsufficientHistory,true);
+    assert.equal(held.retrospectiveModelDisplay,undefined);
 });

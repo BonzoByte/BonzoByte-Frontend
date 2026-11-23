@@ -142,7 +142,8 @@ export interface Match {
   plannedStartChecked?: boolean;
   publicForecastIssuedAtUtc?: string | null;
   /** Display only. Never a timely forecast, model-performance observation, or game input. */
-  retrospectiveModelDisplay?: { player1: number; player2: number };
+  retrospectiveModelDisplay?: { player1: number; player2: number; dateOnly?: boolean };
+  dateModelInsufficientHistory?: boolean;
   matchTPId: number;
   // _id: number;
   isFinished: boolean;

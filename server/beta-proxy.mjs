@@ -1,5 +1,6 @@
 import { betaWaitPage } from './beta-wait-page.mjs';
 import { schedulePath, servePlannedSchedule } from './planned-schedule-feed.mjs';
+import { modelDisplayPath, serveModelDisplay } from './model-display-feed.mjs';
 
 const privateHeaders = { 'X-Robots-Tag': 'noindex, nofollow, noarchive',
     'Cache-Control': 'private, no-store, max-age=0', 'CDN-Cache-Control': 'no-store', 'Vercel-CDN-Cache-Control': 'no-store',
@@ -24,6 +25,8 @@ export function createBetaProxy({ settings, next, rewrite, fetcher = fetch }) {
         if (url.origin !== publicOrigin) return denied(404, 'BETA_HOST_NOT_ALLOWED');
         const scheduleDay=schedulePath.exec(pathname)?.[1];
         const scheduleResponse=()=>servePlannedSchedule({request,day:scheduleDay,fetcher,headers:privateHeaders});
+        const displayKey=modelDisplayPath.exec(pathname)?.[1];
+        const displayResponse=()=>serveModelDisplay({request,key:displayKey,fetcher,headers:privateHeaders});
         if (pathname === '/robots.txt' && ['GET', 'HEAD'].includes(request.method))
             return new Response(request.method === 'HEAD' ? null : 'User-agent: *\nAllow: /\n', { headers: { ...privateHeaders, 'Content-Type': 'text/plain' } });
         const forward = () => {
@@ -43,6 +46,7 @@ export function createBetaProxy({ settings, next, rewrite, fetcher = fetch }) {
                 return denied(410, 'BETA_ACCESS_DISABLED');
             }
             if (scheduleDay) return scheduleResponse();
+            if (displayKey) return displayResponse();
             if (pathname === '/api' || pathname.startsWith('/api/') || pathname === '/uploads'
                 || pathname.startsWith('/uploads/') || pathname.startsWith('/static/')) return forward();
             return next({ headers: privateHeaders });
@@ -88,6 +92,7 @@ export function createBetaProxy({ settings, next, rewrite, fetcher = fetch }) {
         if (!['GET', 'HEAD', 'OPTIONS'].includes(request.method) && request.headers.get('origin') !== publicOrigin)
             return denied(403, 'BETA_ORIGIN_DENIED');
         if (scheduleDay) return scheduleResponse();
+        if (displayKey) return displayResponse();
         if (api || pathname === '/uploads' || pathname.startsWith('/uploads/') || pathname.startsWith('/static/')) return forward();
         // No asset extension, favicon, _vercel or static-folder auth bypass.
         return next({ headers: privateHeaders });

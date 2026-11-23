@@ -253,6 +253,7 @@ export class StaticArchivesService {
 
   private readonly dailyCacheTtlMs = 60_000;
   private modelDisplayDays$?: Observable<ReadonlySet<string>>;
+  private remoteModelDisplayDays?: { expiresAt:number; request$:Observable<ReadonlySet<string>> };
   private dailyCache = new Map<string, {
     expiresAt: number;
     request$: Observable<Match[]>;
@@ -288,25 +289,18 @@ export class StaticArchivesService {
           map(rows => (rows || []).map(r => this.mapLiteRowToMatch(r)))
         );
     }
-    const scheduledRows$ = (isRecentScheduleDay(yyyymmdd)
-      ? rows$.pipe(switchMap(rows => !rows.length ? of(rows) :
-        this.http.get<unknown>(`/api/match-schedule/${yyyymmdd}`).pipe(
-          timeout(2200),
-          catchError(() => this.http.get<unknown>(`/assets/match-schedule/${yyyymmdd}.json`).pipe(
-            timeout(1200), catchError(() => of(null)))),
-          map(schedule => applyPlannedMatchSchedule(rows, schedule, yyyymmdd))
-        )))
-      : rows$);
-    const request$ = scheduledRows$.pipe(
+    const request$ = rows$.pipe(
       switchMap(rows => {
         if (!rows.length) return of(rows);
-        this.modelDisplayDays$ ??= this.http.get<unknown>('/assets/model-display/index.json').pipe(
-          timeout(1200), map(modelDisplayDays), catchError(() => of(new Set<string>())), shareReplay(1)
-        );
-        return this.modelDisplayDays$.pipe(switchMap(days => days.has(yyyymmdd) ?
-          this.http.get<unknown>(`/assets/model-display/${yyyymmdd}.json`).pipe(
-            timeout(1200), map(packet => applyRetrospectiveModelDisplay(rows, packet, yyyymmdd)), catchError(() => of(rows))
-          ) : of(rows)));
+        const schedule$ = isRecentScheduleDay(yyyymmdd) ?
+          this.http.get<unknown>(`/api/match-schedule/${yyyymmdd}`).pipe(
+            timeout(2200),
+            catchError(() => this.http.get<unknown>(`/assets/match-schedule/${yyyymmdd}.json`).pipe(
+              timeout(1200), catchError(() => of(null))))) : of(null);
+        // The display feed and schedule are unrelated reads. In particular a
+        // missing schedule response never makes an estimate ineligible.
+        return forkJoin([schedule$,this.getModelDisplayPacket(yyyymmdd)]).pipe(
+          map(([schedule,packet]) => applyRetrospectiveModelDisplay(applyPlannedMatchSchedule(rows,schedule,yyyymmdd),packet,yyyymmdd)));
       }),
       shareReplay(1)
     );
@@ -316,6 +310,20 @@ export class StaticArchivesService {
       request$
     });
     return request$;
+  }
+
+  private getModelDisplayPacket(day:string):Observable<unknown> {
+    this.modelDisplayDays$ ??= this.http.get<unknown>('/assets/model-display/index.json').pipe(
+      timeout(1200),map(modelDisplayDays),catchError(() => of(new Set<string>())),shareReplay(1));
+    const local=()=>this.modelDisplayDays$!.pipe(switchMap(days=>days.has(day) ?
+      this.http.get<unknown>(`/assets/model-display/${day}.json`).pipe(timeout(1200),catchError(()=>of(null))) : of(null)));
+    if(!this.remoteModelDisplayDays||this.remoteModelDisplayDays.expiresAt<=Date.now()){
+      this.remoteModelDisplayDays={expiresAt:Date.now()+this.dailyCacheTtlMs,
+        request$:this.http.get<unknown>('/api/model-display/index').pipe(
+          timeout(2200),map(modelDisplayDays),catchError(()=>of(new Set<string>())),shareReplay(1))};
+    }
+    return this.remoteModelDisplayDays.request$.pipe(switchMap(days=>days.has(day) ?
+      this.http.get<unknown>(`/api/model-display/${day}`).pipe(timeout(2200),catchError(local)) : local()));
   }
 
   /** Archive keys stay Zagreb-based. This projection changes only the selected user's day. */

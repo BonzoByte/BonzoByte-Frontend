@@ -103,6 +103,7 @@ interface MatchRowPresentation {
     qualityHold: boolean; qualityTitle: string; oddsTitle: string;
     odds: { verified:boolean; player1:{integer:string;fraction:string}|null; player2:{integer:string;fraction:string}|null } | null;
     prediction: GridMatchPrediction | null; predictionClass: string; predictionTitle: string; outcome: string;
+    predictionUnavailable: string;
     market: PredictionMarketContext | null; marketDecimal: string; marketLabel: string | null;
     pl: string; plClass: string; plTitle: string; historicalPl: boolean;
 }
@@ -3106,6 +3107,8 @@ export class MatchesComponent implements OnInit, OnDestroy {
                 confidence:50, label:'', tone:'lean' } : display ?
                 this.predictionCardForPair(match, display.player1 * 100, display.player2 * 100) : null);
         const ungraded = !!prediction && !primaryPrediction;
+        const lackOfHistory = this.probabilityFirst && !prediction && match.dateModelInsufficientHistory === true;
+        const dateOnlyHint = 'modelPerformance.dateModelEstimateHint';
         const probabilities = this.parseProbs(match);
         const firstPrice = display ? modelDecimalOdds(display.player1, 'fraction') : modelDecimalOdds(probabilities[0], 'percent');
         const secondPrice = display ? modelDecimalOdds(display.player2, 'fraction') : modelDecimalOdds(probabilities[1], 'percent');
@@ -3137,12 +3140,16 @@ export class MatchesComponent implements OnInit, OnDestroy {
             player2Flag:this.flagCode(match.player2CountryISO2).toLowerCase(),
             result:this.getDisplayResult(match), sets:this.formatResultDetails(match.resultDetails),
             qualityHold:this.hasResultQualityHold(match), qualityTitle:this.getResultQualityTooltip(match),
-            oddsTitle:this.probabilityFirst ? this.regional.text(display ? 'modelPerformance.retrospectiveOddsHint' : 'modelPerformance.modelOddsHint') : this.getMarketOddsTooltip(match),
+            oddsTitle:this.probabilityFirst ? this.regional.text(display ?
+                (display.dateOnly ? dateOnlyHint : 'modelPerformance.retrospectiveOddsHint') : 'modelPerformance.modelOddsHint') : this.getMarketOddsTooltip(match),
             odds:odds?{verified:odds.verified,player1:this.getDecimalOddsParts(odds.player1),player2:this.getDecimalOddsParts(odds.player2)}:null,
             prediction, predictionClass:ungraded ? `prediction-cell--${prediction?.tone} prediction-cell--ungraded` : this.getPredictionClass(match),
-            predictionTitle:display ? this.regional.text('modelPerformance.retrospectivePredictionHint') :
-                isEven ? this.regional.text('modelPerformance.evenMatch') : this.getPredictionTooltip(match),
+            predictionTitle:display ? this.regional.text(display.dateOnly ? dateOnlyHint : 'modelPerformance.retrospectivePredictionHint') :
+                isEven ? this.regional.text('modelPerformance.evenMatch') :
+                lackOfHistory ? this.regional.text('modelPerformance.historyNotice') : this.getPredictionTooltip(match),
             outcome:ungraded ? this.regional.text('modelPerformance.notScored') : this.getPredictionOutcomeLabel(match),
+            predictionUnavailable:this.regional.text(lackOfHistory ? 'modelPerformance.insufficientHistory' :
+                this.hasResultQualityHold(match) ? 'matchGrid.excluded' : 'matchGrid.noPrediction'),
             market, marketDecimal:market?this.formatDecimalOdds(market.decimalOdds):'', marketLabel:this.getMarketOddsLabel(match),
             pl:this.probabilityFirst?'—':this.formatPL(match), plClass:this.probabilityFirst?'':this.getPLClass(match), plTitle:this.probabilityFirst?'':this.getPLTooltip(match), historicalPl:!this.probabilityFirst&&this.isHistoricalPL(match),
         };

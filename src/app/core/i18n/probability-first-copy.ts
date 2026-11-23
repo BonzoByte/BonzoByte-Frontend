@@ -11,6 +11,8 @@ const en = {
   retrospectiveOddsHint:'Model odds calculated later from data available before the match day. Not an offered price or a published pre-match forecast.',
   retrospectivePredictionHint:'Reconstructed later using data from before the match day. Not included in accuracy.',
   notScored:'Not scored',evenMatch:'Even match',
+  dateModelEstimateHint:'Model estimate using data from before the match date. No verified pre-match publication time; not included in accuracy.',
+  insufficientHistory:'Not enough player history',
   oddsWarning:'Unverified archived odds: values may be incomplete, misassigned or outdated. Not used in model-performance statistics.',
   forecastHint:'Model estimate, not a guarantee. No market comparison.',
   disclosure:'Retrospective model reconstruction, not an untouched prospective test. Historical results do not guarantee future accuracy or returns.',
@@ -74,10 +76,29 @@ const ungradedPrediction:Record<string,readonly [string,string,string]> = {
   sk:['Bez hodnotenia','Vyrovnaný odhad','Odhad dopočítaný z údajov spred dňa zápasu. Nezahŕňa sa do štatistiky presnosti.'],
   hu:['Nem értékelt','Kiegyenlített','A meccs napja előtti adatokból utólag számított becslés. Nem számít bele a pontosságba.'],
 };
+const dateEstimate:Record<string,readonly [string,string]>={
+  hr:['Procjena modela iz podataka prije datuma meča. Predmeč objava nije vremenski potvrđena; procjena ne ulazi u točnost.','Nedovoljno povijesti igrača'],
+  bs:['Procjena modela iz podataka prije datuma meča. Objava prije meča nije vremenski potvrđena; procjena ne ulazi u tačnost.','Nedovoljno historije igrača'],
+  'sr-Latn':['Procena modela iz podataka pre datuma meča. Objava pre meča nije vremenski potvrđena; procena ne ulazi u tačnost.','Nedovoljno istorije igrača'],
+  sl:['Ocena modela iz podatkov pred datumom dvoboja. Objava pred tekmo ni časovno potrjena; ocena se ne šteje v točnost.','Premalo zgodovine igralcev'],
+  de:['Modellschätzung aus Daten vor dem Spieltag. Der Zeitpunkt der Veröffentlichung vor Spielbeginn ist nicht bestätigt; nicht in der Trefferquote enthalten.','Zu wenige frühere Spiele'],
+  es:['Estimación del modelo con datos anteriores a la fecha del partido. Sin publicación previa verificada; no cuenta para la precisión.','Historial insuficiente'],
+  fr:['Estimation du modèle à partir de données antérieures à la date du match. Publication avant le match non vérifiée ; exclue de la mesure de précision.','Historique insuffisant'],
+  it:['Stima del modello con dati precedenti alla data della partita. Pubblicazione pre-partita non verificata; esclusa dalle statistiche di accuratezza.','Storico insufficiente'],
+  'pt-BR':['Estimativa do modelo com dados anteriores à data da partida. Publicação pré-jogo não verificada; não conta para a precisão.','Histórico insuficiente'],
+  ru:['Оценка модели по данным до даты матча. Публикация до матча не подтверждена; в точности не учитывается.','Недостаточно истории матчей'],
+  ja:['試合日より前のデータに基づくモデル推定値です。試合前の公開時刻は未確認で、予測精度には含まれません。','選手の試合履歴が不足'],
+  pl:['Oszacowanie oparte na danych sprzed daty meczu. Brak potwierdzonej publikacji przed meczem; nie wlicza się do trafności.','Za mało danych o zawodnikach'],
+  cs:['Odhad modelu z dat před datem zápasu. Zveřejnění před zápasem není ověřeno; nepočítá se do přesnosti.','Nedostatek zápasové historie'],
+  sk:['Odhad modelu z údajov pred dátumom zápasu. Zverejnenie pred zápasom nie je overené; nezapočítava sa do presnosti.','Nedostatok zápasovej histórie'],
+  hu:['A mérkőzés napja előtti adatokból készült becslés. A mérkőzés előtti közzététel nem igazolt; nem számít bele a pontosságba.','Kevés korábbi mérkőzés'],
+};
 export function probabilityFirstCopy(language:string):Copy {
   const notice=noticeSettings[language]??[en.noticeSettingTitle,en.noticeSettingHint];
   const [notScored,evenMatch,retrospectivePredictionHint]=ungradedPrediction[language]??
     [en.notScored,en.evenMatch,en.retrospectivePredictionHint];
+  const [dateModelEstimateHint,insufficientHistory]=dateEstimate[language]??[en.dateModelEstimateHint,en.insufficientHistory];
   return {...en,...probabilityFirstInternational[language],...translated[language],noticeSettingTitle:notice[0],noticeSettingHint:notice[1],
-    retrospectiveOddsHint:retrospectiveOdds[language]??en.retrospectiveOddsHint,notScored,evenMatch,retrospectivePredictionHint};
+    retrospectiveOddsHint:retrospectiveOdds[language]??en.retrospectiveOddsHint,notScored,evenMatch,retrospectivePredictionHint,
+    dateModelEstimateHint,insufficientHistory};
 }
