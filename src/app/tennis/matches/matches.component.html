@@ -473,7 +473,7 @@
                                     </div>
                                     <div class="prediction-cell__meta">
                                         <span>{{ prediction.label }}</span>
-                                        <span>{{ prediction.side === 'p1' ? 'P1' : 'P2' }}</span>
+                                        <span *ngIf="prediction.side">{{ prediction.side === 'p1' ? 'P1' : 'P2' }}</span>
                                         <span class="prediction-cell__outcome">{{ view.outcome }}</span>
                                     </div>
                                 </ng-container>

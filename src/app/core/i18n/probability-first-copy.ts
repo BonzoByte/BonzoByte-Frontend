@@ -9,6 +9,8 @@ const en = {
   observed:'Observed',ideal:'Perfect calibration',calendar:'Calendar results',period:'Period',correct:'Correct',surfaces:'Surface results',
   modelOdds:'Model odds',modelOddsHint:'1 / model probability, without margin. A model estimate, not an offered market price.',
   retrospectiveOddsHint:'Model odds calculated later from data available before the match day. Not an offered price or a published pre-match forecast.',
+  retrospectivePredictionHint:'Reconstructed later using data from before the match day. Not included in accuracy.',
+  notScored:'Not scored',evenMatch:'Even match',
   oddsWarning:'Unverified archived odds: values may be incomplete, misassigned or outdated. Not used in model-performance statistics.',
   forecastHint:'Model estimate, not a guarantee. No market comparison.',
   disclosure:'Retrospective model reconstruction, not an untouched prospective test. Historical results do not guarantee future accuracy or returns.',
@@ -55,8 +57,27 @@ const retrospectiveOdds:Record<string,string> = {
   sk:'Modelové kurzy dopočítané z údajov spred dňa zápasu. Nie sú to trhové kurzy ani predpoveď zverejnená pred zápasom.',
   hu:'Utólag számított modelloddsok, a mérkőzés napja előtti adatok alapján. Nem piaci oddsok, és nem a mérkőzés előtt közzétett előrejelzések.',
 };
+const ungradedPrediction:Record<string,readonly [string,string,string]> = {
+  hr:['Neocijenjeno','Izjednačena procjena','Naknadna procjena iz podataka prije dana meča. Ne ulazi u statistiku točnosti.'],
+  bs:['Neocijenjeno','Izjednačena procjena','Naknadna procjena iz podataka prije dana meča. Ne ulazi u statistiku tačnosti.'],
+  'sr-Latn':['Neocenjeno','Izjednačena procena','Naknadna procena iz podataka pre dana meča. Ne ulazi u statistiku tačnosti.'],
+  sl:['Neocenjeno','Izenačena ocena','Naknadna ocena iz podatkov pred dnevom dvoboja. Ni vključena v statistiko točnosti.'],
+  de:['Nicht gewertet','Ausgeglichen','Nachträgliche Schätzung aus Daten vor dem Spieltag. Nicht in der Trefferquote enthalten.'],
+  es:['Sin evaluar','Igualado','Estimación posterior con datos anteriores al día del partido. No cuenta para la precisión.'],
+  fr:['Non évalué','Équilibré','Estimation rétrospective à partir de données antérieures au jour du match. Exclue de la mesure de précision.'],
+  it:['Non valutato','Equilibrato','Stima retrospettiva basata su dati precedenti al giorno della partita. Esclusa dalle statistiche di accuratezza.'],
+  'pt-BR':['Não avaliado','Equilibrado','Estimativa retrospectiva com dados anteriores ao dia da partida. Não conta para a precisão.'],
+  ru:['Не оценён','Равные шансы','Ретроспективная оценка по данным до дня матча. Не учитывается в статистике точности.'],
+  ja:['評価対象外','互角','試合日より前のデータを使って後から推定した値です。予測精度の集計には含まれません。'],
+  pl:['Bez oceny','Równe szanse','Ocena obliczona później z danych sprzed dnia meczu. Nie wlicza się do statystyk trafności.'],
+  cs:['Bez hodnocení','Vyrovnaný odhad','Odhad dopočtený z dat před dnem zápasu. Nezahrnuje se do statistik přesnosti.'],
+  sk:['Bez hodnotenia','Vyrovnaný odhad','Odhad dopočítaný z údajov spred dňa zápasu. Nezahŕňa sa do štatistiky presnosti.'],
+  hu:['Nem értékelt','Kiegyenlített','A meccs napja előtti adatokból utólag számított becslés. Nem számít bele a pontosságba.'],
+};
 export function probabilityFirstCopy(language:string):Copy {
   const notice=noticeSettings[language]??[en.noticeSettingTitle,en.noticeSettingHint];
+  const [notScored,evenMatch,retrospectivePredictionHint]=ungradedPrediction[language]??
+    [en.notScored,en.evenMatch,en.retrospectivePredictionHint];
   return {...en,...probabilityFirstInternational[language],...translated[language],noticeSettingTitle:notice[0],noticeSettingHint:notice[1],
-    retrospectiveOddsHint:retrospectiveOdds[language]??en.retrospectiveOddsHint};
+    retrospectiveOddsHint:retrospectiveOdds[language]??en.retrospectiveOddsHint,notScored,evenMatch,retrospectivePredictionHint};
 }

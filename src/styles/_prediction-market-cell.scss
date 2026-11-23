@@ -160,7 +160,8 @@
         letter-spacing: 0.04em;
     }
 
-    .prediction-cell--not-played .prediction-cell__outcome {
+    .prediction-cell--not-played .prediction-cell__outcome,
+    .prediction-cell--ungraded .prediction-cell__outcome {
         color: var(--bb-text-muted);
         font-weight: 700;
         letter-spacing: 0.035em;

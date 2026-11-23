@@ -59,7 +59,13 @@ try {
         assert.deepEqual(whole.map((val, i) => Number(val.trim() + '.' + fraction[i].trim())), [1.88, 2.13]);
         assert.match(await match.locator('.market-odds-cell').getAttribute('title'),
             lang === 'hr' ? /izračunate naknadno/ : /calculated later/);
-        assert.equal(await match.locator('.prediction-cell__outcome').count(), 0);
+        const prediction = match.locator('.prediction-cell');
+        assert.match(await prediction.locator('.prediction-cell__topline').innerText(), /53[.,]14\s*%/);
+        assert.match(await prediction.locator('.prediction-cell__outcome').innerText(), lang === 'hr' ? /neocijenjeno/i : /not scored/i);
+        assert.match(await prediction.getAttribute('title'), lang === 'hr' ? /ne ulazi u statistiku/i : /not included in accuracy/i);
+        assert.match(await prediction.getAttribute('class'), /prediction-cell--ungraded/);
+        assert.doesNotMatch(await prediction.getAttribute('class'), /prediction-cell--(?:correct|incorrect)/);
+        assert.ok(await page.locator('.prediction-cell--correct').count() > 0);
         assert.match(await match.locator('.match-result-cell').innerText(),
             lang === 'hr' ? /nepotvrđ|nije (?:potvrđen|provjeren)/i : /unverified/i);
         assert.deepEqual(errors, []);

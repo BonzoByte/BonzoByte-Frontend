@@ -78,6 +78,8 @@ interface MatchPrediction {
     tone: 'lean' | 'clear' | 'high' | 'very-high';
 }
 
+type GridMatchPrediction = Omit<MatchPrediction, 'side'> & { side: MatchPrediction['side'] | null };
+
 interface PredictionMarketContext {
     side: 'p1' | 'p2';
     fairProbability: number;
@@ -100,7 +102,7 @@ interface MatchRowPresentation {
     player1Flag: string; player2Flag: string; result: string; sets: string;
     qualityHold: boolean; qualityTitle: string; oddsTitle: string;
     odds: { verified:boolean; player1:{integer:string;fraction:string}|null; player2:{integer:string;fraction:string}|null } | null;
-    prediction: MatchPrediction | null; predictionClass: string; predictionTitle: string; outcome: string;
+    prediction: GridMatchPrediction | null; predictionClass: string; predictionTitle: string; outcome: string;
     market: PredictionMarketContext | null; marketDecimal: string; marketLabel: string | null;
     pl: string; plClass: string; plTitle: string; historicalPl: boolean;
 }
@@ -3045,16 +3047,23 @@ export class MatchesComponent implements OnInit, OnDestroy {
         return value;
     }
 
-    private createPredictionPresentation(match: Match): MatchPrediction | null {
+    private canShowPrimaryPrediction(match: Match): boolean {
         const publicPrematch = this.probabilityFirst && match.qualityStatus === 'NotAssessed' &&
             !this.isFinishedValue(match.isFinished) && !this.hasRecordedResultData(match) &&
             typeof match.publicForecastIssuedAtUtc === 'string' && Number.isFinite(Date.parse(match.publicForecastIssuedAtUtc));
-        if (!publicPrematch && (this.hasResultQualityHold(match) || match.predictionEligible === false ||
-            (match.qualityStatus && match.predictionEligible !== true))) return null;
+        return publicPrematch || (!this.hasResultQualityHold(match) && match.predictionEligible !== false &&
+            (!match.qualityStatus || match.predictionEligible === true));
+    }
+
+    private createPredictionPresentation(match: Match): MatchPrediction | null {
+        if (!this.canShowPrimaryPrediction(match)) return null;
         const [p1, p2] = this.parseProbs(match);
         if (p1 == null || p2 == null) return null;
         if (this.probabilityFirst && p1 === p2) return null;
+        return this.predictionCardForPair(match, p1, p2);
+    }
 
+    private predictionCardForPair(match: Match, p1: number, p2: number): MatchPrediction {
         const side: 'p1' | 'p2' = p1 >= p2 ? 'p1' : 'p2';
         const confidence = side === 'p1' ? p1 : p2;
         const playerName =
@@ -3084,8 +3093,19 @@ export class MatchesComponent implements OnInit, OnDestroy {
         if (cached?.context === context && cached.keys.length === Object.keys(record).length &&
             cached.keys.every(key => Object.prototype.hasOwnProperty.call(record,key) && Object.is(cached.snapshot[key], record[key]))) return cached.view;
 
-        const prediction = this.getPrediction(match);
-        const display = !prediction ? match.retrospectiveModelDisplay : undefined;
+        const primaryPrediction = this.getPrediction(match);
+        // The sidecar can provide a card without ever becoming an input to accuracy,
+        // forecasts counted in summaries, market comparison or competition.
+        const even = this.probabilityFirst && !primaryPrediction &&
+            match.modelProbabilityPlayer1 === 50 && match.modelProbabilityPlayer2 === 50 &&
+            this.canShowPrimaryPrediction(match);
+        const display = this.probabilityFirst && !primaryPrediction && !even ? match.retrospectiveModelDisplay : undefined;
+        const isEven = even || !!display && display.player1 === display.player2;
+        const prediction: GridMatchPrediction | null = primaryPrediction ??
+            (isEven ? { side:null, playerName:this.regional.text('modelPerformance.evenMatch'),
+                confidence:50, label:'', tone:'lean' } : display ?
+                this.predictionCardForPair(match, display.player1 * 100, display.player2 * 100) : null);
+        const ungraded = !!prediction && !primaryPrediction;
         const probabilities = this.parseProbs(match);
         const firstPrice = display ? modelDecimalOdds(display.player1, 'fraction') : modelDecimalOdds(probabilities[0], 'percent');
         const secondPrice = display ? modelDecimalOdds(display.player2, 'fraction') : modelDecimalOdds(probabilities[1], 'percent');
@@ -3119,8 +3139,10 @@ export class MatchesComponent implements OnInit, OnDestroy {
             qualityHold:this.hasResultQualityHold(match), qualityTitle:this.getResultQualityTooltip(match),
             oddsTitle:this.probabilityFirst ? this.regional.text(display ? 'modelPerformance.retrospectiveOddsHint' : 'modelPerformance.modelOddsHint') : this.getMarketOddsTooltip(match),
             odds:odds?{verified:odds.verified,player1:this.getDecimalOddsParts(odds.player1),player2:this.getDecimalOddsParts(odds.player2)}:null,
-            prediction, predictionClass:this.getPredictionClass(match),
-            predictionTitle:this.getPredictionTooltip(match), outcome:this.getPredictionOutcomeLabel(match),
+            prediction, predictionClass:ungraded ? `prediction-cell--${prediction?.tone} prediction-cell--ungraded` : this.getPredictionClass(match),
+            predictionTitle:display ? this.regional.text('modelPerformance.retrospectivePredictionHint') :
+                isEven ? this.regional.text('modelPerformance.evenMatch') : this.getPredictionTooltip(match),
+            outcome:ungraded ? this.regional.text('modelPerformance.notScored') : this.getPredictionOutcomeLabel(match),
             market, marketDecimal:market?this.formatDecimalOdds(market.decimalOdds):'', marketLabel:this.getMarketOddsLabel(match),
             pl:this.probabilityFirst?'—':this.formatPL(match), plClass:this.probabilityFirst?'':this.getPLClass(match), plTitle:this.probabilityFirst?'':this.getPLTooltip(match), historicalPl:!this.probabilityFirst&&this.isHistoricalPL(match),
         };
