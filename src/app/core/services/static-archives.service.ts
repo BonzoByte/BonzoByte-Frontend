@@ -28,6 +28,7 @@ import { formatDecimal } from '../helpers/localized-number';
 import { planArchiveDay } from '../i18n/archive-day-window';
 import { DailySnapshot, mergeUserDay, UserDayArchive } from '../i18n/user-day-archive';
 import { applyPlannedMatchSchedule, isRecentScheduleDay } from '../helpers/planned-match-schedule';
+import { applyRetrospectiveModelDisplay, modelDisplayDays } from '../helpers/model-display-probabilities';
 
 export interface DailyArchiveIndex {
   minDate: string;
@@ -251,6 +252,7 @@ export class StaticArchivesService {
   }
 
   private readonly dailyCacheTtlMs = 60_000;
+  private modelDisplayDays$?: Observable<ReadonlySet<string>>;
   private dailyCache = new Map<string, {
     expiresAt: number;
     request$: Observable<Match[]>;
@@ -286,7 +288,7 @@ export class StaticArchivesService {
           map(rows => (rows || []).map(r => this.mapLiteRowToMatch(r)))
         );
     }
-    const request$ = (isRecentScheduleDay(yyyymmdd)
+    const scheduledRows$ = (isRecentScheduleDay(yyyymmdd)
       ? rows$.pipe(switchMap(rows => !rows.length ? of(rows) :
         this.http.get<unknown>(`/api/match-schedule/${yyyymmdd}`).pipe(
           timeout(2200),
@@ -294,7 +296,20 @@ export class StaticArchivesService {
             timeout(1200), catchError(() => of(null)))),
           map(schedule => applyPlannedMatchSchedule(rows, schedule, yyyymmdd))
         )))
-      : rows$).pipe(shareReplay(1));
+      : rows$);
+    const request$ = scheduledRows$.pipe(
+      switchMap(rows => {
+        if (!rows.length) return of(rows);
+        this.modelDisplayDays$ ??= this.http.get<unknown>('/assets/model-display/index.json').pipe(
+          timeout(1200), map(modelDisplayDays), catchError(() => of(new Set<string>())), shareReplay(1)
+        );
+        return this.modelDisplayDays$.pipe(switchMap(days => days.has(yyyymmdd) ?
+          this.http.get<unknown>(`/assets/model-display/${yyyymmdd}.json`).pipe(
+            timeout(1200), map(packet => applyRetrospectiveModelDisplay(rows, packet, yyyymmdd)), catchError(() => of(rows))
+          ) : of(rows)));
+      }),
+      shareReplay(1)
+    );
 
     this.dailyCache.set(yyyymmdd, {
       expiresAt: Date.now() + this.dailyCacheTtlMs,

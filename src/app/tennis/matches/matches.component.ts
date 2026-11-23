@@ -3084,11 +3084,13 @@ export class MatchesComponent implements OnInit, OnDestroy {
         if (cached?.context === context && cached.keys.length === Object.keys(record).length &&
             cached.keys.every(key => Object.prototype.hasOwnProperty.call(record,key) && Object.is(cached.snapshot[key], record[key]))) return cached.view;
 
+        const prediction = this.getPrediction(match);
+        const display = !prediction ? match.retrospectiveModelDisplay : undefined;
         const probabilities = this.parseProbs(match);
-        const firstPrice = modelDecimalOdds(probabilities[0], 'percent');
-        const secondPrice = modelDecimalOdds(probabilities[1], 'percent');
+        const firstPrice = display ? modelDecimalOdds(display.player1, 'fraction') : modelDecimalOdds(probabilities[0], 'percent');
+        const secondPrice = display ? modelDecimalOdds(display.player2, 'fraction') : modelDecimalOdds(probabilities[1], 'percent');
         const odds = this.probabilityFirst
-            ? (this.getPrediction(match) && firstPrice != null && secondPrice != null
+            ? ((prediction || display) && firstPrice != null && secondPrice != null
                 ? {player1:firstPrice, player2:secondPrice, verified:true} : null)
             : this.getDisplayMarketOdds(match);
         const strength = this.getStrengthStars(match);
@@ -3115,9 +3117,9 @@ export class MatchesComponent implements OnInit, OnDestroy {
             player2Flag:this.flagCode(match.player2CountryISO2).toLowerCase(),
             result:this.getDisplayResult(match), sets:this.formatResultDetails(match.resultDetails),
             qualityHold:this.hasResultQualityHold(match), qualityTitle:this.getResultQualityTooltip(match),
-            oddsTitle:this.probabilityFirst ? this.regional.text('modelPerformance.modelOddsHint') : this.getMarketOddsTooltip(match),
+            oddsTitle:this.probabilityFirst ? this.regional.text(display ? 'modelPerformance.retrospectiveOddsHint' : 'modelPerformance.modelOddsHint') : this.getMarketOddsTooltip(match),
             odds:odds?{verified:odds.verified,player1:this.getDecimalOddsParts(odds.player1),player2:this.getDecimalOddsParts(odds.player2)}:null,
-            prediction:this.getPrediction(match), predictionClass:this.getPredictionClass(match),
+            prediction, predictionClass:this.getPredictionClass(match),
             predictionTitle:this.getPredictionTooltip(match), outcome:this.getPredictionOutcomeLabel(match),
             market, marketDecimal:market?this.formatDecimalOdds(market.decimalOdds):'', marketLabel:this.getMarketOddsLabel(match),
             pl:this.probabilityFirst?'—':this.formatPL(match), plClass:this.probabilityFirst?'':this.getPLClass(match), plTitle:this.probabilityFirst?'':this.getPLTooltip(match), historicalPl:!this.probabilityFirst&&this.isHistoricalPL(match),

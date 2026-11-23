@@ -8,6 +8,7 @@ const en = {
   thresholdsTitle:'Accuracy and coverage by threshold',calibrationTitle:'Forecast probability vs actual outcomes',
   observed:'Observed',ideal:'Perfect calibration',calendar:'Calendar results',period:'Period',correct:'Correct',surfaces:'Surface results',
   modelOdds:'Model odds',modelOddsHint:'1 / model probability, without margin. A model estimate, not an offered market price.',
+  retrospectiveOddsHint:'Model odds calculated later from data available before the match day. Not an offered price or a published pre-match forecast.',
   oddsWarning:'Unverified archived odds: values may be incomplete, misassigned or outdated. Not used in model-performance statistics.',
   forecastHint:'Model estimate, not a guarantee. No market comparison.',
   disclosure:'Retrospective model reconstruction, not an untouched prospective test. Historical results do not guarantee future accuracy or returns.',
@@ -37,7 +38,25 @@ const noticeSettings:Record<string,readonly [string,string]> = {
   sk:['Vysvetlenie predpovedí','Zobraziť vysvetlenie modelových kurzov a obmedzení predpovedí. Uložené v tomto prehliadači; po zatvorení zostane skryté do opätovného zapnutia.'],
   hu:['Az előrejelzések magyarázata','A modell oddsainak és az előrejelzések korlátainak magyarázata. Ebben a böngészőben mentve; bezárás után az újbóli bekapcsolásig rejtve marad.'],
 };
+const retrospectiveOdds:Record<string,string> = {
+  hr:'Modelske kvote izračunate naknadno iz podataka dostupnih prije dana meča. Nisu tržišne kvote ni tada objavljena prognoza.',
+  bs:'Modelske kvote izračunate naknadno iz podataka dostupnih prije dana meča. Nisu tržišne kvote niti tada objavljena prognoza.',
+  'sr-Latn':'Modelske kvote izračunate naknadno iz podataka dostupnih pre dana meča. Nisu tržišne kvote niti tada objavljena prognoza.',
+  sl:'Modelne kvote, naknadno izračunane iz podatkov pred dnevom dvoboja. Niso tržne kvote ali takrat objavljena napoved.',
+  de:'Modellquoten nachträglich aus Daten vor dem Spieltag berechnet. Keine Marktquoten oder vorab veröffentlichten Prognosen.',
+  es:'Cuotas del modelo calculadas a posteriori con datos anteriores al día del partido. No son cuotas de mercado ni un pronóstico publicado antes del partido.',
+  fr:'Cotes du modèle calculées après coup à partir de données antérieures au jour du match. Ni cotes de marché ni pronostic publié avant le match.',
+  it:'Quote del modello calcolate a posteriori su dati precedenti al giorno della partita. Non sono quote di mercato né un pronostico pubblicato prima della partita.',
+  'pt-BR':'Odds do modelo calculadas depois, com dados anteriores ao dia da partida. Não são odds de mercado nem uma previsão publicada antes da partida.',
+  ru:'Коэффициенты модели рассчитаны позднее по данным до дня матча. Это не рыночные котировки и не прогноз, опубликованный до матча.',
+  ja:'試合日の前までのデータを使って後から算出したモデルオッズです。市場オッズでも、試合前に公開された予測でもありません。',
+  pl:'Kursy modelu obliczone później na podstawie danych sprzed dnia meczu. To nie kursy rynkowe ani prognoza opublikowana przed meczem.',
+  cs:'Modelové kurzy dopočtené z dat před dnem zápasu. Nejde o tržní kurzy ani o předpověď zveřejněnou před zápasem.',
+  sk:'Modelové kurzy dopočítané z údajov spred dňa zápasu. Nie sú to trhové kurzy ani predpoveď zverejnená pred zápasom.',
+  hu:'Utólag számított modelloddsok, a mérkőzés napja előtti adatok alapján. Nem piaci oddsok, és nem a mérkőzés előtt közzétett előrejelzések.',
+};
 export function probabilityFirstCopy(language:string):Copy {
   const notice=noticeSettings[language]??[en.noticeSettingTitle,en.noticeSettingHint];
-  return {...en,...probabilityFirstInternational[language],...translated[language],noticeSettingTitle:notice[0],noticeSettingHint:notice[1]};
+  return {...en,...probabilityFirstInternational[language],...translated[language],noticeSettingTitle:notice[0],noticeSettingHint:notice[1],
+    retrospectiveOddsHint:retrospectiveOdds[language]??en.retrospectiveOddsHint};
 }

@@ -141,6 +141,8 @@ export interface Match {
   plannedStartKind?: 'not-before' | null;
   plannedStartChecked?: boolean;
   publicForecastIssuedAtUtc?: string | null;
+  /** Display only. Never a timely forecast, model-performance observation, or game input. */
+  retrospectiveModelDisplay?: { player1: number; player2: number };
   matchTPId: number;
   // _id: number;
   isFinished: boolean;
