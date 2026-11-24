@@ -2,6 +2,7 @@ import { betaWaitPage } from './beta-wait-page.mjs';
 import { schedulePath, servePlannedSchedule } from './planned-schedule-feed.mjs';
 import { modelDisplayPath, serveModelDisplay } from './model-display-feed.mjs';
 import { provisionalPath, serveProvisionalResults } from './provisional-results-feed.mjs';
+import { tennisFieldNote } from './tennis-field-note.mjs';
 
 const privateHeaders = { 'X-Robots-Tag': 'noindex, nofollow, noarchive',
     'Cache-Control': 'private, no-store, max-age=0', 'CDN-Cache-Control': 'no-store', 'Vercel-CDN-Cache-Control': 'no-store',
@@ -30,8 +31,10 @@ export function createBetaProxy({ settings, next, rewrite, fetcher = fetch }) {
         const displayResponse=()=>serveModelDisplay({request,key:displayKey,fetcher,headers:privateHeaders});
         const provisionalDay=provisionalPath.exec(pathname)?.[1];
         const provisionalResponse=()=>serveProvisionalResults({request,day:provisionalDay,fetcher,headers:privateHeaders});
-        if (pathname === '/robots.txt' && ['GET', 'HEAD'].includes(request.method))
-            return new Response(request.method === 'HEAD' ? null : 'User-agent: *\nAllow: /\n', { headers: { ...privateHeaders, 'Content-Type': 'text/plain' } });
+        if (pathname === '/robots.txt' && ['GET', 'HEAD'].includes(request.method)) {
+            const sitemap = accessMode === 'public' ? 'Sitemap: ' + publicOrigin + '/sitemap.xml\n' : '';
+            return new Response(request.method === 'HEAD' ? null : 'User-agent: *\nAllow: /\n' + sitemap, { headers: { ...privateHeaders, 'Content-Type': 'text/plain' } });
+        }
         const forward = () => {
             const destination = new URL(backend);
             // Assign the path instead of resolving it, so //host cannot change origin.
@@ -43,6 +46,16 @@ export function createBetaProxy({ settings, next, rewrite, fetcher = fetch }) {
             // separate, site-wide email-code entrance is removed.
             if (!['GET', 'HEAD', 'OPTIONS'].includes(request.method) && request.headers.get('origin') !== publicOrigin)
                 return denied(403, 'BETA_ORIGIN_DENIED');
+            if (['/tennis-stats','/tennis-stats/','/sitemap.xml'].includes(pathname)) {
+                if (!['GET','HEAD'].includes(request.method)) return denied(405, 'METHOD_NOT_ALLOWED');
+                if (pathname === '/tennis-stats/') return new Response(null, {status:308,headers:{...privateHeaders,Location:'/tennis-stats'+url.search}});
+                const isArticle = pathname === '/tennis-stats';
+                const body = isArticle ? tennisFieldNote : '<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>https://bonzobyte.com/tennis-stats</loc></url></urlset>';
+                return new Response(request.method === 'HEAD' ? null : body, {headers:{
+                    ...privateHeaders,'X-Robots-Tag':isArticle ? 'index, follow' : privateHeaders['X-Robots-Tag'],
+                    'Content-Type':isArticle?'text/html; charset=utf-8':'application/xml; charset=utf-8',
+                }});
+            }
             if (['/beta', '/beta/request', '/beta/verify', '/beta/logout'].includes(pathname)) {
                 if (['GET', 'HEAD'].includes(request.method))
                     return new Response(null, { status: 303, headers: { ...privateHeaders, Location: '/' } });
