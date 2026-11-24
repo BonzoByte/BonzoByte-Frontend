@@ -16,5 +16,4 @@
 .shared-surface--clay { background: #a95f3b; }.shared-surface--grass { background: #4f8f58; }.shared-surface--hard { background: #667987; }.shared-surface--carpet { background: #725b86; }.shared-surface--unknown { background: #4d5359; border-style: dashed; }
 .shared-result { display: flex; flex-direction: column; align-items: center; gap: 2px; width: 100%; line-height: 1.15; text-align: center; }
 .shared-result-main { font-weight: 650; }.shared-result-sets { opacity: .9; font-size: 11px; white-space: normal; }
-.shared-result-provisional { color: #f3cb7d; font-size: 10px; font-weight: 650; white-space: normal; }
 @media (max-width: 1180px) { .shared-full { display: none; }.shared-compact { display: inline; } }

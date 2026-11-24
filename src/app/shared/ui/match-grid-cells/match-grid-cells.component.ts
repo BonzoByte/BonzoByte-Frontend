@@ -76,8 +76,8 @@ export class MatchTournamentCellComponent implements OnChanges {
 
 @Component({ selector: 'app-match-result-cell', standalone: true, imports: [CommonModule, TranslateModule],
     changeDetection: ChangeDetectionStrategy.OnPush, styleUrls: ['./match-grid-cells.component.scss'],
-    template: `<div class="shared-result match-result-cell__content"><span class="shared-result-main main-result match-result-cell__summary">{{ provisional?.result || view.result }}</span><span *ngIf="provisional?.sets || view.sets" class="shared-result-sets set-results match-result-cell__sets">{{ provisional?.sets || view.sets }}</span>
-      <span *ngIf="provisional" class="shared-result-provisional">{{ 'matchGrid.provisionalResult' | translate }}</span>
+    template: `<div class="shared-result match-result-cell__content" [attr.title]="provisional ? ('matchGrid.provisionalResult' | translate) : null"><span class="shared-result-main main-result match-result-cell__summary">{{ provisional?.result || view.result }}</span><span *ngIf="provisional?.sets || view.sets" class="shared-result-sets set-results match-result-cell__sets">{{ provisional?.sets || view.sets }}</span>
+      <span *ngIf="provisional" class="cdk-visually-hidden">{{ 'matchGrid.provisionalResult' | translate }}</span>
       <span *ngIf="view.qualityHold" class="match-quality-warning" [title]="view.qualityTitle || ''">{{ 'matchGrid.unverified' | translate }}</span></div>` })
 export class MatchResultCellComponent implements OnChanges {
     @Input() match!: MatchSummary;

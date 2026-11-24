@@ -45,4 +45,20 @@ describe('Reusable main-grid identity and result cells', () => {
   f.componentRef.setInput('presentation', { result: '—', sets: '', qualityHold: true, qualityTitle: 'Check' }); f.detectChanges();
   expect(f.nativeElement.querySelector('.match-quality-warning').title).toBe('Check');
  });
+ it('shows provisional scores without an extra visible line and removes the tooltip when confirmed', () => {
+  const f = TestBed.createComponent(MatchResultCellComponent);
+  f.componentRef.setInput('match', { matchTPId: 42, isFinished: false });
+  f.componentRef.setInput('provisional', { result: '2:0', sets: '6:3 6:4' }); f.detectChanges();
+  const cell = f.nativeElement.querySelector('.shared-result');
+  expect(cell.querySelector('.shared-result-main').textContent).toBe('2:0');
+  expect(cell.querySelector('.shared-result-sets').textContent).toBe('6:3 6:4');
+  expect(cell.title).toBe('Provisional result');
+  expect(cell.querySelector('.cdk-visually-hidden').textContent).toBe('Provisional result');
+  expect(cell.querySelector('.shared-result-provisional')).toBeNull();
+  f.componentRef.setInput('provisional', undefined);
+  f.componentRef.setInput('presentation', { result: '2:1', sets: '6:3 4:6 6:4' }); f.detectChanges();
+  expect(cell.querySelector('.shared-result-main').textContent).toBe('2:1');
+  expect(cell.hasAttribute('title')).toBeFalse();
+  expect(cell.querySelector('.cdk-visually-hidden')).toBeNull();
+ });
 });
