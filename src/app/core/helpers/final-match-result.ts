@@ -2,6 +2,13 @@ import { MatchSummary } from '../models/match-summary';
 
 /** Display a supplied final result only; never infer a winner from odds or partial sets. */
 export function finalMatchResult(match: MatchSummary): string | null {
+    if (match.qualityStatus === 'NonRatedOutcome') {
+        const text = [match.result, match.resultDetails].filter(Boolean).join(' ');
+        if (/\b(?:w\s*\/\s*o|walkover)\b/i.test(text)) return 'W/O';
+        if (/\bret(?:ired|irement)?\b/i.test(text)) return 'RET';
+        // An incomplete set or a non-rated flag alone cannot identify why play ended.
+        if (!match.result) return null;
+    }
     if (match.isFinished !== true || (match.qualityStatus &&
         !['Validated', 'Incomplete', 'NonRatedOutcome'].includes(match.qualityStatus))) return null;
     const result = match.result?.trim();

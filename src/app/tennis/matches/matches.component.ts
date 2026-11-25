@@ -2,6 +2,7 @@
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { ArchiveCoverageComponent } from '../../shared/ui/archive-coverage/archive-coverage.component';
+import { finalMatchResult } from '../../core/helpers/final-match-result';
 import { PROBABILITY_FIRST, modelDecimalOdds } from '../../core/helpers/model-odds';
 import { summarizeTournamentForecasts, TournamentForecastSummary } from '../../core/helpers/tournament-forecast-summary';
 import { ModelGuidancePreferenceService } from '../../core/services/model-guidance-preference.service';
@@ -2531,7 +2532,10 @@ export class MatchesComponent implements OnInit, OnDestroy {
     }
 
     getDisplayResult(match: Match): string {
-    // Prefer the richer details payload when it is already available.
+        if (match.qualityStatus === 'NonRatedOutcome') return finalMatchResult(match) || '—';
+        if (match.isFinished === true) return finalMatchResult(match) || '—';
+        if (match.isFinished === false) return '—';
+        // Legacy packets with no finality flag may contain only set details.
         const computed = this.computeResultFromDetails(match.resultDetails);
         if (computed) return computed;
 
