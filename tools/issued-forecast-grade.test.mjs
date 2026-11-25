@@ -27,3 +27,10 @@ test('late receipt, duplicate, wrong player, wrong date never qualify',()=>{
     }
     for(const m of [{...base,player1TPId:4},{...base,dateTime:'2026-11-24'}])assert.equal(match(m).issuedGridPick,undefined);
 });
+test('first display grade, score reversal and separate legacy/versioned readers',()=>{
+    const p={...packet,schema:'bonzobyte.issued-forecast-grades.v2',rows:[[...row.slice(0,5),.839304389,100,100,90,null,'display',['1:2','7:6 3:6 2:6']]]};
+    assert.equal(validForecastGrades(p,key,2),true);assert.equal(validForecastGrades(p,key),false);
+    const m=match({...base,player1TPId:2,player2TPId:1},p);
+    assert.equal(m.issuedGridPick.publicFinal.result,'2:1');
+    assert.equal(issuedGridGrade(m,m.issuedGridPick.publicFinal.result).outcome,'incorrect');
+});

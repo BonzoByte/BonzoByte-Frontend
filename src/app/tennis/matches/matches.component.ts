@@ -3123,7 +3123,9 @@ export class MatchesComponent implements OnInit, OnDestroy {
     }
 
     provisionalResult(match: Match) {
-        return this.viewMode === 'daily' ? provisionalMatchResult(match, this.provisionalScores) : undefined;
+        if(this.viewMode!=='daily')return undefined;
+        return provisionalMatchResult(match,this.provisionalScores)??(match.isFinished===false&&!match.result&&!match.resultDetails&&
+            (!match.qualityStatus||match.qualityStatus==='NotAssessed')?match.issuedGridPick?.publicFinal:undefined);
     }
 
     /** Pure display values only. Account access, favourites and comments stay live. */

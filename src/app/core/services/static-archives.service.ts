@@ -300,7 +300,7 @@ export class StaticArchivesService {
               timeout(1200), catchError(() => of(null))))) : of(null);
         // The display feed and schedule are unrelated reads. In particular a
         // missing schedule response never makes an estimate ineligible.
-        const grades$ = yyyymmdd >= '20261122' ? this.http.get<unknown>(`/api/forecast-grades/${yyyymmdd}`).pipe(
+        const grades$ = yyyymmdd >= '20261119' ? this.http.get<unknown>(`/api/forecast-grades-v2/${yyyymmdd}`).pipe(
           timeout(4000),catchError(()=>of(null))) : of(null);
         return forkJoin([schedule$,this.getModelDisplayPacket(yyyymmdd),grades$]).pipe(
           map(([schedule,packet,grades]) => applyIssuedGridPicks(applyRetrospectiveModelDisplay(

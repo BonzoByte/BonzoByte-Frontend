@@ -29,7 +29,7 @@ export function createBetaProxy({ settings, next, rewrite, fetcher = fetch }) {
         const scheduleResponse=()=>servePlannedSchedule({request,day:scheduleDay,fetcher,headers:privateHeaders});
         const gradeDay=forecastGradePath.exec(pathname)?.[1];
         const displayKey=gradeDay??modelDisplayPath.exec(pathname)?.[1];
-        const displayResponse=()=>serveModelDisplay({request,key:displayKey,fetcher,headers:privateHeaders,grades:!!gradeDay});
+        const displayResponse=()=>serveModelDisplay({request,key:displayKey,fetcher,headers:privateHeaders,grades:!!gradeDay,version:pathname.startsWith('/api/forecast-grades-v2/')?2:1});
         const provisionalDay=provisionalPath.exec(pathname)?.[1];
         const provisionalResponse=()=>serveProvisionalResults({request,day:provisionalDay,fetcher,headers:privateHeaders});
         if (pathname === '/robots.txt' && ['GET', 'HEAD'].includes(request.method)) {

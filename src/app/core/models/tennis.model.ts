@@ -142,7 +142,7 @@ export interface Match {
   plannedStartChecked?: boolean;
   publicForecastIssuedAtUtc?: string | null;
   /** Original, publicly observed prematch probability, oriented to this daily row. */
-  issuedGridPick?: { p1: number; archivedWinner: number | null };
+  issuedGridPick?: { p1: number; archivedWinner: number | null; publicFinal?: {result:string;sets:string} };
   /** Display only. Never a timely forecast, model-performance observation, or game input. */
   retrospectiveModelDisplay?: { player1: number; player2: number; dateOnly?: boolean };
   dateModelInsufficientHistory?: boolean;
