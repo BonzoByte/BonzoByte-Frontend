@@ -6,7 +6,8 @@ const pair = (a: unknown, b: unknown): [number, number] | null => finite(a) && a
 
 /** Presentation of public daily data only; no inferred scores or default predictions. */
 export function matchLinkOverview(match: MatchSummary) {
-    const held = !!match.qualityStatus && !['Validated', 'Incomplete', 'NonRatedOutcome'].includes(match.qualityStatus);
+    const pending = match.isFinished === false && !match.result && !match.resultDetails && match.qualityStatus === 'NotAssessed';
+    const held = !pending && !!match.qualityStatus && !['Validated', 'Incomplete', 'NonRatedOutcome'].includes(match.qualityStatus);
     const result = finalMatchResult(match);
     const tokens = result && match.resultDetails ? match.resultDetails.split(/\s+/).map(token =>
         token.replace(/^(\d)(\d)(\(\d+\))?$/, '$1:$2$3')) : [];
