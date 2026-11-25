@@ -2,6 +2,8 @@ const root='https://raw.githubusercontent.com/BonzoByte/BonzoByte-Frontend/rally
 const schema='bonzobyte.date-model-display-grid.v1';
 const limit=225*1024;
 export const modelDisplayPath=/^\/api\/model-display\/(index|20\d{6})$/;
+export const forecastGradePath=/^\/api\/forecast-grades\/(20\d{6})$/;
+const gradesRoot='https://raw.githubusercontent.com/BonzoByte/BonzoByte-Frontend/rally-forecast-grades-data/grades/';
 
 const validDay=day=>{
     if(typeof day!=='string'||!/^20\d{6}$/.test(day))return false;
@@ -30,14 +32,25 @@ export function validModelDisplay(value,key){
         value.held.every(row=>check(row,5));
 }
 
-export async function serveModelDisplay({request,key,fetcher,headers}){
+export function validForecastGrades(value,key){
+    if(!validDay(key)||value?.schema!=='bonzobyte.issued-forecast-grades.v1'||value.day!==key||
+        !noExtra(value,'day,rows,schema')||!Array.isArray(value.rows)||value.rows.length>2500)return false;
+    const tp=new Set(),ids=new Set();
+    return value.rows.every(r=>{
+        if(!Array.isArray(r)||r.length!==10||!r.slice(0,5).every(id)||tp.has(r[0])||ids.has(r[1])||r[2]===r[3]||
+            !prob(r[5])||r[5]===0.5||!r.slice(6,9).every(id)||!(r[6]<=r[7]&&r[7]<r[8]&&r[7]<=Date.now())||
+            !(r[9]===null||r[9]===r[2]||r[9]===r[3]))return false;
+        tp.add(r[0]);ids.add(r[1]);return true;
+    });
+}
+export async function serveModelDisplay({request,key,fetcher,headers,grades=false}){
     const send=(status,value)=>new Response(request.method==='HEAD'?null:JSON.stringify(value),{
         status,headers:{...headers,'Content-Type':'application/json; charset=utf-8','X-Content-Type-Options':'nosniff'},
     });
     if(!['GET','HEAD'].includes(request.method))return send(405,{code:'MODEL_DISPLAY_READ_ONLY'});
     if(key!=='index'&&!validDay(key))return send(404,{code:'MODEL_DISPLAY_NOT_FOUND'});
     try{
-        const up=await fetcher(root+key+'.json',{method:'GET',redirect:'error',signal:AbortSignal.timeout(1600)});
+        const up=await fetcher((grades?gradesRoot:root)+key+'.json',{method:'GET',redirect:'error',signal:AbortSignal.timeout(grades?3000:1600)});
         if(up.status===404)return send(404,{code:'MODEL_DISPLAY_NOT_FOUND'});
         if(!up.ok||!up.body||Number(up.headers.get('content-length'))>limit)return send(502,{code:'MODEL_DISPLAY_UNAVAILABLE'});
         const reader=up.body.getReader(), chunks=[];
@@ -51,7 +64,7 @@ export async function serveModelDisplay({request,key,fetcher,headers}){
         const data=new Uint8Array(size);
         let offset=0;for(const chunk of chunks){data.set(chunk,offset);offset+=chunk.byteLength;}
         const value=JSON.parse(new TextDecoder().decode(data));
-        if(!validModelDisplay(value,key))return send(502,{code:'MODEL_DISPLAY_UNAVAILABLE'});
+        if(!(grades?validForecastGrades:validModelDisplay)(value,key))return send(502,{code:grades?'FORECAST_GRADES_UNAVAILABLE':'MODEL_DISPLAY_UNAVAILABLE'});
         return send(200,value);
     }catch{return send(502,{code:'MODEL_DISPLAY_UNAVAILABLE'});}
 }

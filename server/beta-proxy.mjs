@@ -1,6 +1,6 @@
 import { betaWaitPage } from './beta-wait-page.mjs';
 import { schedulePath, servePlannedSchedule } from './planned-schedule-feed.mjs';
-import { modelDisplayPath, serveModelDisplay } from './model-display-feed.mjs';
+import { modelDisplayPath, forecastGradePath, serveModelDisplay } from './model-display-feed.mjs';
 import { provisionalPath, serveProvisionalResults } from './provisional-results-feed.mjs';
 import { tennisFieldNote } from './tennis-field-note.mjs';
 
@@ -27,8 +27,9 @@ export function createBetaProxy({ settings, next, rewrite, fetcher = fetch }) {
         if (url.origin !== publicOrigin) return denied(404, 'BETA_HOST_NOT_ALLOWED');
         const scheduleDay=schedulePath.exec(pathname)?.[1];
         const scheduleResponse=()=>servePlannedSchedule({request,day:scheduleDay,fetcher,headers:privateHeaders});
-        const displayKey=modelDisplayPath.exec(pathname)?.[1];
-        const displayResponse=()=>serveModelDisplay({request,key:displayKey,fetcher,headers:privateHeaders});
+        const gradeDay=forecastGradePath.exec(pathname)?.[1];
+        const displayKey=gradeDay??modelDisplayPath.exec(pathname)?.[1];
+        const displayResponse=()=>serveModelDisplay({request,key:displayKey,fetcher,headers:privateHeaders,grades:!!gradeDay});
         const provisionalDay=provisionalPath.exec(pathname)?.[1];
         const provisionalResponse=()=>serveProvisionalResults({request,day:provisionalDay,fetcher,headers:privateHeaders});
         if (pathname === '/robots.txt' && ['GET', 'HEAD'].includes(request.method)) {

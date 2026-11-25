@@ -29,6 +29,7 @@ import { planArchiveDay } from '../i18n/archive-day-window';
 import { DailySnapshot, mergeUserDay, UserDayArchive } from '../i18n/user-day-archive';
 import { applyPlannedMatchSchedule, isRecentScheduleDay } from '../helpers/planned-match-schedule';
 import { applyRetrospectiveModelDisplay, modelDisplayDays } from '../helpers/model-display-probabilities';
+import { applyIssuedGridPicks } from '../helpers/issued-forecast-grade';
 
 export interface DailyArchiveIndex {
   minDate: string;
@@ -299,8 +300,11 @@ export class StaticArchivesService {
               timeout(1200), catchError(() => of(null))))) : of(null);
         // The display feed and schedule are unrelated reads. In particular a
         // missing schedule response never makes an estimate ineligible.
-        return forkJoin([schedule$,this.getModelDisplayPacket(yyyymmdd)]).pipe(
-          map(([schedule,packet]) => applyRetrospectiveModelDisplay(applyPlannedMatchSchedule(rows,schedule,yyyymmdd),packet,yyyymmdd)));
+        const grades$ = yyyymmdd >= '20261122' ? this.http.get<unknown>(`/api/forecast-grades/${yyyymmdd}`).pipe(
+          timeout(4000),catchError(()=>of(null))) : of(null);
+        return forkJoin([schedule$,this.getModelDisplayPacket(yyyymmdd),grades$]).pipe(
+          map(([schedule,packet,grades]) => applyIssuedGridPicks(applyRetrospectiveModelDisplay(
+            applyPlannedMatchSchedule(rows,schedule,yyyymmdd),packet,yyyymmdd),grades,yyyymmdd)));
       }),
       shareReplay(1)
     );

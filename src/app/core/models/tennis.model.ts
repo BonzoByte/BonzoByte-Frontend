@@ -141,6 +141,8 @@ export interface Match {
   plannedStartKind?: 'not-before' | null;
   plannedStartChecked?: boolean;
   publicForecastIssuedAtUtc?: string | null;
+  /** Original, publicly observed prematch probability, oriented to this daily row. */
+  issuedGridPick?: { p1: number; archivedWinner: number | null };
   /** Display only. Never a timely forecast, model-performance observation, or game input. */
   retrospectiveModelDisplay?: { player1: number; player2: number; dateOnly?: boolean };
   dateModelInsufficientHistory?: boolean;

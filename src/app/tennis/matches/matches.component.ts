@@ -5,6 +5,7 @@ import { ArchiveCoverageComponent } from '../../shared/ui/archive-coverage/archi
 import { finalMatchResult } from '../../core/helpers/final-match-result';
 import { PROBABILITY_FIRST, modelDecimalOdds } from '../../core/helpers/model-odds';
 import { summarizeTournamentForecasts, TournamentForecastSummary } from '../../core/helpers/tournament-forecast-summary';
+import { issuedGridGrade } from '../../core/helpers/issued-forecast-grade';
 import { ModelGuidancePreferenceService } from '../../core/services/model-guidance-preference.service';
 import { Component, ElementRef, HostListener, Inject, Input, OnDestroy, OnInit, Optional, ViewChild, ViewEncapsulation } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -3127,13 +3128,17 @@ export class MatchesComponent implements OnInit, OnDestroy {
 
     /** Pure display values only. Account access, favourites and comments stay live. */
     rowPresentation(match: Match): MatchRowPresentation {
-        const context = `${this.regional.language()}|${this.regional.timeZone()}|${this.plBasis}|${new Date().toDateString()}`;
+        const issuedMode=this.probabilityFirst&&this.viewMode==='daily';
+        const fast=issuedMode?this.provisionalResult(match)?.result:undefined;
+        const context = `${this.regional.language()}|${this.regional.timeZone()}|${this.plBasis}|${new Date().toDateString()}|${issuedMode}|${fast??''}`;
         const record = match as unknown as Record<string,unknown>;
         const cached = this.rowPresentationCache.get(match);
         if (cached?.context === context && cached.keys.length === Object.keys(record).length &&
             cached.keys.every(key => Object.prototype.hasOwnProperty.call(record,key) && Object.is(cached.snapshot[key], record[key]))) return cached.view;
 
-        const primaryPrediction = this.getPrediction(match);
+        const pick=issuedMode?match.issuedGridPick:undefined;
+        const grade=issuedMode?issuedGridGrade(match,fast):null;
+        const primaryPrediction = pick?this.predictionCardForPair(match,pick.p1*100,(1-pick.p1)*100):this.getPrediction(match);
         // The sidecar can provide a card without ever becoming an input to accuracy,
         // forecasts counted in summaries, market comparison or competition.
         const even = this.probabilityFirst && !primaryPrediction &&
@@ -3145,10 +3150,10 @@ export class MatchesComponent implements OnInit, OnDestroy {
             (isEven ? { side:null, playerName:this.regional.text('modelPerformance.evenMatch'),
                 confidence:50, label:'', tone:'lean' } : display ?
                 this.predictionCardForPair(match, display.player1 * 100, display.player2 * 100) : null);
-        const ungraded = !!prediction && !primaryPrediction;
+        const ungraded = !!prediction && (issuedMode?!pick:!primaryPrediction);
         const lackOfHistory = this.probabilityFirst && !prediction && match.dateModelInsufficientHistory === true;
         const dateOnlyHint = 'modelPerformance.dateModelEstimateHint';
-        const probabilities = this.parseProbs(match);
+        const probabilities = pick?[pick.p1*100,(1-pick.p1)*100]:this.parseProbs(match);
         const firstPrice = display ? modelDecimalOdds(display.player1, 'fraction') : modelDecimalOdds(probabilities[0], 'percent');
         const secondPrice = display ? modelDecimalOdds(display.player2, 'fraction') : modelDecimalOdds(probabilities[1], 'percent');
         const odds = this.probabilityFirst
@@ -3182,11 +3187,15 @@ export class MatchesComponent implements OnInit, OnDestroy {
             oddsTitle:this.probabilityFirst ? this.regional.text(display ?
                 (display.dateOnly ? dateOnlyHint : 'modelPerformance.retrospectiveOddsHint') : 'modelPerformance.modelOddsHint') : this.getMarketOddsTooltip(match),
             odds:odds?{verified:odds.verified,player1:this.getDecimalOddsParts(odds.player1),player2:this.getDecimalOddsParts(odds.player2)}:null,
-            prediction, predictionClass:ungraded ? `prediction-cell--${prediction?.tone} prediction-cell--ungraded` : this.getPredictionClass(match),
+            prediction, predictionClass:ungraded ? `prediction-cell--${prediction?.tone} prediction-cell--ungraded` :
+                pick ? `prediction-cell--${prediction?.tone} prediction-cell--${grade?.outcome??(grade?.pending?'pending':'ungraded')}` : this.getPredictionClass(match),
             predictionTitle:display ? this.regional.text(display.dateOnly ? dateOnlyHint : 'modelPerformance.retrospectivePredictionHint') :
                 isEven ? this.regional.text('modelPerformance.evenMatch') :
-                lackOfHistory ? this.regional.text('modelPerformance.historyNotice') : this.getPredictionTooltip(match),
-            outcome:ungraded ? this.regional.text('modelPerformance.notScored') : this.getPredictionOutcomeLabel(match),
+                lackOfHistory ? this.regional.text('modelPerformance.historyNotice') : pick ? this.regional.text('modelPerformance.forecastHint') :
+                ungraded ? this.regional.text('modelPerformance.notScored') : this.getPredictionTooltip(match),
+            outcome:grade&&prediction ? this.regional.text(grade.outcome==='correct'?'matchGrid.correct':grade.outcome==='incorrect'?
+                'matchGrid.miss':grade.pending?'matchGrid.pending':'modelPerformance.notScored') :
+                ungraded ? this.regional.text('modelPerformance.notScored') : this.getPredictionOutcomeLabel(match),
             predictionUnavailable:this.regional.text(lackOfHistory ? 'modelPerformance.insufficientHistory' :
                 this.hasResultQualityHold(match) ? 'matchGrid.excluded' : 'matchGrid.noPrediction'),
             market, marketDecimal:market?this.formatDecimalOdds(market.decimalOdds):'', marketLabel:this.getMarketOddsLabel(match),
@@ -3847,6 +3856,7 @@ export class MatchesComponent implements OnInit, OnDestroy {
 
     getTournamentForecastSummary(matches: readonly Match[]): TournamentForecastSummary {
         return summarizeTournamentForecasts(matches, match => {
+            if(this.probabilityFirst&&this.viewMode==='daily')return issuedGridGrade(match,this.provisionalResult(match)?.result);
             const [first, second] = this.parseProbs(match);
             const forecast = this.getPrediction(match) !== null && first !== second;
             return { forecast, outcome: forecast ? this.getPredictionOutcome(match) : null,
