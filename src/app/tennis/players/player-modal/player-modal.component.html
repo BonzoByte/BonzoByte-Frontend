@@ -15,7 +15,6 @@
   </div>
 
   <div class="bb-body">
-    <app-archive-coverage *ngIf="!isPreview"></app-archive-coverage>
     <div class="bb-loading" *ngIf="loading">{{ 'common.loading' | translate }}</div>
     <div class="bb-error" *ngIf="!loading && error">{{ error | translate }}</div>
 

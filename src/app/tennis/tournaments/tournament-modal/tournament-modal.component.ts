@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/array-type */
 import { CommonModule } from '@angular/common';
-import { ArchiveCoverageComponent } from '@app/shared/ui/archive-coverage/archive-coverage.component';
 import { Component, EventEmitter, Input, Output, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
@@ -14,7 +13,7 @@ import { localUiPreviewAllowed } from '@app/core/helpers/local-ui-preview';
 @Component({
   selector: 'app-tournament-modal',
   standalone: true,
-  imports: [CommonModule, TranslateModule, RecentMatchesComponent, TrapFocusDirective, ArchiveCoverageComponent],
+  imports: [CommonModule, TranslateModule, RecentMatchesComponent, TrapFocusDirective],
   templateUrl: './tournament-modal.component.html',
   styleUrls: ['./tournament-modal.component.scss']
 })
