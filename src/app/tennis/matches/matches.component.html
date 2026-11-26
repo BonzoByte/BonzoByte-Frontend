@@ -222,7 +222,23 @@
         <div class="matches-content" [class.is-blurred]="loading">
             <app-archive-coverage></app-archive-coverage>
 
-            <div class="table-wrapper" (scroll)="onNoticeAreaScroll()" [class.is-empty]="!loading && filteredMatches.length === 0 && unavailableFavouriteIds.length === 0">
+            <section *ngIf="viewMode === 'daily' && fixtureView" class="table-wrapper fixture-list" aria-live="polite">
+                <ng-container *ngIf="!loading">
+                    <h2>{{ 'fixtures.title' | translate }} · {{ regional.date(currentDateISO) }}</h2>
+                    <ng-container *ngIf="fixturePacket as packet; else fixtureUnavailable">
+                        <p>{{ 'fixtures.count' | translate:{count:packet.matches.length} }} · {{ 'fixtures.zone' | translate }}</p>
+                        <table *ngIf="packet.matches.length">
+                            <thead><tr><th scope="col">{{ 'fixtures.time' | translate }}</th><th scope="col">{{ 'fixtures.pair' | translate }}</th></tr></thead>
+                            <tbody><tr *ngFor="let f of packet.matches" [attr.data-fixture-id]="f.id">
+                                <td>{{ f.start ? fixtureClock(f.start) : ('fixtures.tbd' | translate) }}</td>
+                                <td>{{ f.names[0] }} – {{ f.names[1] }}</td>
+                            </tr></tbody>
+                        </table>
+                    </ng-container>
+                    <ng-template #fixtureUnavailable><p>{{ 'fixtures.unavailable' | translate }}</p></ng-template>
+                </ng-container>
+            </section>
+            <div *ngIf="viewMode !== 'daily' || !fixtureView" class="table-wrapper" (scroll)="onNoticeAreaScroll()" [class.is-empty]="!loading && filteredMatches.length === 0 && unavailableFavouriteIds.length === 0">
                 <ng-container *ngIf="viewMode === 'favourites'">
                     <div *ngIf="!showFavouriteColumn" class="favourites-state favourites-state--login" role="status">
                         <p>{{ 'favourites.signInHint' | translate }}</p>

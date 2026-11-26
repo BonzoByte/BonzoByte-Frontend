@@ -1,5 +1,6 @@
 import { betaWaitPage } from './beta-wait-page.mjs';
 import { schedulePath, servePlannedSchedule } from './planned-schedule-feed.mjs';
+import { fixturesPath, serveFixtures } from './announced-fixtures-feed.mjs';
 import { modelDisplayPath, forecastGradePath, serveModelDisplay } from './model-display-feed.mjs';
 import { provisionalPath, serveProvisionalResults } from './provisional-results-feed.mjs';
 import { tennisFieldNote } from './tennis-field-note.mjs';
@@ -26,6 +27,8 @@ export function createBetaProxy({ settings, next, rewrite, fetcher = fetch }) {
         const url = new URL(request.url), pathname = url.pathname;
         if (url.origin !== publicOrigin) return denied(404, 'BETA_HOST_NOT_ALLOWED');
         const scheduleDay=schedulePath.exec(pathname)?.[1];
+        const fixtureDay=fixturesPath.exec(pathname)?.[1];
+        const fixtureResponse=()=>serveFixtures({request,day:fixtureDay,fetcher,headers:privateHeaders});
         const scheduleResponse=()=>servePlannedSchedule({request,day:scheduleDay,fetcher,headers:privateHeaders});
         const gradeDay=forecastGradePath.exec(pathname)?.[1];
         const displayKey=gradeDay??modelDisplayPath.exec(pathname)?.[1];
@@ -63,6 +66,7 @@ export function createBetaProxy({ settings, next, rewrite, fetcher = fetch }) {
                 return denied(410, 'BETA_ACCESS_DISABLED');
             }
             if (scheduleDay) return scheduleResponse();
+            if (fixtureDay) return fixtureResponse();
             if (displayKey) return displayResponse();
             if (provisionalDay) return provisionalResponse();
             if (pathname === '/api' || pathname.startsWith('/api/') || pathname === '/uploads'
@@ -110,6 +114,7 @@ export function createBetaProxy({ settings, next, rewrite, fetcher = fetch }) {
         if (!['GET', 'HEAD', 'OPTIONS'].includes(request.method) && request.headers.get('origin') !== publicOrigin)
             return denied(403, 'BETA_ORIGIN_DENIED');
         if (scheduleDay) return scheduleResponse();
+        if (fixtureDay) return fixtureResponse();
         if (displayKey) return displayResponse();
         if (provisionalDay) return provisionalResponse();
         if (api || pathname === '/uploads' || pathname.startsWith('/uploads/') || pathname.startsWith('/static/')) return forward();

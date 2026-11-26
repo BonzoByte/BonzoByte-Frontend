@@ -1,4 +1,5 @@
 {
+  "fixtures":{"title":"Najavljeni mečevi","count":"Broj parova: {{count}}","zone":"Zagrebačko vrijeme · Termini se mogu promijeniti.","time":"Planirani početak","pair":"Par","tbd":"Bez satnice","unavailable":"Raspored za ovaj datum još nije dostupan."},
   "community": {
     "drafts": { "saved": "Nacrt spremljen u ovom pregledniku (do 30 dana).", "restored": "Vraćen je tvoj lokalni nacrt za ovu temu.", "unavailable": "Preglednik ne može spremiti nacrt. Prije odlaska kopiraj tekst.", "discard": "Izbriši nacrt", "quoteMissing": "Prethodno citirani komentar nije dostupan na ovoj stranici. Učitaj ga ili ukloni citat prije objave.", "withoutQuote": "Ukloni citat" },
     "reactions": { "like": "Sviđa mi se", "liked": "Sviđa ti se", "undo": "Povuci reakciju", "signIn": "Prijavi se potvrđenim računom za dodavanje reakcije.", "own": "Broj reakcija drugih korisnika na tvoj komentar." },
