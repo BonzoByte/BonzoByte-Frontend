@@ -1856,6 +1856,13 @@
     "changePassword": "Change password",
     "theme": "Visual theme",
     "themeHint": "Saved in this browser. Signed-out visitors always use Dark.",
+    "background": "Background",
+    "backgrounds": {
+      "theme": "Match theme",
+      "night-serve": "Night serve",
+      "clay-rally": "Clay rally",
+      "net": "Tennis net"
+    },
     "overview": "Prediction overview",
     "overviewHint": "Show the model summary above match results.",
     "overviewStorage": "Saved in this browser after pressing Save. Closing the summary hides it for 30 days.",

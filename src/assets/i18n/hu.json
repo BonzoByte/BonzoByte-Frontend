@@ -1035,6 +1035,13 @@
     "changePassword": "Jelszó módosítása",
     "theme": "Megjelenés",
     "themeHint": "Ebben a böngészőben mentve. A kijelentkezett látogatók mindig sötét témát használnak.",
+    "background": "Háttér",
+    "backgrounds": {
+      "theme": "Téma szerint",
+      "night-serve": "Éjszakai szerva",
+      "clay-rally": "Salakos labdamenet",
+      "net": "Teniszháló"
+    },
     "overview": "Előrejelzések áttekintése",
     "overviewHint": "Modellösszefoglaló megjelenítése az eredmények felett.",
     "overviewStorage": "A Mentés gombbal tárolódik a böngészőben. Az összefoglaló bezárása 30 napra elrejti azt.",

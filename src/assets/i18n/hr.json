@@ -1856,6 +1856,13 @@
     "changePassword": "Promijeni lozinku",
     "theme": "Tema prikaza",
     "themeHint": "Sprema se u ovom pregledniku. Neprijavljeni posjetitelji uvijek koriste tamnu temu.",
+    "background": "Pozadina",
+    "backgrounds": {
+      "theme": "Prema temi",
+      "night-serve": "Noćni servis",
+      "clay-rally": "Razmjena na zemlji",
+      "net": "Teniska mreža"
+    },
     "overview": "Pregled predikcija",
     "overviewHint": "Prikaži sažetak modela iznad rezultata mečeva.",
     "overviewStorage": "Sprema se u ovom pregledniku nakon odabira Spremi. Zatvaranje sažetka skriva ga na 30 dana.",

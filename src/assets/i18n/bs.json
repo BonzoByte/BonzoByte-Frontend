@@ -1650,6 +1650,13 @@
     "changePassword": "Promijeni lozinku",
     "theme": "Tema prikaza",
     "themeHint": "Čuva se u ovom pregledniku. Neprijavljeni posjetioci uvijek koriste tamnu temu.",
+    "background": "Pozadina",
+    "backgrounds": {
+      "theme": "Prema temi",
+      "night-serve": "Noćni servis",
+      "clay-rally": "Razmjena na šljaci",
+      "net": "Teniska mreža"
+    },
     "overview": "Pregled predikcija",
     "overviewHint": "Prikaži sažetak modela iznad rezultata mečeva.",
     "overviewStorage": "Čuva se u ovom pregledniku nakon odabira Sačuvaj. Zatvaranje sažetka skriva ga na 30 dana.",

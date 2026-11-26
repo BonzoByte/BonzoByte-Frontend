@@ -1035,6 +1035,13 @@
     "changePassword": "Cambia password",
     "theme": "Tema grafico",
     "themeHint": "Salvato in questo browser. I visitatori non autenticati usano sempre il tema scuro.",
+    "background": "Sfondo",
+    "backgrounds": {
+      "theme": "In base al tema",
+      "night-serve": "Servizio in notturna",
+      "clay-rally": "Scambio sulla terra",
+      "net": "Rete da tennis"
+    },
     "overview": "Panoramica previsioni",
     "overviewHint": "Mostra il riepilogo del modello sopra i risultati.",
     "overviewStorage": "Salvato nel browser premendo Salva. Chiudere il riepilogo lo nasconde per 30 giorni.",

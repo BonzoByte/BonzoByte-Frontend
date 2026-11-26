@@ -1,11 +1,28 @@
 // One pre-rendered stadium photograph per theme. No vector rasterisation,
 // fixed background attachment, filters, blend modes, animation or extra DOM.
+:root {
+    --bb-photo-wash: color-mix(in srgb, var(--bb-body-bg) 24%, transparent);
+    --bb-net-thread: color-mix(in srgb, var(--bb-theme-accent) 13%, transparent);
+    --bb-net-pattern: repeating-linear-gradient(45deg, transparent 0 15px, var(--bb-net-thread) 15px 16px),
+        repeating-linear-gradient(-45deg, transparent 0 15px, var(--bb-net-thread) 15px 16px);
+}
+:root[data-bb-background='night-serve'] {
+    --bb-personal-background: linear-gradient(var(--bb-photo-wash),var(--bb-photo-wash)), url('../assets/backgrounds/night-serve-v1.webp');
+    --bb-portrait-position: 15% center;
+}
+:root[data-bb-background='clay-rally'] {
+    --bb-personal-background: linear-gradient(var(--bb-photo-wash),var(--bb-photo-wash)), url('../assets/backgrounds/clay-rally-v1.webp');
+    --bb-portrait-position: 87% center;
+}
+:root[data-bb-background='net'] { --bb-personal-background: var(--bb-net-pattern); }
+
 :root:not([data-bb-theme]),
 :root[data-bb-theme='dark'] {
     --bb-court-pattern: url('../assets/backgrounds/tennis-stadium-dark-v2.webp');
 }
 
 :root[data-bb-theme='light'] {
+    --bb-photo-wash: color-mix(in srgb, var(--bb-body-bg) 62%, transparent);
     --bb-court-pattern: url('../assets/backgrounds/tennis-stadium-light-v2.webp');
 }
 
@@ -24,10 +41,11 @@
 :root:is(:not([data-bb-theme]), [data-bb-theme='dark'], [data-bb-theme='light'],
     [data-bb-theme='wimbledon'], [data-bb-theme='roland-garros'], [data-bb-theme='us-open']) {
     body::before {
-        background-image: var(--bb-court-pattern);
+        background-image: var(--bb-personal-background, var(--bb-court-pattern));
         background-size: cover;
         background-position: center center;
         background-repeat: no-repeat;
+        @media (max-aspect-ratio: 1/1) { background-position: var(--bb-portrait-position, center center); }
     }
 }
 

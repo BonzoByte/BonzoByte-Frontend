@@ -1035,6 +1035,13 @@
     "changePassword": "Zmeniť heslo",
     "theme": "Vzhľad",
     "themeHint": "Uložené v tomto prehliadači. Neprihlásení návštevníci vždy používajú tmavý vzhľad.",
+    "background": "Pozadie",
+    "backgrounds": {
+      "theme": "Podľa motívu",
+      "night-serve": "Nočný servis",
+      "clay-rally": "Výmena na antuke",
+      "net": "Tenisová sieť"
+    },
     "overview": "Prehľad predikcií",
     "overviewHint": "Zobraziť súhrn modelu nad výsledkami zápasov.",
     "overviewStorage": "Uloží sa v prehliadači po stlačení Uložiť. Zatvorenie súhrnu ho skryje na 30 dní.",

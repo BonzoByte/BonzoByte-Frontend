@@ -930,6 +930,13 @@
     "changePassword": "パスワードを変更",
     "theme": "表示テーマ",
     "themeHint": "このブラウザーに保存されます。未ログイン時は常にダークテーマになります。",
+    "background": "背景",
+    "backgrounds": {
+      "theme": "テーマに合わせる",
+      "night-serve": "夜のサーブ",
+      "clay-rally": "クレーでのラリー",
+      "net": "テニスネット"
+    },
     "overview": "予測の概要",
     "overviewHint": "試合結果の上にモデルの概要を表示します。",
     "overviewStorage": "「保存」を押すとこのブラウザーに保存されます。概要を閉じると30日間非表示になります。",

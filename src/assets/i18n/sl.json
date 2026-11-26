@@ -1035,6 +1035,13 @@
     "changePassword": "Spremeni geslo",
     "theme": "Videz",
     "themeHint": "Shranjeno v tem brskalniku. Neprijavljeni obiskovalci vedno uporabljajo temni videz.",
+    "background": "Ozadje",
+    "backgrounds": {
+      "theme": "Glede na temo",
+      "night-serve": "Nočni servis",
+      "clay-rally": "Igra na pesku",
+      "net": "Teniška mreža"
+    },
     "overview": "Pregled napovedi",
     "overviewHint": "Prikaži povzetek modela nad rezultati dvobojev.",
     "overviewStorage": "Shrani se v brskalnik po kliku Shrani. Zaprt povzetek ostane skrit 30 dni.",

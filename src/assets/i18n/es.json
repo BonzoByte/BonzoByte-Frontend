@@ -930,6 +930,13 @@
     "changePassword": "Cambiar contraseña",
     "theme": "Tema visual",
     "themeHint": "Se guarda en este navegador. Los visitantes sin sesión usan siempre Oscuro.",
+    "background": "Fondo",
+    "backgrounds": {
+      "theme": "Según el tema",
+      "night-serve": "Saque nocturno",
+      "clay-rally": "Peloteo en tierra batida",
+      "net": "Red de tenis"
+    },
     "overview": "Resumen de predicciones",
     "overviewHint": "Mostrar el resumen del modelo sobre los resultados.",
     "overviewStorage": "Se guarda en este navegador al pulsar Guardar. Cerrar el resumen lo oculta durante 30 días.",

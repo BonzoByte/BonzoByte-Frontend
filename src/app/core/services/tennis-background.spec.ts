@@ -4,9 +4,12 @@ import { ThemeService } from './theme.service';
 describe('Lightweight stadium backgrounds for all visual themes', () => {
     let theme: ThemeService, fixture: HTMLElement;
     let initialTheme: string | undefined;
+    let initialBackground: string | undefined;
     beforeEach(() => {
         initialTheme = document.documentElement.dataset['bbTheme'];
+        initialBackground = document.documentElement.dataset['bbBackground'];
         TestBed.configureTestingModule({}); theme = TestBed.inject(ThemeService);
+        theme.setBackground('theme', false);
         fixture = document.createElement('div');
         fixture.innerHTML = `<main class="main-content"><app-competition-page><div class="matches-page">
           <table class="match-table"><thead><tr><th>Match</th></tr></thead><tbody><tr><td>One</td></tr><tr><td>Two</td></tr></tbody></table>
@@ -17,12 +20,28 @@ describe('Lightweight stadium backgrounds for all visual themes', () => {
     });
     afterEach(() => {
         fixture.remove();
+        if (initialBackground) document.documentElement.dataset['bbBackground'] = initialBackground;
+        else delete document.documentElement.dataset['bbBackground'];
         if (initialTheme) document.documentElement.dataset['bbTheme'] = initialTheme;
         else delete document.documentElement.dataset['bbTheme'];
     });
     const style = (selector: string) => getComputedStyle(fixture.querySelector(selector)!);
     const background = () => getComputedStyle(document.body, '::before');
     const stadium = (id: string) => 'tennis-stadium-' + id + '-v2';
+
+    it('keeps a chosen scene independent of the palette and falls back to its stadium', () => {
+        for (const id of ['dark', 'light', 'wimbledon', 'roland-garros', 'us-open']) {
+            theme.setTheme(id, false);
+            for (const scene of ['night-serve', 'clay-rally']) {
+                theme.setBackground(scene, false);
+                expect(background().backgroundImage).toContain(scene + '-v1');
+            }
+            theme.setBackground('net', false);
+            expect(background().backgroundImage).toContain('repeating-linear-gradient');
+            theme.setBackground('unknown', false);
+            expect(background().backgroundImage).toContain(stadium(id));
+        }
+    });
 
     it('uses one pre-rendered theme-matched WebP without changing the base page colour', () => {
         for (const [id, colour] of [['dark', 'rgb(16, 20, 25)'], ['light', 'rgb(242, 245, 247)']]) {

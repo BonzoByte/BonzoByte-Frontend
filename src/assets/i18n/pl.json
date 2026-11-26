@@ -1035,6 +1035,13 @@
     "changePassword": "Zmień hasło",
     "theme": "Motyw",
     "themeHint": "Zapisane w tej przeglądarce. Niezalogowani zawsze używają ciemnego motywu.",
+    "background": "Tło",
+    "backgrounds": {
+      "theme": "Zgodnie z motywem",
+      "night-serve": "Nocny serwis",
+      "clay-rally": "Wymiana na mączce",
+      "net": "Siatka tenisowa"
+    },
     "overview": "Przegląd prognoz",
     "overviewHint": "Pokaż podsumowanie modelu nad wynikami meczów.",
     "overviewStorage": "Zapisuje się w przeglądarce po kliknięciu Zapisz. Zamknięcie podsumowania ukrywa je na 30 dni.",

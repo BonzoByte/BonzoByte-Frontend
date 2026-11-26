@@ -11,6 +11,9 @@ export const BONZOBYTE_THEMES = [
 ] as const;
 
 export type BonzoByteTheme = typeof BONZOBYTE_THEMES[number]['id'];
+export const BONZOBYTE_BACKGROUNDS = ['theme', 'night-serve', 'clay-rally', 'net'] as const;
+export type BonzoByteBackground = typeof BONZOBYTE_BACKGROUNDS[number];
+const BACKGROUND_STORAGE_KEY = 'bonzobyte.background';
 
 const STORAGE_KEY = 'bonzobyte.theme';
 const DEFAULT_THEME: BonzoByteTheme = 'dark';
@@ -23,7 +26,19 @@ export class ThemeService {
   readonly selectedTheme$ = this.selectedThemeSubject.asObservable();
 
   constructor(@Inject(DOCUMENT) private readonly document: Document) {
-    this.setTheme(this.readStoredTheme(), false);
+    this.restoreStoredTheme();
+  }
+
+  get selectedBackground(): BonzoByteBackground {
+    return normalizeBackground(this.document.documentElement.dataset['bbBackground']);
+  }
+
+  setBackground(value: string, persist = true): void {
+    const selected = normalizeBackground(value);
+    this.document.documentElement.dataset['bbBackground'] = selected;
+    if (persist) {
+      try { localStorage.setItem(BACKGROUND_STORAGE_KEY, selected); } catch { /* preview remains available */ }
+    }
   }
 
   get selectedTheme(): BonzoByteTheme {
@@ -48,10 +63,14 @@ export class ThemeService {
 
   useAnonymousDefault(): void {
     this.setTheme(DEFAULT_THEME, false);
+    this.setBackground('theme', false);
   }
 
   restoreStoredTheme(): void {
     this.setTheme(this.readStoredTheme(), false);
+    let stored: string | null = null;
+    try { stored = localStorage.getItem(BACKGROUND_STORAGE_KEY); } catch { /* use the theme's stadium */ }
+    this.setBackground(normalizeBackground(stored), false);
   }
 
   private readStoredTheme(): BonzoByteTheme {
@@ -70,4 +89,8 @@ export class ThemeService {
 
 function isBonzoByteTheme(value: unknown): value is BonzoByteTheme {
   return BONZOBYTE_THEMES.some(theme => theme.id === value);
+}
+
+function normalizeBackground(value: unknown): BonzoByteBackground {
+  return BONZOBYTE_BACKGROUNDS.find(option => option === value) ?? 'theme';
 }

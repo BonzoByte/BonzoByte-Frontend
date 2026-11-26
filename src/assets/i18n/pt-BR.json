@@ -930,6 +930,13 @@
     "changePassword": "Alterar senha",
     "theme": "Tema visual",
     "themeHint": "Salvo neste navegador. Visitantes desconectados sempre usam Escuro.",
+    "background": "Plano de fundo",
+    "backgrounds": {
+      "theme": "Conforme o tema",
+      "night-serve": "Saque noturno",
+      "clay-rally": "Troca de bolas no saibro",
+      "net": "Rede de tênis"
+    },
     "overview": "Visão geral das previsões",
     "overviewHint": "Mostrar o resumo do modelo acima dos resultados.",
     "overviewStorage": "Salvo neste navegador ao pressionar Salvar. Fechar o resumo o oculta por 30 dias.",

@@ -1650,6 +1650,13 @@
     "changePassword": "Passwort ändern",
     "theme": "Darstellung",
     "themeHint": "In diesem Browser gespeichert. Nicht angemeldete Besucher verwenden immer „Dunkel“.",
+    "background": "Hintergrund",
+    "backgrounds": {
+      "theme": "Passend zum Design",
+      "night-serve": "Aufschlag bei Nacht",
+      "clay-rally": "Ballwechsel auf Sand",
+      "net": "Tennisnetz"
+    },
     "overview": "Prognoseübersicht",
     "overviewHint": "Modellzusammenfassung über den Matchergebnissen anzeigen.",
     "overviewStorage": "Wird nach „Speichern“ in diesem Browser gespeichert. Schließen blendet die Zusammenfassung für 30 Tage aus.",

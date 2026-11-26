@@ -930,6 +930,13 @@
     "changePassword": "Changer le mot de passe",
     "theme": "Thème visuel",
     "themeHint": "Enregistré dans ce navigateur. Les visiteurs non connectés utilisent toujours le thème Sombre.",
+    "background": "Arrière-plan",
+    "backgrounds": {
+      "theme": "Selon le thème",
+      "night-serve": "Service de nuit",
+      "clay-rally": "Échange sur terre battue",
+      "net": "Filet de tennis"
+    },
     "overview": "Aperçu des prédictions",
     "overviewHint": "Afficher le résumé du modèle au-dessus des résultats.",
     "overviewStorage": "Enregistré dans ce navigateur après avoir cliqué sur Enregistrer. Fermer le résumé le masque pendant 30 jours.",

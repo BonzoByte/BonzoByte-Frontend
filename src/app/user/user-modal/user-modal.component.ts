@@ -14,6 +14,8 @@ import { User } from '../../core/models/user.model';
 import { AuthService } from '../../core/services/auth.service';
 import {
     BONZOBYTE_THEMES,
+    BONZOBYTE_BACKGROUNDS,
+    BonzoByteBackground,
     BonzoByteTheme,
     ThemeService
 } from '../../core/services/theme.service';
@@ -88,6 +90,7 @@ export class UserModalComponent implements OnInit, OnDestroy {
     @ViewChild('profilePanels') private profilePanels?: ElementRef<HTMLElement>;
     private initialDraft?: Record<string, string | boolean>;
     private initialTheme?: BonzoByteTheme;
+    private initialBackground?: BonzoByteBackground;
     private keepThemeOnDestroy = false;
     private pendingCloseAction: 'close' | 'pricing' | 'delete' = 'close';
     private returnFocusId = '';
@@ -107,6 +110,8 @@ export class UserModalComponent implements OnInit, OnDestroy {
     isSendingReset = false;
     readonly probabilityFirst = PROBABILITY_FIRST;
     readonly themes = BONZOBYTE_THEMES;
+    readonly backgrounds = BONZOBYTE_BACKGROUNDS;
+    selectedBackground: BonzoByteBackground;
     selectedTheme: BonzoByteTheme;
     predictionOverviewVisible: boolean;
 
@@ -124,6 +129,7 @@ export class UserModalComponent implements OnInit, OnDestroy {
         private modelGuidancePreference: ModelGuidancePreferenceService = new ModelGuidancePreferenceService()
     ) {
         this.selectedTheme = themeService.selectedTheme;
+        this.selectedBackground = themeService.selectedBackground;
         this.predictionOverviewVisible = predictionOverviewPreference.isVisible;
     }
 
@@ -180,6 +186,7 @@ export class UserModalComponent implements OnInit, OnDestroy {
         this.previewUrl = this.currentUser.avatarUrl || null;
         this.initialDraft = this.draftState();
         this.initialTheme = this.selectedTheme;
+        this.initialBackground = this.selectedBackground;
         this.unloadCleanup = this.unloadGuard?.register(() => {
             if (this.closing || this.destroyed || !this.initialDraft) return false;
             const nickname = this.profileForm?.nativeElement.querySelector<HTMLInputElement>('[formcontrolname="nickname"]')?.value;
@@ -231,6 +238,7 @@ export class UserModalComponent implements OnInit, OnDestroy {
         if (!this.userForm || !this.initialDraft) return false;
         const current = this.draftState();
         return !!this.selectedFile || this.selectedTheme !== this.initialTheme ||
+            this.selectedBackground !== this.initialBackground ||
             Object.keys(current).some(key => current[key] !== this.initialDraft![key]);
     }
 
@@ -291,6 +299,12 @@ export class UserModalComponent implements OnInit, OnDestroy {
     }
 
     private restoreThemePreview(): void {
+        if (this.authService.getUser()?._id !== this.currentUser?._id) return;
+        if (this.initialBackground && this.themeService.selectedBackground === this.selectedBackground &&
+            this.selectedBackground !== this.initialBackground) {
+            this.themeService.setBackground(this.initialBackground, false);
+            this.selectedBackground = this.initialBackground;
+        }
         if (this.initialTheme && this.selectedTheme !== this.initialTheme &&
             this.authService.getUser()?._id === this.currentUser?._id && this.themeService.selectedTheme === this.selectedTheme) {
             this.themeService.setTheme(this.initialTheme, false);
@@ -308,6 +322,8 @@ export class UserModalComponent implements OnInit, OnDestroy {
     }
 
     private commitThemePreview(): void {
+        if (this.selectedBackground !== this.initialBackground) this.themeService.setBackground(this.selectedBackground);
+        this.initialBackground = this.selectedBackground;
         if (this.selectedTheme !== this.initialTheme) this.themeService.setTheme(this.selectedTheme);
         this.initialTheme = this.selectedTheme;
         this.keepThemeOnDestroy = true;
@@ -513,6 +529,14 @@ export class UserModalComponent implements OnInit, OnDestroy {
         this.refreshUnloadGuard();
     }
 
+    changeBackground(background: BonzoByteBackground): void {
+        if (background === this.selectedBackground) return;
+        this.themeService.setBackground(background, false);
+        this.selectedBackground = background;
+        this.userForm.markAsDirty();
+        this.refreshUnloadGuard();
+    }
+
     restoreDisplayDefaults(): void {
         if (!this.userForm || this.activeTab !== 'display' || this.isSaving || this.confirmDiscard || this.closing || this.destroyed) return;
         // Patch only this tab's draft; never reset the complete form or write preferences here.
@@ -525,11 +549,13 @@ export class UserModalComponent implements OnInit, OnDestroy {
             quickFilterValue: false,
             quickFilterStatus: false
         };
-        if (this.selectedTheme === 'dark' && Object.entries(defaults).every(([key, value]) => this.userForm.get(key)?.value === value)) return;
+        if (this.selectedTheme === 'dark' && this.selectedBackground === 'theme' &&
+            Object.entries(defaults).every(([key, value]) => this.userForm.get(key)?.value === value)) return;
         // A prior Save waiting on nickname validation must not save this new draft automatically.
         this.validationSubscription?.unsubscribe();
         this.userForm.patchValue(defaults, { emitEvent: false });
         if (this.selectedTheme !== 'dark') this.changeTheme('dark');
+        this.changeBackground('theme');
         this.userForm.markAsDirty();
         this.refreshUnloadGuard();
     }

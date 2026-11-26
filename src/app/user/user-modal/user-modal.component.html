@@ -157,6 +157,20 @@
           </small>
         </div>
 
+        <fieldset class="bb-background-picker" *ngIf="activeTab === 'display'">
+          <legend>{{ 'profile.background' | translate }}</legend>
+          <div class="bb-background-options">
+            <label *ngFor="let bg of backgrounds">
+              <input type="radio" name="visual-background" [value]="bg"
+                [checked]="bg === selectedBackground" (change)="changeBackground(bg)" />
+              <span class="bb-background-card">
+                <span aria-hidden="true" class="bb-background-sample" [attr.data-scene]="bg"></span>
+                <span>{{ ('profile.backgrounds.' + bg) | translate }}</span>
+              </span>
+            </label>
+          </div>
+        </fieldset>
+
         <div class="form-row bb-preference-row">
           <label class="bb-preference-toggle" for="prediction-overview-visible">
             <input
