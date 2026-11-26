@@ -59,6 +59,8 @@ export class CompetitionService implements OnDestroy {
     private totalsPoll?: Subscription;
     private actor = '';
     private generation = 0;
+    private pickRevision = 0;
+    private serverOffset = 0;
     private indexLoaded = false;
     private openingPoll?: Subscription;
     private clock?: Subscription;
@@ -67,6 +69,10 @@ export class CompetitionService implements OnDestroy {
     isOpen(id: number): boolean {
         this.tick();
         return (this.openings().get(id) ?? 0) > performance.now();
+    }
+    canWithdraw(pick: CompetitionPick): boolean {
+        return !pick.settlement && this.isOpen(pick.matchTPId)
+            && performance.now() + this.serverOffset < Date.parse(pick.snapshot.lockAt);
     }
     private userSubscription: Subscription;
     private request?: Subscription;
@@ -98,7 +104,10 @@ export class CompetitionService implements OnDestroy {
             this.openingPoll = timer(0,30000).pipe(exhaustMap(() => {
                 const began = performance.now();
                 return this.http.get<{serverAt:number;entries:{id:number;until:number}[]}>(this.base+'/openings').pipe(
-                    timeout(10000), map(r => new Map(r.entries.map(e => [e.id,began + Math.min(120000,e.until-r.serverAt)] as const))),
+                    timeout(10000), map(r => {
+                        this.serverOffset = r.serverAt - began;
+                        return new Map(r.entries.map(e => [e.id,began + Math.min(120000,e.until-r.serverAt)] as const));
+                    }),
                     catchError(() => of(new Map<number,number>())));
             })).subscribe(rows => this.openings.set(rows));
         }
@@ -108,12 +117,24 @@ export class CompetitionService implements OnDestroy {
     }
     mine(month: string, demo = false) {
         const generation = this.generation;
+        const revision = this.pickRevision;
         return this.http.get<CompetitionMine>(`${this.base}/me`, { params: demo ? { month, demo: '1' } : { month } }).pipe(timeout(15000),
             takeUntil(this.actorChanged), tap(result => {
-                if (generation !== this.generation || demo || result.testActivity) return;
-                const copy = new Map(this.picks());
+                if (generation !== this.generation || revision !== this.pickRevision || demo || result.demo || result.testActivity) return;
+                const copy = new Map([...this.picks()].filter(([, p]) => p.month !== month));
                 for (const pick of result.entries) copy.set(pick.matchTPId, pick);
                 this.picks.set(copy);
+            }));
+    }
+    withdraw(pick: CompetitionPick) {
+        return this.http.post<{withdrawn:boolean}>(this.base + '/matches/' + pick.matchTPId + '/withdraw',
+            { submittedAt: pick.submittedAt }).pipe(timeout(15000), takeUntil(this.actorChanged), tap({
+                next: () => {
+                    this.pickRevision++;
+                    const copy = new Map(this.picks()); copy.delete(pick.matchTPId); this.picks.set(copy);
+                    this.refreshTotals.next();
+                },
+                error: () => this.refreshTotals.next(),
             }));
     }
     leaderboard(month: string, demo = false) {
@@ -147,7 +168,7 @@ export class CompetitionService implements OnDestroy {
         this.request = this.http.post<{ pick: CompetitionPick }>(`${this.base}/matches/${id}`, { side, token: quote.token })
             .pipe(timeout(15000), takeUntil(this.actorChanged)).subscribe({ next: result => {
                 if (generation !== this.generation) return;
-                this.busy.set(false); this.accepted.set(true); this.remember(result.pick);
+                this.busy.set(false); this.accepted.set(true); this.pickRevision++; this.remember(result.pick);
                 this.refreshTotals.next();
                 this.detail.set({ available: false, reason: 'alreadyPicked', pick: result.pick, quote: null, community: null });
             }, error: error => {

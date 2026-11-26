@@ -5,7 +5,7 @@ import { ActivatedRoute, RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { Subscription } from 'rxjs';
 import { environment } from '@env/environment';
-import { CompetitionBoard, CompetitionMine, CompetitionService, CompetitionDemoWindow, TestActivity } from '../core/services/competition.service';
+import { CompetitionBoard, CompetitionMine, CompetitionPick, CompetitionService, CompetitionDemoWindow, TestActivity } from '../core/services/competition.service';
 import { RegionalSettingsService } from '../core/services/regional-settings.service';
 import { createPredictionPreview, predictionPreviewAllowed } from './prediction-preview';
 import { PredictionHistoryGridComponent } from './prediction-history-grid.component';
@@ -39,12 +39,16 @@ export class CompetitionPageComponent implements OnInit, OnDestroy {
     private rulesSubscription?: Subscription;
     private routeSubscription?: Subscription;
     private timer?: ReturnType<typeof setInterval>;
+    private withdrawal?: Subscription;
+    withdrawing = false;
+    withdrawalStatus = '';
     constructor(public service: CompetitionService, public regional: RegionalSettingsService, private route: ActivatedRoute) {
         this.mineMode = route.snapshot.data?.['mine'] === true;
         this.month = this.maxMonth = service.currentMonth();
     }
     ngOnInit(): void {
-        this.actorSubscription = this.service.actorChanged.subscribe(() => { this.request?.unsubscribe(); this.mine = null; this.load(); });
+        this.actorSubscription = this.service.actorChanged.subscribe(() => { this.request?.unsubscribe(); this.withdrawal?.unsubscribe();
+            this.withdrawing = false; this.withdrawalStatus = ''; this.mine = null; this.load(); });
         this.rulesSubscription = this.service.rules().subscribe({ next: result => {
             this.sourceConnected = result.sourceConnected; this.demoWindow = result.demo || null;
             this.testActivity = result.testActivity || null;
@@ -72,5 +76,17 @@ export class CompetitionPageComponent implements OnInit, OnDestroy {
         else this.request = this.service.leaderboard(this.month, this.demoMode).subscribe({
             next: result => { this.board = result; this.loading = false; }, error: () => { this.failed = true; this.loading = false; } });
     }
-    ngOnDestroy(): void { this.request?.unsubscribe(); this.actorSubscription?.unsubscribe(); this.rulesSubscription?.unsubscribe(); this.routeSubscription?.unsubscribe(); clearInterval(this.timer); }
+    withdraw(pick: CompetitionPick): void {
+        if (this.withdrawing || !this.mineMode || this.illustrativeMode || this.testActivity || !this.service.canWithdraw(pick)) return;
+        if (!window.confirm(this.regional.text('competition.withdrawConfirm', {player: pick.snapshot.players[pick.side].name}))) return;
+        this.withdrawing = true; this.withdrawalStatus = '';
+        this.withdrawal = this.service.withdraw(pick).subscribe({
+            next: () => { this.withdrawing = false; this.withdrawalStatus = 'competition.withdrawn'; this.load(false); },
+            error: err => { this.withdrawing = false;
+                this.withdrawalStatus = err?.error?.code === 'COMPETITION_LOCKED' ? 'competition.locked' : 'competition.checkStatus';
+                this.load(false);
+            },
+        });
+    }
+    ngOnDestroy(): void { this.withdrawal?.unsubscribe(); this.request?.unsubscribe(); this.actorSubscription?.unsubscribe(); this.rulesSubscription?.unsubscribe(); this.routeSubscription?.unsubscribe(); clearInterval(this.timer); }
 }

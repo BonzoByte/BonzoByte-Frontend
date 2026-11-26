@@ -141,7 +141,8 @@
     "stake": "Sázka: 1 virtuální jednotka",
     "odds": "Mediánové kurzy",
     "confirm": "Potvrdit tip",
-    "confirmNotice": "Potvrzený výběr je konečný. Účastí přijímáte pravidla a zveřejnění přezdívky a měsíčních výsledků v žebříčku. Kurzy platí pro simulaci, nezaručují možnost skutečné sázky za tuto cenu.",
+    "confirmNotice": "Tip můžete zrušit pouze tehdy, když je tipování na tento zápas otevřené. Účastí přijímáte pravidla a zveřejnění přezdívky a měsíčních výsledků v žebříčku. Kurzy platí pro simulaci, nezaručují možnost skutečné sázky za tuto cenu.",
+    "withdraw": "Zrušit tip", "withdrawConfirm": "Zrušit tip na vítězství: {{player}}?", "withdrawn": "Tip byl zrušen.",
     "accepted": "Tip uložen. Hodně štěstí!",
     "saving": "Ukládání tipu…",
     "sourceUnavailable": "Tipování tohoto zápasu není otevřeno. Je třeba spolehlivý zdroj s časovými údaji před zápasem; historický archiv nestačí.",
@@ -181,7 +182,7 @@
     "market": "Favorit trhu",
     "comparisonNote": "Virtuální výsledky na {{count}} totožných zápasech s uloženou předzápasovou předpovědí modelu a jasným favoritem. Shody a chybějící data modelu jsou vyloučeny u všech tří. Nejde o důkaz budoucího zisku.",
     "rulesTitle": "Pravidla soutěže a soukromí",
-    "rulesBody": "Verze 3: jeden konečný tip na účet a zápas, nejvýše deset nových za den UTC. Bez úprav a výběrového mazání. Každý přijatý tip používá jednu virtuální jednotku při uloženém modelovém kurzu. Správný tip získá kurz minus jedna; chybný ztratí jednu jednotku. Měsíc určuje první odeslání (UTC). Pro pořadí je potřeba alespoň 30 výher/proher; zrušené tipy se do kvalifikace nepočítají.",
+    "rulesBody": "Jeden aktivní tip na účet a zápas, až 10 za den UTC. Tip můžete zrušit pouze tehdy, když je tipování na tento zápas otevřené. Každý přijatý tip používá jednu virtuální jednotku při uloženém modelovém kurzu. Správný tip získá kurz minus jedna; chybný ztratí jednu jednotku. Měsíc určuje první odeslání (UTC). Pro pořadí je potřeba alespoň 30 výher/proher; zrušené tipy se do kvalifikace nepočítají.",
     "resultRules": "Pokud jsou zveřejněny datum, čas a modelové kurzy, lze tipovat až do plánovaného začátku. Tipování se uzavře dříve, pokud už je hlášen začátek hry nebo skóre. Pozdější začátek odesílání neobnoví. Zrušené zápasy, výhry bez boje a skreče znamenají zrušení tipu (0 jednotek). Neověřené výsledky čekají. Opožděné výsledky a ověřené opravy aktualizují původní soutěžní měsíc.",
     "fairness": "Jeden účet na účastníka. Bezplatná účast pro ověřené účty všech úrovní členství. Tipy komunity se zobrazí až po uzamčení. Porovnání modelu a trhu používají informace uložené při odeslání; pozdější aktualizace dat je nenahrazují. Jeden úspěšný měsíc není důkazem schopnosti předvídat.",
     "privacy": "Předpovědi se ukládají k účtu, neposílají se do Google Analytics. Přezdívka a souhrnné měsíční výsledky jsou veřejné. Jednotlivé tipy jsou standardně soukromé. V profilu můžete sdílet všechny vyhodnocené tipy včetně minulých výher, proher a zrušených; otevřené zůstávají soukromé. Vypnutí sdílení brání novému přístupu, ale neodvolá již zobrazené kopie. Smazání účtu odstraní tipy a odvozené výsledky žebříčku. Nejsou nabízeny ceny ve skutečných penězích."

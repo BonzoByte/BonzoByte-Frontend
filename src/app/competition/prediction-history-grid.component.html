@@ -1,7 +1,6 @@
 <div class="prediction-history-scroll competition-table-scroll" tabindex="0" role="region" [attr.aria-label]="(publicView ? 'competition.publicPredictions' : 'competition.mine') | translate">
     <table class="match-table prediction-history-grid">
         <caption class="grid-caption">{{ (retrospective ? 'competition.testSnapshotNote' : 'competition.snapshotNote') | translate }}</caption>
-        <colgroup><col class="c-number"><col class="c-submitted"><col class="c-date"><col class="c-type"><col class="c-tournament"><col class="c-matchup"><col class="c-result"><col class="c-odds"><col class="c-market"><col class="c-pick"><col class="c-status"><col class="c-units"><col class="c-details"></colgroup>
         <thead><tr>
             <th scope="col" [title]="'competition.rowNumber' | translate" [attr.aria-label]="'competition.rowNumber' | translate">#</th>
             <th scope="col">{{ 'competition.submitted' | translate }}</th>
@@ -44,7 +43,9 @@
                 <ng-template #noMarket><div class="prediction-cell__market prediction-cell__market--muted">{{ 'matchGrid.marketUnavailable' | translate }}</div></ng-template>
             </td>
             <td class="your-pick-cell" [title]="playerLabel(row.pick.snapshot.players[row.pick.side])"><button *ngIf="!illustrative && !publicView && !retrospective && row.pick.matchTPId > 0; else pickText" type="button" class="pick-link" (click)="open(row)" [attr.aria-label]="'competition.viewPick' | translate"><ng-container *ngTemplateOutlet="pickText"></ng-container></button>
-                <ng-template #pickText><span class="pick-side">P{{ row.pick.side + 1 }}</span><span class="pick-name">{{ compactName(row.pick.snapshot.players[row.pick.side].name) }}</span></ng-template></td>
+                <ng-template #pickText><span class="pick-side">P{{ row.pick.side + 1 }}</span><span class="pick-name">{{ compactName(row.pick.snapshot.players[row.pick.side].name) }}</span></ng-template>
+                <button *ngIf="!illustrative && !publicView && !retrospective && competition.canWithdraw(row.pick)" type="button"
+                    class="withdraw-pick" [disabled]="withdrawing" (click)="withdrawPick.emit(row.pick)">{{ 'competition.withdraw' | translate }}</button></td>
             <td class="status-cell"><span class="pick-status" [ngClass]="'pick-status--' + (row.pick.settlement?.status || 'pending')" role="img" tabindex="0"
                 [title]="'competition.' + (row.pick.settlement?.status || 'pending') | translate" [attr.aria-label]="'competition.' + (row.pick.settlement?.status || 'pending') | translate">
                 <span aria-hidden="true" class="status-icon">{{ row.pick.settlement?.status === 'won' ? '✓' : row.pick.settlement?.status === 'lost' ? '×' : row.pick.settlement?.status === 'void' ? '−' : '◷' }}</span>

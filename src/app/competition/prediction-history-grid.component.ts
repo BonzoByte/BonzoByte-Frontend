@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, Injector, OnChanges, OnDestroy, Output } from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
-import { CompetitionPick, CompetitionPlayer } from '../core/services/competition.service';
+import { CompetitionPick, CompetitionPlayer, CompetitionService } from '../core/services/competition.service';
 import { compactPlayerGridLabel, playerGridFlagCode, playerGridLabel } from '../core/helpers/player-grid-label';
 import { RegionalSettingsService } from '../core/services/regional-settings.service';
 import { predictionHistoryRow, PredictionHistoryRow } from './prediction-history-row';
@@ -24,13 +24,16 @@ export class PredictionHistoryGridComponent implements OnChanges, OnDestroy {
     @Input() publicView = false;
     @Input() retrospective = false;
     @Output() openPick = new EventEmitter<number>();
+    @Input() withdrawing = false;
+    @Output() withdrawPick = new EventEmitter<CompetitionPick>();
     rows: (PredictionHistoryRow & { match: MatchSummary })[] = [];
     entity: MatchEntityRequest | null = null;
     preview = false;
     private metadata?: Subscription;
     readonly flagCode = playerGridFlagCode;
     readonly compactName = compactPlayerGridLabel;
-    constructor(public regional: RegionalSettingsService, private injector: Injector, private change: ChangeDetectorRef) {}
+    constructor(public regional: RegionalSettingsService, private injector: Injector, private change: ChangeDetectorRef,
+        public competition: CompetitionService) {}
     ngOnChanges(): void {
         this.metadata?.unsubscribe(); this.entity = null;
         this.preview = this.localPreview && localUiPreviewAllowed(environment, typeof location === 'undefined' ? '' : location.hostname);

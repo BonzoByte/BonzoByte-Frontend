@@ -141,7 +141,8 @@
     "stake": "Tét: 1 virtuális egység",
     "odds": "Medián oddsok",
     "confirm": "Tipp megerősítése",
-    "confirmNotice": "A megerősített választás végleges. A részvétellel elfogadod a szabályokat, valamint beceneved és havi eredményeid megjelenítését a ranglistán. Az oddsok a szimulációhoz tartoznak, nem garantálnak valós fogadási lehetőséget ezen az áron.",
+    "confirmNotice": "A tipp csak addig vonható vissza, amíg az adott mérkőzésre lehet tippelni. A részvétellel elfogadod a szabályokat, valamint beceneved és havi eredményeid megjelenítését a ranglistán. Az oddsok a szimulációhoz tartoznak, nem garantálnak valós fogadási lehetőséget ezen az áron.",
+    "withdraw": "Visszavonás", "withdrawConfirm": "Visszavonod a {{player}} győzelmére adott tippedet?", "withdrawn": "A tipp visszavonva.",
     "accepted": "Előrejelzés mentve. Sok szerencsét!",
     "saving": "Előrejelzés mentése…",
     "sourceUnavailable": "Erre a mérkőzésre nem lehet tippelni. Megbízható, mérkőzés előtti időbélyeggel ellátott adatforrás szükséges; a történeti archívum nem elegendő.",
@@ -181,7 +182,7 @@
     "market": "Piaci favorit",
     "comparisonNote": "Virtuális eredmények {{count}} azonos mérkőzésen, mentett mérkőzés előtti modellbecsléssel és egyértelmű favorittal. A holtversenyek és hiányzó modelladatok mindháromnál kimaradnak. Ez nem bizonyít jövőbeli nyereséget.",
     "rulesTitle": "Versenyszabályok és adatvédelem",
-    "rulesBody": "3. verzió: fiókonként és mérkőzésenként egy végleges tipp, UTC-naponként legfeljebb tíz új. Nincs szerkesztés vagy szelektív törlés. Minden elfogadott tipp egy virtuális egységet használ a mentett modellszorzóval. A helyes tipp az odds mínusz egy értéket nyeri, a hibás egy egységet veszít. A hónapot az első beküldés ideje határozza meg (UTC). A rangsorhoz legalább 30 nyertes/vesztes tipp kell; az érvénytelenek nem számítanak bele.",
+    "rulesBody": "Fiókonként és mérkőzésenként egy aktív tipp adható, UTC-naponként legfeljebb 10. A tipp csak addig vonható vissza, amíg az adott mérkőzésre lehet tippelni. Minden elfogadott tipp egy virtuális egységet használ a mentett modellszorzóval. A helyes tipp az odds mínusz egy értéket nyeri, a hibás egy egységet veszít. A hónapot az első beküldés ideje határozza meg (UTC). A rangsorhoz legalább 30 nyertes/vesztes tipp kell; az érvénytelenek nem számítanak bele.",
     "resultRules": "Ha a dátum, az időpont és a modell szorzói ismertek, a tervezett kezdésig lehet tippelni. A tippelés korábban lezárul, ha a játék kezdetéről vagy az állásról már érkezett adat. A későbbi kezdés nem nyitja újra. Törölt mérkőzés, játék nélküli győzelem és feladás esetén a tipp érvénytelen (0 egység). Az ellenőrizetlen eredmények függőben maradnak. A késői eredmények és ellenőrzött javítások az eredeti versenyhónapot frissítik.",
     "fairness": "Résztvevőnként egy fiók. Ingyenes részvétel minden tagsági szint ellenőrzött fiókjai számára. A közösségi tippek csak a lezárás után jelennek meg. A modell és a piac összehasonlításai a beküldéskor mentett információkat használják; a későbbi adatfrissítések nem írják felül azokat. Egy sikeres hónap nem bizonyítja az előrejelzési képességet.",
     "privacy": "Előrejelzéseidet a fiókoddal tároljuk, nem küldjük a Google Analyticsnek. Beceneved és összesített havi eredményeid nyilvánosak. Az egyéni tippek alapértelmezetten privátak. A profilban az összes kiértékelt tippedet megoszthatod, a múltbeli nyerteseket, veszteseket és érvényteleneket is; a nyitottak privátak maradnak. Kikapcsoláskor a további hozzáférés megszűnik, de a megtekintett másolatok nem vonhatók vissza. A fiók törlése eltávolítja a tippeket és származtatott ranglistaeredményeiket. Valódi pénzjutalom nincs."

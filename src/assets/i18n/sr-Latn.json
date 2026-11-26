@@ -141,7 +141,8 @@
     "stake": "Ulog: 1 virtualna jedinica",
     "odds": "Medijalna kvota",
     "confirm": "Potvrdi prognozu",
-    "confirmNotice": "Potvrđeni odabir je konačan. Učešćem prihvataš pravila takmičenja i javni prikaz svog nadimka i mesečnih rezultata na rang-listi. Kvota važi za ovu simulaciju, ne garantuje mogućnost stvarne opklade.",
+    "confirmNotice": "Prognozu možeš poništiti samo dok je prognoziranje za taj meč otvoreno. Učešćem prihvataš pravila takmičenja i javni prikaz svog nadimka i mesečnih rezultata na rang-listi. Kvota važi za ovu simulaciju, ne garantuje mogućnost stvarne opklade.",
+    "withdraw": "Poništi", "withdrawConfirm": "Poništiti prognozu za pobjedu: {{player}}?", "withdrawn": "Prognoza je poništena.",
     "accepted": "Prognoza je spremljena. Sretno!",
     "saving": "Spremanje prognoze…",
     "sourceUnavailable": "Prognoziranje ovog meča nije otvoreno. Trebamo pouzdan izvor s vremenskim oznakama pre početka; istorijski arhiv nije dovoljan.",
@@ -181,7 +182,7 @@
     "market": "Tržišni favorit",
     "comparisonNote": "Virtualni rezultati na {{count}} istih mečeva sa spremljenom prognozom modela pre početka i jasnim favoritom. Izjednačeni odabiri i nedostajući model izostavljeni su za sve troje. Ovo nije dokaz buduće zarade.",
     "rulesTitle": "Pravila takmičenja i privatnost",
-    "rulesBody": "Verzija 3: jedna konačna prognoza po računu i meču, najviše deset novih prognoza po UTC danu. Bez izmjena i selektivnog brisanja. Svaka prihvaćena prognoza koristi jednu virtualnu jedinicu i spremljenu modelsku kvotu. Pogodak donosi kvotu umanjenu za jedan, promašaj oduzima jednu jedinicu. Mesec određuje prvo slanje (UTC). Za poredak treba najmanje 30 pogodaka/promašaja; poništeni mečevi ne ulaze u taj minimum.",
+    "rulesBody": "Jedna aktivna prognoza po računu i meču, najviše 10 po UTC danu. Prognozu možeš poništiti samo dok je prognoziranje za taj meč otvoreno. Svaka prihvaćena prognoza koristi jednu virtualnu jedinicu i spremljenu modelsku kvotu. Pogodak donosi kvotu umanjenu za jedan, promašaj oduzima jednu jedinicu. Mesec određuje prvo slanje (UTC). Za poredak treba najmanje 30 pogodaka/promašaja; poništeni mečevi ne ulaze u taj minimum.",
     "resultRules": "Kada su objavljeni datum, vreme i modelske kvote, prognozu možeš poslati do zakazanog početka. Ako ranije stigne podatak o početku igre ili rezultatu, prognoze se zatvaraju. Kasniji početak ne otvara prijave ponovno. Otkazivanje, walkover i predaja poništavaju prognozu (0 jedinica). Nepotvrđeni rezultati ostaju na čekanju. Zakašnjeli rezultati i provereni ispravci ažuriraju izvorni takmičarski mesec.",
     "fairness": "Jedan nalog po učesniku. Besplatno učešće svim verifikovanim nalozima, bez obzira na članstvo. Izbori zajednice vidljivi su tek nakon zaključavanja. Poređenja modela i tržišta koriste podatke sačuvane pri slanju prognoze; kasnija ažuriranja podataka ih ne zamenjuju. Jedan uspešan mesec nije dokaz prediktivne veštine.",
     "privacy": "Prognoze se spremaju uz tvoj račun i ne šalju se Google Analyticsu. Nadimak i zbirni mesečni rezultati su javni. Pojedinačni odabiri početno su privatni. U postavkama profila možeš podeliti sve obračunate odabire, uključujući prošle pogotke, promašaje i poništene; otvoreni odabiri ostaju privatni. Isključivanje blokira dalji pristup, ali ne može povući već pregledane kopije. Brisanje računa uklanja prognoze i izvedene rezultate na rang-listi. Nema stvarnih novčanih nagrada."

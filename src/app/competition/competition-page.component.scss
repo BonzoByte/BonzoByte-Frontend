@@ -1,10 +1,11 @@
-@use '../../styles/prediction-history-layout' as history;
 @use '../../styles/compact-page-heading' as heading;
 
 :host {display:flow-root;color:var(--bb-text);background:var(--bb-page-bg);min-height:calc(100dvh - var(--header-h) - var(--footer-h));}
 a {color:var(--bb-theme-accent);}
 .competition-page {max-width:1160px;margin:8px auto 20px;padding:0 18px 30px;}
-.competition-page--mine {box-sizing:border-box;width:100%;max-width:history.$width + 36px;}
+.competition-page--mine {box-sizing:border-box;width:100%;}
+.competition-page--history {width:max-content;max-width:100%;}
+.competition-page--history > :not(app-prediction-history-grid) {contain:inline-size;}
 .competition-page--board {max-width:720px;}
 // Only the shared table contributes to intrinsic width; prose wraps to that width.
 // With no rows, keep the ordinary empty/error layout instead of collapsing the page.

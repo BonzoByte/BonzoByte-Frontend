@@ -1,4 +1,4 @@
-<section class="competition-page" [class.competition-page--mine]="mineMode" [class.competition-page--board]="!mineMode" [class.competition-page--standings]="!mineMode && boardHasRows" [class.competition-page--embedded]="embeddedLeaderboard">
+<section class="competition-page" [class.competition-page--mine]="mineMode" [class.competition-page--history]="mineMode && mine?.entries?.length" [class.competition-page--board]="!mineMode" [class.competition-page--standings]="!mineMode && boardHasRows" [class.competition-page--embedded]="embeddedLeaderboard">
     <header *ngIf="!embeddedLeaderboard" class="bb-compact-heading bb-compact-heading--centred"><div class="bb-compact-heading__line">
         <h1>{{ (mineMode ? 'competition.mine' : 'competition.leaderboard') | translate }}</h1><p class="competition-eyebrow bb-compact-eyebrow">BONZOBYTE COMMUNITY</p>
         <p class="competition-disclaimer bb-compact-intro"><span class="bb-compact-heading__separator" aria-hidden="true">— </span>{{ 'competition.virtual' | translate }}</p></div>
@@ -17,6 +17,7 @@
         <span>{{ 'competition.utcNote' | translate }}</span></div>
     <p *ngIf="loading && !mine && !board" role="status">{{ 'common.loading' | translate }}</p>
     <p *ngIf="failed" role="alert">{{ 'competition.unavailable' | translate }}</p>
+    <p *ngIf="withdrawalStatus" role="status">{{ withdrawalStatus | translate }}</p>
     <p *ngIf="mineMode && !previewMode && !service.auth.getUser()?._id">{{ 'competition.signIn' | translate }}</p>
     <ng-container *ngIf="mine as data">
         <div class="competition-summary">
@@ -28,7 +29,7 @@
         <p>{{ (data.summary.qualified ? 'competition.qualified' : 'competition.provisional') | translate }}</p>
         <p *ngIf="!data.entries.length && !failed">{{ 'competition.emptyMine' | translate }}</p>
         <app-prediction-history-grid *ngIf="data.entries.length" [entries]="data.entries" [illustrative]="illustrativeMode" [retrospective]="!!data.testActivity"
-            [localPreview]="previewMode" (openPick)="service.open($event)"></app-prediction-history-grid>
+            [localPreview]="previewMode" [withdrawing]="withdrawing" (withdrawPick)="withdraw($event)" (openPick)="service.open($event)"></app-prediction-history-grid>
         <section class="competition-comparison" *ngIf="data.summary.comparison.count > 0"><h2>{{ 'competition.comparison' | translate }}</h2>
             <p>{{ 'competition.comparisonNote' | translate:{count: data.summary.comparison.count} }}</p>
             <div class="competition-summary"><div><span>{{ 'competition.you' | translate }}</span><strong>{{ regional.number(data.summary.comparison.userUnits, 2) }}</strong></div>
