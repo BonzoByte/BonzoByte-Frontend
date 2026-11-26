@@ -1,4 +1,12 @@
 {
+  "insightsBenchmark": {
+    "title": "Historical winner-pick accuracy",
+    "intro": "How often did the archived model pick the winner? These historical figures are separate from the track record of forecasts published before play.",
+    "counts": "{{correct}} correct out of {{total}} matches",
+    "method": "Which matches count?",
+    "rules": "Completed matches with a decisive set score, an archived NN probability and a non-neutral match rating (M ≠ 50%). The historical records used here list the winner first: a probability above 50% for that player counts as a correct pick. No extra confidence cutoff or bookmaker odds are used.",
+    "evaluation": "Accuracy in the explanation period"
+  },
   "fixtures":{"title":"Announced matches","count":"{{count}} matches","zone":"Zagreb time · Start times may change.","time":"Planned start","pair":"Matchup","tbd":"Time TBD","unavailable":"The schedule for this date is not available yet."},
   "community": {
     "drafts": { "saved": "Draft saved in this browser (up to 30 days).", "restored": "Your local draft for this topic was restored.", "unavailable": "This browser cannot save the draft. Copy your text before leaving.", "discard": "Discard draft", "quoteMissing": "The previously quoted comment is not available on this page. Load it or remove the quote before posting.", "withoutQuote": "Remove quote" },

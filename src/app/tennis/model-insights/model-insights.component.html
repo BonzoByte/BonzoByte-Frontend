@@ -3,19 +3,20 @@
     <div class="mi-hero__content">
       <div class="mi-kicker">{{ 'reports.copy.bonzobyteResearch' | translate }}</div>
       <h1 class="mi-title">{{ p.source(m.title) }}</h1>
-      <p class="mi-subtitle">{{ p.source(m.subtitle) }}</p>
-
-      <div class="mi-meta" *ngIf="updatedAt">
-        <span class="mi-meta__label">{{ 'reports.copy.updated' | translate }}</span>
-        <span>{{ p.generatedAt(updatedAt) }} {{ p.regional.timeZone() }}</span>
-      </div>
+      <p class="mi-subtitle">{{ 'insightsBenchmark.intro' | translate }}</p>
     </div>
 
-    <div class="mi-hero__highlights">
-      <div class="mi-stat-card" *ngFor="let finding of m.keyFindings | slice:0:4">
-        <div class="mi-stat-card__eyebrow">{{ p.source(finding.label) }}</div>
-        <div class="mi-stat-card__title">{{ p.countText(finding.value) }}</div>
+    <div class="mi-hero__highlights mi-benchmark">
+      <h2>{{ 'insightsBenchmark.title' | translate }}</h2>
+      <div class="mi-stat-card" *ngFor="let row of historicalBenchmark">
+        <h3 class="mi-stat-card__eyebrow">{{ row.tour }}</h3>
+        <strong class="mi-benchmark__rate">{{ (row.correct / row.matches) | percent:'1.2-2':p.regional.locale() }}</strong>
+        <p>{{ 'insightsBenchmark.counts' | translate: {correct: p.regional.number(row.correct,0,true), total: p.regional.number(row.matches,0,true)} }}</p>
+        <p>{{ p.regional.date(row.from) }} – {{ p.regional.date(row.through) }}</p>
       </div>
+      <details><summary>{{ 'insightsBenchmark.method' | translate }}</summary>
+        <p>{{ 'insightsBenchmark.rules' | translate }}</p>
+      </details>
     </div>
   </section>
 
@@ -68,8 +69,9 @@
           <strong>{{ model.featureCount | number:'1.0-0':p.regional.locale() }}</strong>
         </div>
         <div>
-          <span>{{ 'reports.copy.accuracy' | translate }}</span>
+          <span>{{ 'insightsBenchmark.evaluation' | translate }}</span>
           <strong>{{ model.metrics.accuracy | percent:'1.1-1':p.regional.locale() }}</strong>
+          <small>{{ p.text('matchCount', { count: p.regional.number(model.eligibleRows,0,true) }) }}</small>
         </div>
         <div>
           <span>AUC</span>

@@ -113,6 +113,21 @@
   color: #ffffff;
 }
 
+.mi-benchmark h2, .mi-benchmark details { grid-column: 1 / -1; margin: 0; }
+.mi-benchmark h2 { font-size: 1.05rem; }
+.mi-benchmark h3 { margin: 0; }
+.mi-benchmark__rate {
+  display: block;
+  margin-top: .25rem;
+  color: #75e2bc;
+  font-size: clamp(1.7rem, 3vw, 2.45rem);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+.mi-benchmark details { font-size: .85rem; }
+.mi-benchmark summary { cursor: pointer; }
+.mi-benchmark details p { margin: .55rem 0 0; line-height: 1.5; }
+
 .mi-stat-card p {
   margin: 0.3rem 0 0;
   font-size: 0.83rem;

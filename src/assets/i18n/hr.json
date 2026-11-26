@@ -1,4 +1,12 @@
 {
+  "insightsBenchmark": {
+    "title": "Povijesna uspješnost prognoze pobjednika",
+    "intro": "Koliko je često model u arhivi pogodio pobjednika? Ovaj povijesni izračun odvojen je od rezultata prognoza objavljenih prije početka meča.",
+    "counts": "{{correct}} pogodaka od {{total}} mečeva",
+    "method": "Koji mečevi ulaze u izračun?",
+    "rules": "Računamo završene mečeve s konačnim rezultatom u setovima, arhiviranom NN vjerojatnošću i neneutralnom procjenom na razini meča (M ≠ 50 %). U tim je zapisima pobjednik naveden prvi: pogodak je kad mu je model dao više od 50 %. Ne koristimo dodatni prag pouzdanosti ni kladioničarske koeficijente.",
+    "evaluation": "Uspješnost u razdoblju analize"
+  },
   "fixtures":{"title":"Najavljeni mečevi","count":"Broj parova: {{count}}","zone":"Zagrebačko vrijeme · Termini se mogu promijeniti.","time":"Planirani početak","pair":"Par","tbd":"Bez satnice","unavailable":"Raspored za ovaj datum još nije dostupan."},
   "community": {
     "drafts": { "saved": "Nacrt spremljen u ovom pregledniku (do 30 dana).", "restored": "Vraćen je tvoj lokalni nacrt za ovu temu.", "unavailable": "Preglednik ne može spremiti nacrt. Prije odlaska kopiraj tekst.", "discard": "Izbriši nacrt", "quoteMissing": "Prethodno citirani komentar nije dostupan na ovoj stranici. Učitaj ga ili ukloni citat prije objave.", "withoutQuote": "Ukloni citat" },

@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { ReportPresentationService } from '../../core/i18n/report-presentation.service';
 import { Component, OnDestroy, OnInit } from '@angular/core';
+import historicalBenchmark from './historical-benchmark.json';
 import { BaseChartDirective } from 'ng2-charts';
 import { ChartData, ChartOptions } from 'chart.js';
 import { Subscription } from 'rxjs';
@@ -20,6 +21,7 @@ import {
   styleUrls: ['./model-insights.component.scss']
 })
 export class ModelInsightsComponent implements OnInit, OnDestroy {
+  readonly historicalBenchmark = historicalBenchmark;
   private languageSubscription?: Subscription;
   analytics: AnalyticsDashboard | null = null;
   explainability: ModelExplainabilityReport | null = null;
