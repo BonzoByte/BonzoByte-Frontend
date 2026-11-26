@@ -68,7 +68,7 @@ interface AppliedMatchFilter {
     valueFilter: 'all' | 'valueOnly'; confidence: 'all' | '60' | '70' | '80'; plBasis?: 'fair' | 'median';
 }
 
-interface FixtureList {day:string;observedAt:string;matches:{id:number;names:string[];start:string|null}[]}
+import {announcedMatches, AnnouncedFixtures} from '../../core/helpers/announced-grid';
 interface BootstrapDatesResult {
     dates: string[];
     min: Date;
@@ -385,10 +385,6 @@ export class MatchesComponent implements OnInit, OnDestroy {
     private latestSourceMatches: Match[] | null = null;
     private lastArchiveDisplayDay = '';
     private fixtureDays = new Set<string>();
-    fixtureView = false;
-    fixturePacket: FixtureList|null = null;
-    private fixtureTime = new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/Zagreb',hour:'2-digit',minute:'2-digit'});
-    fixtureClock(start:string):string { return this.fixtureTime.format(Date.parse(start)); }
     private dailyRequest?: Subscription;
     private provisionalRequest?: Subscription;
     private provisionalScores: ProvisionalScores = new Map();
@@ -841,8 +837,6 @@ export class MatchesComponent implements OnInit, OnDestroy {
     }
 
     private cancelScopeRequests(): void {
-        this.fixtureView = false;
-        this.fixturePacket = null;
         this.recovery?.begin(this);
         this.dailyLoadError = false;
         this.scopedLoadError = false;
@@ -1006,8 +1000,6 @@ export class MatchesComponent implements OnInit, OnDestroy {
     }
 
     loadMatchesForDate(date: Date): void {
-        this.fixtureView = false;
-        this.fixturePacket = null;
         this.filterUndo?.cancel(this);
         if (this.viewMode === 'favourites') return;
         this.recovery?.begin(this);
@@ -1036,24 +1028,12 @@ export class MatchesComponent implements OnInit, OnDestroy {
 
         if (correctedChanged) this.showDateOutOfRangeModal();
 
-        if (this.fixtureDays.has(this.currentDateISO)) {
-            const day = this.currentDateISO;
-            this.fixtureView = true;
-            this.matches = []; this.daySourceMatches = []; this.filteredMatches = [];
-            this.noMatchesForFilter = false;
-            this.checkAdjacentDaysAvailability(correctedDate);
-            const request: Observable<FixtureList|null> = this.provisionalHttp?.get<FixtureList>('/api/announced-fixtures/'+day) ?? of(null);
-            this.dailyRequest = request
-                .pipe(timeout(8000),catchError(()=>of(null)),takeUntil(this.destroy$)).subscribe(packet=>{
-                    this.fixturePacket = packet?.day===day && Array.isArray(packet.matches) ? packet : null;
-                    this.browseLoaded = true;
-                    this.finishDailyLoading(loadingStartedAt);
-                });
-            return;
-        }
-
-        this.dailyRequest = this.staticArchives.getDailyForZone(this.currentDateISO,
-            this.regional.timeZone(), this.sourceAvailableDates).pipe(takeUntil(this.destroy$)).subscribe({
+        const day=this.currentDateISO;
+        const source=this.fixtureDays.has(day) && this.provisionalHttp
+            ? this.provisionalHttp.get<AnnouncedFixtures>('/api/announced-fixtures/'+day).pipe(timeout(10000),
+                map(p=>({matches:announcedMatches(p,day),missingDays:[] as string[],archiveDays:[] as string[],unresolvedCount:0})))
+            : this.staticArchives.getDailyForZone(day,this.regional.timeZone(),this.sourceAvailableDates);
+        this.dailyRequest = source.pipe(takeUntil(this.destroy$)).subscribe({
             next: (data) => {
                 this.unresolvedTimeCount = data.unresolvedCount;
                 this.missingArchiveDays = data.missingDays;

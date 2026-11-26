@@ -250,13 +250,6 @@
     align-items: center;
     justify-content: center;
 }
-.matches-page .table-wrapper.fixture-list {
-    display:block; overflow:auto; padding:1rem; text-align:left;
-    h2 { font-size:1.15rem; }
-    table { width:100%; border-collapse:collapse; }
-    th,td { text-align:start; padding:.4rem .6rem; border-bottom:1px solid currentColor; }
-    td:first-child { white-space:nowrap; width:8rem; font-variant-numeric:tabular-nums; }
-}
 
 .matches-empty-state {
     max-width: min(520px, 100%);
