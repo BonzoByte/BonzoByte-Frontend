@@ -151,7 +151,7 @@
     "alreadyPicked": "Tu pronóstico ya está registrado.",
     "quoteChanged": "La cuota ha cambiado o caducado. Revisa el estado actual y confirma la nueva cuota si todavía quieres pronosticar.",
     "checkStatus": "No pudimos confirmar el estado más reciente. Revísalo antes de otro pronóstico; no se envía nada automáticamente.",
-    "dailyLimit": "Has usado los cinco pronósticos de hoy (UTC).",
+    "dailyLimit": "Has usado los diez pronósticos de hoy (UTC).",
     "verify": "Verifica tu correo antes de participar.",
     "refresh": "Consultar estado actual",
     "signIn": "Inicia sesión para ver tus pronósticos.",
@@ -181,7 +181,7 @@
     "market": "Favorito del mercado",
     "comparisonNote": "Resultados virtuales en {{count}} partidos idénticos con un pronóstico del modelo guardado antes del partido y un favorito claro. Los empates y datos del modelo ausentes se excluyen para los tres. No demuestra beneficios futuros.",
     "rulesTitle": "Reglas del reto y privacidad",
-    "rulesBody": "Versión 1: un pronóstico definitivo por cuenta y partido, hasta cinco nuevos por día UTC. Sin ediciones ni borrado selectivo. Cada pronóstico aceptado usa una unidad virtual a la cuota guardada del modelo. Un acierto gana la cuota menos uno; un fallo pierde una unidad. El mes lo fija el primer envío (UTC). Se requieren al menos 30 aciertos/fallos para clasificarse; las anulaciones no cuentan para ese mínimo.",
+    "rulesBody": "Versión 3: un pronóstico definitivo por cuenta y partido, hasta diez nuevos por día UTC. Sin ediciones ni borrado selectivo. Cada pronóstico aceptado usa una unidad virtual a la cuota guardada del modelo. Un acierto gana la cuota menos uno; un fallo pierde una unidad. El mes lo fija el primer envío (UTC). Se requieren al menos 30 aciertos/fallos para clasificarse; las anulaciones no cuentan para ese mínimo.",
     "resultRules": "Si se publican la fecha, la hora y las cuotas del modelo, puedes pronosticar hasta el inicio programado. Los pronósticos se cierran antes si ya se ha comunicado el inicio del juego o un marcador. Un inicio posterior no reabre los envíos. Cancelaciones, victorias por incomparecencia y retiradas anulan el pronóstico (0 unidades). Los resultados no verificados quedan pendientes. Los resultados tardíos y correcciones verificadas actualizan el mes original de competición.",
     "fairness": "Una cuenta por participante. Participación gratuita para cuentas verificadas de todos los niveles de suscripción. Las elecciones de la comunidad solo aparecen tras el bloqueo. Las comparaciones entre el modelo y el mercado usan la información guardada al enviar el pronóstico; las actualizaciones posteriores no la sustituyen. Un mes exitoso no demuestra habilidad predictiva.",
     "privacy": "Tus pronósticos se guardan con tu cuenta, sin enviarse a Google Analytics. Tu apodo y resultados mensuales agregados son públicos. Las elecciones individuales son privadas por defecto. Puedes compartir todas las resueltas desde el perfil, incluidos aciertos, fallos y anulaciones pasados; las abiertas siguen siendo privadas. Desactivar el uso compartido bloquea nuevos accesos, pero no retira copias ya consultadas. Eliminar la cuenta elimina tus pronósticos y sus resultados derivados en la clasificación. No se ofrecen premios de dinero real."

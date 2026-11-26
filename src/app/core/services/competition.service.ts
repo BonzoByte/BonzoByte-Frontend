@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, OnDestroy, signal } from '@angular/core';
-import { Subject, Subscription, takeUntil, timeout, tap, timer, exhaustMap, catchError, of, map } from 'rxjs';
+import { Subject, Subscription, takeUntil, timeout, tap, timer, exhaustMap, catchError, of, map, merge, switchMap } from 'rxjs';
 import { environment } from '@env/environment';
 import { AuthService } from './auth.service';
 
@@ -32,7 +32,8 @@ export interface CompetitionStats {
     comparison: { count: number; userUnits: number; modelUnits: number; marketUnits: number };
 }
 export interface TestActivity { seed: string; retrospective: true; preferredMonth: string; generatedAt: string; }
-export interface CompetitionMine { month: string; entries: CompetitionPick[]; remainingToday: number; summary: CompetitionStats; demo?: boolean; testActivity?: TestActivity; }
+export interface CompetitionMine { month: string; entries: CompetitionPick[]; remainingToday: number; rules?: { dailyLimit: number }; summary: CompetitionStats; demo?: boolean; testActivity?: TestActivity; }
+export interface PersonalPredictionTotals { pending: number; won: number; settled: number; }
 export interface CompetitionRank { nickname: string; rank?: number; submitted: number; settled: number; won: number; units: number; picksProfileId?: string | null; }
 export interface CompetitionPublicHistory {
     month: string; nickname: string; entries: CompetitionPick[]; demo?: boolean; testActivity?: TestActivity;
@@ -53,6 +54,9 @@ export class CompetitionService implements OnDestroy {
     readonly message = signal('');
     readonly accepted = signal(false);
     readonly actorChanged = new Subject<void>();
+    readonly totals = signal<PersonalPredictionTotals | null>(null);
+    private readonly refreshTotals = new Subject<void>();
+    private totalsPoll?: Subscription;
     private actor = '';
     private generation = 0;
     private indexLoaded = false;
@@ -76,6 +80,13 @@ export class CompetitionService implements OnDestroy {
             this.accepted.set(false); this.indexLoaded = false;
             this.openingPoll?.unsubscribe(); this.openingPoll = undefined;
             this.clock?.unsubscribe(); this.openings.set(new Map());
+            this.totalsPoll?.unsubscribe(); this.totals.set(null);
+            if (actor && !environment.billingLab) {
+                this.totalsPoll = merge(timer(0, 300000), this.refreshTotals).pipe(
+                    switchMap(() => this.http.get<PersonalPredictionTotals>(this.base + '/me/stats').pipe(
+                        timeout(15000), catchError(() => of(null)))))
+                    .subscribe(totals => this.totals.set(totals));
+            }
             if (actor) this.ensureIndex();
         });
     }
@@ -137,6 +148,7 @@ export class CompetitionService implements OnDestroy {
             .pipe(timeout(15000), takeUntil(this.actorChanged)).subscribe({ next: result => {
                 if (generation !== this.generation) return;
                 this.busy.set(false); this.accepted.set(true); this.remember(result.pick);
+                this.refreshTotals.next();
                 this.detail.set({ available: false, reason: 'alreadyPicked', pick: result.pick, quote: null, community: null });
             }, error: error => {
                 this.busy.set(false); this.message.set(this.errorKey(error));
@@ -153,5 +165,5 @@ export class CompetitionService implements OnDestroy {
         };
         return 'competition.' + (known[error?.error?.code] || 'checkStatus');
     }
-    ngOnDestroy(): void { this.openingPoll?.unsubscribe(); this.clock?.unsubscribe(); this.userSubscription.unsubscribe(); this.request?.unsubscribe(); this.actorChanged.next(); this.actorChanged.complete(); }
+    ngOnDestroy(): void { this.totalsPoll?.unsubscribe(); this.refreshTotals.complete(); this.openingPoll?.unsubscribe(); this.clock?.unsubscribe(); this.userSubscription.unsubscribe(); this.request?.unsubscribe(); this.actorChanged.next(); this.actorChanged.complete(); }
 }

@@ -54,9 +54,12 @@
                     <span class="favourites-count" aria-hidden="true">{{ favourites.loading() || favourites.error() ? '—' : regional.number(favourites.count(), 0) }}</span>
                 </a>
                 <a class="predictions-trigger" routerLink="/predictions" routerLinkActive="is-current" ariaCurrentWhenActive="page"
-                    [title]="'competition.mine' | translate" [attr.aria-label]="'competition.mine' | translate">
+                    [title]="predictionShortcutLabel" [attr.aria-label]="predictionShortcutLabel">
                     <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9" /><circle cx="12" cy="12" r="5" /><path d="m10 12 2 2 4-4" /></svg>
                     <span class="personal-shortcut-label" aria-hidden="true">{{ 'competition.mine' | translate }}</span>
+                    <span *ngIf="competition.totals() as totals" class="prediction-totals" aria-hidden="true">
+                        ◷ {{ regional.number(totals.pending, 0) }}<ng-container *ngIf="totals.settled"> · {{ regional.number(100 * totals.won / totals.settled, 1) }}%</ng-container>
+                    </span>
                 </a>
             </div>
             <details class="language-picker" #languagePicker (keydown.escape)="languagePicker.open = false">

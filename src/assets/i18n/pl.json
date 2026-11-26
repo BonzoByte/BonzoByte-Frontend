@@ -151,7 +151,7 @@
     "alreadyPicked": "Twoja prognoza jest już zapisana.",
     "quoteChanged": "Kurs zmienił się lub wygasł. Sprawdź najnowszy status i potwierdź nowy kurs, jeśli nadal chcesz typować.",
     "checkStatus": "Nie udało się potwierdzić najnowszego statusu. Sprawdź ponownie przed kolejnym typem; nic nie jest wysyłane automatycznie.",
-    "dailyLimit": "Wykorzystano wszystkie pięć dzisiejszych prognoz (UTC).",
+    "dailyLimit": "Wykorzystano wszystkie dziesięć dzisiejszych prognoz (UTC).",
     "verify": "Zweryfikuj e-mail przed dołączeniem do konkursu.",
     "refresh": "Sprawdź najnowszy status",
     "signIn": "Zaloguj się, aby zobaczyć swoje prognozy.",
@@ -181,7 +181,7 @@
     "market": "Faworyt rynku",
     "comparisonNote": "Wirtualne wyniki dla {{count}} identycznych meczów z zapisaną prognozą modelu sprzed meczu i wyraźnym faworytem. Remisy i brakujące dane modelu są wykluczone dla wszystkich trzech. To nie dowód przyszłego zysku.",
     "rulesTitle": "Zasady konkursu i prywatność",
-    "rulesBody": "Wersja 1: jeden ostateczny typ na konto i mecz, najwyżej pięć nowych na dobę UTC. Bez edycji i wybiórczego usuwania. Każda przyjęta prognoza wykorzystuje jedną wirtualną jednostkę przy zapisanym kursie modelu. Trafiony typ zyskuje kurs minus jeden; nietrafiony traci jednostkę. Miesiąc ustala pierwsze zgłoszenie (UTC). Ranking wymaga co najmniej 30 wygranych/przegranych prognoz; anulowane nie liczą się do kwalifikacji.",
+    "rulesBody": "Wersja 3: jeden ostateczny typ na konto i mecz, najwyżej dziesięć nowych na dobę UTC. Bez edycji i wybiórczego usuwania. Każda przyjęta prognoza wykorzystuje jedną wirtualną jednostkę przy zapisanym kursie modelu. Trafiony typ zyskuje kurs minus jeden; nietrafiony traci jednostkę. Miesiąc ustala pierwsze zgłoszenie (UTC). Ranking wymaga co najmniej 30 wygranych/przegranych prognoz; anulowane nie liczą się do kwalifikacji.",
     "resultRules": "Gdy podano datę, godzinę i kursy modelu, można typować do planowanego rozpoczęcia meczu. Typowanie kończy się wcześniej, jeśli zgłoszono rozpoczęcie gry lub wynik. Późniejszy początek nie otwiera zgłoszeń ponownie. Odwołane mecze, walkowery i krecze anulują typ (0 jednostek). Niezweryfikowane wyniki czekają. Spóźnione wyniki i zweryfikowane korekty aktualizują pierwotny miesiąc konkursowy.",
     "fairness": "Jedno konto na uczestnika. Bezpłatny udział dla zweryfikowanych kont na każdym poziomie członkostwa. Typy społeczności pojawiają się dopiero po zamknięciu zgłoszeń. Porównania modelu i rynku korzystają z informacji zapisanych przy wysłaniu; późniejsze aktualizacje danych ich nie zastępują. Jeden udany miesiąc nie dowodzi umiejętności prognozowania.",
     "privacy": "Prognozy są zapisywane na koncie i nie trafiają do Google Analytics. Pseudonim i zbiorcze wyniki miesięczne są publiczne. Poszczególne typy są domyślnie prywatne. W profilu możesz udostępnić wszystkie rozliczone typy, także przeszłe wygrane, przegrane i anulowane; otwarte pozostają prywatne. Wyłączenie udostępniania blokuje dalszy dostęp, ale nie cofa obejrzanych kopii. Usunięcie konta usuwa prognozy i pochodne wyniki rankingu. Nie oferujemy nagród w prawdziwych pieniądzach."

@@ -151,7 +151,7 @@
     "alreadyPicked": "Váš tip je už zaznamenaný.",
     "quoteChanged": "Kurz sa zmenil alebo vypršal. Skontrolujte aktuálny stav a potvrďte nový kurz, ak stále chcete tipovať.",
     "checkStatus": "Aktuálny stav sa nepodarilo potvrdiť. Pred ďalším tipom ho znovu skontrolujte; nič sa neodosiela automaticky.",
-    "dailyLimit": "Využili ste všetkých päť dnešných tipov (UTC).",
+    "dailyLimit": "Využili ste všetkých desať dnešných tipov (UTC).",
     "verify": "Pred účasťou overte svoj e-mail.",
     "refresh": "Skontrolovať aktuálny stav",
     "signIn": "Prihláste sa na zobrazenie svojich predpovedí.",
@@ -181,7 +181,7 @@
     "market": "Favorit trhu",
     "comparisonNote": "Virtuálne výsledky na {{count}} rovnakých zápasoch s uloženou predzápasovou predpoveďou modelu a jasným favoritom. Zhody a chýbajúce údaje modelu sú vylúčené u všetkých troch. Nie je to dôkaz budúceho zisku.",
     "rulesTitle": "Pravidlá súťaže a súkromie",
-    "rulesBody": "Verzia 1: jeden konečný tip na účet a zápas, najviac päť nových za deň UTC. Bez úprav a výberového mazania. Každý prijatý tip používa jednu virtuálnu jednotku pri uloženom modelovom kurze. Správny tip získa kurz mínus jedna; nesprávny stratí jednu jednotku. Mesiac určuje prvé odoslanie (UTC). Na poradie treba aspoň 30 výhier/prehier; zrušené tipy sa do kvalifikácie nepočítajú.",
+    "rulesBody": "Verzia 3: jeden konečný tip na účet a zápas, najviac desať nových za deň UTC. Bez úprav a výberového mazania. Každý prijatý tip používa jednu virtuálnu jednotku pri uloženom modelovom kurze. Správny tip získa kurz mínus jedna; nesprávny stratí jednu jednotku. Mesiac určuje prvé odoslanie (UTC). Na poradie treba aspoň 30 výhier/prehier; zrušené tipy sa do kvalifikácie nepočítajú.",
     "resultRules": "Ak sú zverejnené dátum, čas a modelové kurzy, tip možno podať do plánovaného začiatku. Tipovanie sa uzavrie skôr, ak už bol oznámený začiatok hry alebo skóre. Neskorší začiatok odosielanie neobnoví. Zrušené zápasy, výhry bez boja a skreče rušia tip (0 jednotiek). Neoverené výsledky čakajú. Oneskorené výsledky a overené opravy aktualizujú pôvodný súťažný mesiac.",
     "fairness": "Jeden účet na účastníka. Bezplatná účasť pre overené účty všetkých úrovní členstva. Tipy komunity sa zobrazia až po uzamknutí. Porovnania modelu a trhu používajú informácie uložené pri odoslaní; neskoršie aktualizácie dát ich nenahrádzajú. Jeden úspešný mesiac nie je dôkazom schopnosti predvídať.",
     "privacy": "Predpovede sa ukladajú k účtu, neposielajú sa do Google Analytics. Prezývka a súhrnné mesačné výsledky sú verejné. Jednotlivé tipy sú predvolene súkromné. V profile môžete zdieľať všetky vyhodnotené tipy vrátane minulých výhier, prehier a zrušených; otvorené zostávajú súkromné. Vypnutie zdieľania bráni ďalšiemu prístupu, ale neodvolá už zobrazené kópie. Zmazanie účtu odstráni tipy aj odvodené výsledky rebríčka. Nie sú ponúkané ceny v skutočných peniazoch."

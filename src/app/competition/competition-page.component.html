@@ -23,7 +23,7 @@
             <div><span>{{ 'competition.units' | translate }}</span><strong>{{ regional.number(data.summary.units, 2) }}</strong></div>
             <div><span>{{ 'competition.settled' | translate }}</span><strong>{{ regional.number(data.summary.settled, 0) }}</strong></div>
             <div><span>ROI</span><strong>{{ data.summary.roi === null ? '—' : regional.number(data.summary.roi, 1) + '%' }}</strong></div>
-            <div *ngIf="!demoMode"><span>{{ 'competition.remaining' | translate }}</span><strong>{{ regional.number(data.remainingToday, 0) }} / 5</strong></div>
+            <div *ngIf="!demoMode"><span>{{ 'competition.remaining' | translate }}</span><strong>{{ regional.number(data.remainingToday, 0) }}<ng-container *ngIf="data.rules as rules"> / {{ regional.number(rules.dailyLimit, 0) }}</ng-container></strong></div>
         </div>
         <p>{{ (data.summary.qualified ? 'competition.qualified' : 'competition.provisional') | translate }}</p>
         <p *ngIf="!data.entries.length && !failed">{{ 'competition.emptyMine' | translate }}</p>

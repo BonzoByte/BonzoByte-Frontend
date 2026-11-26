@@ -151,7 +151,7 @@
     "alreadyPicked": "Il tuo pronostico è già registrato.",
     "quoteChanged": "La quota è cambiata o scaduta. Controlla lo stato aggiornato e conferma la nuova quota se vuoi ancora pronosticare.",
     "checkStatus": "Impossibile confermare lo stato aggiornato. Controlla nuovamente prima di un altro pronostico; nulla viene inviato automaticamente.",
-    "dailyLimit": "Hai usato tutti e cinque i pronostici di oggi (UTC).",
+    "dailyLimit": "Hai usato tutti e dieci i pronostici di oggi (UTC).",
     "verify": "Verifica la tua e-mail prima di partecipare.",
     "refresh": "Controlla lo stato aggiornato",
     "signIn": "Accedi per vedere i tuoi pronostici.",
@@ -181,7 +181,7 @@
     "market": "Favorito del mercato",
     "comparisonNote": "Risultati virtuali su {{count}} incontri identici con pronostico del modello salvato prima dell’inizio e un favorito chiaro. Parità e dati del modello mancanti sono esclusi per tutti e tre. Non dimostra profitti futuri.",
     "rulesTitle": "Regolamento e privacy",
-    "rulesBody": "Versione 1: un pronostico definitivo per account e incontro, al massimo cinque nuovi al giorno UTC. Nessuna modifica o eliminazione selettiva. Ogni pronostico accettato usa un’unità virtuale alla quota del modello salvata. Un pronostico corretto guadagna la quota meno uno; uno errato perde un’unità. Il mese è fissato dal primo invio (UTC). Per la classifica servono almeno 30 vittorie/sconfitte; gli annullamenti non contano per la qualificazione.",
+    "rulesBody": "Versione 3: un pronostico definitivo per account e incontro, al massimo dieci nuovi al giorno UTC. Nessuna modifica o eliminazione selettiva. Ogni pronostico accettato usa un’unità virtuale alla quota del modello salvata. Un pronostico corretto guadagna la quota meno uno; uno errato perde un’unità. Il mese è fissato dal primo invio (UTC). Per la classifica servono almeno 30 vittorie/sconfitte; gli annullamenti non contano per la qualificazione.",
     "resultRules": "Se sono pubblicati data, ora e quote del modello, puoi inviare un pronostico fino all’inizio previsto. I pronostici si chiudono prima se viene segnalato l’inizio del gioco o un punteggio. Un inizio ritardato non riapre gli invii. Incontri cancellati, vittorie per mancata presentazione e ritiri annullano il pronostico (0 unità). I risultati non verificati restano in attesa. Risultati tardivi e correzioni verificate aggiornano il mese originale.",
     "fairness": "Un account per partecipante. Partecipazione gratuita per gli account verificati di ogni livello di abbonamento. Le scelte della community appaiono solo dopo il blocco. I confronti tra modello e mercato usano le informazioni salvate all’invio; gli aggiornamenti successivi non le sostituiscono. Un mese positivo non dimostra capacità predittiva.",
     "privacy": "I pronostici sono salvati con il tuo account, non inviati a Google Analytics. Soprannome e risultati mensili aggregati sono pubblici. Le scelte individuali sono private per impostazione predefinita. Puoi condividere tutte quelle concluse nelle impostazioni del profilo, comprese vittorie, sconfitte e annullamenti passati; quelle aperte restano private. Disattivare la condivisione blocca nuovi accessi, senza ritirare copie già viste. Eliminare l’account rimuove i pronostici e i risultati derivati in classifica. Nessun premio in denaro reale."

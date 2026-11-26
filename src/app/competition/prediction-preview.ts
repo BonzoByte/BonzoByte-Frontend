@@ -44,7 +44,7 @@ export function createPredictionPreview(month: string, reference = new Date()): 
     const won = entries.filter(pick => pick.settlement?.status === 'won').length;
     const units = round(entries.reduce((total, pick) => total + (pick.settlement?.units || 0), 0));
     const today = Number.isFinite(reference.getTime()) ? reference.toISOString().slice(0, 10) : '';
-    return { month, entries, demo: true, remainingToday: 5 - entries.filter(pick => pick.submittedAt.startsWith(today)).length,
+    return { month, entries, demo: true, rules: { dailyLimit: 10 }, remainingToday: 10 - entries.filter(pick => pick.submittedAt.startsWith(today)).length,
         summary: { submitted: entries.length, settled, won, units, pending: entries.filter(pick => !pick.settlement).length,
             voided: entries.filter(pick => pick.settlement?.status === 'void').length,
             roi: settled ? 100 * units / settled : null, hitRate: settled ? 100 * won / settled : null, qualified: settled >= 30,

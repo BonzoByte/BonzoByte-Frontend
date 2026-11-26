@@ -17,6 +17,7 @@ import { TimeZoneNoticePreferenceService } from '../../../core/services/time-zon
 import { environment } from '../../../../environments/environment';
 import { COMMUNITY_ENABLED } from '../../../core/helpers/community-enabled';
 import { FavouriteMatchesService } from '../../../core/services/favourite-matches.service';
+import { CompetitionService } from '../../../core/services/competition.service';
 import { PredictionDialogComponent } from '../../../competition/prediction-dialog.component';
 import { DiscussionInboxComponent } from '../../../discussions/discussion-inbox.component';
 import { DiscussionDialogComponent } from '../../../discussions/discussion-dialog.component';
@@ -50,6 +51,14 @@ import {
 })
 export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
     readonly siteInsights = inject(SiteInsightsService);
+    readonly competition = inject(CompetitionService);
+    get predictionShortcutLabel(): string {
+        const t = this.competition.totals(), title = this.regional.text('competition.mine');
+        if (!t) return title;
+        const label = title + ' · ' + this.regional.text('competition.pending') + ': ' + this.regional.number(t.pending, 0);
+        return !t.settled ? label : label + ' · ' + this.regional.text('competition.hitRate') + ': '
+            + this.regional.number(100 * t.won / t.settled, 1) + '% (' + t.won + '/' + t.settled + ')';
+    }
     get siteInsightsLabel(): string { return this.regional.language() === 'hr' ? 'Posjećenost' : 'Site audience'; }
     readonly billingLab = environment.billingLab;
     readonly communityEnabled = COMMUNITY_ENABLED;

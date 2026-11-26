@@ -151,7 +151,7 @@
     "alreadyPicked": "Vaša napoved je že zabeležena.",
     "quoteChanged": "Kvota se je spremenila ali potekla. Preverite najnovejše stanje in potrdite novo kvoto, če še želite napovedati.",
     "checkStatus": "Najnovejšega stanja ni bilo mogoče potrditi. Pred novo napovedjo preverite znova; nič se ne odda samodejno.",
-    "dailyLimit": "Porabili ste vseh pet današnjih napovedi (UTC).",
+    "dailyLimit": "Porabili ste vseh deset današnjih napovedi (UTC).",
     "verify": "Pred sodelovanjem potrdite e-poštni naslov.",
     "refresh": "Preveri najnovejše stanje",
     "signIn": "Prijavite se za ogled svojih napovedi.",
@@ -181,7 +181,7 @@
     "market": "Tržni favorit",
     "comparisonNote": "Virtualni rezultati za {{count}} istih tekem s shranjeno napovedjo modela pred tekmo in jasnim favoritom. Izenačenja in manjkajoči podatki modela so izključeni za vse tri. To ni dokaz prihodnjega dobička.",
     "rulesTitle": "Pravila tekmovanja in zasebnost",
-    "rulesBody": "Različica 1: ena dokončna napoved na račun in tekmo, največ pet novih na dan UTC. Brez urejanja in selektivnega brisanja. Vsaka sprejeta napoved uporablja eno virtualno enoto pri shranjeni kvoti modela. Zadeta napoved prinese kvoto minus ena; zgrešena izgubi eno enoto. Mesec določa prva oddaja (UTC). Za razvrstitev je potrebnih vsaj 30 zadetih/zgrešenih napovedi; razveljavljene ne štejejo za kvalifikacijo.",
+    "rulesBody": "Različica 3: ena dokončna napoved na račun in tekmo, največ deset novih na dan UTC. Brez urejanja in selektivnega brisanja. Vsaka sprejeta napoved uporablja eno virtualno enoto pri shranjeni kvoti modela. Zadeta napoved prinese kvoto minus ena; zgrešena izgubi eno enoto. Mesec določa prva oddaja (UTC). Za razvrstitev je potrebnih vsaj 30 zadetih/zgrešenih napovedi; razveljavljene ne štejejo za kvalifikacijo.",
     "resultRules": "Ko so objavljeni datum, ura in modelske kvote, lahko napoved oddaš do predvidenega začetka. Oddaja se zapre prej, če je že sporočen začetek igre ali rezultat. Poznejši začetek oddaje ne odpre znova. Odpovedi, zmage brez igre in predaje razveljavijo napoved (0 enot). Nepreverjeni rezultati čakajo. Zakasneli rezultati in preverjeni popravki posodobijo prvotni tekmovalni mesec.",
     "fairness": "En račun na udeleženca. Brezplačno sodelovanje za preverjene račune vseh vrst članstva. Izbori skupnosti so vidni šele po zaklepu. Primerjave modela in trga uporabljajo podatke, shranjene ob oddaji napovedi; poznejše posodobitve podatkov jih ne nadomestijo. En uspešen mesec ni dokaz napovedne spretnosti.",
     "privacy": "Napovedi se shranijo z računom in se ne pošiljajo v Google Analytics. Vzdevek in skupni mesečni rezultati so javni. Posamezni izbori so privzeto zasebni. V profilu lahko delite vse obračunane izbore, tudi pretekle zadetke, zgrešene in razveljavljene; odprti ostanejo zasebni. Izklop deljenja prepreči nadaljnji dostop, ne umakne pa že ogledanih kopij. Izbris računa odstrani napovedi in izpeljane rezultate na lestvici. Pravih denarnih nagrad ni."
