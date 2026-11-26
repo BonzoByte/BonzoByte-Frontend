@@ -17,6 +17,7 @@ import { BbModalShellComponent } from '../shared/ui/bb-modal-shell.component/bb-
         <ng-container *ngIf="service.detail() as detail">
             <ng-container *ngIf="detail.quote as quote">
                 <h5>{{ quote.snapshot.tournament }}</h5>
+                <p *ngIf="quote.snapshot.oddsKind === 'model-fair'">{{ 'competition.modelOdds' | translate }}</p>
                 <p>{{ 'competition.deadline' | translate }}: {{ regional.dateTime(quote.snapshot.lockAt, 'utc') }}</p>
                 <div class="prediction-choices" role="group" [attr.aria-label]="'competition.winner' | translate">
                     <button *ngFor="let player of quote.snapshot.players; let i = index" type="button" class="prediction-choice"
@@ -31,7 +32,7 @@ import { BbModalShellComponent } from '../shared/ui/bb-modal-shell.component/bb-
             <ng-container *ngIf="detail.pick as pick">
                 <p *ngIf="service.accepted()" role="status" class="prediction-success">{{ 'competition.accepted' | translate }}</p>
                 <h5>{{ pick.snapshot.players[pick.side].name }}</h5>
-                <p>{{ 'competition.odds' | translate }}: {{ regional.number(pick.snapshot.odds[pick.side], 2) }} · {{ 'competition.stake' | translate }}</p>
+                <p>{{ (pick.snapshot.oddsKind === 'model-fair' ? 'competition.modelOdds' : 'competition.odds') | translate }}: {{ regional.number(pick.snapshot.odds[pick.side], 2) }} · {{ 'competition.stake' | translate }}</p>
                 <p>{{ ('competition.' + (pick.settlement?.status || 'pending')) | translate }}</p>
                 <p *ngIf="pick.settlement">{{ 'competition.units' | translate }}: {{ regional.number(pick.settlement.units, 2) }}</p>
             </ng-container>

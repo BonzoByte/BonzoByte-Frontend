@@ -103,6 +103,7 @@
     "openDetails": "Abrir detalhes da partida"
   },
   "competition": {
+    "modelOdds": "Cotações do modelo BonzoByte",
     "testActivityNote": "Atividade de teste — Partidas históricas reais com palpites e contagens de interesse gerados posteriormente. Separados da competição real e da popularidade pública.",
     "testSnapshotNote": "Os palpites de teste usam odds arquivadas, não odds pré-jogo verificadas. Não representam uma comparação de desempenho do modelo.",
     "archivedDemoNote": "Os nomes dos jogadores, torneios, bandeiras, cabeças de chave e rankings vêm de partidas concluídas no arquivo de {{date}}. Datas de envio, odds, escolhas, resultados e estimativas do modelo são exemplos fictícios, não previsões históricas reais nem provas de desempenho. Esses exemplos não afetam a classificação real da competição.",
@@ -180,7 +181,7 @@
     "market": "Favorito do mercado",
     "comparisonNote": "Resultados virtuais em {{count}} partidas idênticas com previsão do modelo salva antes do início e um favorito claro. Empates e dados ausentes do modelo são excluídos para os três. Isso não comprova lucro futuro.",
     "rulesTitle": "Regras do desafio e privacidade",
-    "rulesBody": "Versão 1: uma previsão definitiva por conta e partida, até cinco novas por dia UTC. Sem edições ou exclusão seletiva. Cada previsão aceita usa uma unidade virtual na odd mediana salva. Um acerto ganha a odd menos um; um erro perde uma unidade. O mês é fixado pelo primeiro envio (UTC). A classificação exige pelo menos 30 acertos/erros; anulações não contam para a qualificação.",
+    "rulesBody": "Versão 1: uma previsão definitiva por conta e partida, até cinco novas por dia UTC. Sem edições ou exclusão seletiva. Cada previsão aceita usa uma unidade virtual na odd do modelo registrada. Um acerto ganha a odd menos um; um erro perde uma unidade. O mês é fixado pelo primeiro envio (UTC). A classificação exige pelo menos 30 acertos/erros; anulações não contam para a qualificação.",
     "resultRules": "Os envios fecham pelo menos cinco minutos antes do horário de início confiável e sempre que o estado ou as odds estiverem desatualizados. Um início atrasado não reabre os envios. Cancelamentos, vitórias por ausência e desistências anulam a previsão (0 unidades). Resultados não verificados ficam pendentes. Resultados atrasados e correções verificadas atualizam o mês original da competição.",
     "fairness": "Uma conta por participante. Participação gratuita para contas verificadas de todos os níveis de assinatura. As escolhas da comunidade aparecem apenas após o bloqueio. As comparações entre modelo e mercado usam as informações salvas no envio; atualizações posteriores não as substituem. Um mês de sucesso não comprova habilidade preditiva.",
     "privacy": "Suas previsões são salvas com sua conta, sem envio ao Google Analytics. Seu apelido e resultados mensais agregados são públicos. Palpites individuais são privados por padrão. Você pode compartilhar todos os apurados nas configurações do perfil, incluindo acertos, erros e anulações passados; os em aberto continuam privados. Desativar o compartilhamento bloqueia novos acessos, mas não retira cópias já vistas. Excluir a conta remove suas previsões e os resultados derivados na classificação. Não há prêmios em dinheiro real."

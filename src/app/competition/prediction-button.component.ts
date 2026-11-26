@@ -4,9 +4,9 @@ import { CompetitionService } from '../core/services/competition.service';
 
 @Component({ selector: 'app-prediction-button', standalone: true, imports: [TranslateModule],
     template: `<button type="button" class="prediction-pick-button" [class.is-picked]="service.picks().has(matchId)"
-        [disabled]="finished && !service.picks().has(matchId)" [attr.aria-pressed]="service.picks().has(matchId)"
-        [attr.aria-label]="(service.picks().has(matchId) ? 'competition.viewPick' : finished ? 'competition.locked' : 'competition.makePick') | translate"
-        [title]="(service.picks().has(matchId) ? 'competition.viewPick' : finished ? 'competition.locked' : 'competition.makePick') | translate"
+        [disabled]="!service.picks().has(matchId) && (finished || !service.isOpen(matchId))" [attr.aria-pressed]="service.picks().has(matchId)"
+        [attr.aria-label]="(service.picks().has(matchId) ? 'competition.viewPick' : finished || !service.isOpen(matchId) ? 'competition.locked' : 'competition.makePick') | translate"
+        [title]="(service.picks().has(matchId) ? 'competition.viewPick' : finished || !service.isOpen(matchId) ? 'competition.locked' : 'competition.makePick') | translate"
         (click)="$event.stopPropagation(); service.open(matchId)">{{ service.picks().has(matchId) ? '✓' : '◎' }}</button>`,
     styles: [`.prediction-pick-button {min-width:32px;min-height:32px;border:1px solid transparent;border-radius:7px;background:transparent;color:var(--bb-text);font-size:20px;}
         .prediction-pick-button:hover:not(:disabled),.prediction-pick-button:focus-visible {border-color:var(--bb-accent,#80d5ff);}

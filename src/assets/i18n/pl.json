@@ -103,6 +103,7 @@
     "openDetails": "Otwórz szczegóły meczu"
   },
   "competition": {
+    "modelOdds": "Kursy modelu BonzoByte",
     "testActivityNote": "Aktywność testowa — Prawdziwe historyczne mecze z typami i licznikami zainteresowania wygenerowanymi po fakcie. Oddzielone od prawdziwego konkursu i publicznej popularności.",
     "testSnapshotNote": "Typy testowe wykorzystują archiwalne kursy, nie zweryfikowane kursy przedmeczowe. Nie stanowią porównania skuteczności modelu.",
     "archivedDemoNote": "Nazwiska zawodników, turnieje, flagi, rozstawienia i pozycje rankingowe pochodzą z zakończonych meczów w archiwum z {{date}}. Daty wysłania, kursy, typy, wyniki i szacunki modelu są fikcyjnymi przykładami, a nie rzeczywistymi prognozami historycznymi ani dowodem skuteczności. Przykłady te nie wpływają na rzeczywistą klasyfikację konkursu.",
@@ -180,7 +181,7 @@
     "market": "Faworyt rynku",
     "comparisonNote": "Wirtualne wyniki dla {{count}} identycznych meczów z zapisaną prognozą modelu sprzed meczu i wyraźnym faworytem. Remisy i brakujące dane modelu są wykluczone dla wszystkich trzech. To nie dowód przyszłego zysku.",
     "rulesTitle": "Zasady konkursu i prywatność",
-    "rulesBody": "Wersja 1: jeden ostateczny typ na konto i mecz, najwyżej pięć nowych na dobę UTC. Bez edycji i wybiórczego usuwania. Każda przyjęta prognoza wykorzystuje jedną wirtualną jednostkę przy zapisanej medianie kursu. Trafiony typ zyskuje kurs minus jeden; nietrafiony traci jednostkę. Miesiąc ustala pierwsze zgłoszenie (UTC). Ranking wymaga co najmniej 30 wygranych/przegranych prognoz; anulowane nie liczą się do kwalifikacji.",
+    "rulesBody": "Wersja 1: jeden ostateczny typ na konto i mecz, najwyżej pięć nowych na dobę UTC. Bez edycji i wybiórczego usuwania. Każda przyjęta prognoza wykorzystuje jedną wirtualną jednostkę przy zapisanym kursie modelu. Trafiony typ zyskuje kurs minus jeden; nietrafiony traci jednostkę. Miesiąc ustala pierwsze zgłoszenie (UTC). Ranking wymaga co najmniej 30 wygranych/przegranych prognoz; anulowane nie liczą się do kwalifikacji.",
     "resultRules": "Zgłoszenia zamykają się co najmniej pięć minut przed wiarygodnym planowanym początkiem oraz gdy status lub kursy są nieaktualne. Późniejszy początek nie otwiera zgłoszeń ponownie. Odwołane mecze, walkowery i krecze anulują typ (0 jednostek). Niezweryfikowane wyniki czekają. Spóźnione wyniki i zweryfikowane korekty aktualizują pierwotny miesiąc konkursowy.",
     "fairness": "Jedno konto na uczestnika. Bezpłatny udział dla zweryfikowanych kont na każdym poziomie członkostwa. Typy społeczności pojawiają się dopiero po zamknięciu zgłoszeń. Porównania modelu i rynku korzystają z informacji zapisanych przy wysłaniu; późniejsze aktualizacje danych ich nie zastępują. Jeden udany miesiąc nie dowodzi umiejętności prognozowania.",
     "privacy": "Prognozy są zapisywane na koncie i nie trafiają do Google Analytics. Pseudonim i zbiorcze wyniki miesięczne są publiczne. Poszczególne typy są domyślnie prywatne. W profilu możesz udostępnić wszystkie rozliczone typy, także przeszłe wygrane, przegrane i anulowane; otwarte pozostają prywatne. Wyłączenie udostępniania blokuje dalszy dostęp, ale nie cofa obejrzanych kopii. Usunięcie konta usuwa prognozy i pochodne wyniki rankingu. Nie oferujemy nagród w prawdziwych pieniądzach."

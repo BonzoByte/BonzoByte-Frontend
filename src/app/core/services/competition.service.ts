@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, OnDestroy, signal } from '@angular/core';
-import { Subject, Subscription, takeUntil, timeout, tap } from 'rxjs';
+import { Subject, Subscription, takeUntil, timeout, tap, timer, exhaustMap, catchError, of, map } from 'rxjs';
 import { environment } from '@env/environment';
 import { AuthService } from './auth.service';
 
@@ -11,7 +11,7 @@ export interface CompetitionPlayer {
 }
 export interface CompetitionSnapshot {
     matchTPId: number; tournament: string; startAt: string; lockAt: string;
-    players: CompetitionPlayer[]; odds: number[]; bookmakers: number;
+    players: CompetitionPlayer[]; odds: number[]; bookmakers: number; oddsKind?: string;
     model: { version: string; p1: number; issuedAt: string } | null;
 }
 export interface CompetitionPick {
@@ -56,6 +56,14 @@ export class CompetitionService implements OnDestroy {
     private actor = '';
     private generation = 0;
     private indexLoaded = false;
+    private openingPoll?: Subscription;
+    private clock?: Subscription;
+    private readonly openings = signal<ReadonlyMap<number, number>>(new Map());
+    private readonly tick = signal(0);
+    isOpen(id: number): boolean {
+        this.tick();
+        return (this.openings().get(id) ?? 0) > performance.now();
+    }
     private userSubscription: Subscription;
     private request?: Subscription;
     constructor(private http: HttpClient, public auth: AuthService) {
@@ -66,12 +74,23 @@ export class CompetitionService implements OnDestroy {
             this.request?.unsubscribe(); this.picks.set(new Map()); this.selectedId.set(null);
             this.detail.set(null); this.message.set(''); this.loading.set(false); this.busy.set(false);
             this.accepted.set(false); this.indexLoaded = false;
+            this.openingPoll?.unsubscribe(); this.openingPoll = undefined;
+            this.clock?.unsubscribe(); this.openings.set(new Map());
             if (actor) this.ensureIndex();
         });
     }
     currentMonth(): string { return new Date().toISOString().slice(0, 7); }
     rules() { return this.http.get<{ sourceConnected: boolean; demo?: CompetitionDemoWindow | null; testActivity?: TestActivity }>(`${this.base}/rules`).pipe(timeout(15000)); }
     ensureIndex(): void {
+        if (this.actor && !environment.billingLab && !this.openingPoll) {
+            this.clock = timer(0,1000).subscribe(v => this.tick.set(v));
+            this.openingPoll = timer(0,30000).pipe(exhaustMap(() => {
+                const began = performance.now();
+                return this.http.get<{serverAt:number;entries:{id:number;until:number}[]}>(this.base+'/openings').pipe(
+                    timeout(10000), map(r => new Map(r.entries.map(e => [e.id,began + Math.min(120000,e.until-r.serverAt)] as const))),
+                    catchError(() => of(new Map<number,number>())));
+            })).subscribe(rows => this.openings.set(rows));
+        }
         if (this.indexLoaded || !this.actor || environment.billingLab) return;
         this.indexLoaded = true;
         this.mine(this.currentMonth()).subscribe({ error: () => { this.indexLoaded = false; } });
@@ -134,5 +153,5 @@ export class CompetitionService implements OnDestroy {
         };
         return 'competition.' + (known[error?.error?.code] || 'checkStatus');
     }
-    ngOnDestroy(): void { this.userSubscription.unsubscribe(); this.request?.unsubscribe(); this.actorChanged.next(); this.actorChanged.complete(); }
+    ngOnDestroy(): void { this.openingPoll?.unsubscribe(); this.clock?.unsubscribe(); this.userSubscription.unsubscribe(); this.request?.unsubscribe(); this.actorChanged.next(); this.actorChanged.complete(); }
 }
