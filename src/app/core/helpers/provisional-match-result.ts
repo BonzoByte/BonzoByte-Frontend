@@ -4,14 +4,14 @@ import type { MatchSummary } from '../models/match-summary';
 
 export interface ProvisionalScore { result: string; sets: string; }
 interface Entry {
-    day: string; expiresAt: number; matchId: number; player1: number; player2: number; event: number; score: ProvisionalScore;
+    day: string; expiresAt: number; matchId: number|null; player1: number; player2: number; event: number; score: ProvisionalScore;
 }
 export type ProvisionalScores = ReadonlyMap<number, Entry>;
 
-export function readProvisionalScores(value: unknown, day: string, now = Date.now()): ProvisionalScores {
+export function readProvisionalScores(value: unknown, day: string, now = Date.now(), announced=false): ProvisionalScores {
     const result = new Map<number, Entry>();
     const packet = value as {schema?: string; day?: string; observedAt?: string; rows?: unknown[] } | null;
-    if (packet?.schema !== 'bonzobyte.provisional-results.v1' || packet.day !== day ||
+    if (packet?.schema !== (announced?'bonzobyte.announced-results.v1':'bonzobyte.provisional-results.v1') || packet.day !== day ||
         typeof packet.observedAt !== 'string' || !Array.isArray(packet.rows) || packet.rows.length > 600) return result;
     const today = dayAt(now, ARCHIVE_TIME_ZONE);
     const sourceDay = [today, shiftDay(today,-1), shiftDay(today,-2)].find(d => d.replaceAll('-','') === day);
@@ -20,8 +20,8 @@ export function readProvisionalScores(value: unknown, day: string, now = Date.no
     const expiresAt = planArchiveDay(shiftDay(sourceDay, 2), ARCHIVE_TIME_ZONE).endExclusive;
     const ids = new Set<number>();
     for (const row of packet.rows) {
-        if (!Array.isArray(row) || row.length !== 7 || !row.slice(0, 5).every(id => Number.isSafeInteger(id) && id > 0) ||
-            row[2] === row[3] || result.has(row[0]) || ids.has(row[1]) ||
+        if (!Array.isArray(row) || row.length !== 7 || !row.slice(0, 5).every((id,i) => announced&&i===1?id===null:Number.isSafeInteger(id) && id > 0) ||
+            row[2] === row[3] || result.has(row[0]) || (!announced && ids.has(row[1])) ||
             typeof row[5] !== 'string' || !/^(?:2:[01]|[01]:2|3:[012]|[012]:3)$/.test(row[5]) ||
             typeof row[6] !== 'string' || !/^[0-7]:[0-7](?:\(\d{1,2}\))?(?: [0-7]:[0-7](?:\(\d{1,2}\))?){1,4}$/.test(row[6])) return new Map();
         ids.add(row[1]);

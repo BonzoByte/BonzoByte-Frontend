@@ -1029,7 +1029,8 @@ export class MatchesComponent implements OnInit, OnDestroy {
         if (correctedChanged) this.showDateOutOfRangeModal();
 
         const day=this.currentDateISO;
-        const source=this.fixtureDays.has(day) && this.provisionalHttp
+        const announced=this.fixtureDays.has(day) && !!this.provisionalHttp;
+        const source=announced && this.provisionalHttp
             ? this.provisionalHttp.get<AnnouncedFixtures>('/api/announced-fixtures/'+day).pipe(timeout(10000),
                 map(p=>({matches:announcedMatches(p,day),missingDays:[] as string[],archiveDays:[] as string[],unresolvedCount:0})))
             : this.staticArchives.getDailyForZone(day,this.regional.timeZone(),this.sourceAvailableDates);
@@ -1040,7 +1041,7 @@ export class MatchesComponent implements OnInit, OnDestroy {
                 const rows = data.matches.map((m, i) => ({ ...(m as any), __idx: i }));
 
                 this.daySourceMatches = rows;
-                this.watchProvisionalScores(data.archiveDays);
+                this.watchProvisionalScores(announced?[day]:data.archiveDays,announced);
 
                 // The archive response, not the previous day's rows, determines
                 // whether an automatic pre-match edge filter is meaningful.
@@ -3111,7 +3112,7 @@ export class MatchesComponent implements OnInit, OnDestroy {
         return { side, playerName, confidence, label: this.regional.text('matchGrid.lean'), tone: 'lean' };
     }
 
-    private watchProvisionalScores(sourceDays: readonly string[]): void {
+    private watchProvisionalScores(sourceDays: readonly string[], announced=false): void {
         const http = this.provisionalHttp;
         if (!http) return;
         const today = dayAt(Date.now(), 'Europe/Zagreb');
@@ -3126,8 +3127,8 @@ export class MatchesComponent implements OnInit, OnDestroy {
                 if (document.hidden) return of(null);
                 return forkJoin(recent.map(day => {
                     const key = day.replaceAll('-', '');
-                    return http.get<unknown>(`/api/provisional-results/${key}`).pipe(timeout(4000),
-                        catchError(() => of(null)), map(data => readProvisionalScores(data, key)));
+                    return http.get<unknown>(`/api/provisional-results/${key}${announced?'?roster=announced':''}`).pipe(timeout(4000),
+                        catchError(() => of(null)), map(data => readProvisionalScores(data, key, Date.now(), announced)));
                 }));
             }), takeUntil(this.destroy$)
         ).subscribe(packets => {

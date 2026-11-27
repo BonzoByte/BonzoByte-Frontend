@@ -10,9 +10,9 @@ function recentDay(day,now){
     return [0,1,2].some(back=>day===dayKey(noon-back*86400000));
 }
 
-export function validProvisionalResults(packet,day,now=Date.now()){
+export function validProvisionalResults(packet,day,now=Date.now(),announced=false){
     if(!packet || Object.keys(packet).sort().join(',')!=='day,observedAt,rows,schema' ||
-       packet.schema!==schema || packet.day!==day || !recentDay(day,now) ||
+       packet.schema!==(announced?'bonzobyte.announced-results.v1':schema) || packet.day!==day || !recentDay(day,now) ||
        typeof packet.observedAt!=='string' || !/^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d\.\d{3}Z$/.test(packet.observedAt) ||
        !Array.isArray(packet.rows) || packet.rows.length>600) return false;
     const observed=Date.parse(packet.observedAt);
@@ -20,8 +20,8 @@ export function validProvisionalResults(packet,day,now=Date.now()){
     if(!Number.isFinite(observed) || dayKey(observed)<day || observed>now)return false;
     const tp=new Set(), matches=new Set();
     return packet.rows.every(row=>{
-        if(!Array.isArray(row)||row.length!==7||!row.slice(0,5).every(id)||row[2]===row[3]||
-           tp.has(row[0])||matches.has(row[1])||typeof row[5]!=='string'||! /^(?:2:[01]|[01]:2|3:[012]|[012]:3)$/.test(row[5]) ||
+        if(!Array.isArray(row)||row.length!==7||!row.slice(0,5).every((v,i)=>announced&&i===1?v===null:id(v))||row[2]===row[3]||
+           tp.has(row[0])||(!announced&&matches.has(row[1]))||typeof row[5]!=='string'||! /^(?:2:[01]|[01]:2|3:[012]|[012]:3)$/.test(row[5]) ||
            typeof row[6]!=='string'||row[6].length>49)return false;
         const final=row[5].split(':').map(Number),sets=row[6].split(' '), wins=[0,0], target=Math.max(...final);
         if(sets.length!==final[0]+final[1])return false;
@@ -44,7 +44,8 @@ export async function serveProvisionalResults({request,day,fetcher,headers,now=D
     if(!['GET','HEAD'].includes(request.method))return send(405,{code:'PROVISIONAL_RESULTS_READ_ONLY'});
     if(!recentDay(day,now))return send(404,{code:'PROVISIONAL_RESULTS_NOT_FOUND'});
     try{
-        const up=await fetcher(root+day+'.json',{redirect:'error',signal:AbortSignal.timeout(2600)});
+        const announced=new URL(request.url).searchParams.get('roster')==='announced';
+        const up=await fetcher(root+(announced?'announced-':'')+day+'.json',{redirect:'error',signal:AbortSignal.timeout(2600)});
         if(up.status===404)return send(404,{code:'PROVISIONAL_RESULTS_NOT_FOUND'});
         if(!up.ok||!up.body||Number(up.headers.get('content-length'))>maxBytes)return send(502,{code:'PROVISIONAL_RESULTS_UNAVAILABLE'});
         const reader=up.body.getReader(), decoder=new TextDecoder('utf-8',{fatal:true});
@@ -56,6 +57,6 @@ export async function serveProvisionalResults({request,day,fetcher,headers,now=D
             body+=decoder.decode(value,{stream:true});
         }
         const packet=JSON.parse(body+decoder.decode());
-        return validProvisionalResults(packet,day,now) ? send(200,packet) : send(404,{code:'PROVISIONAL_RESULTS_NOT_FOUND'});
+        return validProvisionalResults(packet,day,now,announced) ? send(200,packet) : send(404,{code:'PROVISIONAL_RESULTS_NOT_FOUND'});
     }catch{return send(502,{code:'PROVISIONAL_RESULTS_UNAVAILABLE'});}
 }

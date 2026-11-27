@@ -6,6 +6,19 @@ const day='20261123', now=Date.parse('2026-11-23T15:00:00Z'), path='/api/provisi
 const good={schema:'bonzobyte.provisional-results.v1',day,observedAt:'2026-11-23T14:01:00.000Z',
     rows:[[101,202,1,2,3,'2:1','7:6(5) 2:6 6:3']]};
 
+test('announced finals are separate from archived results and require no SQL ID',async()=>{
+    const p={...good,schema:'bonzobyte.announced-results.v1',rows:[[101,null,1,2,3,'0:2','6:7(1) 5:7'],[102,null,5,6,3,'2:0','6:3 6:1']]};
+    assert.equal(validProvisionalResults(p,day,now),false);
+    assert.equal(validProvisionalResults(good,day,now,true),false);
+    assert.equal(validProvisionalResults({...p,rows:[...p.rows,p.rows[0]]},day,now,true),false);
+    assert.equal(validProvisionalResults({...p,rows:[[101,202,1,2,3,'0:2','6:7(1) 5:7']]},day,now,true),false);
+    const request=new Request('https://bonzobyte.com'+path+'?roster=announced');
+    const r=await serveProvisionalResults({request,day,now,headers:{},fetcher:async url=>{
+        assert.ok(url.endsWith('/results/announced-'+day+'.json'));return Response.json(p);
+    }});
+    assert.equal(r.status,200);assert.deepEqual(await r.json(),p);
+});
+
 test('validates identity, ordinary completed sets, freshness, and packet scope',()=>{
     assert.equal(validProvisionalResults(good,day,now),true);
     assert.equal(validProvisionalResults(good,day,now+20*3600000),true);
