@@ -1,10 +1,10 @@
 import { CommonModule, DOCUMENT } from '@angular/common';
 import { Component, Inject, OnDestroy, OnInit } from '@angular/core';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { combineLatest, Observable, of, Subject, Subscription, throwError } from 'rxjs';
 import { catchError, distinctUntilChanged, map, startWith, switchMap, takeUntil } from 'rxjs/operators';
-import { parseMatchLinkId } from '../../core/helpers/match-link';
+import { parseMatchLinkId, tennisTodayTarget } from '../../core/helpers/match-link';
 import { CommentLinkTarget, parseCommentLinkTarget } from '../../core/helpers/comment-link';
 import { MatchSummary } from '../../core/models/match-summary';
 import { DiscussionsService } from '../../core/services/discussions.service';
@@ -31,7 +31,7 @@ import { MatchDetailsModalComponent } from './match-details-modal/match-details-
           <button type="button" class="bb-btn" (click)="openDiscussion()">{{ 'discussions.title' | translate }}</button>
         </div>
         <app-match-details-modal [isOpen]="detailsOpen" [matchTPId]="row.matchTPId" [match]="row"
-          (closed)="detailsOpen = false" (requestLogin)="requestAccountAction('openLogin')"
+          (closed)="detailsOpen = false" (detailMissing)="openDatedGrid()" (requestLogin)="requestAccountAction('openLogin')"
           (requestRegister)="requestAccountAction('switchToRegister')" (requestUpgrade)="requestAccountAction('openBilling')">
         </app-match-details-modal>
       </ng-container>
@@ -56,18 +56,25 @@ export class MatchLinkPageComponent implements OnInit, OnDestroy {
     private retry$ = new Subject<void>();
     private request?: Subscription;
     private titlePath = '';
+    private desk: ReturnType<typeof tennisTodayTarget> = null;
+    openDatedGrid(): void {
+        if (this.desk) void this.router.navigate(['/matches'], {queryParams:{day:this.desk.day,fixture:this.desk.id},replaceUrl:true});
+    }
     constructor(private route: ActivatedRoute, private api: DiscussionsService, @Inject(DOCUMENT) private document: Document,
-        private links: MatchLinksService, private pageTitles: PageTitleService) {}
+        private links: MatchLinksService, private pageTitles: PageTitleService, private router: Router) {}
     ngOnInit(): void {
         this.request = combineLatest([this.route.paramMap, this.route.queryParamMap]).pipe(
             map(([params, query]) => ({ canonical: params.has('canonicalMatchId'),
                 id: parseMatchLinkId(params.get('canonicalMatchId') ?? params.get('matchTPId')), discussion: query.get('view') === 'discussion',
+                desk: query.get('view') === 'details' ? tennisTodayTarget(query) : null,
                 comment: query.getAll('comment').length === 1 && query.getAll('sequence').length === 1
                     ? parseCommentLinkTarget(query.get('comment'), query.get('sequence')) : null })),
             distinctUntilChanged((a, b) => a.id === b.id && a.canonical === b.canonical && a.discussion === b.discussion
-                && a.comment?.id === b.comment?.id && a.comment?.sequence === b.comment?.sequence),
+                && a.comment?.id === b.comment?.id && a.comment?.sequence === b.comment?.sequence
+                && a.desk?.id === b.desk?.id && a.desk?.day === b.desk?.day),
             switchMap(target => {
                 this.closeOwnedDiscussion();
+                this.desk = target.canonical || target.id === target.desk?.id ? target.desk : null;
                 this.matchId = target.id; this.discussionView = target.discussion; this.commentTarget = target.comment;
                 this.titlePath = `/matches/${target.canonical ? 'id/' : ''}${target.id ?? ''}`;
                 this.match = null; this.detailsOpen = false;
@@ -80,7 +87,7 @@ export class MatchLinkPageComponent implements OnInit, OnDestroy {
                         this.match = null; this.detailsOpen = false;
                         this.pageTitles.setMatch(null, this, this.titlePath);
                         const request: Observable<MatchSummary | null> = target.id === null ? of(null) : target.canonical ? this.links.byCanonicalId(target.id) :
-                            this.links.byLegacyTPId(target.id).pipe(catchError(error => error?.status === 404 ? this.api.summary(target.id!) : throwError(() => error)));
+                            this.links.byLegacyTPId(target.id).pipe(catchError(error => !this.desk && error?.status === 404 ? this.api.summary(target.id!) : throwError(() => error)));
                         return request.pipe(catchError(error => {
                             const code = error?.error?.code ?? error?.code;
                             this.failureKind = error?.status === 404 || code === 'MATCH_LINK_NOT_FOUND' ? 'missing' :
@@ -94,6 +101,8 @@ export class MatchLinkPageComponent implements OnInit, OnDestroy {
             this.loading = false; this.failed = !row; this.match = row;
             this.pageTitles.setMatch(row, this, this.titlePath);
             if (row && this.discussionView) this.openDiscussion();
+            if (this.desk && row?.matchTPId === this.desk.id) this.openDetails();
+            if (!row && this.desk && this.failureKind === 'missing') this.openDatedGrid();
         });
     }
     retry(): void { if (!this.loading && this.failureKind === 'temporary') this.retry$.next(); }

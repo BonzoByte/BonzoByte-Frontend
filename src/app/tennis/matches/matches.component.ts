@@ -69,6 +69,7 @@ interface AppliedMatchFilter {
 }
 
 import {announcedMatches, AnnouncedFixtures} from '../../core/helpers/announced-grid';
+import {tennisTodayTarget} from '../../core/helpers/match-link';
 interface BootstrapDatesResult {
     dates: string[];
     min: Date;
@@ -385,6 +386,9 @@ export class MatchesComponent implements OnInit, OnDestroy {
     private latestSourceMatches: Match[] | null = null;
     private lastArchiveDisplayDay = '';
     private fixtureDays = new Set<string>();
+    deskTarget: ReturnType<typeof tennisTodayTarget> = null;
+    private deskScrollPending = false;
+    deskTargetMissing = false;
     private dailyRequest?: Subscription;
     private provisionalRequest?: Subscription;
     private provisionalScores: ProvisionalScores = new Map();
@@ -428,7 +432,14 @@ export class MatchesComponent implements OnInit, OnDestroy {
         this.scrollToTopFrame = requestAnimationFrame(() => {
             this.scrollToTopFrame = requestAnimationFrame(() => {
                 this.scrollToTopFrame = null;
-                this.scrollToTop();
+                if (this.deskScrollPending && this.deskTarget && !this.dailyLoadError) {
+                    this.deskScrollPending = false;
+                    const row = this.hostElement.nativeElement.querySelector<HTMLElement>('tr.desk-selected');
+                    if (row) {
+                        row.scrollIntoView({block:'center', inline:'nearest', behavior:'instant'});
+                        row.focus({preventScroll:true});
+                    } else this.deskTargetMissing = true;
+                } else this.scrollToTop();
                 this.refreshScrollNavigation();
             });
         });
@@ -1775,7 +1786,9 @@ export class MatchesComponent implements OnInit, OnDestroy {
         const mode = this.route.snapshot.data?.['favourites'] === true ? 'favourites' :
             Number.isFinite(playerId) && playerId > 0 ? 'player' :
             Number.isFinite(tournamentId) && tournamentId > 0 ? 'tournament' : 'daily';
+        const desk = mode === 'daily' ? tennisTodayTarget(this.route.snapshot.queryParamMap) : null;
         if (!force && mode === this.viewMode &&
+            desk?.id === this.deskTarget?.id && desk?.day === this.deskTarget?.day &&
             (mode !== 'player' || playerId === this.playerMatchesTPId) &&
             (mode !== 'tournament' || tournamentId === this.tournamentMatchesTPId)) return;
 
@@ -1785,6 +1798,9 @@ export class MatchesComponent implements OnInit, OnDestroy {
         this.closeInfoModal();
         this.closeDetailsModal();
         this.viewMode = mode;
+        this.deskTarget = desk;
+        this.deskScrollPending = !!desk;
+        this.deskTargetMissing = false;
         this.playerMatchesTPId = null;
         this.tournamentMatchesTPId = null;
         this.showFilterModal = false;
@@ -1819,7 +1835,12 @@ export class MatchesComponent implements OnInit, OnDestroy {
             this.isFiltered = this.filterApplied = true;
             this.sortField = 'tournament';
             this.sortDirection = 'asc';
-            this.recallBrowse('matches:daily');
+            this.recallBrowse(desk ? null : 'matches:daily');
+            if (desk) {
+                // An explicit visit must not inherit or overwrite saved filters/search/scroll.
+                this.resetScopedMatchFilters();
+                this.rememberedDay = desk.day;
+            }
             this.bootstrapDailyMatches();
         }
     }

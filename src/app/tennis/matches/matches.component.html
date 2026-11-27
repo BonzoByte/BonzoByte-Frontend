@@ -223,6 +223,7 @@
             <app-archive-coverage *ngIf="viewMode !== 'player' && viewMode !== 'tournament'"></app-archive-coverage>
 
             <div class="table-wrapper" (scroll)="onNoticeAreaScroll()" [class.is-empty]="!loading && filteredMatches.length === 0 && unavailableFavouriteIds.length === 0">
+                <p role="status" *ngIf="deskTargetMissing && !loading && !dailyLoadError && deskTarget?.day === currentDateISO">{{ 'matchGrid.deskTargetMissing' | translate }}</p>
                 <ng-container *ngIf="viewMode === 'favourites'">
                     <div *ngIf="!showFavouriteColumn" class="favourites-state favourites-state--login" role="status">
                         <p>{{ 'favourites.signInHint' | translate }}</p>
@@ -416,7 +417,9 @@
 
                     <tbody>
                         <ng-container *ngFor="let match of rows; let rowIndex = index">
-                        <tr *ngIf="rowPresentation(match) as view" [attr.data-match-id]="match.matchTPId">
+                        <tr *ngIf="rowPresentation(match) as view" [attr.data-match-id]="match.matchTPId"
+                            [class.desk-selected]="deskTarget?.id === match.matchTPId && deskTarget?.day === currentDateISO"
+                            [attr.tabindex]="deskTarget?.id === match.matchTPId ? -1 : null">
                             <td class="match-date-cell" [title]="view.dateTitle">{{ view.date }}
                                 <time *ngIf="view.plannedStartUtc" class="match-planned-start"
                                     [attr.aria-label]="view.dateTitle" [attr.datetime]="view.plannedStartUtc">{{ view.plannedStart }}</time>

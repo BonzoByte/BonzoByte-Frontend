@@ -503,6 +503,7 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
             popularPreviewAllowed(environment, typeof location === 'undefined' ? '' : location.hostname);
     }
     @Output() closed = new EventEmitter<void>();
+    @Output() detailMissing = new EventEmitter<void>();
     @Output() requestLogin = new EventEmitter<void>();
     @Output() requestRegister = new EventEmitter<void>();
     @Output() requestUpgrade = new EventEmitter<void>();
@@ -977,6 +978,7 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
                 const payload = (err && typeof err === 'object' && 'error' in err) ? (err as any).error : err;
 
                 console.log('[DETAILS ERROR PAYLOAD]', { err, payload });
+                if (err?.status === 404 || payload?.code === 'ARCHIVE_NOT_FOUND') this.detailMissing.emit();
 
                 if (payload?.code === 'DETAILS_LOCKED') {
                     this.isLocked = true;

@@ -1,12 +1,21 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createTennisToday,dailyCards} from '../server/tennis-today-feed.mjs';
+import {renderToday} from '../server/tennis-today-page.mjs';
 const day='2026-11-27', key='20261127', at=Date.parse(day+'T15:00:00Z');
 const instant=n=>new Date(n).toISOString();
 const m={id:20,names:['A','B'],start:instant(at+3600000),grid:{eventId:7,title:'Tournament',tour:'ATP',players:[{id:31,rank:'21'},{id:32,rank:'29'}],forecast:{p:.73,at:instant(at-10000)}}};
 const f={day,schema:'bonzobyte.public-fixtures.v1',zone:'Europe/Zagreb',observedAt:instant(at-5000),matches:[m]};
 const row=[20,null,32,31,7,'2:0','6:4 6:1'];
 const archiveRow={matchTPId:20,matchId:444,player1TPId:32,player2TPId:31,player1Name:'B',player2Name:'A',tournamentEventTPId:7,tournamentEventName:'Tournament',tournamentTypeName:'ATP'};
+test('all three card states use their own stable namespace and original Zagreb day',()=>{
+ const now=new Date(at);
+ const render=(a,f,r,when=now)=>renderToday(dailyCards({day,a,f,r}),r,when);
+ assert.match(render(null,f,null),/href="\/matches\/20\?view=details&amp;day=2026-11-27&amp;fixture=20"/);
+ assert.match(render(null,f,null,new Date(at+7200000)),/Result not yet available<\/p><a class="view-match"/);
+ const a={matches:[{...archiveRow,isFinished:true,resultText:'2:0'}]};
+ assert.match(render(a,f,null),/href="\/matches\/id\/444\?view=details&amp;day=2026-11-27&amp;fixture=20"/);
+});
 test('align scores, sets and saved forecasts to the roster, reject wrong event or match',()=>{
  const cards=(a,rr)=>dailyCards({day,a,f,r:{rows:[rr]}});
  assert.equal(cards(null,row)[0].sets,'4:6 1:6');

@@ -2,6 +2,14 @@
 
 @use '../../../styles/compact-page-heading' as heading;
 
+.matches-page .match-table tr.desk-selected {
+    outline: 3px solid var(--bb-theme-accent, #56c9ff);
+    outline-offset: -3px;
+}
+.matches-page .match-table tr.desk-selected > td:first-child {
+    box-shadow: inset 5px 0 var(--bb-theme-accent, #56c9ff);
+}
+
 .matches-page {
     background:
         linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(0, 0, 0, 0.52)),
