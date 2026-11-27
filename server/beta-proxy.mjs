@@ -4,6 +4,7 @@ import { fixturesPath, serveFixtures } from './announced-fixtures-feed.mjs';
 import { modelDisplayPath, forecastGradePath, serveModelDisplay } from './model-display-feed.mjs';
 import { provisionalPath, serveProvisionalResults } from './provisional-results-feed.mjs';
 import { tennisFieldNote } from './tennis-field-note.mjs';
+import { createTennisToday } from './tennis-today-feed.mjs';
 
 const privateHeaders = { 'X-Robots-Tag': 'noindex, nofollow, noarchive',
     'Cache-Control': 'private, no-store, max-age=0', 'CDN-Cache-Control': 'no-store', 'Vercel-CDN-Cache-Control': 'no-store',
@@ -16,6 +17,7 @@ const secureOrigin = value => {
 };
 const cookieName = '__Host-bonzobyte_beta';
 export function createBetaProxy({ settings, next, rewrite, fetcher = fetch }) {
+    const tennisToday = createTennisToday();
     return async request => {
         const publicOrigin = secureOrigin(settings.BETA_PUBLIC_ORIGIN), backend = secureOrigin(settings.BETA_BACKEND_ORIGIN);
         // Deployment is CLOSED unless explicitly configured. ng serve does not
@@ -50,11 +52,12 @@ export function createBetaProxy({ settings, next, rewrite, fetcher = fetch }) {
             // separate, site-wide email-code entrance is removed.
             if (!['GET', 'HEAD', 'OPTIONS'].includes(request.method) && request.headers.get('origin') !== publicOrigin)
                 return denied(403, 'BETA_ORIGIN_DENIED');
-            if (['/tennis-stats','/tennis-stats/','/sitemap.xml'].includes(pathname)) {
+            if (['/tennis-stats','/tennis-stats/','/tennis-today','/tennis-today/','/sitemap.xml'].includes(pathname)) {
                 if (!['GET','HEAD'].includes(request.method)) return denied(405, 'METHOD_NOT_ALLOWED');
-                if (pathname === '/tennis-stats/') return new Response(null, {status:308,headers:{...privateHeaders,Location:'/tennis-stats'+url.search}});
+                if (pathname.endsWith('/')) return new Response(null, {status:308,headers:{...privateHeaders,Location:pathname.slice(0,-1)+url.search}});
+                if (pathname === '/tennis-today') return tennisToday({request,backend,fetcher,headers:privateHeaders});
                 const isArticle = pathname === '/tennis-stats';
-                const body = isArticle ? tennisFieldNote : '<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>https://bonzobyte.com/tennis-stats</loc></url></urlset>';
+                const body = isArticle ? tennisFieldNote : '<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>https://bonzobyte.com/tennis-stats</loc></url><url><loc>https://bonzobyte.com/tennis-today</loc></url></urlset>';
                 return new Response(request.method === 'HEAD' ? null : body, {headers:{
                     ...privateHeaders,'X-Robots-Tag':isArticle ? 'index, follow' : privateHeaders['X-Robots-Tag'],
                     'Content-Type':isArticle?'text/html; charset=utf-8':'application/xml; charset=utf-8',

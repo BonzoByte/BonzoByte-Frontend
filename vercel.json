@@ -13,7 +13,7 @@
       { "key": "Referrer-Policy", "value": "same-origin" }
     ]
   }, {
-    "source": "/((?!tennis-stats$).*)",
+    "source": "/((?!tennis-stats$|tennis-today$).*)",
     "headers": [{ "key": "X-Robots-Tag", "value": "noindex, nofollow, noarchive" }]
   }],
   "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
