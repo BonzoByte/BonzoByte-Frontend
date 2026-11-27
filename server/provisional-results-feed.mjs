@@ -1,13 +1,13 @@
 const root='https://raw.githubusercontent.com/BonzoByte/BonzoByte-Frontend/rally-provisional-results-data/results/';
 export const provisionalPath=/^\/api\/provisional-results\/(20\d{6})$/;
 const schema='bonzobyte.provisional-results.v1';
-const maxBytes=96*1024, ttl=20*3600000;
+const maxBytes=96*1024;
 const id=n=>Number.isSafeInteger(n)&&n>0;
 const zagreb=new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/Zagreb',year:'numeric',month:'2-digit',day:'2-digit'});
 const dayKey=t=>zagreb.format(t).split('/').reverse().join('');
 function recentDay(day,now){
     const today=dayKey(now), noon=Date.parse(today.replace(/(\d{4})(\d{2})(\d{2})/,'$1-$2-$3')+'T12:00:00Z');
-    return day===today || day===dayKey(noon-86400000);
+    return [0,1,2].some(back=>day===dayKey(noon-back*86400000));
 }
 
 export function validProvisionalResults(packet,day,now=Date.now()){
@@ -16,7 +16,8 @@ export function validProvisionalResults(packet,day,now=Date.now()){
        typeof packet.observedAt!=='string' || !/^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d\.\d{3}Z$/.test(packet.observedAt) ||
        !Array.isArray(packet.rows) || packet.rows.length>600) return false;
     const observed=Date.parse(packet.observedAt);
-    if(!Number.isFinite(observed) || dayKey(observed)!==day || observed>now || now-observed>=ttl)return false;
+    // The date of the match is not the date its final must first appear.
+    if(!Number.isFinite(observed) || dayKey(observed)<day || observed>now)return false;
     const tp=new Set(), matches=new Set();
     return packet.rows.every(row=>{
         if(!Array.isArray(row)||row.length!==7||!row.slice(0,5).every(id)||row[2]===row[3]||

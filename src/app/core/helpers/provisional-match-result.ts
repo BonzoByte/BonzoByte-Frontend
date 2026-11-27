@@ -1,4 +1,5 @@
 import { sourceCalendarDate } from '../i18n/regional-format';
+import { ARCHIVE_TIME_ZONE, dayAt, planArchiveDay, shiftDay } from '../i18n/archive-day-window';
 import { Match } from '../models/tennis.model';
 
 export interface ProvisionalScore { result: string; sets: string; }
@@ -12,8 +13,11 @@ export function readProvisionalScores(value: unknown, day: string, now = Date.no
     const packet = value as {schema?: string; day?: string; observedAt?: string; rows?: unknown[] } | null;
     if (packet?.schema !== 'bonzobyte.provisional-results.v1' || packet.day !== day ||
         typeof packet.observedAt !== 'string' || !Array.isArray(packet.rows) || packet.rows.length > 600) return result;
-    const observed = Date.parse(packet.observedAt), expiresAt = observed + 20 * 3600000;
-    if (!Number.isFinite(observed) || observed > now || expiresAt <= now) return result;
+    const today = dayAt(now, ARCHIVE_TIME_ZONE);
+    const sourceDay = [today, shiftDay(today,-1), shiftDay(today,-2)].find(d => d.replaceAll('-','') === day);
+    const observed = Date.parse(packet.observedAt);
+    if (!sourceDay || !Number.isFinite(observed) || observed > now || dayAt(observed, ARCHIVE_TIME_ZONE) < sourceDay) return result;
+    const expiresAt = planArchiveDay(shiftDay(sourceDay, 2), ARCHIVE_TIME_ZONE).endExclusive;
     const ids = new Set<number>();
     for (const row of packet.rows) {
         if (!Array.isArray(row) || row.length !== 7 || !row.slice(0, 5).every(id => Number.isSafeInteger(id) && id > 0) ||

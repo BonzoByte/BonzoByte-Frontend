@@ -8,7 +8,10 @@ const good={schema:'bonzobyte.provisional-results.v1',day,observedAt:'2026-11-23
 
 test('validates identity, ordinary completed sets, freshness, and packet scope',()=>{
     assert.equal(validProvisionalResults(good,day,now),true);
-    assert.equal(validProvisionalResults(good,day,now+20*3600000),false);
+    assert.equal(validProvisionalResults(good,day,now+20*3600000),true);
+    assert.equal(validProvisionalResults({...good,observedAt:'2026-11-25T08:12:00.000Z'},day,now+48*3600000),true);
+    assert.equal(validProvisionalResults(good,day,now+72*3600000),false);
+    assert.equal(validProvisionalResults({...good,observedAt:'2026-11-22T18:00:00.000Z'},day,now),false);
     assert.equal(validProvisionalResults({...good,observedAt:'2026-11-23T16:01:00.000Z'},day,now),false);
     assert.equal(validProvisionalResults({...good,isFinished:true},day,now),false);
     const row=good.rows[0], changes={1:0,3:1,5:'3:0',6:'7:6(5) 2:6 3:3'};

@@ -3115,12 +3115,13 @@ export class MatchesComponent implements OnInit, OnDestroy {
         const http = this.provisionalHttp;
         if (!http) return;
         const today = dayAt(Date.now(), 'Europe/Zagreb');
-        const days = [...new Set(sourceDays)].filter(day => day === today || day === shiftDay(today, -1));
+        const inWindow = (day: string, anchor: string) => day >= shiftDay(anchor, -2) && day <= anchor;
+        const days = [...new Set(sourceDays)].filter(day => inWindow(day, today));
         if (!days.length) return;
         this.provisionalRequest = timer(0, 60000).pipe(
             switchMap(() => {
                 const current = dayAt(Date.now(), 'Europe/Zagreb');
-                const recent = days.filter(day => day === current || day === shiftDay(current, -1));
+                const recent = days.filter(day => inWindow(day, current));
                 if (!recent.length || !this.hostElement.nativeElement.ownerDocument || this.viewMode !== 'daily') return of([]);
                 if (document.hidden) return of(null);
                 return forkJoin(recent.map(day => {
