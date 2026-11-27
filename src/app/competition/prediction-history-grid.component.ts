@@ -1,16 +1,19 @@
 import { CommonModule } from '@angular/common';
+import { HttpClient } from '@angular/common/http';
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, Injector, OnChanges, OnDestroy, Output } from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
 import { CompetitionPick, CompetitionPlayer, CompetitionService } from '../core/services/competition.service';
 import { compactPlayerGridLabel, playerGridFlagCode, playerGridLabel } from '../core/helpers/player-grid-label';
 import { RegionalSettingsService } from '../core/services/regional-settings.service';
 import { predictionHistoryRow, PredictionHistoryRow } from './prediction-history-row';
-import { Subscription } from 'rxjs';
+import { EMPTY, Subscription, switchMap, takeLast, tap, timeout } from 'rxjs';
 import { environment } from '@env/environment';
 import { localUiPreviewAllowed } from '../core/helpers/local-ui-preview';
 import { MatchSummary } from '../core/models/match-summary';
 import { DiscussionsService } from '../core/services/discussions.service';
 import { predictionMatchPresentation } from './prediction-match-presentation';
+import { predictionHistoryScores } from './prediction-history-scores';
+import type { ProvisionalScore } from '../core/helpers/provisional-match-result';
 import { MatchPlayersCellComponent, MatchTournamentCellComponent, MatchResultCellComponent } from '../shared/ui/match-grid-cells/match-grid-cells.component';
 import { MatchEntityDetailsComponent, MatchEntityRequest } from '../shared/ui/match-entity-details/match-entity-details.component';
 
@@ -26,7 +29,7 @@ export class PredictionHistoryGridComponent implements OnChanges, OnDestroy {
     @Output() openPick = new EventEmitter<number>();
     @Input() withdrawing = false;
     @Output() withdrawPick = new EventEmitter<CompetitionPick>();
-    rows: (PredictionHistoryRow & { match: MatchSummary })[] = [];
+    rows: (PredictionHistoryRow & { match: MatchSummary; provisional?: ProvisionalScore })[] = [];
     entity: MatchEntityRequest | null = null;
     preview = false;
     private metadata?: Subscription;
@@ -42,8 +45,16 @@ export class PredictionHistoryGridComponent implements OnChanges, OnDestroy {
         // The reserved high-ID range belongs to server-side competition fixtures, never real archives.
         const ids = [...new Set(this.entries.map(p => p.matchTPId).filter(id => Number.isSafeInteger(id) && id > 0 && id < 8000000000000000))];
         if (!ids.length) return;
-        this.metadata = this.injector.get(DiscussionsService).cardSummaries(ids).subscribe({ next: summaries => {
-            this.rows = this.rows.map(row => ({ ...row, match: predictionMatchPresentation(row.pick, summaries.get(row.pick.matchTPId) ?? (this.retrospective ? row.pick.displayMatch : undefined)) }));
+        this.metadata = this.injector.get(DiscussionsService).cardSummaries(ids).pipe(
+            tap(summaries => {
+                this.rows = this.rows.map(row => ({ ...row, match: predictionMatchPresentation(row.pick, summaries.get(row.pick.matchTPId) ?? (this.retrospective ? row.pick.displayMatch : undefined)) }));
+                this.change.markForCheck();
+            }),
+            // Summaries arrive in batches; plan the score reads once per history refresh.
+            takeLast(1), switchMap(summaries => this.publicView || this.retrospective || this.localPreview ? EMPTY :
+                predictionHistoryScores(this.entries, summaries, path => this.injector.get(HttpClient).get<unknown>(path).pipe(timeout(6000))))
+        ).subscribe({ next: scores => {
+            this.rows = this.rows.map(row => ({ ...row, provisional: scores.get(row.pick.matchTPId) }));
             this.change.markForCheck();
         }, error: () => { /* Accepted snapshot remains available if display metadata is offline. */ } });
     }

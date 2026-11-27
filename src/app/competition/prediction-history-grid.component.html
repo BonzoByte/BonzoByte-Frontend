@@ -25,7 +25,7 @@
             <td class="matchup-cell">
                 <app-match-players-cell [match]="row.match" [preview]="preview" [interactive]="!illustrative || preview" [selectedSide]="row.pick.side === 0 ? 1 : 2" (playerOpened)="details(row, 'player', $event)"></app-match-players-cell>
             </td>
-            <td class="result-cell"><app-match-result-cell [match]="row.match"></app-match-result-cell></td>
+            <td class="result-cell"><app-match-result-cell [match]="row.match" [provisional]="row.provisional"></app-match-result-cell></td>
             <td class="market-odds-cell"><div class="stacked-odds">
                 <span *ngFor="let odds of row.odds; let side = index" [class.is-your-odds]="side === row.pick.side" [title]="'matchGrid.player' + (side + 1) | translate">{{ odds === null ? '—' : regional.number(odds, 2) }}</span>
             </div></td>

@@ -1,6 +1,6 @@
 import { sourceCalendarDate } from '../i18n/regional-format';
 import { ARCHIVE_TIME_ZONE, dayAt, planArchiveDay, shiftDay } from '../i18n/archive-day-window';
-import { Match } from '../models/tennis.model';
+import type { MatchSummary } from '../models/match-summary';
 
 export interface ProvisionalScore { result: string; sets: string; }
 interface Entry {
@@ -31,7 +31,7 @@ export function readProvisionalScores(value: unknown, day: string, now = Date.no
 }
 
 /** A display-only overlay, never copied into Match or used as a verified outcome. */
-export function provisionalMatchResult(match: Match, scores: ProvisionalScores, now = Date.now()): ProvisionalScore | undefined {
+export function provisionalMatchResult(match: MatchSummary, scores: ProvisionalScores, now = Date.now()): ProvisionalScore | undefined {
     if (match.isFinished !== false || match.result || match.resultDetails ||
         (match.qualityStatus && match.qualityStatus !== 'NotAssessed')) return undefined;
     const entry = scores.get(match.matchTPId);
