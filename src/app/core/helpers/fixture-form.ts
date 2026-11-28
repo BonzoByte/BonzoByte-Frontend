@@ -11,7 +11,7 @@ export function fixtureForm(rows: readonly Match[], player: number, before: stri
         const x=Number(score[a?1:2]),y=Number(score[a?2:1]);
         if(Math.max(x,y)<2||x===y)return [];
         seen.add(m.matchTPId);
-        return [{id:m.matchTPId,date,opponent:a?m.player2Name:m.player1Name,opponentId:a?m.player2TPId:m.player1TPId,
+        return [{match:m,id:m.matchTPId,date,opponent:a?m.player2Name:m.player1Name,opponentId:a?m.player2TPId:m.player1TPId,
             won:x>y,score:x+':'+y}];
     }).sort((a,b)=>b.date.localeCompare(a.date)||b.id-a.id);
 }

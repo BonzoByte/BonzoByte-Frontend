@@ -23,6 +23,8 @@ export function selectRecentMatches(rows: Match[], scope: 'player' | 'tournament
 export class RecentMatchesComponent implements OnChanges, OnDestroy {
   @Input({ required: true }) scope!: 'player' | 'tournament';
   @Input({ required: true }) entityId!: number;
+  /** A fixture supplies its own as-of-date selection; never fetch today's history in that case. */
+  @Input() selectedHistory?: Match[];
   matches: Match[] = [];
   loading = false;
   error = false;
@@ -33,6 +35,7 @@ export class RecentMatchesComponent implements OnChanges, OnDestroy {
     this.request?.unsubscribe();
     this.matches = []; this.loading = false; this.error = false;
     if (!Number.isInteger(this.entityId) || this.entityId <= 0) return;
+    if (this.selectedHistory !== undefined) { this.matches = this.selectedHistory; return; }
     this.loading = true;
     const source = this.scope === 'player' ? this.archives.getPlayerMatches(this.entityId) : this.archives.getTournamentMatches(this.entityId);
     this.request = source.subscribe({
