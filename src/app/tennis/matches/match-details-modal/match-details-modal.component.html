@@ -318,7 +318,7 @@
           {{ v.header.round | uppercase }}
         </span>
         <span class="bb-pill">{{ surfaceLabel(v.header.surface) | uppercase }}</span>
-        <span class="bb-pill" [title]="regional.timeZone()">{{ v.header.dateText }}</span>
+        <span class="bb-pill" [title]="regional.timeZone()">{{ dailyPreview && match.plannedStartUtc ? regional.dateTime(match.plannedStartUtc,'utc') : v.header.dateText }}</span>
 
         <span class="bb-pill" *ngIf="v.header.prizeText !== '—'">{{ 'details.prize' | translate }}: {{ v.header.prizeText }}</span>
 
@@ -357,14 +357,15 @@
     ================================================================================================== -->
 
     <div class="bb-body">
-        <section *ngIf="scheduleOnly && !loading" class="bb-card schedule-summary">
+        <section *ngIf="!loading && (scheduleOnly || (dailyPreview && isLocked && match.player1Name && match.player2Name))" class="bb-card schedule-summary">
             <h3>{{ match.player1Name }} – {{ match.player2Name }}</h3>
             <p>{{ match.tournamentEventName }} · {{ match.plannedStartUtc ? regional.dateTime(match.plannedStartUtc,'utc') : regional.matchDateTime(match.dateTime || '',match.sourceTimePrecision) }}</p>
             <p *ngIf="match.modelProbabilityPlayer1 != null && match.modelProbabilityPlayer2 != null">
                 {{ match.player1Name }}: {{ regional.number(match.modelProbabilityPlayer1,2) }} % · {{ match.player2Name }}: {{ regional.number(match.modelProbabilityPlayer2,2) }} %
             </p>
-            <p *ngIf="match.result">{{ match.result }} {{ match.resultDetails }}</p>
-            <p>{{ 'matchDetails.awaitingArchive' | translate }}</p>
+            <p *ngIf="match.result || publicScore" class="bb-result-main">{{ 'common.result' | translate }}: {{ match.result || publicScore?.result }} · {{ match.resultDetails || publicScore?.sets }}</p>
+            <app-fixture-preview [match]="match"></app-fixture-preview>
+            <p *ngIf="scheduleOnly">{{ 'matchDetails.awaitingArchive' | translate }}</p>
         </section>
         <app-discussion-thread *ngIf="!isPreview && activeTab==='discussions'" [matchTPId]="discussionMatchId" (requestLogin)="openLogin()"></app-discussion-thread>
         <div class="bb-loading" *ngIf="loading && activeTab!=='discussions'">{{ 'common.loading' | translate }}</div>
@@ -403,6 +404,9 @@
                         <div class="bb-result-main">{{ v.scoreMain }}</div>
                         <div class="bb-result-sets">{{ v.scoreSets }}</div>
                     </div>
+                </div>
+                <div class="bb-result-row" *ngIf="!v.finished && overviewPublicScore as s">
+                    <div class="bb-result"><div class="bb-result-main">{{ s.result }}</div><div class="bb-result-sets">{{ s.sets }}</div></div>
                 </div>
 
                 <div class="bb-compare">

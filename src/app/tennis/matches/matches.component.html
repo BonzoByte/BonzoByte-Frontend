@@ -531,10 +531,10 @@
                                 </ng-container>
 
                                 <ng-template #lockedTpl>
-                                    <button type="button" class="details-icon-btn details-icon-btn--locked logreg"
-                                        (click)="openDetails(match)" [attr.title]="'matchGrid.lockedDetails' | translate"
-                                        [attr.aria-label]="'matchGrid.lockedAria' | translate">
-                                        🔒
+                                    <button type="button" class="details-icon-btn logreg" [class.details-icon-btn--locked]="viewMode!=='daily'"
+                                        (click)="openDetails(match)" [attr.title]="(viewMode==='daily'?'matchDetails.previewAction':'matchGrid.lockedDetails') | translate"
+                                        [attr.aria-label]="(viewMode==='daily'?'matchDetails.previewAction':'matchGrid.lockedAria') | translate">
+                                        {{ viewMode==='daily' ? 'i' : '🔒' }}
                                     </button>
                                 </ng-template>
                             </td>
@@ -662,7 +662,7 @@
             </app-tournament-modal>
 
             <app-match-details-modal #detailsModal [isOpen]="isDetailsOpen" [matchTPId]="selectedMatchTPId!"
-                [match]="selectedMatch!" (closed)="onDetailsClosed()" (requestLogin)="onDetailsRequestLogin()"
+                [match]="selectedMatch!" [dailyPreview]="viewMode==='daily'" [publicScore]="selectedMatch ? provisionalResult(selectedMatch) : undefined" (closed)="onDetailsClosed()" (requestLogin)="onDetailsRequestLogin()"
                 (requestRegister)="onDetailsRequestRegister()"
                 (requestUpgrade)="onDetailsRequestUpgrade()"></app-match-details-modal>
 

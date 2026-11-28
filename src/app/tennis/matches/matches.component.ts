@@ -37,7 +37,7 @@ import { TimeZoneNoticePreferenceService } from '../../core/services/time-zone-n
 import { HistoricalPlNoticePreferenceService } from '../../core/services/historical-pl-notice-preference.service';
 import { RegionalSettingsService } from '../../core/services/regional-settings.service';
 import { maskRegionalDateInput, parseRegionalDate, sourceCalendarDate } from '../../core/i18n/regional-format';
-import { dayAt, projectArchiveDates, shiftDay, SourceTimePrecision } from '../../core/i18n/archive-day-window';
+import { dayAt, planArchiveDay, projectArchiveDates, shiftDay, SourceTimePrecision } from '../../core/i18n/archive-day-window';
 import { matchDisplayTime } from '../../core/i18n/display-time';
 import { demoAdSlotAfter } from '../../core/helpers/demo-ad-layout';
 import { DemoAdComponent } from '../../shared/ui/demo-ad/demo-ad.component';
@@ -1043,11 +1043,19 @@ export class MatchesComponent implements OnInit, OnDestroy {
         if (correctedChanged) this.showDateOutOfRangeModal();
 
         const day=this.currentDateISO;
-        const announced=this.fixtureDays.has(day) && !!this.provisionalHttp;
-        const source=announced && this.provisionalHttp
-            ? this.provisionalHttp.get<AnnouncedFixtures>('/api/announced-fixtures/'+day).pipe(timeout(10000),
-                map(p=>({matches:announcedMatches(p,day),missingDays:[] as string[],archiveDays:[] as string[],unresolvedCount:0})))
-            : this.staticArchives.getDailyForZone(day,this.regional.timeZone(),this.sourceAvailableDates);
+        const zone=this.regional.timeZone(),today=dayAt(Date.now(),'Europe/Zagreb');
+        const fixtureDates=this.provisionalHttp ? [...new Set([...planArchiveDay(day,zone).archiveDays,day])]
+            .filter(d=>this.fixtureDays.has(d)||d===today||d===shiftDay(today,1)) : [];
+        const canonical=this.staticArchives.getDailyForZone(day,zone,this.sourceAvailableDates);
+        const source=!fixtureDates.length ? canonical : forkJoin([canonical,...fixtureDates.map(d=>
+            this.provisionalHttp!.get<AnnouncedFixtures>('/api/announced-fixtures/'+d).pipe(timeout(6500),
+                map(p=>announcedMatches(p,d)),catchError(()=>of([] as Match[]))))] as const).pipe(map(([data,...packets])=>{
+            const known=new Set(data.matches.map(m=>m.matchTPId)),extra=packets.flat().filter(m=>{
+                if(known.has(m.matchTPId)||(m.plannedStartUtc?dayAt(Date.parse(m.plannedStartUtc),zone):sourceCalendarDate(m.dateTime))!==day)return false;
+                known.add(m.matchTPId);return true;
+            });
+            return {...data,matches:[...data.matches,...extra],missingDays:data.missingDays.filter(d=>!extra.some(m=>sourceCalendarDate(m.dateTime)===d))};
+        }));
         this.dailyRequest = source.pipe(takeUntil(this.destroy$)).subscribe({
             next: (data) => {
                 this.unresolvedTimeCount = data.unresolvedCount;
@@ -1055,7 +1063,7 @@ export class MatchesComponent implements OnInit, OnDestroy {
                 const rows = data.matches.map((m, i) => ({ ...(m as any), __idx: i }));
 
                 this.daySourceMatches = rows;
-                this.watchProvisionalScores(announced?[day]:data.archiveDays,announced);
+                this.watchProvisionalScores(data.archiveDays,fixtureDates);
 
                 // The archive response, not the previous day's rows, determines
                 // whether an automatic pre-match edge filter is meaningful.
@@ -3136,20 +3144,20 @@ export class MatchesComponent implements OnInit, OnDestroy {
         return { side, playerName, confidence, label: this.regional.text('matchGrid.lean'), tone: 'lean' };
     }
 
-    private watchProvisionalScores(sourceDays: readonly string[], announced=false): void {
+    private watchProvisionalScores(sourceDays: readonly string[], fixtureDays:readonly string[]=[]): void {
         const http = this.provisionalHttp;
         if (!http) return;
         const today = dayAt(Date.now(), 'Europe/Zagreb');
         const inWindow = (day: string, anchor: string) => day >= shiftDay(anchor, -2) && day <= anchor;
-        const days = [...new Set(sourceDays)].filter(day => inWindow(day, today));
+        const days = [...fixtureDays.map(day=>({day,announced:true})),...new Set(sourceDays)].map(v=>typeof v==='string'?{day:v,announced:false}:v).filter(v=>inWindow(v.day,today));
         if (!days.length) return;
         this.provisionalRequest = timer(0, 60000).pipe(
             switchMap(() => {
                 const current = dayAt(Date.now(), 'Europe/Zagreb');
-                const recent = days.filter(day => inWindow(day, current));
+                const recent = days.filter(v => inWindow(v.day, current));
                 if (!recent.length || !this.hostElement.nativeElement.ownerDocument || this.viewMode !== 'daily') return of([]);
                 if (document.hidden) return of(null);
-                return forkJoin(recent.map(day => {
+                return forkJoin(recent.map(({day,announced}) => {
                     const key = day.replaceAll('-', '');
                     return http.get<unknown>(`/api/provisional-results/${key}${announced?'?roster=announced':''}`).pipe(timeout(4000),
                         catchError(() => of(null)), map(data => readProvisionalScores(data, key, Date.now(), announced)));

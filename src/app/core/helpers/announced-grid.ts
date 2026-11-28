@@ -6,8 +6,8 @@ export interface AnnouncedFixtures {day:string;matches:{id:number;names:string[]
 /** Adapt only at the input boundary: all filters, layouts, sorting and row components stay shared. */
 export function announcedMatches(packet:AnnouncedFixtures,day:string):Match[]{
     if(packet?.day!==day||!Array.isArray(packet.matches))throw Error('Unexpected schedule date');
-    return packet.matches.map(({id,names,start,grid:g})=>{
-        if(!g)throw Error('Incomplete tournament metadata');
+    return packet.matches.filter(row=>row.grid).map(({id,names,start,grid})=>{
+        const g=grid!;
         const [a,b]=g.players, f=g.forecast;
         return {matchTPId:id,matchId:null,dateTime:day+'T00:00:00',sourceTimePrecision:'date',plannedStartUtc:start,
             plannedStartChecked:true,plannedStartKind:start?'not-before':null,isFinished:false,roundName:g.round,

@@ -21,6 +21,9 @@ import {
     BookieOfferDTOv2,
 } from 'src/app/core/models/match-details.model';
 import { CommonModule } from '@angular/common';
+import { SimpleChanges } from '@angular/core';
+import { FixturePreviewComponent } from './fixture-preview.component';
+import { ProvisionalScore, reversePublicScore } from '../../../core/helpers/provisional-match-result';
 import { ArchiveCoverageComponent } from '@app/shared/ui/archive-coverage/archive-coverage.component';
 import { PROBABILITY_FIRST, modelDecimalOdds } from '../../../core/helpers/model-odds';
 import { FormsModule } from '@angular/forms';
@@ -484,7 +487,7 @@ interface Vm {
 @Component({
     selector: 'app-match-details-modal',
     standalone: true,
-    imports: [CommonModule, FormsModule, BbModalShellComponent, TranslateModule, DiscussionThreadComponent, CopyMatchLinkComponent, ArchiveCoverageComponent],
+    imports: [CommonModule, FormsModule, BbModalShellComponent, TranslateModule, DiscussionThreadComponent, CopyMatchLinkComponent, ArchiveCoverageComponent, FixturePreviewComponent],
     templateUrl: './match-details-modal.component.html',
     styleUrls: ['./match-details-modal.component.scss'],
 })
@@ -497,6 +500,18 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
     @Input() matchTPId!: number;
     @Input() genderHint!: 'M' | 'W';
     @Input() match!: Partial<Match> & Pick<Match, 'matchTPId'>;
+    @Input() dailyPreview = false;
+    @Input() publicScore?: ProvisionalScore;
+    private dailyOrientation(d:any): 0|1|-1 {
+        const m=this.match;
+        if(!this.dailyPreview||!d||d.m001!==m.matchTPId||!m.tournamentEventTPId||d.t?.t01!==m.tournamentEventTPId)return 0;
+        if(d.m004===m.player1TPId && d.m005===m.player2TPId)return 1;
+        return d.m004===m.player2TPId && d.m005===m.player1TPId?-1:0;
+    }
+    get overviewPublicScore(){
+        const axis=this.dailyOrientation(this.raw),s=this.publicScore;
+        return !axis||!s?null:axis===1?s:reversePublicScore(s);
+    }
     @Input() previewDetails: MatchDetailsRaw | null = null;
     get isPreview(): boolean {
         const id = this.match?.matchTPId;
@@ -802,7 +817,8 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
         });
     }
 
-    ngOnChanges(): void {
+    ngOnChanges(changes?: SimpleChanges): void {
+        if(changes && Object.keys(changes).every(key=>key==='publicScore'))return;
         if (this.isOpen && this.match?.matchTPId) {
             this.load();
         } else {
@@ -1179,7 +1195,9 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
         const finished = this.isFinished(d, scoreMain, scoreSets);
 
         // NN prob: m655 = P1 % (0..100)
-        const p1Pct = typeof d?.m655 === 'number' ? d.m655 : NaN;
+        const axis=this.dailyOrientation(d);
+        const gridP=axis===1?this.match.modelProbabilityPlayer1:axis===-1?this.match.modelProbabilityPlayer2:null;
+        const p1Pct = typeof d?.m655 === 'number' ? d.m655 : typeof gridP==='number'?gridP:NaN;
         if (this.predictionAllowed && isFinite(p1Pct)) {
             p1.nnProb = Math.min(1, Math.max(0, p1Pct / 100));
             p2.nnProb = 1 - p1.nnProb;

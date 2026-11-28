@@ -3,6 +3,10 @@ import { ARCHIVE_TIME_ZONE, dayAt, planArchiveDay, shiftDay } from '../i18n/arch
 import type { MatchSummary } from '../models/match-summary';
 
 export interface ProvisionalScore { result: string; sets: string; }
+export function reversePublicScore(s:ProvisionalScore):ProvisionalScore {
+    const turn=(v:string)=>v.replace(/(\d+):(\d+)/g,(_,a,b)=>b+':'+a);
+    return {result:turn(s.result),sets:turn(s.sets)};
+}
 interface Entry {
     day: string; expiresAt: number; matchId: number|null; player1: number; player2: number; event: number; score: ProvisionalScore;
 }
@@ -36,7 +40,10 @@ export function provisionalMatchResult(match: MatchSummary, scores: ProvisionalS
         (match.qualityStatus && match.qualityStatus !== 'NotAssessed')) return undefined;
     const entry = scores.get(match.matchTPId);
     if (!entry || entry.expiresAt <= now || entry.day !== sourceCalendarDate(match.dateTime)?.replaceAll('-', '') ||
-        match.matchId !== entry.matchId || match.player1TPId !== entry.player1 || match.player2TPId !== entry.player2 ||
-        match.tournamentEventTPId !== entry.event) return undefined;
-    return entry.score;
+        match.matchId !== entry.matchId || match.tournamentEventTPId !== entry.event) return undefined;
+    if(match.player1TPId===entry.player1 && match.player2TPId===entry.player2)return entry.score;
+    // Today's source can switch to winner-first after the final. Only the
+    // announced roster can change orientation within one release.
+    if(entry.matchId===null && match.player1TPId===entry.player2 && match.player2TPId===entry.player1)return reversePublicScore(entry.score);
+    return undefined;
 }
