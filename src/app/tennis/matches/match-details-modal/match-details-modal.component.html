@@ -2,7 +2,7 @@
 <app-bb-modal-shell *ngIf="isOpen" [title]="'matchDetails.title' | translate" [closeLabel]="'common.close' | translate" [headingActions]="true" modalClass="bb-modal--match-details" (closed)="close()">
     <p *ngIf="isPreview" class="bb-hint" role="note">{{ 'popularity.previewNotice' | translate }}</p>
     <app-archive-coverage *ngIf="!isPreview"></app-archive-coverage>
-    <app-copy-match-link bbTitleActions *ngIf="!isPreview" [inline]="true" [matchTPId]="discussionMatchId" [matchId]="canonicalMatchId" [view]="activeTab === 'discussions' ? 'discussion' : 'details'"></app-copy-match-link>
+    <app-copy-match-link bbTitleActions *ngIf="!isPreview && !scheduleOnly && !loading && !isLocked" [inline]="true" [matchTPId]="discussionMatchId" [matchId]="canonicalMatchId" [view]="activeTab === 'discussions' ? 'discussion' : 'details'"></app-copy-match-link>
     <!-- =================================================================================================
        REUSABLE TEMPLATES
     ================================================================================================== -->
@@ -336,7 +336,7 @@
        TABS
   ================================================================================================== -->
 
-    <div *ngIf="!isPreview" class="bb-tabs">
+    <div *ngIf="!isPreview && !scheduleOnly" class="bb-tabs">
         <button class="bb-tab" [class.active]="activeTab==='overview'"
             (click)="onTabClick('overview')">{{ 'details.overview' | translate }}</button>
         <button class="bb-tab" [class.active]="activeTab==='tsBreakdown'" (click)="onTabClick('tsBreakdown')">{{ 'matchDetails.tsBreakdown' | translate }}</button>
@@ -357,6 +357,15 @@
     ================================================================================================== -->
 
     <div class="bb-body">
+        <section *ngIf="scheduleOnly && !loading" class="bb-card schedule-summary">
+            <h3>{{ match.player1Name }} – {{ match.player2Name }}</h3>
+            <p>{{ match.tournamentEventName }} · {{ match.plannedStartUtc ? regional.dateTime(match.plannedStartUtc,'utc') : regional.matchDateTime(match.dateTime || '',match.sourceTimePrecision) }}</p>
+            <p *ngIf="match.modelProbabilityPlayer1 != null && match.modelProbabilityPlayer2 != null">
+                {{ match.player1Name }}: {{ regional.number(match.modelProbabilityPlayer1,2) }} % · {{ match.player2Name }}: {{ regional.number(match.modelProbabilityPlayer2,2) }} %
+            </p>
+            <p *ngIf="match.result">{{ match.result }} {{ match.resultDetails }}</p>
+            <p>{{ 'matchDetails.awaitingArchive' | translate }}</p>
+        </section>
         <app-discussion-thread *ngIf="!isPreview && activeTab==='discussions'" [matchTPId]="discussionMatchId" (requestLogin)="openLogin()"></app-discussion-thread>
         <div class="bb-loading" *ngIf="loading && activeTab!=='discussions'">{{ 'common.loading' | translate }}</div>
 

@@ -980,6 +980,7 @@
     "tsSd": "TS SD",
     "lockedTitle": "Details locked",
     "loadError": "Could not load match details",
+    "awaitingArchive": "Showing the published match summary. Full match details are not available yet.",
     "unlock": "Unlock details",
     "retry": "Retry",
     "loadingTs": "Loading TS history…",

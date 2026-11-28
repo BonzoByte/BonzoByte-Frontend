@@ -23,6 +23,17 @@ test('wrong day in rotating slot never appears as a real empty day',async()=>{
     assert.equal((await send({...example,day:'2026-11-25'})).status,404);
     assert.equal((await send({...example,matches:[]})).status,200);
 });
+test('a published roster is still readable after midnight and after its slot rotates',async()=>{
+    for(const [instant,rotated] of [['2026-11-28T09:00:00Z',false],['2026-12-04T09:00:00Z',true]]){
+        const keys=[];
+        const r=await send(example,{now:Date.parse(instant),fetcher:url=>{
+            keys.push(url.split('/').pop());
+            return !rotated && url.endsWith(day+'.json')?new Response(null,{status:404}):Response.json(example);
+        }});
+        assert.equal(r.status,200);assert.equal((await r.json()).day,day);
+        assert.equal(keys[0],day+'.json');assert.equal(keys.length,rotated?1:2);
+    }
+});
 test('old observations, duplicates, broken data and unavailable upstream fail closed',async()=>{
     for(const bad of [{...example,observedAt:'2025-01-01T12:00:00Z'},{...example,matches:[example.matches[0],example.matches[0]]},
                       {...example,matches:[{...example.matches[0],names:['<html>','ok']}]}])assert.equal((await send(bad)).status,502);

@@ -980,6 +980,7 @@
     "tsSd": "TS SD",
     "lockedTitle": "Detalji su zaključani",
     "loadError": "Nije moguće učitati detalje meča",
+    "awaitingArchive": "Prikazujemo objavljeni sažetak. Puni detalji meča još nisu dostupni.",
     "unlock": "Otključaj detalje",
     "retry": "Pokušaj ponovno",
     "loadingTs": "Učitavanje TS povijesti…",

@@ -41,6 +41,7 @@ import { sourceCalendarDate } from '../../../core/i18n/regional-format';
 import { playsTranslationKey } from '../../../core/helpers/plays-translation';
 import { DiscussionThreadComponent } from '../../../discussions/discussion-thread.component';
 import { CopyMatchLinkComponent } from '../../../shared/ui/copy-match-link/copy-match-link.component';
+import { evaluateClientDetailsAccess } from '../../../core/helpers/match-details-access';
 import { environment } from '@env/environment';
 import { localUiPreviewAllowed as popularPreviewAllowed } from '../../../core/helpers/local-ui-preview';
 import { DetailTabMemoryService, MATCH_DETAIL_TABS, PUBLIC_MATCH_DETAIL_TABS } from '../../../core/services/detail-tab-memory.service';
@@ -551,6 +552,7 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
 
 
     isLocked = false;
+    scheduleOnly = false;
     locked: DetailsLockedError | null = null;
     lockedPayload: any | null = null;
 
@@ -912,6 +914,7 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
         if (this.destroyed || !this.isOpen || !matchId) return;
 
         this.tabScope = this.tabMemory?.scopeVersion ?? 0;
+        this.scheduleOnly = false;
         this.activeTab = 'overview';
         this.raw = null; this.vm = null; this._details = null;
         this.locked = null;
@@ -978,7 +981,19 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
                 const payload = (err && typeof err === 'object' && 'error' in err) ? (err as any).error : err;
 
                 console.log('[DETAILS ERROR PAYLOAD]', { err, payload });
-                if (err?.status === 404 || payload?.code === 'ARCHIVE_NOT_FOUND') this.detailMissing.emit();
+                if (err?.status === 404 || payload?.code === 'ARCHIVE_NOT_FOUND') {
+                    // Only public grid fields, and only when the grid's two-hour rule permits viewing.
+                    const access=evaluateClientDetailsAccess({isFinished:match.isFinished,user:this.auth.getUser(),
+                        scheduledStart:match.dateTime,plannedStartUtc:match.plannedStartUtc,plannedStartChecked:match.plannedStartChecked});
+                    if(match.player1Name && match.player2Name && match.dateTime){
+                        if(access.locked){
+                            this.isLocked=true;this.error='matchDetails.locked';
+                            this.locked={code:'DETAILS_LOCKED',status:'error',lockHours:2,expectedStartUtc:null,unlocksAt:access.unlocksAt};
+                        }else{this.scheduleOnly=true;this.error=null;}
+                        this.cdr.markForCheck();return;
+                    }
+                    this.detailMissing.emit();
+                }
 
                 if (payload?.code === 'DETAILS_LOCKED') {
                     this.isLocked = true;

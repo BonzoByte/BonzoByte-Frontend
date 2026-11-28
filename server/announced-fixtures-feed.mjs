@@ -24,10 +24,13 @@ export async function serveFixtures({request,day,fetcher,headers,now=Date.now()}
     const absent=()=>send(404,{code:'FIXTURES_NOT_AVAILABLE'}),bad=()=>send(502,{code:'FIXTURES_UNAVAILABLE'});
     if(!['GET','HEAD'].includes(request.method))return send(405,{code:'FIXTURES_READ_ONLY'});
     const today=local.format(now);
-    if(day!==today&&day!==offset(today,1))return absent();
+    if(!/^20\d\d-\d\d-\d\d$/.test(day)||day>offset(today,1)||day<'2026-11-26'||!Number.isFinite(Date.parse(day+'T00:00:00Z')))return absent();
     const slot=Math.floor(Date.parse(day+'T00:00:00Z')/86400000)%2;
     try{
-        const r=await fetcher(base+slot+'.json',{redirect:'error',cache:'no-store',signal:AbortSignal.timeout(4500)});
+        const get=key=>fetcher(base+key+'.json',{redirect:'error',cache:'no-store',signal:AbortSignal.timeout(4500)});
+        let r=await get(day<today?day:slot);
+        // Yesterday may still occupy its rolling slot before tomorrow's first publication.
+        if(day<today&&r.status===404&&day===offset(today,-1))r=await get(slot);
         if(r.status===404)return absent();
         if(!r.ok||!r.body||Number(r.headers.get('content-length'))>limit)return bad();
         const reader=r.body.getReader(),chunks=[];let total=0;

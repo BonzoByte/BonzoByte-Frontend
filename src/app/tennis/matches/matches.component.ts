@@ -414,6 +414,9 @@ export class MatchesComponent implements OnInit, OnDestroy {
         this.lastArchiveDisplayDay = this.availableDates[this.availableDates.length-1];
         const zagrebToday = dayAt(Date.now(), 'Europe/Zagreb');
         this.fixtureDays = new Set([zagrebToday, shiftDay(zagrebToday,1)].filter(d => !this.sourceAvailableDates.includes(d)));
+        // Bridge only the unpublished tail. Canonical dates always use the full archive.
+        const tail=this.sourceAvailableDates[this.sourceAvailableDates.length-1];
+        if(tail) for(let d=shiftDay(tail<'2026-11-26'?'2026-11-26':tail,1);d<zagrebToday;d=shiftDay(d,1))this.fixtureDays.add(d);
         this.availableDates = [...new Set([...this.availableDates,...this.fixtureDays])].sort();
         this.minDate = this.isoToDateLocal(this.availableDates[0])!;
         this.maxDate = this.isoToDateLocal(this.availableDates[this.availableDates.length - 1])!;
