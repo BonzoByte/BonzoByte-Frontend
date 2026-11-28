@@ -30,6 +30,10 @@ import { DailySnapshot, mergeUserDay, UserDayArchive } from '../i18n/user-day-ar
 import { applyPlannedMatchSchedule, isRecentScheduleDay } from '../helpers/planned-match-schedule';
 import { applyRetrospectiveModelDisplay, modelDisplayDays } from '../helpers/model-display-probabilities';
 import { applyIssuedGridPicks } from '../helpers/issued-forecast-grade';
+import type { MatchSummary } from '../models/match-summary';
+import { sourceCalendarDate } from '../i18n/regional-format';
+import { linkedDailyRow } from '../helpers/linked-daily-row';
+import { announcedMatches, AnnouncedFixtures } from '../helpers/announced-grid';
 
 export interface DailyArchiveIndex {
   minDate: string;
@@ -314,6 +318,21 @@ export class StaticArchivesService {
       request$
     });
     return request$;
+  }
+
+  /** Same precedence as the grid: an archived row wins, otherwise try the published fixture. */
+  getLinkedDailyRow(summary: MatchSummary): Observable<Match | null> {
+    const day = sourceCalendarDate(summary.dateTime);
+    if (!day) return of(null);
+    return this.getDaily(day).pipe(
+      timeout(8500), catchError(() => of([] as Match[])), switchMap(rows => {
+        if (rows.some(row => row.matchTPId === summary.matchTPId)) return of(linkedDailyRow(summary, rows, day));
+        if (!isRecentScheduleDay(day.replaceAll('-', ''))) return of(null);
+        return this.http.get<AnnouncedFixtures>('/api/announced-fixtures/' + day).pipe(
+          timeout(6500), map(packet => linkedDailyRow(summary, announcedMatches(packet, day), day)),
+          catchError(() => of(null)));
+      })
+    );
   }
 
   private getModelDisplayPacket(day:string):Observable<unknown> {

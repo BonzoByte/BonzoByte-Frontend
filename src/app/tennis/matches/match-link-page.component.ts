@@ -7,6 +7,8 @@ import { catchError, distinctUntilChanged, map, startWith, switchMap, takeUntil 
 import { parseMatchLinkId, tennisTodayTarget } from '../../core/helpers/match-link';
 import { CommentLinkTarget, parseCommentLinkTarget } from '../../core/helpers/comment-link';
 import { MatchSummary } from '../../core/models/match-summary';
+import { Match } from '../../core/models/tennis.model';
+import { StaticArchivesService } from '../../core/services/static-archives.service';
 import { DiscussionsService } from '../../core/services/discussions.service';
 import { MatchLinksService } from '../../core/services/match-links.service';
 import { PageTitleService } from '../../core/services/page-title.service';
@@ -27,10 +29,10 @@ import { MatchDetailsModalComponent } from './match-details-modal/match-details-
       <ng-container *ngIf="match as row">
         <app-match-link-overview [match]="row"></app-match-link-overview>
         <div class="match-link-actions">
-          <button type="button" class="bb-btn bb-btn-primary" (click)="openDetails()">{{ 'matchLink.openDetails' | translate }}</button>
+          <button type="button" class="bb-btn bb-btn-primary" [disabled]="loadingDetails" (click)="openDetails()">{{ (loadingDetails ? 'matchLink.loading' : 'matchLink.openDetails') | translate }}</button>
           <button type="button" class="bb-btn" (click)="openDiscussion()">{{ 'discussions.title' | translate }}</button>
         </div>
-        <app-match-details-modal [isOpen]="detailsOpen" [matchTPId]="row.matchTPId" [match]="row"
+        <app-match-details-modal [isOpen]="detailsOpen" [matchTPId]="row.matchTPId" [match]="dailyRow ?? row" [dailyPreview]="!!dailyRow"
           (closed)="detailsOpen = false" (detailMissing)="openDatedGrid()" (requestLogin)="requestAccountAction('openLogin')"
           (requestRegister)="requestAccountAction('switchToRegister')" (requestUpgrade)="requestAccountAction('openBilling')">
         </app-match-details-modal>
@@ -50,6 +52,9 @@ export class MatchLinkPageComponent implements OnInit, OnDestroy {
     failureKind: 'invalid' | 'missing' | 'temporary' | null = null;
     get errorKey(): string { return this.failureKind === 'invalid' ? 'matchLink.invalid' : this.failureKind === 'missing' ? 'matchLink.notFound' : 'matchLink.unavailable'; }
     detailsOpen = false;
+    dailyRow: Match | null = null;
+    loadingDetails = false;
+    private detailsRequest?: Subscription;
     private discussionView = false;
     private commentTarget: CommentLinkTarget | null = null;
     private destroyed$ = new Subject<void>();
@@ -61,7 +66,8 @@ export class MatchLinkPageComponent implements OnInit, OnDestroy {
         if (this.desk) void this.router.navigate(['/matches'], {queryParams:{day:this.desk.day,fixture:this.desk.id},replaceUrl:true});
     }
     constructor(private route: ActivatedRoute, private api: DiscussionsService, @Inject(DOCUMENT) private document: Document,
-        private links: MatchLinksService, private pageTitles: PageTitleService, private router: Router) {}
+        private links: MatchLinksService, private pageTitles: PageTitleService, private router: Router,
+        private archives: StaticArchivesService) {}
     ngOnInit(): void {
         this.request = combineLatest([this.route.paramMap, this.route.queryParamMap]).pipe(
             map(([params, query]) => ({ canonical: params.has('canonicalMatchId'),
@@ -73,6 +79,8 @@ export class MatchLinkPageComponent implements OnInit, OnDestroy {
                 && a.comment?.id === b.comment?.id && a.comment?.sequence === b.comment?.sequence
                 && a.desk?.id === b.desk?.id && a.desk?.day === b.desk?.day),
             switchMap(target => {
+                this.cancelDetailsRequest();
+                this.dailyRow = null;
                 this.closeOwnedDiscussion();
                 this.desk = target.canonical || target.id === target.desk?.id ? target.desk : null;
                 this.matchId = target.id; this.discussionView = target.discussion; this.commentTarget = target.comment;
@@ -106,8 +114,23 @@ export class MatchLinkPageComponent implements OnInit, OnDestroy {
         });
     }
     retry(): void { if (!this.loading && this.failureKind === 'temporary') this.retry$.next(); }
-    openDetails(): void { this.closeOwnedDiscussion(); this.detailsOpen = !!this.match; }
+    openDetails(): void {
+        this.closeOwnedDiscussion();
+        const summary = this.match;
+        if (!summary || this.loadingDetails) return;
+        this.loadingDetails = true;
+        this.detailsRequest = this.archives.getLinkedDailyRow(summary).pipe(catchError(() => of(null))).subscribe(row => {
+            this.loadingDetails = false;
+            this.dailyRow = row;
+            this.detailsOpen = true;
+        });
+    }
+    private cancelDetailsRequest(): void {
+        this.detailsRequest?.unsubscribe();
+        this.loadingDetails = false;
+    }
     openDiscussion(): void {
+        this.cancelDetailsRequest();
         if (!this.match) return;
         this.detailsOpen = false;
         this.api.open({ matchTPId: this.match.matchTPId,
@@ -121,6 +144,7 @@ export class MatchLinkPageComponent implements OnInit, OnDestroy {
         if (this.match && this.api.selected()?.matchTPId === this.match.matchTPId) this.api.selected.set(null);
     }
     ngOnDestroy(): void {
+        this.cancelDetailsRequest();
         this.pageTitles.clearMatch(this);
         this.closeOwnedDiscussion(); this.destroyed$.next(); this.destroyed$.complete(); this.retry$.complete(); this.request?.unsubscribe();
     }
