@@ -5,6 +5,13 @@
   "outputDirectory": "dist/frontend/browser",
   "proxy": { "entrypoint": "proxy.ts" },
   "headers": [{
+    "source": "/downloads/BonzoByte-0.1.1.apk",
+    "headers": [
+      { "key": "Content-Type", "value": "application/vnd.android.package-archive" },
+      { "key": "Content-Disposition", "value": "attachment; filename=\"BonzoByte-0.1.1.apk\"" },
+      { "key": "X-Content-Type-Options", "value": "nosniff" }
+    ]
+  }, {
     "source": "/downloads/BonzoByte-0.1.0.apk",
     "headers": [
       { "key": "Content-Type", "value": "application/vnd.android.package-archive" },

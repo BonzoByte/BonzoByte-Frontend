@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url';
 import { readFile } from 'node:fs/promises';
 const { chromium, devices } = createRequire(import.meta.url)(process.env.BB_PLAYWRIGHT || 'playwright-core');
 const origin = 'https://bonzobyte.com';
-const url = origin + '/android', filename = 'BonzoByte-0.1.0.apk';
+const url = origin + '/android', filename = 'BonzoByte-0.1.1.apk';
 const expected = await readFile(new URL('../public/downloads/' + filename, import.meta.url));
 const browser = await chromium.launch({ executablePath: process.env.BB_BROWSER || undefined });
 try {
