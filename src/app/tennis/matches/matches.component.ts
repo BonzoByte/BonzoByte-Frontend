@@ -787,7 +787,10 @@ export class MatchesComponent implements OnInit, OnDestroy {
         this.refreshReusedScopedRoute(true);
 
         this.router.events.pipe(takeUntil(this.destroy$)).subscribe(event => {
-            if (event instanceof NavigationEnd) this.refreshReusedScopedRoute();
+            if (event instanceof NavigationEnd) {
+                this.refreshReusedScopedRoute();
+                this.syncGridDetailsFromRoute();
+            }
         });
         this.auth.authChanged$
             .pipe(takeUntil(this.destroy$))
@@ -2302,6 +2305,7 @@ export class MatchesComponent implements OnInit, OnDestroy {
                 return !finished && !this.hasRecordedResultData(match) && start !== null && start > now;
             });
             this.filteredMatches = this.filterMatchesBySearchTerm(rows);
+            this.syncGridDetailsFromRoute();
             this.noMatchesForFilter = this.filteredMatches.length === 0 && this.matches.length > 0;
             this.scheduleScrollNavigationRefresh();
             return;
@@ -2320,6 +2324,7 @@ export class MatchesComponent implements OnInit, OnDestroy {
         // Show the empty state for both filters and free-text search.
         this.noMatchesForFilter =
             (this.isFiltered || !!this.searchTerm.trim()) && this.filteredMatches.length === 0;
+        this.syncGridDetailsFromRoute();
         this.scheduleScrollNavigationRefresh();
     }
 
@@ -3006,33 +3011,45 @@ export class MatchesComponent implements OnInit, OnDestroy {
 
     isDetailsOpen = false;
 
-    private getMatchTPId(m: any): number | null {
-        const id = m?._id ?? m?.matchTPId ?? m?.m001 ?? m?.matchId ?? null;
-        return typeof id === 'number' ? id : (id != null ? Number(id) : null);
-    }
-
     selectedMatchTPId: number | null = null;
 
-    openDetails(m: any) {
-        const id = this.getMatchTPId(m);
-        console.log('openDetails', id, m);
+    openDetails(match: Match): void {
+        const id = match.matchTPId;
+        if (!Number.isSafeInteger(id) || id <= 0 || this.isDetailsOpen) return;
+        void this.router.navigate([], { relativeTo: this.route, queryParamsHandling: 'preserve',
+            fragment: 'match-details-' + id, state: { bbGridDetails: id } });
+    }
 
+    // A fragment changes only the dialog, not the underlying date, filters or scroll container.
+    private syncGridDetailsFromRoute(): void {
+        const fragment = this.route.snapshot.fragment ?? '';
+        const id = /^match-details-([1-9]\d*)$/.exec(fragment)?.[1];
         if (!id) {
-            console.warn('Match has no TPId field:', m);
+            if (this.isDetailsOpen) this.closeDetailsModal();
             return;
         }
-
-        this.selectedMatch = m;
-        this.selectedMatchTPId = id;
+        if (this.isDetailsOpen && this.selectedMatchTPId === Number(id)) return;
+        const match = this.filteredMatches.find(row => row.matchTPId === Number(id));
+        if (!match) return;
+        this.selectedMatch = match;
+        this.selectedMatchTPId = match.matchTPId;
         this.isDetailsOpen = true;
     }
 
     onDetailsClosed(): void {
         console.log('[PARENT] details closed', this.pendingAfterDetailsClose);
 
+        const closingId = this.selectedMatchTPId;
         this.isDetailsOpen = false;
         this.selectedMatchTPId = null;
         this.selectedMatch = null;
+
+        // X / Escape consumes the entry we added. Browser Back has already removed the
+        // fragment; never go back twice. A pasted fragment has no known parent entry.
+        if (closingId && this.route.snapshot.fragment === 'match-details-' + closingId) {
+            if (window.history.state?.bbGridDetails === closingId) window.history.back();
+            else void this.router.navigate([], { relativeTo: this.route, queryParamsHandling: 'preserve', replaceUrl: true });
+        }
 
         const action = this.pendingAfterDetailsClose;
         this.pendingAfterDetailsClose = null;

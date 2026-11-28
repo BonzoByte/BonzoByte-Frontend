@@ -526,7 +526,7 @@
                                 <ng-container *ngIf="!isDetailsLocked(match); else lockedTpl">
                                     <button type="button" class="details-icon-btn logreg" (click)="openDetails(match)"
                                         [attr.title]="'matchGrid.openDetails' | translate" [attr.aria-label]="'matchGrid.openDetails' | translate">
-                                        i
+                                        <span aria-hidden="true">i</span>
                                     </button>
                                 </ng-container>
 
@@ -534,7 +534,7 @@
                                     <button type="button" class="details-icon-btn details-icon-btn--locked logreg"
                                         (click)="openDetails(match)" [attr.title]="'matchGrid.lockedDetails' | translate"
                                         [attr.aria-label]="'matchGrid.lockedAria' | translate">
-                                        🔒
+                                        <span aria-hidden="true">🔒</span>
                                     </button>
                                 </ng-template>
                             </td>
