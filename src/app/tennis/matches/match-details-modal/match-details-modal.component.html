@@ -399,13 +399,13 @@
             <section *ngIf="activeTab==='overview'" class="bb-panel">
                 <ng-container *ngTemplateOutlet="playersHeader; context: { v: v }"></ng-container>
 
-                <div class="bb-result-row" *ngIf="v.finished">
+                <div class="bb-result-row" *ngIf="v.finished && (v.scoreMain!=='—' || !overviewPublicScore)">
                     <div class="bb-result">
                         <div class="bb-result-main">{{ v.scoreMain }}</div>
                         <div class="bb-result-sets">{{ v.scoreSets }}</div>
                     </div>
                 </div>
-                <div class="bb-result-row" *ngIf="!v.finished && overviewPublicScore as s">
+                <div class="bb-result-row" *ngIf="(!v.finished || v.scoreMain==='—') && overviewPublicScore as s">
                     <div class="bb-result"><div class="bb-result-main">{{ s.result }}</div><div class="bb-result-sets">{{ s.sets }}</div></div>
                 </div>
 

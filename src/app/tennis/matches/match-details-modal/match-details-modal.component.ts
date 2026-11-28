@@ -1197,8 +1197,9 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
         // NN prob: m655 = P1 % (0..100)
         const axis=this.dailyOrientation(d);
         const gridP=axis===1?this.match.modelProbabilityPlayer1:axis===-1?this.match.modelProbabilityPlayer2:null;
-        const p1Pct = typeof d?.m655 === 'number' ? d.m655 : typeof gridP==='number'?gridP:NaN;
-        if (this.predictionAllowed && isFinite(p1Pct)) {
+        const publicIssued=!!axis && !!this.match.publicForecastIssuedAtUtc && typeof gridP==='number' && gridP>0 && gridP<100;
+        const p1Pct = publicIssued ? gridP! : typeof d?.m655 === 'number' ? d.m655 : NaN;
+        if ((this.predictionAllowed || publicIssued) && isFinite(p1Pct)) {
             p1.nnProb = Math.min(1, Math.max(0, p1Pct / 100));
             p2.nnProb = 1 - p1.nnProb;
         }
@@ -3375,7 +3376,7 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
         const flag = d?.IsFinished ?? d?.isFinished ?? d?.mIsFinished;
         if (flag === 1 || flag === true) return true;
 
-        const hasScore = (scoreMain || '').trim().length > 0 || (scoreSets || '').trim().length > 0;
+        const hasScore = [scoreMain,scoreSets].some(value=>!!value && !/^[-–—\s]+$/.test(value));
         return hasScore;
     }
 
