@@ -357,15 +357,6 @@
     ================================================================================================== -->
 
     <div class="bb-body">
-        <section *ngIf="!loading && activeTab==='overview' && dailyPreview && isLocked && match.player1Name && match.player2Name" class="bb-card schedule-summary">
-            <h3>{{ match.player1Name }} – {{ match.player2Name }}</h3>
-            <p>{{ match.tournamentEventName }} · {{ match.plannedStartUtc ? regional.dateTime(match.plannedStartUtc,'utc') : regional.matchDateTime(match.dateTime || '',match.sourceTimePrecision) }}</p>
-            <p *ngIf="match.modelProbabilityPlayer1 != null && match.modelProbabilityPlayer2 != null">
-                {{ match.player1Name }}: {{ regional.number(match.modelProbabilityPlayer1,2) }} % · {{ match.player2Name }}: {{ regional.number(match.modelProbabilityPlayer2,2) }} %
-            </p>
-            <p *ngIf="match.result || publicScore" class="bb-result-main">{{ 'common.result' | translate }}: {{ match.result || publicScore?.result }} · {{ match.resultDetails || publicScore?.sets }}</p>
-            <app-fixture-preview [match]="match"></app-fixture-preview>
-        </section>
         <app-discussion-thread *ngIf="!isPreview && activeTab==='discussions'" [matchTPId]="discussionMatchId" (requestLogin)="openLogin()"></app-discussion-thread>
         <div class="bb-loading" *ngIf="loading && activeTab!=='discussions'">{{ 'common.loading' | translate }}</div>
 

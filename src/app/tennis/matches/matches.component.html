@@ -532,8 +532,8 @@
 
                                 <ng-template #lockedTpl>
                                     <button type="button" class="details-icon-btn details-icon-btn--locked logreg"
-                                        (click)="openDetails(match)" [attr.title]="(viewMode==='daily'?'matchDetails.previewAction':'matchGrid.lockedDetails') | translate"
-                                        [attr.aria-label]="(viewMode==='daily'?'matchDetails.previewAction':'matchGrid.lockedAria') | translate">
+                                        (click)="openDetails(match)" [attr.title]="'matchGrid.lockedDetails' | translate"
+                                        [attr.aria-label]="'matchGrid.lockedAria' | translate">
                                         🔒
                                     </button>
                                 </ng-template>
