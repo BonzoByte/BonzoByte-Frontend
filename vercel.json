@@ -23,5 +23,8 @@
     "source": "/((?!tennis-stats$|tennis-today$).*)",
     "headers": [{ "key": "X-Robots-Tag", "value": "noindex, nofollow, noarchive" }]
   }],
-  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+  "rewrites": [
+    { "source": "/android", "destination": "/android.html" },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
 }
