@@ -10,8 +10,8 @@ import { modelDecimalOdds } from '../../../core/helpers/model-odds';
 
 @Component({selector:'app-fixture-preview',standalone:true,imports:[CommonModule,TranslateModule],
 template:`
-  <h3>{{ 'matchDetails.fixtureForm' | translate }}</h3>
-  <ng-container *ngIf="history$ | async as h"><div class="sides">
+  <h3 *ngIf="section!=='h2h'">{{ 'matchDetails.fixtureForm' | translate }}</h3>
+  <ng-container *ngIf="history$ | async as h"><div class="sides" *ngIf="section!=='h2h'">
     <section *ngFor="let side of h.sides">
       <strong>{{ side.name }}</strong> <small>{{ side.country }} <ng-container *ngIf="side.rank">· #{{ side.rank }}</ng-container></small>
       <p *ngIf="side.odds != null">{{ 'matchDetails.fixtureOdds' | translate }}: {{ regional.number(side.odds,2) }}</p>
@@ -24,12 +24,14 @@ template:`
       </div>
     </section>
   </div>
-  <p *ngIf="h.h2h as total"><strong>{{ 'matchDetails.fixtureH2h' | translate }}:</strong> {{ total[0] }} – {{ total[1] }}</p></ng-container>
+  <ng-container *ngIf="section!=='form'"><p *ngIf="h.h2h as total; else noMeetings"><strong>{{ 'matchDetails.fixtureH2h' | translate }}:</strong> {{ total[0] }} – {{ total[1] }}</p>
+    <ng-template #noMeetings><p>{{ (h.sides[0].rows===undefined || h.sides[1].rows===undefined ? 'common.loading' : 'matchDetails.historyUnavailable') | translate }}</p></ng-template></ng-container></ng-container>
   `,styles:[`.sides{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:1rem}
     section{border:1px solid currentColor;border-color:color-mix(in srgb,currentColor 20%,transparent);border-radius:8px;padding:.7rem}
     .line{display:grid;grid-template-columns:auto 1fr auto;gap:.6rem;margin:.3rem 0}.won{color:var(--success-color,inherit)} p{margin:.4rem 0}`]})
 export class FixturePreviewComponent implements OnChanges {
     @Input() match!:Partial<Match>;
+    @Input() section:'all'|'form'|'h2h'='all';
     constructor(private archive:StaticArchivesService,public regional:RegionalSettingsService){}
     history$?:Observable<{sides:{name?:string;country?:string;rank?:string|number;odds:number|null;rows:ReturnType<typeof fixtureForm>|null|undefined}[];h2h:number[]|null}>;
     ngOnChanges(){

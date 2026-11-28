@@ -989,6 +989,7 @@
     "lockedTitle": "Detalji su zaključani",
     "loadError": "Nije moguće učitati detalje meča",
     "awaitingArchive": "Prikazujemo objavljeni sažetak. Puni detalji meča još nisu dostupni.",
+    "sectionPending": "Detaljna statistika za ovu karticu još nije objavljena za ovaj meč.",
     "unlock": "Otključaj detalje",
     "retry": "Pokušaj ponovno",
     "loadingTs": "Učitavanje TS povijesti…",

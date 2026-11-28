@@ -336,7 +336,7 @@
        TABS
   ================================================================================================== -->
 
-    <div *ngIf="!isPreview && !scheduleOnly" class="bb-tabs">
+    <div *ngIf="!isPreview" class="bb-tabs">
         <button class="bb-tab" [class.active]="activeTab==='overview'"
             (click)="onTabClick('overview')">{{ 'details.overview' | translate }}</button>
         <button class="bb-tab" [class.active]="activeTab==='tsBreakdown'" (click)="onTabClick('tsBreakdown')">{{ 'matchDetails.tsBreakdown' | translate }}</button>
@@ -357,7 +357,7 @@
     ================================================================================================== -->
 
     <div class="bb-body">
-        <section *ngIf="!loading && (scheduleOnly || (dailyPreview && isLocked && match.player1Name && match.player2Name))" class="bb-card schedule-summary">
+        <section *ngIf="!loading && activeTab==='overview' && dailyPreview && isLocked && match.player1Name && match.player2Name" class="bb-card schedule-summary">
             <h3>{{ match.player1Name }} – {{ match.player2Name }}</h3>
             <p>{{ match.tournamentEventName }} · {{ match.plannedStartUtc ? regional.dateTime(match.plannedStartUtc,'utc') : regional.matchDateTime(match.dateTime || '',match.sourceTimePrecision) }}</p>
             <p *ngIf="match.modelProbabilityPlayer1 != null && match.modelProbabilityPlayer2 != null">
@@ -365,7 +365,6 @@
             </p>
             <p *ngIf="match.result || publicScore" class="bb-result-main">{{ 'common.result' | translate }}: {{ match.result || publicScore?.result }} · {{ match.resultDetails || publicScore?.sets }}</p>
             <app-fixture-preview [match]="match"></app-fixture-preview>
-            <p *ngIf="scheduleOnly">{{ 'matchDetails.awaitingArchive' | translate }}</p>
         </section>
         <app-discussion-thread *ngIf="!isPreview && activeTab==='discussions'" [matchTPId]="discussionMatchId" (requestLogin)="openLogin()"></app-discussion-thread>
         <div class="bb-loading" *ngIf="loading && activeTab!=='discussions'">{{ 'common.loading' | translate }}</div>
@@ -639,7 +638,11 @@
             <!-- ========================================================================================
             PERFORMANCE TAB
             ========================================================================================= -->
-            <section *ngIf="activeTab === 'performance'" class="bb-panel">
+            <section *ngIf="scheduleOnly && (activeTab==='performance' || activeTab==='roleStats')" class="bb-panel">
+                <ng-container *ngTemplateOutlet="playersHeader; context: { v: v }"></ng-container>
+                <p>{{ 'matchDetails.sectionPending' | translate }}</p>
+            </section>
+            <section *ngIf="!scheduleOnly && activeTab === 'performance'" class="bb-panel">
                 <ng-container *ngTemplateOutlet="playersHeader; context: { v: v }"></ng-container>
 
                 <!-- Controls (unit/time/surface) -->
@@ -703,7 +706,11 @@
             <!-- ========================================================================================
             FORM TAB
             ========================================================================================= -->
-            <section *ngIf="activeTab === 'form'" class="bb-panel">
+            <section *ngIf="scheduleOnly && (activeTab==='form' || activeTab==='h2h')" class="bb-panel">
+                <ng-container *ngTemplateOutlet="playersHeader; context: { v: v }"></ng-container>
+                <app-fixture-preview [match]="match" [section]="activeTab==='form'?'form':'h2h'"></app-fixture-preview>
+            </section>
+            <section *ngIf="!scheduleOnly && activeTab === 'form'" class="bb-panel">
                 <ng-container *ngTemplateOutlet="playersHeader; context: { v: v }"></ng-container>
 
                 <!-- Surface selector -->
@@ -769,7 +776,7 @@
             <!-- ========================================================================================
             ROLE STATS TAB
             ========================================================================================= -->
-            <section *ngIf="activeTab === 'roleStats'" class="bb-panel">
+            <section *ngIf="!scheduleOnly && activeTab === 'roleStats'" class="bb-panel">
                 <ng-container *ngTemplateOutlet="playersHeader; context: { v: v }"></ng-container>
 
                 <!-- Time selector -->
@@ -866,7 +873,7 @@
             <!-- ========================================================================================
             H2H TAB
         ========================================================================================= -->
-            <section *ngIf="activeTab === 'h2h'" class="bb-panel">
+            <section *ngIf="!scheduleOnly && activeTab === 'h2h'" class="bb-panel">
                 <ng-container *ngTemplateOutlet="playersHeader; context: { v: v }"></ng-container>
 
                 <!-- Controls -->

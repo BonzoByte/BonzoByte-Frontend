@@ -23,6 +23,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { SimpleChanges } from '@angular/core';
 import { FixturePreviewComponent } from './fixture-preview.component';
+import { dailyMatchDetails } from '../../../core/helpers/daily-match-details';
 import { ProvisionalScore, reversePublicScore } from '../../../core/helpers/provisional-match-result';
 import { ArchiveCoverageComponent } from '@app/shared/ui/archive-coverage/archive-coverage.component';
 import { PROBABILITY_FIRST, modelDecimalOdds } from '../../../core/helpers/model-odds';
@@ -1005,7 +1006,17 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
                         if(access.locked){
                             this.isLocked=true;this.error='matchDetails.locked';
                             this.locked={code:'DETAILS_LOCKED',status:'error',lockHours:2,expectedStartUtc:null,unlocksAt:access.unlocksAt};
-                        }else{this.scheduleOnly=true;this.error=null;}
+                        }else{
+                            const daily=dailyMatchDetails(match);
+                            if(!daily){this.error='matchDetails.loadError';this.cdr.markForCheck();return;}
+                            this.scheduleOnly=true;this.error=null;
+                            this.raw=this._details=daily;
+                            this.syncOddsSelection();
+                            this.genderHint=this.tourTypeLabel(daily)==='WTA'?'W':'M';
+                            this.vm=this.buildVm(daily);
+                            this.activeNnSection='overview';
+                            this.restoreRememberedTab();
+                        }
                         this.cdr.markForCheck();return;
                     }
                     this.detailMissing.emit();
@@ -1196,8 +1207,11 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
 
         // NN prob: m655 = P1 % (0..100)
         const axis=this.dailyOrientation(d);
-        const gridP=axis===1?this.match.modelProbabilityPlayer1:axis===-1?this.match.modelProbabilityPlayer2:null;
-        const publicIssued=!!axis && !!this.match.publicForecastIssuedAtUtc && typeof gridP==='number' && gridP>0 && gridP<100;
+        const receipt=this.match.issuedGridPick?.p1;
+        const gridP=typeof receipt==='number' && receipt>0 && receipt<1 && axis
+            ? 100*(axis===1?receipt:1-receipt)
+            : axis===1?this.match.modelProbabilityPlayer1:axis===-1?this.match.modelProbabilityPlayer2:null;
+        const publicIssued=!!axis && (!!this.match.publicForecastIssuedAtUtc || receipt!=null) && typeof gridP==='number' && gridP>0 && gridP<100;
         const p1Pct = publicIssued ? gridP! : typeof d?.m655 === 'number' ? d.m655 : NaN;
         if ((this.predictionAllowed || publicIssued) && isFinite(p1Pct)) {
             p1.nnProb = Math.min(1, Math.max(0, p1Pct / 100));
@@ -2393,7 +2407,7 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
             return v ?? TS_DEFAULT_MU;
         }
 
-        return this.tsMinValue(who, 'Mean') ?? TS_DEFAULT_MU;
+        return this.tsMinValue(who, 'Mean') ?? (this.scheduleOnly ? NaN : TS_DEFAULT_MU);
     }
 
     tsSd(who: 'p1' | 'p2'): number {
@@ -2403,7 +2417,7 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
             return v ?? TS_DEFAULT_SD;
         }
 
-        return this.tsMinValue(who, 'SD') ?? TS_DEFAULT_SD;
+        return this.tsMinValue(who, 'SD') ?? (this.scheduleOnly ? NaN : TS_DEFAULT_SD);
     }
 
     /**
@@ -2496,6 +2510,7 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
                 (p) =>
                     Number.isFinite(p.m) &&
                     p.d.length === 10 &&
+                    (!this.scheduleOnly || p.d < String(this.match.dateTime).slice(0,10)) &&
                     Number.isFinite(Date.parse(`${p.d}T00:00:00.000Z`)) &&
                     Number.isFinite(p.mu) &&
                     Number.isFinite(p.sd)
@@ -2586,6 +2601,11 @@ export class MatchDetailsModalComponent implements OnChanges, OnInit, OnDestroy 
 
                     const p1Surf = this.selectTsSeries(a1, this.RatingMode, this.SurfaceScope);
                     const p2Surf = this.selectTsSeries(a2, this.RatingMode, this.SurfaceScope);
+
+                    if(this.scheduleOnly && (!p1Surf.length || !p2Surf.length)){
+                        this.tsBreakdownError='matchDetails.missingTs';
+                        this.p1Series=[];this.p2Series=[];this.mergedSeries=[];return false;
+                    }
 
                     this.p1Series = p1Surf;
                     this.p2Series = p2Surf;

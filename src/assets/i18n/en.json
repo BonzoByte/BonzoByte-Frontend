@@ -989,6 +989,7 @@
     "lockedTitle": "Details locked",
     "loadError": "Could not load match details",
     "awaitingArchive": "Showing the published match summary. Full match details are not available yet.",
+    "sectionPending": "The detailed statistics for this tab have not been published for this match yet.",
     "unlock": "Unlock details",
     "retry": "Retry",
     "loadingTs": "Loading TS history…",
